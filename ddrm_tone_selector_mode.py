@@ -33,7 +33,6 @@ NAME_FUNKY_2 = 'Funky\n2'
 NAME_FUNKY_3 = 'Funky\n3'
 NAME_FUNKY_4 = 'Funky\n4'
 
-
 tone_selector_values = {  # (MIDI CC for upper row, MIDI CC for lower row, MIDI value)
     NAME_BASS: [(40, 67, 0),
                 (41, 68, 0),

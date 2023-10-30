@@ -5,7 +5,6 @@ from melodic_mode import MelodicMode
 
 
 class RhythmicMode(MelodicMode):
-
     rhythmic_notes_matrix = [
         [64, 65, 66, 67, 96, 97, 98, 99],
         [60, 61, 62, 63, 92, 93, 94, 95],
