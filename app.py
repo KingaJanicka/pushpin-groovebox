@@ -10,6 +10,7 @@ import mido
 import numpy
 import push2_python
 
+
 from melodic_mode import MelodicMode
 from track_selection_mode import TrackSelectionMode
 from pyramid_track_triggering_mode import PyramidTrackTriggeringMode
