@@ -16,7 +16,7 @@ class OSCControl(object):
     color_rgb = None
     name = 'Unknown'
     section = 'unknown'
-    address = "/"
+    address = "/default"
     min = 0.0
     max = 1.0
     value = 150
@@ -96,8 +96,8 @@ class OSCControl(object):
 
         # Send cc message, subtract 1 to number because MIDO works from 0 - 127
         # msg = mido.Message('control_change', control=self.address, value=self.value)
-        msg=f'control_change {self.address} {self.value}'
-        self.send_osc_func(msg)
+        # msg=f'control_change {self.address} {self.value}'
+        self.send_osc_func(self.address, [self.value])
 
 
 class OSCMode(PyshaMode):
@@ -174,6 +174,7 @@ class OSCMode(PyshaMode):
 
     def get_osc_address_controls_for_current_track_section_and_page(self):
         all_section_controls = self.get_osc_address_controls_for_current_track_and_section()
+        print(all_section_controls)
         _, page = self.get_currently_selected_osc_address_section_and_page()
         try:
             return all_section_controls[page * 8:(page+1) * 8]

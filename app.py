@@ -26,6 +26,8 @@ from ddrm_tone_selector_mode import DDRMToneSelectorMode
 from display_utils import show_notification
 
 from pythonosc.udp_client import SimpleUDPClient
+import surge
+import asyncio
 
 class PyshaApp(object):
 
@@ -66,6 +68,10 @@ class PyshaApp(object):
     # fixing issue with 2 lumis and alternating channel pressure values
     last_cp_value_recevied = 0
     last_cp_value_recevied_time = 0
+    
+    # Surge-XT-CLI settings and config
+    osc_clients = []
+    # client = SimpleUDPClient("127.0.0.1", 1032)
 
     def __init__(self):
         if os.path.exists('settings.json'):
@@ -85,6 +91,10 @@ class PyshaApp(object):
 
         self.init_modes(settings)
 
+        # asyncio.run(surge.init_surge())
+        for x in range(0, 9):
+            self.osc_clients.append(SimpleUDPClient("127.0.0.1", surge.OSC_PORT_IN_MIN+x))
+        
     def init_modes(self, settings):
         self.main_controls_mode = MainControlsMode(self, settings=settings)
         self.active_modes.append(self.main_controls_mode)
@@ -99,7 +109,8 @@ class PyshaApp(object):
         self.preset_selection_mode = PresetSelectionMode(self, settings=settings)
         self.midi_cc_mode = MIDICCMode(self, settings=settings)  # Must be initialized after track selection mode so it gets info about loaded tracks
         self.osc_mode = OSCMode(self, settings=settings)  # Must be initialized after track selection mode so it gets info about loaded tracks
-        self.active_modes += [self.track_selection_mode, self.midi_cc_mode]
+        # self.active_modes += [self.track_selection_mode, self.midi_cc_mode]
+        self.active_modes += [self.track_selection_mode, self.osc_mode]
         self.track_selection_mode.select_track(self.track_selection_mode.selected_track)
         self.ddrm_tone_selector_mode = DDRMToneSelectorMode(self, settings=settings)
 
@@ -130,21 +141,21 @@ class PyshaApp(object):
                     new_active_modes.append(mode)
                 else:
                     new_active_modes.append(self.track_selection_mode)
-                    new_active_modes.append(self.midi_cc_mode)
+                    new_active_modes.append(self.osc_mode)
             self.active_modes = new_active_modes
             self.ddrm_tone_selector_mode.deactivate()
-            self.midi_cc_mode.activate()
+            self.osc_mode.activate()
             self.track_selection_mode.activate()
         else:
             # Activate (replace midi cc and track selection mode by ddrm tone selector mode)
             new_active_modes = []
             for mode in self.active_modes:
-                if mode != self.track_selection_mode and mode != self.midi_cc_mode:
+                if mode != self.track_selection_mode and mode != self.osc_mode:
                     new_active_modes.append(mode)
-                elif mode == self.midi_cc_mode:
+                elif mode == self.osc_mode:
                     new_active_modes.append(self.ddrm_tone_selector_mode)
             self.active_modes = new_active_modes
-            self.midi_cc_mode.deactivate()
+            self.osc_mode.deactivate()
             self.track_selection_mode.deactivate()
             self.ddrm_tone_selector_mode.activate()
 
@@ -348,6 +359,15 @@ class PyshaApp(object):
         elif self.midi_out_channel > 15:
             self.midi_out_channel = 15 if not wrap else -1
 
+
+    def set_osc_in_port(self, port, wrap=False):
+        # We use channel -1 for the "track setting" in which midi channel is taken from currently selected track
+        self.osc_in_port = port
+        if self.osc_in_port < surge.OSC_PORT_IN_MIN:
+            self.osc_in_port = -1 if not wrap else 10
+        elif self.osc_in_port > surge.OSC_PORT_IN_MAX:
+            self.osc_in_port = 15 if not wrap else -1
+
     def set_midi_in_device_by_index(self, device_idx):
         if device_idx >= 0 and device_idx < len(self.available_midi_in_device_names):
             self.init_midi_in(self.available_midi_in_device_names[device_idx])
@@ -382,9 +402,12 @@ class PyshaApp(object):
         if self.midi_out is not None:
             self.midi_out.send(msg)
 
-    def send_osc(self, msg, use_original_msg_channel=False):
-        print(msg)
-
+    def send_osc(self , address, params, use_original_msg_channel=False):
+        client = self.osc_clients[self.track_selection_mode.selected_track]
+        client.send_message(address, params)
+        print(self.track_selection_mode.selected_track, "Send OSC Message")
+    
+    
     def send_midi_to_pyramid(self, msg):
         # When sending to Pyramid, don't replace the MIDI channel because msg is already prepared with pyramidi chanel
         self.send_midi(msg, use_original_msg_channel=True)

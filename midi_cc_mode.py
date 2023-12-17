@@ -170,6 +170,7 @@ class MIDICCMode(PyshaMode):
 
     def get_midi_cc_controls_for_current_track_section_and_page(self):
         all_section_controls = self.get_midi_cc_controls_for_current_track_and_section()
+        print(all_section_controls)
         _, page = self.get_currently_selected_midi_cc_section_and_page()
         try:
             return all_section_controls[page * 8:(page+1) * 8]

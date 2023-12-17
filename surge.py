@@ -1,64 +1,55 @@
-import surgepy 
-import pprint
-import numpy as np
-import simpleaudio as sa
-from surgepy import constants as srgco
+import asyncio
+from pythonosc.dispatcher import Dispatcher
+from pythonosc.udp_client import SimpleUDPClient
+from typing import List, Any
+import time
 
-sample_rate = 44100
+# def play_note(client):
+#     while True:
+#         print("sending notes")
+#         client.send_message("/mnote", [68.0, 120.0])
+#         time.sleep(1)
+#         client.send_message("/mnote/rel", [68.0, 120.0])
+#         time.sleep(1)
 
-s = surgepy.createSurge(sample_rate )
+async def log_stdout(proc, label):
+    print(label, "LABEL")
+    print(proc, "proc")
+    
+    line = await proc.stdout.readline()
+    
+    while line:
+        print(f'{label} {line.decode()}')
+        line = await proc.stdout.readline()
 
-twosecondsInBlocks = int( 10 * s.getSampleRate() / s.getBlockSize() )
-buf = s.createMultiBlock( twosecondsInBlocks )
+    
+OSC_PORT_IN_MIN = 1030
+OSC_PORT_IN_MAX = 1038
+OSC_PORT_OUT_MIN = 1040
+OSC_PORT_OUT_MAX = 1048
 
-patch = s.getPatch()
-pan = patch["scene"][0]["pan"]
-pp = pprint.PrettyPrinter(indent=4)
-
-
-for i in patch["scene"][0]:
-        pp.pprint(patch["scene"][0][i])
+async def run(cmd, label):
+    proc = await asyncio.create_subprocess_shell(cmd, stdin=asyncio.subprocess.DEVNULL, stdout=asyncio.subprocess.PIPE)
+    try:
+        await asyncio.gather(log_stdout(proc, label))
+    finally:
+        proc.terminate()
         
+async def init_surge():
+    await asyncio.gather(
+        run('/usr/bin/surge-xt-cli --sample-rate=48000 --osc-in-port=1030 --osc-out-port=1040', "s1"),
+        run('/usr/bin/surge-xt-cli --sample-rate=48000 --osc-in-port=1031 --osc-out-port=1041', "s2"),
+        run('/usr/bin/surge-xt-cli --sample-rate=48000 --osc-in-port=1032 --osc-out-port=1042', "s3"),
+        run('/usr/bin/surge-xt-cli --sample-rate=48000 --osc-in-port=1033 --osc-out-port=1043', "s4"),
+        run('/usr/bin/surge-xt-cli --sample-rate=48000 --osc-in-port=1034 --osc-out-port=1044', "s5"),
+        run('/usr/bin/surge-xt-cli --sample-rate=48000 --osc-in-port=1035 --osc-out-port=1045', "s6"),
+        run('/usr/bin/surge-xt-cli --sample-rate=48000 --osc-in-port=1036 --osc-out-port=1046', "s7"),
+        run('/usr/bin/surge-xt-cli --sample-rate=48000 --osc-in-port=1037 --osc-out-port=1047', "s8"),
+        run('/usr/bin/surge-xt-cli --sample-rate=48000 --osc-in-port=1038 --osc-out-port=1048', "s9")),
 
-ampeg0 = patch["scene"][0]["adsr"][srgco.adsr_ampeg]
-
-s.setParamVal( ampeg0["a"], -2 )
-s.setParamVal( ampeg0["r"], 0.3 )
-s.setParamVal( pan , 0.5)
-
-# Play alternating .05 second silence, .4 seconds note, 0.05 second silence
-pos = 0
-silence = int( 0.4 * s.getSampleRate() / s.getBlockSize() )
-hold = int( 1 * s.getSampleRate() / s.getBlockSize() )
-
-for i in range( 4 ):
     
-    s.processMultiBlock( buf, pos, silence )
-    pos = pos + silence
     
-    # Play note on channel 0 at velcity 127 with 0 detune
-    s.playNote( 0, 30 + i * 7, 127, 0 )
-    s.processMultiBlock( buf, pos, hold )
-    pos = pos + hold
-    # print(s.getParamDisplay(ampeg0["a"]))
-    # and release the note
-    s.releaseNote( 0, 30 + i * 7, 0 )
-    s.processMultiBlock( buf, pos, silence )
-    pos = pos + silence
+   
+   
 
-# normalize to 16-bit range
-# convert to 16-bit data
-
-buf *= 32767 / np.max(np.abs(buf))
-audio = buf.astype(np.int16)
-audio = np.swapaxes(audio, 0, 1)
-audio = audio.copy(order='C')
-
-# start playback
-
-play_obj = sa.play_buffer(audio, 2, 2, sample_rate)
-
-#TODO: Seems like it's playing one channel after the other
-
-# wait for playback to finish before exiting
-play_obj.wait_done()
+# asyncio.run(init_surge())

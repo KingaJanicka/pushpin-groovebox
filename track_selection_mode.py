@@ -153,7 +153,8 @@ class TrackSelectionMode(definitions.PyshaMode):
         self.load_current_default_layout()
         self.clean_currently_notes_being_played()
         try:
-            self.app.midi_cc_mode.new_track_selected()
+            # self.app.midi_cc_mode.new_track_selected()
+            self.app.osc_mode.new_track_selected()
             self.app.preset_selection_mode.new_track_selected()
             self.app.pyramid_track_triggering_mode.new_track_selected()
         except AttributeError:
