@@ -19,11 +19,13 @@ from slice_notes_mode import SliceNotesMode
 from settings_mode import SettingsMode
 from main_controls_mode import MainControlsMode
 from midi_cc_mode import MIDICCMode
+from osc_mode import OSCMode
 from preset_selection_mode import PresetSelectionMode
 from ddrm_tone_selector_mode import DDRMToneSelectorMode
 
 from display_utils import show_notification
 
+from pythonosc.udp_client import SimpleUDPClient
 
 class PyshaApp(object):
 
@@ -70,7 +72,7 @@ class PyshaApp(object):
             settings = json.load(open('settings.json'))
         else:
             settings = {}
-
+        
         self.set_midi_in_channel(settings.get('midi_in_default_channel', 0))
         self.set_midi_out_channel(settings.get('midi_out_default_channel', 0))
         self.target_frame_rate = settings.get('target_frame_rate', 60)
@@ -96,6 +98,7 @@ class PyshaApp(object):
         self.pyramid_track_triggering_mode = PyramidTrackTriggeringMode(self, settings=settings)
         self.preset_selection_mode = PresetSelectionMode(self, settings=settings)
         self.midi_cc_mode = MIDICCMode(self, settings=settings)  # Must be initialized after track selection mode so it gets info about loaded tracks
+        self.osc_mode = OSCMode(self, settings=settings)  # Must be initialized after track selection mode so it gets info about loaded tracks
         self.active_modes += [self.track_selection_mode, self.midi_cc_mode]
         self.track_selection_mode.select_track(self.track_selection_mode.selected_track)
         self.ddrm_tone_selector_mode = DDRMToneSelectorMode(self, settings=settings)
@@ -379,6 +382,8 @@ class PyshaApp(object):
         if self.midi_out is not None:
             self.midi_out.send(msg)
 
+    def send_osc(self, msg, use_original_msg_channel=False):
+        print(msg)
 
     def send_midi_to_pyramid(self, msg):
         # When sending to Pyramid, don't replace the MIDI channel because msg is already prepared with pyramidi chanel

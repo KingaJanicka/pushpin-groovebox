@@ -1,4 +1,5 @@
 import surgepy 
+import pprint
 import numpy as np
 import simpleaudio as sa
 from surgepy import constants as srgco
@@ -12,10 +13,12 @@ buf = s.createMultiBlock( twosecondsInBlocks )
 
 patch = s.getPatch()
 pan = patch["scene"][0]["pan"]
+pp = pprint.PrettyPrinter(indent=4)
 
 
-# for i in patch["scene"][0]:
-#         print(patch["scene"][0][i])
+for i in patch["scene"][0]:
+        pp.pprint(patch["scene"][0][i])
+        
 
 ampeg0 = patch["scene"][0]["adsr"][srgco.adsr_ampeg]
 
@@ -37,7 +40,7 @@ for i in range( 4 ):
     s.playNote( 0, 30 + i * 7, 127, 0 )
     s.processMultiBlock( buf, pos, hold )
     pos = pos + hold
-    print(s.getParamDisplay(ampeg0["a"]))
+    # print(s.getParamDisplay(ampeg0["a"]))
     # and release the note
     s.releaseNote( 0, 30 + i * 7, 0 )
     s.processMultiBlock( buf, pos, silence )
@@ -50,8 +53,7 @@ buf *= 32767 / np.max(np.abs(buf))
 audio = buf.astype(np.int16)
 audio = np.swapaxes(audio, 0, 1)
 audio = audio.copy(order='C')
-print(buf)
-print(audio.flags)
+
 # start playback
 
 play_obj = sa.play_buffer(audio, 2, 2, sample_rate)

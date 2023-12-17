@@ -10,26 +10,30 @@ from definitions import PyshaMode, OFF_BTN_COLOR
 from display_utils import show_text
 
 
-class MIDICCControl(object):
+class OSCControl(object):
 
     color = definitions.GRAY_LIGHT
     color_rgb = None
     name = 'Unknown'
     section = 'unknown'
-    cc_number = 10  # 0-127
-    value = 64
+    address = "/"
+    min = 0.0
+    max = 1.0
+    value = 150
     vmin = 0
-    vmax = 127
+    vmax = 300
     get_color_func = None
-    send_midi_func = None
+    send_osc_func = None
     value_labels_map = {}
 
-    def __init__(self, cc_number, name, section_name, get_color_func, send_midi_func):
-        self.cc_number = cc_number
+    def __init__(self, address, name, min, max, section_name, get_color_func, send_osc_func):
+        self.address = address
         self.name = name
         self.section = section_name
         self.get_color_func = get_color_func
-        self.send_midi_func = send_midi_func
+        self.send_osc_func = send_osc_func
+        self.min = min
+        self.max = max
 
     def draw(self, ctx, x_part):
         margin_top = 25
@@ -89,16 +93,16 @@ class MIDICCControl(object):
             self.value = self.vmin
         else:
             self.value += increment
-        #TODO: Make sure this send floats instead of 0-127 int
-        
+
         # Send cc message, subtract 1 to number because MIDO works from 0 - 127
-        msg = mido.Message('control_change', control=self.cc_number, value=self.value)
-        self.send_midi_func(msg)
+        # msg = mido.Message('control_change', control=self.address, value=self.value)
+        msg=f'control_change {self.address} {self.value}'
+        self.send_osc_func(msg)
 
 
-class MIDICCMode(PyshaMode):
+class OSCMode(PyshaMode):
 
-    midi_cc_button_names = [
+    osc_address_button_names = [
         push2_python.constants.BUTTON_UPPER_ROW_1,
         push2_python.constants.BUTTON_UPPER_ROW_2,
         push2_python.constants.BUTTON_UPPER_ROW_3,
@@ -108,41 +112,41 @@ class MIDICCMode(PyshaMode):
         push2_python.constants.BUTTON_UPPER_ROW_7,
         push2_python.constants.BUTTON_UPPER_ROW_8
     ]
-    instrument_midi_control_ccs = {}
-    active_midi_control_ccs = []
+    instrument_osc_addresses = {}
+    active_osc_addresses = []
     current_selected_section_and_page = {}
 
     def initialize(self, settings=None):
         for instrument_short_name in self.get_all_distinct_instrument_short_names_helper():
             try:
-                midi_cc = json.load(open(os.path.join(definitions.INSTRUMENT_DEFINITION_FOLDER, '{}.json'.format(instrument_short_name)))).get('midi_cc', None)
+                osc = json.load(open(os.path.join(definitions.INSTRUMENT_DEFINITION_FOLDER, '{}.json'.format(instrument_short_name)))).get('osc', None)
             except FileNotFoundError:
-                midi_cc = None
+                osc = None
             
-            if midi_cc is not None:
-                # Create MIDI CC mappings for instruments with definitions
-                self.instrument_midi_control_ccs[instrument_short_name] = []
-                for section in midi_cc:
+            if osc is not None:
+                # Create OSC mappings for instruments with definitions
+                self.instrument_osc_addresses[instrument_short_name] = []
+                for section in osc:
                     section_name = section['section']
-                    for name, cc_number in section['controls']:
-                        control = MIDICCControl(cc_number, name, section_name, self.get_current_track_color_helper, self.app.send_midi)
+                    for name, address, min, max in section['controls']:
+                        control = OSCControl(address, name, min, max, section_name, self.get_current_track_color_helper, self.app.send_osc)
                         if section.get('control_value_label_maps', {}).get(name, False):
                             control.value_labels_map = section['control_value_label_maps'][name]
-                        self.instrument_midi_control_ccs[instrument_short_name].append(control)
-                print('Loaded {0} MIDI cc mappings for instrument {1}'.format(len(self.instrument_midi_control_ccs[instrument_short_name]), instrument_short_name))
+                        self.instrument_osc_addresses[instrument_short_name].append(control)
+                print('Loaded {0} OSC address mappings for instrument {1}'.format(len(self.instrument_osc_addresses[instrument_short_name]), instrument_short_name))
             else:
                 # No definition file for instrument exists, or no midi CC were defined for that instrument
-                self.instrument_midi_control_ccs[instrument_short_name] = []
+                self.instrument_osc_addresses[instrument_short_name] = []
                 for i in range(0, 128):
                     section_s = (i // 16) * 16
                     section_e = section_s + 15
-                    control = MIDICCControl(i, 'CC {0}'.format(i), '{0} to {1}'.format(section_s, section_e), self.get_current_track_color_helper, self.app.send_midi)
-                    self.instrument_midi_control_ccs[instrument_short_name].append(control)
-                print('Loaded default MIDI cc mappings for instrument {0}'.format(instrument_short_name))
+                    control = OSCControl(i, 'CC {0}'.format(i), 0.0, 1.0, '{0} to {1}'.format(section_s, section_e), self.get_current_track_color_helper, self.app.send_osc)
+                    self.instrument_osc_addresses[instrument_short_name].append(control)
+                print('Loaded default OSC address mappings for instrument {0}'.format(instrument_short_name))
       
         # Fill in current page and section variables
-        for instrument_short_name in self.instrument_midi_control_ccs:
-            self.current_selected_section_and_page[instrument_short_name] = (self.instrument_midi_control_ccs[instrument_short_name][0].section, 0)
+        for instrument_short_name in self.instrument_osc_addresses:
+            self.current_selected_section_and_page[instrument_short_name] = (self.instrument_osc_addresses[instrument_short_name][0].section, 0)
 
     def get_all_distinct_instrument_short_names_helper(self):
         return self.app.track_selection_mode.get_all_distinct_instrument_short_names()
@@ -153,43 +157,43 @@ class MIDICCMode(PyshaMode):
     def get_current_track_instrument_short_name_helper(self):
         return self.app.track_selection_mode.get_current_track_instrument_short_name()
 
-    def get_current_track_midi_cc_sections(self):
+    def get_current_track_osc_address_sections(self):
         section_names = []
-        for control in self.instrument_midi_control_ccs.get(self.get_current_track_instrument_short_name_helper(), []):
+        for control in self.instrument_osc_addresses.get(self.get_current_track_instrument_short_name_helper(), []):
             section_name = control.section
             if section_name not in section_names:
                 section_names.append(section_name)
         return section_names
 
-    def get_currently_selected_midi_cc_section_and_page(self):
+    def get_currently_selected_osc_address_section_and_page(self):
         return self.current_selected_section_and_page[self.get_current_track_instrument_short_name_helper()]
 
-    def get_midi_cc_controls_for_current_track_and_section(self):
-        section, _ = self.get_currently_selected_midi_cc_section_and_page()
-        return [control for control in self.instrument_midi_control_ccs.get(self.get_current_track_instrument_short_name_helper(), []) if control.section == section]
+    def get_osc_address_controls_for_current_track_and_section(self):
+        section, _ = self.get_currently_selected_osc_address_section_and_page()
+        return [control for control in self.instrument_osc_addresses.get(self.get_current_track_instrument_short_name_helper(), []) if control.section == section]
 
-    def get_midi_cc_controls_for_current_track_section_and_page(self):
-        all_section_controls = self.get_midi_cc_controls_for_current_track_and_section()
-        _, page = self.get_currently_selected_midi_cc_section_and_page()
+    def get_osc_address_controls_for_current_track_section_and_page(self):
+        all_section_controls = self.get_osc_address_controls_for_current_track_and_section()
+        _, page = self.get_currently_selected_osc_address_section_and_page()
         try:
             return all_section_controls[page * 8:(page+1) * 8]
         except IndexError:
             return []
 
     def update_current_section_page(self, new_section=None, new_page=None):
-        current_section, current_page = self.get_currently_selected_midi_cc_section_and_page()
+        current_section, current_page = self.get_currently_selected_osc_address_section_and_page()
         result = [current_section, current_page]
         if new_section is not None:
             result[0] = new_section
         if new_page is not None:
             result[1] = new_page
         self.current_selected_section_and_page[self.get_current_track_instrument_short_name_helper()] = result
-        self.active_midi_control_ccs = self.get_midi_cc_controls_for_current_track_section_and_page()
+        self.active_osc_addresses = self.get_osc_address_controls_for_current_track_section_and_page()
         self.app.buttons_need_update = True
 
-    def get_should_show_midi_cc_next_prev_pages_for_section(self):
-        all_section_controls = self.get_midi_cc_controls_for_current_track_and_section()
-        _, page = self.get_currently_selected_midi_cc_section_and_page()
+    def get_should_show_osc_address_next_prev_pages_for_section(self):
+        all_section_controls = self.get_osc_address_controls_for_current_track_and_section()
+        _, page = self.get_currently_selected_osc_address_section_and_page()
         show_prev = False
         if page > 0:
             show_prev = True
@@ -199,25 +203,25 @@ class MIDICCMode(PyshaMode):
         return show_prev, show_next
 
     def new_track_selected(self):
-        self.active_midi_control_ccs = self.get_midi_cc_controls_for_current_track_section_and_page()
+        self.active_osc_addresses = self.get_osc_address_controls_for_current_track_section_and_page()
 
     def activate(self):
         self.update_buttons()
 
     def deactivate(self):
-        for button_name in self.midi_cc_button_names + [push2_python.constants.BUTTON_PAGE_LEFT, push2_python.constants.BUTTON_PAGE_RIGHT]:
+        for button_name in self.osc_address_button_names + [push2_python.constants.BUTTON_PAGE_LEFT, push2_python.constants.BUTTON_PAGE_RIGHT]:
             self.push.buttons.set_button_color(button_name, definitions.BLACK)
 
     def update_buttons(self):
 
-        n_midi_cc_sections = len(self.get_current_track_midi_cc_sections())
-        for count, name in enumerate(self.midi_cc_button_names):
-            if count < n_midi_cc_sections:
+        n_osc_address_sections = len(self.get_current_track_osc_address_sections())
+        for count, name in enumerate(self.osc_address_button_names):
+            if count < n_osc_address_sections:
                 self.push.buttons.set_button_color(name, definitions.WHITE)
             else:
                 self.push.buttons.set_button_color(name, definitions.BLACK)
 
-        show_prev, show_next = self.get_should_show_midi_cc_next_prev_pages_for_section()
+        show_prev, show_next = self.get_should_show_osc_address_next_prev_pages_for_section()
         if show_prev:
             self.push.buttons.set_button_color(push2_python.constants.BUTTON_PAGE_LEFT, definitions.WHITE)
         else:
@@ -234,14 +238,14 @@ class MIDICCMode(PyshaMode):
             # "cover them"
 
             # Draw MIDI CCs section names
-            section_names = self.get_current_track_midi_cc_sections()[0:8]
+            section_names = self.get_current_track_osc_address_sections()[0:8]
             if section_names:
                 height = 20
                 for i, section_name in enumerate(section_names):
                     show_text(ctx, i, 0, section_name, background_color=definitions.RED)
                     
                     is_selected = False
-                    selected_section, _ = self.get_currently_selected_midi_cc_section_and_page()
+                    selected_section, _ = self.get_currently_selected_osc_address_section_and_page()
                     if selected_section == section_name:
                         is_selected = True
 
@@ -256,27 +260,27 @@ class MIDICCMode(PyshaMode):
                             font_color=font_color, background_color=background_color)
 
             # Draw MIDI CC controls
-            if self.active_midi_control_ccs:
-                for i in range(0, min(len(self.active_midi_control_ccs), 8)):
+            if self.active_osc_addresses:
+                for i in range(0, min(len(self.active_osc_addresses), 8)):
                     try:
-                        self.active_midi_control_ccs[i].draw(ctx, i)
+                        self.active_osc_addresses[i].draw(ctx, i)
                     except IndexError:
                         continue
  
     
     def on_button_pressed(self, button_name):
-        if  button_name in self.midi_cc_button_names:
-            current_track_sections = self.get_current_track_midi_cc_sections()
+        if  button_name in self.osc_address_button_names:
+            current_track_sections = self.get_current_track_osc_address_sections()
             n_sections = len(current_track_sections)
-            idx = self.midi_cc_button_names.index(button_name)
+            idx = self.osc_address_button_names.index(button_name)
             if idx < n_sections:
                 new_section = current_track_sections[idx]
                 self.update_current_section_page(new_section=new_section, new_page=0)
             return True
 
         elif button_name in [push2_python.constants.BUTTON_PAGE_LEFT, push2_python.constants.BUTTON_PAGE_RIGHT]:
-            show_prev, show_next = self.get_should_show_midi_cc_next_prev_pages_for_section()
-            _, current_page = self.get_currently_selected_midi_cc_section_and_page()
+            show_prev, show_next = self.get_should_show_osc_address_next_prev_pages_for_section()
+            _, current_page = self.get_currently_selected_osc_address_section_and_page()
             if button_name == push2_python.constants.BUTTON_PAGE_LEFT and show_prev:
                 self.update_current_section_page(new_page=current_page - 1)
             elif button_name == push2_python.constants.BUTTON_PAGE_RIGHT and show_next:
@@ -285,6 +289,7 @@ class MIDICCMode(PyshaMode):
 
 
     def on_encoder_rotated(self, encoder_name, increment):
+      
         try:
             encoder_num = [
                 push2_python.constants.ENCODER_TRACK1_ENCODER,
@@ -296,8 +301,8 @@ class MIDICCMode(PyshaMode):
                 push2_python.constants.ENCODER_TRACK7_ENCODER,
                 push2_python.constants.ENCODER_TRACK8_ENCODER,
             ].index(encoder_name)
-            if self.active_midi_control_ccs:
-                self.active_midi_control_ccs[encoder_num].update_value(increment)
+            if self.active_osc_addresses:
+                self.active_osc_addresses[encoder_num].update_value(increment)
         except ValueError: 
             pass  # Encoder not in list 
         return True  # Always return True because encoder should not be used in any other mode if this is first active
