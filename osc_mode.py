@@ -8,6 +8,7 @@ import os
 
 from definitions import PyshaMode, OFF_BTN_COLOR
 from display_utils import show_text
+import osc_utils
 
 
 class OSCControl(object):
@@ -97,7 +98,7 @@ class OSCControl(object):
         # Send cc message, subtract 1 to number because MIDO works from 0 - 127
         # msg = mido.Message('control_change', control=self.address, value=self.value)
         # msg=f'control_change {self.address} {self.value}'
-        self.send_osc_func(self.address, [self.value])
+        self.send_osc_func(self.address, osc_utils.scale_knob_value([self.value, self.min, self.max]))
 
 
 class OSCMode(PyshaMode):

@@ -4,6 +4,7 @@ import push2_python.constants
 import time
 
 
+from pythonosc.udp_client import SimpleUDPClient
 class MelodicMode(definitions.PyshaMode):
 
     xor_group = 'pads'
@@ -23,8 +24,16 @@ class MelodicMode(definitions.PyshaMode):
     last_time_at_params_edited = None
     modulation_wheel_mode = False
 
+    send_osc_func = None
     lumi_midi_out = None
     last_time_tried_initialize_lumi = 0
+
+
+    def __init__(self, app, settings=None, send_osc_func=None):
+        self.app = app
+        self.send_osc_func = send_osc_func
+        self.initialize(settings=settings)
+
 
     def init_lumi_midi_out(self):
         print('Configuring LUMI notes MIDI out...')
@@ -254,6 +263,9 @@ class MelodicMode(definitions.PyshaMode):
                 self.add_note_being_played(midi_note, 'push')
             msg = mido.Message('note_on', note=midi_note, velocity=velocity if not self.fixed_velocity_mode else 127)
             self.app.send_midi(msg)
+
+            self.send_osc_func('/mnote', [float(midi_note), float(velocity)])
+            
             self.update_pads()  # Directly calling update pads method because we want user to feel feedback as quick as possible
             return True
 
@@ -265,6 +277,9 @@ class MelodicMode(definitions.PyshaMode):
                 self.remove_note_being_played(midi_note, 'push')
             msg = mido.Message('note_off', note=midi_note, velocity=velocity)
             self.app.send_midi(msg)
+            print("midi sent")
+            self.send_osc_func('/mnote/rel', [float(midi_note), float(velocity)])
+            print("pad released")
             self.update_pads()  # Directly calling update pads method because we want user to feel feedback as quick as possible
             return True
 

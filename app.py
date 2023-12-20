@@ -91,15 +91,14 @@ class PyshaApp(object):
 
         self.init_modes(settings)
 
-        # asyncio.run(surge.init_surge())
         for x in range(0, 9):
-            self.osc_clients.append(SimpleUDPClient("127.0.0.1", surge.OSC_PORT_IN_MIN+x))
+            self.osc_clients.append(SimpleUDPClient("127.0.0.1", 1030+x))
         
     def init_modes(self, settings):
         self.main_controls_mode = MainControlsMode(self, settings=settings)
         self.active_modes.append(self.main_controls_mode)
 
-        self.melodic_mode = MelodicMode(self, settings=settings)
+        self.melodic_mode = MelodicMode(self, settings=settings, send_osc_func=self.send_osc)
         self.rhyhtmic_mode = RhythmicMode(self, settings=settings)
         self.slice_notes_mode = SliceNotesMode(self, settings=settings)
         self.set_melodic_mode()
@@ -363,9 +362,9 @@ class PyshaApp(object):
     def set_osc_in_port(self, port, wrap=False):
         # We use channel -1 for the "track setting" in which midi channel is taken from currently selected track
         self.osc_in_port = port
-        if self.osc_in_port < surge.OSC_PORT_IN_MIN:
+        if self.osc_in_port < 1030:
             self.osc_in_port = -1 if not wrap else 10
-        elif self.osc_in_port > surge.OSC_PORT_IN_MAX:
+        elif self.osc_in_port > 1038:
             self.osc_in_port = 15 if not wrap else -1
 
     def set_midi_in_device_by_index(self, device_idx):
@@ -402,12 +401,12 @@ class PyshaApp(object):
         if self.midi_out is not None:
             self.midi_out.send(msg)
 
-    def send_osc(self , address, params, use_original_msg_channel=False):
+    def send_osc(self , address, value, use_original_msg_channel=False):
         client = self.osc_clients[self.track_selection_mode.selected_track]
-        client.send_message(address, params)
-        print(self.track_selection_mode.selected_track, "Send OSC Message")
-    
-    
+        
+        client.send_message(address, value)
+        print(self.track_selection_mode.selected_track, "Send OSC Message on adress", address, value )
+        
     def send_midi_to_pyramid(self, msg):
         # When sending to Pyramid, don't replace the MIDI channel because msg is already prepared with pyramidi chanel
         self.send_midi(msg, use_original_msg_channel=True)

@@ -3,9 +3,22 @@
   "instrument_short_name": "MINITAUR",
   "illuminate_local_notes": false,
   "midi_channel": 2,
-  "osc_port" : 2,
-  "n_banks": 1,
+  "osc_port" : 1,
+  "n_banks": 2,
   "osc": [
+    {
+      "section": "OSC",
+      "controls": [
+        ["PITCH", "/param/a/osc/1/pitch", 0.0, 1.0],
+        ["SHAPE", "/param/a/osc/1/param1", 0.0, 1.0],
+        ["WIDTH 1", "/param/a/osc/1/param2", 0.0, 1.0],
+        ["WIDTH 2", "/param/a/osc/1/param3", 0.0, 1.0],
+        ["SUB MIX", "/param/a/osc/1/param4", 0.0 , 1.0],
+        ["SYNC", "/param/a/osc/1/param5", 0.0 , 1.0],
+        ["UN. DET", "/param/a/osc/1/param6", 0.0, 1.0],
+        ["UN. VOICES", "/param/a/osc/1/param7", 0.0, 12.0]
+      ]
+    },
     {
       "section": "VCA",
       "controls": [
