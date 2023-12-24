@@ -20,9 +20,9 @@ class OSCControl(object):
     address = "/default"
     min = 0.0
     max = 1.0
-    value = 150
+    value = 100
     vmin = 0
-    vmax = 300
+    vmax = 200
     get_color_func = None
     send_osc_func = None
     value_labels_map = {}
