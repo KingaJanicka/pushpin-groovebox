@@ -8,3 +8,8 @@ sudo apt install libfreetype-dev
 sudo apt-get install libasound2-dev
 sudo apt-get install libjack-dev
 
+sudo usermod -aG audio pi
+
+sudo apt install pulseaudio
+
+# make pusleaudio default in raspi-config
