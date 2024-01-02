@@ -8,7 +8,7 @@ DELAYED_ACTIONS_APPLY_TIME = 1.0  # Encoder changes won't be applied until this 
 LAYOUT_MELODIC = 'lmelodic'
 LAYOUT_RHYTHMIC = 'lrhythmic'
 LAYOUT_SLICES = 'lslices'
-
+LAYOUT_SEQUENCER = 'lseq'
 NOTIFICATION_TIME = 3
 
 BLACK_RGB = [0, 0, 0]
