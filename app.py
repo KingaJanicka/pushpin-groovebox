@@ -518,37 +518,38 @@ class PyshaApp(object):
             self.update_push2_buttons()
             self.buttons_need_update = False
 
-    def run_loop(self):
-        print('Pysha is runnnig...')
-        try:
-            while True:
-                before_draw_time = time.time()
+    async def run_loop(self):
+        print('Pysha is running...')
+        # try:
+        while True:
+            before_draw_time = time.time()
 
-                # Draw ui
-                self.update_push2_display()
+            # Draw ui
+            self.update_push2_display()
 
-                # Frame rate measurement
-                now = time.time()
-                self.current_frame_rate_measurement += 1
-                if time.time() - self.current_frame_rate_measurement_second > 1.0:
-                    self.actual_frame_rate = self.current_frame_rate_measurement
-                    self.current_frame_rate_measurement = 0
-                    self.current_frame_rate_measurement_second = now
-                    print('{0} fps'.format(self.actual_frame_rate))
+            # Frame rate measurement
+            now = time.time()
+            self.current_frame_rate_measurement += 1
+            if time.time() - self.current_frame_rate_measurement_second > 1.0:
+                self.actual_frame_rate = self.current_frame_rate_measurement
+                self.current_frame_rate_measurement = 0
+                self.current_frame_rate_measurement_second = now
+                # Uncomment to display FPS in terminal
+                # print('{0} fps'.format(self.actual_frame_rate)) 
 
-                # Check if any delayed actions need to be applied
-                self.check_for_delayed_actions()
+            # Check if any delayed actions need to be applied
+            self.check_for_delayed_actions()
 
-                after_draw_time = time.time()
+            after_draw_time = time.time()
 
-                # Calculate sleep time to aproximate the target frame rate
-                sleep_time = (1.0 / self.target_frame_rate) - (after_draw_time - before_draw_time)
-                if sleep_time > 0:
-                    time.sleep(sleep_time)
+            # Calculate sleep time to aproximate the target frame rate
+            sleep_time = (1.0 / self.target_frame_rate) - (after_draw_time - before_draw_time)
+            if sleep_time > 0:
+                time.sleep(sleep_time)
 
-        except KeyboardInterrupt:
-            print('Exiting Pysha...')
-            self.push.f_stop.set()
+        # except KeyboardInterrupt:
+        #     print('Exiting Pysha...')
+        #     self.push.f_stop.set()
 
     def on_midi_push_connection_established(self):
         # Do initial configuration of Push
@@ -687,11 +688,21 @@ def on_midi_connected(_):
        traceback.print_exc()
 
 
+async def main():
+    while True:
+        await app.run_loop()
+
 # Run app main loop
 if __name__ == "__main__":
-    app = PyshaApp()
-    if midi_connected_received_before_app:
-        # App received the "on_midi_connected" call before it was initialized. Do it now!
-        print('Missed MIDI initialization call, doing it now...')
-        app.on_midi_push_connection_established()
-    app.run_loop()
+    try:
+        app = PyshaApp()
+        if midi_connected_received_before_app:
+            # App received the "on_midi_connected" call before it was initialized. Do it now!
+            print('Missed MIDI initialization call, doing it now...')
+            app.on_midi_push_connection_established()
+        
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(asyncio.gather(main()))
+    except KeyboardInterrupt:
+            print('Exiting Pysha...')
+            app.push.f_stop.set()

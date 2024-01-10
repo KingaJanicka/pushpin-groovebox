@@ -24,7 +24,7 @@
             ["FIL ROUTE", "/param/a/mixer/osc1/route", 0.0 , 2.0],
             ["", "", 0.0 , 1.0],
             ["", "", 0.0, 1.0],
-            ["", "", 0.0, 12.0]
+            ["OSC FM", "/param/a/osc/fm_routing", 0.0, 1.0]
           ]
         },  
         {
