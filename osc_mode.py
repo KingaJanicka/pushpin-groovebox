@@ -175,7 +175,7 @@ class OSCMode(PyshaMode):
 
     def get_osc_address_controls_for_current_track_section_and_page(self):
         all_section_controls = self.get_osc_address_controls_for_current_track_and_section()
-        print(all_section_controls)
+        # print(all_section_controls)
         _, page = self.get_currently_selected_osc_address_section_and_page()
         try:
             return all_section_controls[page * 8:(page+1) * 8]

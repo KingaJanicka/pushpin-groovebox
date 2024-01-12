@@ -11,16 +11,16 @@ EMPTY_PATTERN =[]
 seq = Sequencer()
 
 class SequencerMode(MelodicMode):
-    # sequencer_pad_matrix = [
-    #     range(92, 100),
-    #     range(84, 92),
-    #     range(76, 84),
-    #     range(68, 76),
-    #     range(60, 68),
-    #     range(52, 60),
-    #     range(44, 52),
-    #     range(36, 44)
-    # ]
+    sequencer_pad_matrix = [
+        range(92, 100),
+        range(84, 92),
+        range(76, 84),
+        range(68, 76),
+        range(60, 68),
+        range(52, 60),
+        range(44, 52),
+        range(36, 44)
+    ]
 
     playhead = 0
 
@@ -45,28 +45,39 @@ class SequencerMode(MelodicMode):
         self.update_pads()
         self.playhead = (self.playhead + 1 ) % 64
 
-
+    
     def update_pads(self):
         try:
             button_colors = [definitions.OFF_BTN_COLOR] * len(seq.gates)
-
+        
             for i, value in enumerate(seq.gates):
                 if value:
                     button_colors[i] = definitions.NOTE_ON_COLOR
                 
-                corresponding_midi_note = i + 36
+                corresponding_midi_note = self.sequencer_pad_matrix[int(i/8)][int(i%8)]
                 
-                if self.playhead + 36 == corresponding_midi_note and seq.is_running:
+                if self.playhead == i and seq.is_running:
                     button_colors[i] = definitions.WHITE
+
+                # print("on midi note", self.is_midi_note_being_played(corresponding_midi_note) )
+                # otherwise if a pad is being pushed and it's not active currently, turn it on
+                # print(self.on_pad_pressed( 0 , [int(i/8), int(i%8)], 127))
+
+                #TODO: Bug here, is_midi_note_being_played always returns false as if pads aren't being pressed at all
+                #      Pads are being detected as pressed, but only when the sequencer is not running
+                #      prob async stuff
+                if self.is_midi_note_being_played(corresponding_midi_note) and self.sequencer_pad_state[i] is None:
+                    print("pad activated")
+                    button_colors[i] = definitions.NOTE_ON_COLOR
+                    self.sequencer_pad_state[i] = True
+                    seq.set_state('gates', i, True)
                 
-                # # otherwise if a pad is being pushed and it's not active currently, turn it on
-                # if self.is_midi_note_being_played(corresponding_midi_note) and self.sequencer_pad_state[corresponding_midi_note] is None:
-                #     button_colors[i] = definitions.NOTE_ON_COLOR
-                #     seq.set_state('gates', i, True)
-                
-                # # otherwise if a pad is being pushed and it is active, turn it off
-                # elif self.is_midi_note_being_played(corresponding_midi_note):
-                #     seq.set_state('gates', i, False)
+                # otherwise if a pad is being pushed and it is active, turn it off
+                elif self.is_midi_note_being_played(corresponding_midi_note):
+                    print("pad disactivated")
+                    button_colors[i] = definitions.OFF_BTN_COLOR
+                    seq.set_state('gates', i, False)
+                    self.sequencer_pad_state[i] = None
                 
                 # # otherwise if a pad is on, leave it on
                 # elif self.sequencer_pad_state[i] is not None:
