@@ -31,6 +31,9 @@ class SequencerMode(MelodicMode):
     def start_sequencer(self):
         seq.start(self.sequencer_on_tick)
 
+    def stop_sequencer(self):
+        seq.stop()
+
     def get_settings_to_save(self):
         return {}
 
@@ -63,9 +66,7 @@ class SequencerMode(MelodicMode):
                 # otherwise if a pad is being pushed and it's not active currently, turn it on
                 # print(self.on_pad_pressed( 0 , [int(i/8), int(i%8)], 127))
 
-                #TODO: Bug here, is_midi_note_being_played always returns false as if pads aren't being pressed at all
-                #      Pads are being detected as pressed, but only when the sequencer is not running
-                #      prob async stuff
+                #      TODO: bug, won't work if sequencer is playing
                 if self.is_midi_note_being_played(corresponding_midi_note) and self.sequencer_pad_state[i] is None:
                     print("pad activated")
                     button_colors[i] = definitions.NOTE_ON_COLOR
@@ -104,9 +105,10 @@ class SequencerMode(MelodicMode):
         if button_name == push2_constants.BUTTON_OCTAVE_UP or button_name == push2_constants.BUTTON_OCTAVE_DOWN:
             # Don't react to octave up/down buttons as these are not used in rhythm mode
             pass
+
         elif button_name == push2_constants.BUTTON_PLAY:
-            print('start')
             self.start_sequencer()
+
         elif button_name == push2_constants.BUTTON_STOP:
             print('stop')
         else:

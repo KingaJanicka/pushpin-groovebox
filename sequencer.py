@@ -1,5 +1,5 @@
 import asyncio
-
+import isobar as iso
 
 class Sequencer(object):
     number_of_steps = 64
@@ -55,12 +55,14 @@ class Sequencer(object):
         self.is_running = True
         asyncio.run(self.tick())
 
+
     def stop(self):
         self.is_running = False
 
     async def tick(self):
         if self.is_running:
-            await asyncio.sleep(0.25)
+            await asyncio.sleep(0.1)
             if self.tick_callback:
                 self.tick_callback(self.gates)
-            await self.tick()
+            # print("tick")
+            # await self.tick()
