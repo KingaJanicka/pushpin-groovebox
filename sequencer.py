@@ -26,6 +26,10 @@ class Sequencer(object):
         self.accent = [None] * self.number_of_steps
         self.swing = [None] * self.number_of_steps
         self.slide = [None] * self.number_of_steps
+        self.timeline = iso.Timeline(120, output_device=iso.DummyOutputDevice())
+        self.timeline.schedule({
+            "action": lambda: self.tick()
+        })
 
 
     def set_states(self, lane, values):
@@ -53,16 +57,18 @@ class Sequencer(object):
     def start(self, tick_callback):
         self.tick_callback = tick_callback
         self.is_running = True
-        asyncio.run(self.tick())
+        self.timeline.background()
+        # asyncio.run(self.tick())
 
 
     def stop(self):
         self.is_running = False
+        self.timeline.stop()
 
-    async def tick(self):
+    def tick(self):
         if self.is_running:
-            await asyncio.sleep(0.1)
+            # await asyncio.sleep(0.1)
             if self.tick_callback:
                 self.tick_callback(self.gates)
-            # print("tick")
+            print("tick")
             # await self.tick()

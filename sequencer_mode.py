@@ -23,7 +23,7 @@ class SequencerMode(MelodicMode):
     ]
 
     playhead = 0
-
+    seq_tick = 0
     def initialize(self, settings):
         super().initialize(settings)
         self.sequencer_pad_state = [None] * 64
