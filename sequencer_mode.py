@@ -110,6 +110,7 @@ class SequencerMode(MelodicMode):
             self.start_sequencer()
 
         elif button_name == push2_constants.BUTTON_STOP:
+            self.stop_sequencer()
             print('stop')
         else:
             # For the other buttons, refer to the base class
