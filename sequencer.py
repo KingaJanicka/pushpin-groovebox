@@ -27,8 +27,10 @@ class Sequencer(object):
         self.swing = [None] * self.number_of_steps
         self.slide = [None] * self.number_of_steps
         self.timeline = iso.Timeline(120, output_device=iso.DummyOutputDevice())
+        
         self.timeline.schedule({
-            "action": lambda: self.tick_callback(self.gates)
+            "action": lambda: self.tick_callback(self.gates),
+            "duration" : 0.25
         })
 
 
