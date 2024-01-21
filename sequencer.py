@@ -1,8 +1,9 @@
 import asyncio
 import isobar as iso
 
+default_number_of_steps = 64
+
 class Sequencer(object):
-    number_of_steps = 64
     pitch = 64
     is_running = False
     tick_callback = None
@@ -16,22 +17,23 @@ class Sequencer(object):
     swing = list() #int
     slide = list() #boolean
    
-    def __init__(self, clock):
-    
-        self.gates = [None] * self.number_of_steps
-        self.pitch1 = [self.pitch] * self.number_of_steps
-        self.pitch2 = [None] * self.number_of_steps
-        self.pitch3 = [None] * self.number_of_steps
-        self.trig_mute = [None] * self.number_of_steps
-        self.accent = [None] * self.number_of_steps
-        self.swing = [None] * self.number_of_steps
-        self.slide = [None] * self.number_of_steps
-        self.timeline = iso.Timeline(clock_source=clock, output_device=iso.DummyOutputDevice())
+    def __init__(self, instrument_name, timeline, tick_callback):
+        self.name = instrument_name
+        self.gates = [None] * default_number_of_steps
+        self.pitch1 = [self.pitch] * default_number_of_steps
+        self.pitch2 = [None] * default_number_of_steps
+        self.pitch3 = [None] * default_number_of_steps
+        self.trig_mute = [None] * default_number_of_steps
+        self.accent = [None] * default_number_of_steps
+        self.swing = [None] * default_number_of_steps
+        self.slide = [None] * default_number_of_steps
         
-        self.timeline.schedule({
-            "action": lambda: self.tick_callback(self.gates),
+        timeline.schedule({
+            "action": lambda: tick_callback(self.name, len(self.gates)),
             "duration" : 0.25
         })
+
+     
 
 
     def set_states(self, lane, values):
@@ -56,21 +58,3 @@ class Sequencer(object):
         elif lane == 'slide':
             self.slide[index] = value
         
-    def start(self, tick_callback):
-        self.tick_callback = tick_callback
-        self.is_running = True
-        self.timeline.background()
-        # asyncio.run(self.tick())
-
-
-    def stop(self):
-        self.is_running = False
-        self.timeline.stop()
-
-    def tick(self):
-        if self.is_running:
-            # await asyncio.sleep(0.1)
-            if self.tick_callback:
-                self.tick_callback(self.gates)
-            print("tick")
-            # await self.tick()
