@@ -265,8 +265,8 @@ class MelodicMode(definitions.PyshaMode):
             self.app.send_midi(msg)
 
             self.send_osc_func('/mnote', [float(midi_note), float(velocity)])
-            
             self.update_pads()  # Directly calling update pads method because we want user to feel feedback as quick as possible
+            print("pad pressed")
             return True
 
     def on_pad_released(self, pad_n, pad_ij, velocity):
@@ -279,8 +279,8 @@ class MelodicMode(definitions.PyshaMode):
             self.app.send_midi(msg)
             print("midi sent")
             self.send_osc_func('/mnote/rel', [float(midi_note), float(velocity)])
-            print("pad released")
             self.update_pads()  # Directly calling update pads method because we want user to feel feedback as quick as possible
+            print("pad released")
             return True
 
     def on_pad_aftertouch(self, pad_n, pad_ij, velocity):

@@ -163,6 +163,7 @@ class TrackSelectionMode(definitions.PyshaMode):
             self.app.osc_mode.new_track_selected()
             self.app.preset_selection_mode.new_track_selected()
             self.app.pyramid_track_triggering_mode.new_track_selected()
+            self.app.sequencer_mode.new_track_selected()
         except AttributeError:
             # Might fail if MIDICCMode/PresetSelectionMode/PyramidTrackTriggeringMode not initialized
             pass

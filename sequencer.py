@@ -8,7 +8,7 @@ class Sequencer(object):
     is_running = False
     tick_callback = None
 
-    gates = list() #boolean
+    gate = list() #boolean
     pitch1 = list() #int (midi note)
     pitch2 = list()
     pitch3 = list()
@@ -19,30 +19,48 @@ class Sequencer(object):
    
     def __init__(self, instrument_name, timeline, tick_callback):
         self.name = instrument_name
-        self.gates = [None] * default_number_of_steps
-        self.pitch1 = [self.pitch] * default_number_of_steps
-        self.pitch2 = [None] * default_number_of_steps
-        self.pitch3 = [None] * default_number_of_steps
-        self.trig_mute = [None] * default_number_of_steps
-        self.accent = [None] * default_number_of_steps
-        self.swing = [None] * default_number_of_steps
-        self.slide = [None] * default_number_of_steps
+        self.gate = [False] * default_number_of_steps
+        self.pitch1 = [False] * default_number_of_steps
+        self.pitch2 = [False] * default_number_of_steps
+        self.pitch3 = [False] * default_number_of_steps
+        self.trig_mute = [False] * default_number_of_steps
+        self.accent = [False] * default_number_of_steps
+        self.swing = [False] * default_number_of_steps
+        self.slide = [False] * default_number_of_steps
         
         timeline.schedule({
-            "action": lambda: tick_callback(self.name, len(self.gates)),
+            "action": lambda: tick_callback(self.name, len(self.gate)),
             "duration" : 0.25
         })
 
      
-
+    def get_track(self, lane):
+        if lane == 'gate':
+           return self.gate
+        elif lane == 'pitch1':
+            return self.pitch1
+        elif lane == 'pitch2':
+            return self.pitch2
+        elif lane == 'pitch3':
+            return self.pitch3
+        elif lane == 'trig_mute':
+            return self.trig_mute
+        elif lane == 'accent':
+            return self.accent
+        elif lane == 'swing':
+            return self.swing
+        elif lane == 'slide':
+            return self.slide
+           
 
     def set_states(self, lane, values):
         for index, value in enumerate(values): 
             self.set_state(lane, index, value) 
 
     def set_state(self, lane, index, value):
-        if lane == 'gates':
-            self.gates[index] = value
+        print(f"lane: {lane} index: {index} value: {value}")
+        if lane == 'gate':
+            self.gate[index] = value
         elif lane == 'pitch1':
             self.pitch1[index] = value
         elif lane == 'pitch2':
