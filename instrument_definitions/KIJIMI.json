@@ -4,6 +4,7 @@
     "illuminate_local_notes": false,
     "midi_channel": 4,
     "n_banks": 11,
+    "default_layout": "lseq",
     "bank_names": [
         "MJ",
         "1",

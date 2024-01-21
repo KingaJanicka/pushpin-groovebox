@@ -142,6 +142,8 @@ class TrackSelectionMode(definitions.PyshaMode):
             self.app.melodic_mode.remove_all_notes_being_played()
         elif self.app.is_mode_active(self.app.rhyhtmic_mode):
             self.app.rhyhtmic_mode.remove_all_notes_being_played()
+        elif self.app.is_mode_active(self.app.sequencer_mode):
+            self.app.sequencer_mode.update_pads()
 
     def send_select_track_to_pyramid(self, track_idx):
         # Follows pyramidi specification (Pyramid configured to receive on ch 16)

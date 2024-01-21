@@ -3,5 +3,5 @@
     "instrument_short_name": "OCTATRACK",
     "illuminate_local_notes": true,
     "n_banks": 1,
-    "default_layout": "lslices"
+    "default_layout": "lseq"
 }

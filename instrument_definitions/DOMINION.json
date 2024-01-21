@@ -5,6 +5,7 @@
     "midi_channel": 3,
     "osc_port" : 2,
     "n_banks": 2,
+    "default_layout": "lseq",
     "osc": [
         {
           "section": "OSC1",

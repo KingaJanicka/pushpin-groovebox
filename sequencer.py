@@ -16,7 +16,7 @@ class Sequencer(object):
     swing = list() #int
     slide = list() #boolean
    
-    def __init__(self):
+    def __init__(self, clock):
     
         self.gates = [None] * self.number_of_steps
         self.pitch1 = [self.pitch] * self.number_of_steps
@@ -26,7 +26,7 @@ class Sequencer(object):
         self.accent = [None] * self.number_of_steps
         self.swing = [None] * self.number_of_steps
         self.slide = [None] * self.number_of_steps
-        self.timeline = iso.Timeline(120, output_device=iso.DummyOutputDevice())
+        self.timeline = iso.Timeline(clock_source=clock, output_device=iso.DummyOutputDevice())
         
         self.timeline.schedule({
             "action": lambda: self.tick_callback(self.gates),

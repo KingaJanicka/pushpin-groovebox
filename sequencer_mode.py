@@ -2,13 +2,15 @@ import definitions
 import push2_constants
 from sequencer import Sequencer
 from melodic_mode import MelodicMode
+from isobar import MidiInputDevice
+
 
 import asyncio
 import os, sys
 
 EMPTY_PATTERN =[]
 
-seq = Sequencer()
+
 
 class SequencerMode(MelodicMode):
     sequencer_pad_matrix = [
@@ -24,15 +26,25 @@ class SequencerMode(MelodicMode):
 
     playhead = 0
     seq_tick = 0
+    seq_pad_state = {}
+    current_selected_section_and_page = {}
+    instrument_sequencers = {}
+    clock = MidiInputDevice(virtual=True)
+
+
     def initialize(self, settings):
         super().initialize(settings)
-        self.sequencer_pad_state = [None] * 64
+        for instrument_short_name in self.get_all_distinct_instrument_short_names_helper(): 
+            self.seq_pad_state[instrument_short_name] = [None] * 64
+            self.instrument_sequencers[instrument_short_name] = Sequencer(self.clock)
 
-    def start_sequencer(self):
-        seq.start(self.sequencer_on_tick)
 
-    def stop_sequencer(self):
-        seq.stop()
+    def start_clock(self):
+        self.clock
+        self.instrument_sequencers[self.get_current_track_instrument_short_name_helper()].start(self.sequencer_on_tick)
+
+    def stop_clock(self):
+        self.instrument_sequencers[self.get_current_track_instrument_short_name_helper()].stop()
 
     def get_settings_to_save(self):
         return {}
@@ -48,11 +60,18 @@ class SequencerMode(MelodicMode):
         self.update_pads()
         self.playhead = (self.playhead + 1 ) % 64
 
+    def get_all_distinct_instrument_short_names_helper(self):
+        return self.app.track_selection_mode.get_all_distinct_instrument_short_names()
+
+    def get_current_track_instrument_short_name_helper(self):
+        return self.app.track_selection_mode.get_current_track_instrument_short_name()
     
     def update_pads(self):
         try:
+            seq = self.instrument_sequencers[self.get_current_track_instrument_short_name_helper()]
             button_colors = [definitions.OFF_BTN_COLOR] * len(seq.gates)
-        
+            print("Current seq is", self.get_current_track_instrument_short_name_helper())
+            
             for i, value in enumerate(seq.gates):
                 if value:
                     button_colors[i] = definitions.NOTE_ON_COLOR
@@ -66,11 +85,10 @@ class SequencerMode(MelodicMode):
                 # otherwise if a pad is being pushed and it's not active currently, turn it on
                 # print(self.on_pad_pressed( 0 , [int(i/8), int(i%8)], 127))
 
-                #      TODO: bug, won't work if sequencer is playing
-                if self.is_midi_note_being_played(corresponding_midi_note) and self.sequencer_pad_state[i] is None:
+                if self.is_midi_note_being_played(corresponding_midi_note) and self.seq_pad_state[self.get_current_track_instrument_short_name_helper()][i] is None:
                     print("pad activated")
                     button_colors[i] = definitions.NOTE_ON_COLOR
-                    self.sequencer_pad_state[i] = True
+                    self.seq_pad_state[self.get_current_track_instrument_short_name_helper()][i] = True
                     seq.set_state('gates', i, True)
                 
                 # otherwise if a pad is being pushed and it is active, turn it off
@@ -78,10 +96,10 @@ class SequencerMode(MelodicMode):
                     print("pad disactivated")
                     button_colors[i] = definitions.OFF_BTN_COLOR
                     seq.set_state('gates', i, False)
-                    self.sequencer_pad_state[i] = None
+                    self.seq_pad_state[self.get_current_track_instrument_short_name_helper()][i] = None
                 
                 # # otherwise if a pad is on, leave it on
-                # elif self.sequencer_pad_state[i] is not None:
+                # elif self.seq_pad_state[self.get_current_track_instrument_short_name_helper()][i] is not None:
                 #     button_colors[i] = definitions.NOTE_ON_COLOR
 
 

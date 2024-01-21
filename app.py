@@ -102,13 +102,13 @@ class PyshaApp(object):
         self.melodic_mode = MelodicMode(self, settings=settings, send_osc_func=self.send_osc)
         self.rhyhtmic_mode = RhythmicMode(self, settings=settings)
         self.slice_notes_mode = SliceNotesMode(self, settings=settings)
-        self.sequencer_mode = SequencerMode(self, settings=settings, send_osc_func=self.send_osc)
         self.set_melodic_mode()
 
         self.track_selection_mode = TrackSelectionMode(self, settings=settings)
         self.pyramid_track_triggering_mode = PyramidTrackTriggeringMode(self, settings=settings)
         self.preset_selection_mode = PresetSelectionMode(self, settings=settings)
         self.midi_cc_mode = MIDICCMode(self, settings=settings)  # Must be initialized after track selection mode so it gets info about loaded tracks
+        self.sequencer_mode = SequencerMode(self, settings=settings, send_osc_func=self.send_osc)
         self.osc_mode = OSCMode(self, settings=settings)  # Must be initialized after track selection mode so it gets info about loaded tracks
         # self.active_modes += [self.track_selection_mode, self.midi_cc_mode]
         self.active_modes += [self.track_selection_mode, self.osc_mode]
