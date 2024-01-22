@@ -1,8 +1,8 @@
 {
     "instrument_name": "Send B",
-    "instrument_short_name": "Send B",
+    "instrument_short_name": "SEND B",
     "illuminate_local_notes": false,
     "midi_channel": 8,
     "default_layout": "lseq",
-    "n_banks": 8
+    "n_banks": 1
 }
