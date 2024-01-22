@@ -1,8 +1,0 @@
-{
-    "instrument_name": "Surge",
-    "instrument_short_name": "SURGE",
-    "illuminate_local_notes": false,
-    "midi_channel": 6,
-    "default_layout": "lseq",
-    "n_banks": 1
-}
