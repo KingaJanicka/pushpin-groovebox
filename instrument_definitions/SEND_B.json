@@ -1,8 +1,9 @@
 {
     "instrument_name": "Send B",
     "instrument_short_name": "SEND B",
-    "illuminate_local_notes": false,
+    "illuminate_local_notes": true,
     "midi_channel": 8,
-    "default_layout": "lseq",
-    "n_banks": 1
+    "osc_port" : 7,
+    "n_banks": 1,
+    "default_layout": "lseq"
 }

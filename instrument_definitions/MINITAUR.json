@@ -1,7 +1,7 @@
 {
   "instrument_name": "Minitaur",
   "instrument_short_name": "MINITAUR",
-  "illuminate_local_notes": false,
+  "illuminate_local_notes": true,
   "midi_channel": 2,
   "osc_port" : 1,
   "n_banks": 2,

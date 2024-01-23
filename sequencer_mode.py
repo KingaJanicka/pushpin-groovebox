@@ -96,19 +96,19 @@ class SequencerMode(MelodicMode):
                 # print(self.on_pad_pressed( 0 , [int(i/8), int(i%8)], 127))
                 
                 if self.is_midi_note_being_played(corresponding_midi_note) and seq_pad_state[i] is False:
-                    print("pad activated")
+                    # print("pad activated")
                     button_colors[i] = TRACK_COLORS[self.selected_track]
                     seq.set_state(self.selected_track, i, True)
 
                 # otherwise if a pad is being pushed and it is active, turn it off
                 elif self.is_midi_note_being_played(corresponding_midi_note) and seq_pad_state[i] is True:
-                    print("pad disactivated")
+                    # print("pad disactivated")
                     button_colors[i] = definitions.OFF_BTN_COLOR
                     seq.set_state(self.selected_track, i, False)
            
-                if self.is_midi_note_being_played(corresponding_midi_note):
-                    print("MIDI NOTE PLAYED")
-                    print(seq_pad_state[i])
+                # if self.is_midi_note_being_played(corresponding_midi_note):
+                    # print("MIDI NOTE PLAYED")
+                    # print(seq_pad_state[i])
                 # # otherwise if a pad is on, leave it on
                 # elif self.seq_pad_state[self.get_current_track_instrument_short_name_helper()][i] is not None:
                 #     button_colors[i] = definitions.NOTE_ON_COLOR

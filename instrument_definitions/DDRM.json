@@ -1,8 +1,9 @@
 {
   "instrument_name": "Deckard's Dream",
   "instrument_short_name": "DDRM",
-  "illuminate_local_notes": false,
+  "illuminate_local_notes": true,
   "midi_channel": 1,
+  "osc_port" : 0,
   "n_banks": 1,
   "bank_names": ["1", "2", "3", "3", "4", "5", "6", "7", "8", "9"],
   "default_layout": "lseq",

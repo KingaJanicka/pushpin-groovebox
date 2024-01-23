@@ -1,7 +1,7 @@
 {
     "instrument_name": "Synth 2",
     "instrument_short_name": "SYNTH 2",
-    "illuminate_local_notes": false,
+    "illuminate_local_notes": true,
     "midi_channel": 3,
     "osc_port" : 2,
     "n_banks": 2,

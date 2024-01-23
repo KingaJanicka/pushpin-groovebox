@@ -1,8 +1,9 @@
 {
     "instrument_name": "Kijimi",
     "instrument_short_name": "KIJIMI",
-    "illuminate_local_notes": false,
+    "illuminate_local_notes": true,
     "midi_channel": 4,
+    "osc_port" : 3,
     "n_banks": 11,
     "default_layout": "lseq",
     "bank_names": [

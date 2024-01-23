@@ -409,10 +409,10 @@ class PyshaApp(object):
             self.midi_out.send(msg)
 
     def send_osc(self , address, value, use_original_msg_channel=False):
+        #print("OSC", address, value)
         client = self.osc_clients[self.track_selection_mode.selected_track]
-        
         client.send_message(address, value)
-        print(self.track_selection_mode.selected_track, "Send OSC Message on adress", address, value )
+        #print(self.track_selection_mode.selected_track, "Send OSC Message on adress", address, value )
         
     def send_midi_to_pyramid(self, msg):
         # When sending to Pyramid, don't replace the MIDI channel because msg is already prepared with pyramidi chanel

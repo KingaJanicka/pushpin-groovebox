@@ -78,7 +78,7 @@ class TrackSelectionMode(definitions.PyshaMode):
                     'color': color,
                     'n_banks': instrument_data.get('n_banks', 1),
                     'bank_names': instrument_data.get('bank_names', None),
-                    'default_layout': instrument_data.get('default_layout', definitions.LAYOUT_MELODIC),
+                    'default_layout': instrument_data.get('default_layout', definitions.LAYOUT_SEQUENCER),
                     'illuminate_local_notes': instrument_data.get('illuminate_local_notes', True), 
                 })
             print('Created {0} tracks!'.format(len(self.tracks_info)))
@@ -91,7 +91,7 @@ class TrackSelectionMode(definitions.PyshaMode):
                         'instrument_short_name': '-',
                         'midi_channel': -1,
                         'color': definitions.ORANGE,
-                        'default_layout': definitions.LAYOUT_MELODIC,
+                        'default_layout': definitions.LAYOUT_SEQUENCER,
                         'illuminate_local_notes': True,
                     })
 
@@ -165,6 +165,7 @@ class TrackSelectionMode(definitions.PyshaMode):
             self.app.pyramid_track_triggering_mode.new_track_selected()
             self.app.sequencer_mode.new_track_selected()
         except AttributeError:
+            print("ATTRIBUTE ERROR")
             # Might fail if MIDICCMode/PresetSelectionMode/PyramidTrackTriggeringMode not initialized
             pass
         

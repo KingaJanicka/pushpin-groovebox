@@ -252,7 +252,10 @@ class MelodicMode(definitions.PyshaMode):
 
     def on_pad_pressed(self, pad_n, pad_ij, velocity):
         midi_note = self.pad_ij_to_midi_note(pad_ij)
+        # print("pad pressed", pad_ij)
+        # print("Midi note", self.pad_ij_to_midi_note(pad_ij))
         if midi_note is not None:
+            # print("Midi_note is not none")
             self.latest_velocity_value = (time.time(), velocity)
             if self.app.track_selection_mode.get_current_track_info().get('illuminate_local_notes', True) or self.app.notes_midi_in is None:
                 # illuminate_local_notes is used to decide wether a pad/key should be lighted when pressing it. This will probably be the default behaviour,
@@ -261,12 +264,15 @@ class MelodicMode(definitions.PyshaMode):
                 # light the currently presed pad). However, if "notes_midi_in" input is not configured, we do want to liht the pad as we won't have
                 # notes info comming from any other source
                 self.add_note_being_played(midi_note, 'push')
+                # print("Illuminate local note check whatever")
+            print("before MIDO")
             msg = mido.Message('note_on', note=midi_note, velocity=velocity if not self.fixed_velocity_mode else 127)
             self.app.send_midi(msg)
-
-            self.send_osc_func('/mnote', [float(midi_note), float(velocity)])
+            print("after MIDO")
+            #TODO: this send osc hangs at sending to client for some reason, for now commented out but needs to be fixed later
+            #self.send_osc_func('/mnote', [float(midi_note), float(velocity)])
             self.update_pads()  # Directly calling update pads method because we want user to feel feedback as quick as possible
-            print("pad pressed")
+            print("after update pads")
             return True
 
     def on_pad_released(self, pad_n, pad_ij, velocity):
@@ -277,8 +283,9 @@ class MelodicMode(definitions.PyshaMode):
                 self.remove_note_being_played(midi_note, 'push')
             msg = mido.Message('note_off', note=midi_note, velocity=velocity)
             self.app.send_midi(msg)
-            print("midi sent")
-            self.send_osc_func('/mnote/rel', [float(midi_note), float(velocity)])
+            print("midi sent", pad_ij)
+            #TODO: This send_osc_func makes so the sequencer pads don't update correctly
+            # self.send_osc_func('/mnote/rel', [float(midi_note), float(velocity)])
             self.update_pads()  # Directly calling update pads method because we want user to feel feedback as quick as possible
             print("pad released")
             return True

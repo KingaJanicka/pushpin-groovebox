@@ -1,8 +1,9 @@
 {
     "instrument_name": "Source",
     "instrument_short_name": "SOURCE",
-    "illuminate_local_notes": false,
+    "illuminate_local_notes": true,
     "midi_channel": 6,
+    "osc_port" : 5,
     "default_layout": "lseq",
     "n_banks": 1
 }
