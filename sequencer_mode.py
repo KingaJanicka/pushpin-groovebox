@@ -38,7 +38,7 @@ class SequencerMode(MelodicMode):
         super().initialize(settings)
         for instrument_short_name in self.get_all_distinct_instrument_short_names_helper():
             self.instrument_sequencers[instrument_short_name] = Sequencer(
-                instrument_short_name, self.timeline, self.sequencer_on_tick)
+                instrument_short_name, self.timeline, self.sequencer_on_tick, self.playhead, self.send_osc_func)
 
     def start_timeline(self):
         self.timeline.background()
@@ -57,7 +57,7 @@ class SequencerMode(MelodicMode):
         pass
 
     def sequencer_on_tick(self, instrument_name, length):
-
+    
         self.update_pads()
         if self.get_current_track_instrument_short_name_helper() == instrument_name:
             self.playhead = (self.playhead + 1) % length
