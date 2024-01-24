@@ -5,11 +5,15 @@ from pythonosc.udp_client import SimpleUDPClient
 
 default_number_of_steps = 64
 
+TRACK_NAMES = ["gate", "pitch1", "pitch2", "pitch3",
+               "trig_mute", "accent", "swing", "slide"]
+
 class Sequencer(object):
     pitch = 64
     is_running = False
     tick_callback = None
     send_osc_func = None
+    osc_index = None
     playhead = 0
     gate = list() #boolean
     pitch1 = list() #int (midi note)
@@ -20,7 +24,7 @@ class Sequencer(object):
     swing = list() #int
     slide = list() #boolean
     timeline = iso.timeline
-    def __init__(self, instrument_name, timeline, tick_callback, playhead, send_osc_func):
+    def __init__(self, instrument_name, timeline, tick_callback, playhead, send_osc_func, osc_index):
         self.name = instrument_name
         self.gate = [False] * default_number_of_steps
         self.pitch1 = [False] * default_number_of_steps
@@ -32,6 +36,7 @@ class Sequencer(object):
         self.slide = [False] * default_number_of_steps
         self.playhead = playhead
         self.send_osc_func = send_osc_func
+        self.osc_index = osc_index
         self.timeline = timeline.schedule({
             "action": lambda: (tick_callback(self.name, len(self.gate)), self.seq()),
             "duration" : 0.25
@@ -39,12 +44,12 @@ class Sequencer(object):
 
     def seq(self):
         playhead = int((iso.PCurrentTime.get_beats(self) * 4) % 64)
-       
+        print(self.osc_index, "osc port")
         if self.gate[playhead] is True:
-            self.send_osc_func('/mnote', [float(64), float(127)])
+            self.send_osc_func('/mnote', [float(40), float(127)], self.osc_index)
         
         if self.gate[playhead] is False:
-            self.send_osc_func('/mnote', [float(64), float(0)])
+            self.send_osc_func('/mnote', [float(40), float(0)], self.osc_index)
     
 
     def get_track(self, lane):

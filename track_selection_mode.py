@@ -75,6 +75,7 @@ class TrackSelectionMode(definitions.PyshaMode):
                     'instrument_name': instrument_data.get('instrument_name', '-'),
                     'instrument_short_name': instrument_short_name,
                     'midi_channel': instrument_data.get('midi_channel', -1),
+                    'osc_port': instrument_data.get('osc_port', 0),
                     'color': color,
                     'n_banks': instrument_data.get('n_banks', 1),
                     'bank_names': instrument_data.get('bank_names', None),
@@ -112,6 +113,9 @@ class TrackSelectionMode(definitions.PyshaMode):
 
     def get_current_track_info(self):
         return self.tracks_info[self.selected_track]
+
+    def get_current_track_osc_port(self):
+        return self.get_current_track_info()['osc_port']
 
     def get_current_track_instrument_short_name(self):
         return self.get_current_track_info()['instrument_short_name']
