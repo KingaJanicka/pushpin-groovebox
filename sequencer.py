@@ -43,10 +43,13 @@ class Sequencer(object):
         })
 
     def seq(self):
-        playhead = int((iso.PCurrentTime.get_beats(self) * 4) % 64)
-        print(self.osc_index, "osc port")
+        playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01) % 64)
+        
+        print(playhead, "seq playhead from beat")
         if self.gate[playhead] is True:
+            self.send_osc_func('/mnote', [float(40), float(0)], self.osc_index)
             self.send_osc_func('/mnote', [float(40), float(127)], self.osc_index)
+            print("Gate fired")
         
         if self.gate[playhead] is False:
             self.send_osc_func('/mnote', [float(40), float(0)], self.osc_index)
