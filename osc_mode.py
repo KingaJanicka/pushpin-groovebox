@@ -281,18 +281,21 @@ class OSCMode(PyshaMode):
  
     
     def on_button_pressed(self, button_name):
+        selected_section, _ = self.get_currently_selected_osc_address_section_and_page()
+        show_prev, show_next = self.get_should_show_osc_address_next_prev_pages_for_section()
+        _, current_page = self.get_currently_selected_osc_address_section_and_page()
+    
         if  button_name in self.osc_address_button_names:
             current_track_sections = self.get_current_track_osc_address_sections()
             n_sections = len(current_track_sections)
             idx = self.osc_address_button_names.index(button_name)
             if idx < n_sections:
                 new_section = current_track_sections[idx]
-                self.update_current_section_page(new_section=new_section, new_page=0)
+                new_page = 0 if new_section != selected_section else current_page -1 if show_prev else current_page +1 if show_next else 0
+                self.update_current_section_page(new_section=new_section, new_page=new_page)
             return True
 
         elif button_name in [push2_python.constants.BUTTON_PAGE_LEFT, push2_python.constants.BUTTON_PAGE_RIGHT]:
-            show_prev, show_next = self.get_should_show_osc_address_next_prev_pages_for_section()
-            _, current_page = self.get_currently_selected_osc_address_section_and_page()
             if button_name == push2_python.constants.BUTTON_PAGE_LEFT and show_prev:
                 self.update_current_section_page(new_page=current_page - 1)
             elif button_name == push2_python.constants.BUTTON_PAGE_RIGHT and show_next:

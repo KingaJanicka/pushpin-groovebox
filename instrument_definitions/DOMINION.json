@@ -11,7 +11,7 @@
         {
           "section": "OSC1",
           "controls": [
-            ["PITCH", [["/param/a/osc/1/pitch", 0.0, 1.0], []]],
+            ["PITCH", "/param/a/osc/1/pitch", 0.0, 1.0],
             ["SHAPE", "/param/a/osc/1/param1", 0.0, 1.0],
             ["WIDTH 1", "/param/a/osc/1/param2", 0.0, 1.0],
             ["WIDTH 2", "/param/a/osc/1/param3", 0.0, 1.0],
