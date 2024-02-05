@@ -3,7 +3,8 @@
     "instrument_short_name": "SOURCE",
     "illuminate_local_notes": true,
     "midi_channel": 6,
-    "osc_port" : 5,
+    "osc_in_port" : 1035,
+    "osc_out_port" : 1045,
     "default_layout": "lseq",
     "n_banks": 1
 }

@@ -3,7 +3,8 @@
     "instrument_short_name": "SEND A",
     "illuminate_local_notes": true,
     "midi_channel": 7,
-    "osc_port" : 6,
+    "osc_in_port" : 1036,
+    "osc_out_port" : 1046,
     "default_layout": "lseq",
     "n_banks": 1
 }

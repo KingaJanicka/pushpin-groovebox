@@ -1,2 +1,2 @@
 def scale_knob_value(params):
-    return float(params[0])*(float(params[2]) - float(params[1])) / 200.0
+    return float(params[0])*(float(params[2]) - float(params[1])) / 127

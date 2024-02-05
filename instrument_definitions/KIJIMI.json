@@ -3,7 +3,8 @@
     "instrument_short_name": "KIJIMI",
     "illuminate_local_notes": true,
     "midi_channel": 4,
-    "osc_port" : 3,
+    "osc_in_port" : 1033,
+    "osc_out_port" : 1043,
     "n_banks": 11,
     "default_layout": "lseq",
     "bank_names": [

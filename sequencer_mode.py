@@ -36,12 +36,10 @@ class SequencerMode(MelodicMode):
 
     def initialize(self, settings):
         super().initialize(settings)
-        osc_index = 0
         for instrument_short_name in self.get_all_distinct_instrument_short_names_helper():
-         
             self.instrument_sequencers[instrument_short_name] = Sequencer(
-                instrument_short_name, self.timeline, self.sequencer_on_tick, self.playhead, self.send_osc_func, osc_index)
-            osc_index += 1
+                instrument_short_name, self.timeline, self.sequencer_on_tick, self.playhead, self.send_osc_func)
+            
             
 
     def start_timeline(self):
@@ -62,6 +60,7 @@ class SequencerMode(MelodicMode):
 
     def sequencer_on_tick(self, instrument_name, length):
         # print(self.get_current_track_osc_port())
+        
         self.update_pads()
         if self.get_current_track_instrument_short_name_helper() == instrument_name:
             self.playhead = (self.playhead + 1) % length
@@ -83,6 +82,7 @@ class SequencerMode(MelodicMode):
 
         self.selected_track = TRACK_NAMES[track_index]
         print(self.selected_track)
+        # print(self.app.osc_mode.get_current_track_osc_address_sections())
 
     def update_pads(self):
         try:
@@ -98,7 +98,6 @@ class SequencerMode(MelodicMode):
 
                 if self.playhead == i and self.timeline.running:
                     button_colors[i] = definitions.WHITE
-
                 # print("on midi note", self.is_midi_note_being_played(corresponding_midi_note) )
                 # otherwise if a pad is being pushed and it's not active currently, turn it on
                 # print(self.on_pad_pressed( 0 , [int(i/8), int(i%8)], 127))

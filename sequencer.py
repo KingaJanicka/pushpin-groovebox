@@ -13,7 +13,6 @@ class Sequencer(object):
     is_running = False
     tick_callback = None
     send_osc_func = None
-    osc_index = None
     playhead = 0
     gate = list() #boolean
     pitch1 = list() #int (midi note)
@@ -24,7 +23,7 @@ class Sequencer(object):
     swing = list() #int
     slide = list() #boolean
     timeline = iso.timeline
-    def __init__(self, instrument_name, timeline, tick_callback, playhead, send_osc_func, osc_index):
+    def __init__(self, instrument_name, timeline, tick_callback, playhead, send_osc_func):
         self.name = instrument_name
         self.gate = [False] * default_number_of_steps
         self.pitch1 = [False] * default_number_of_steps
@@ -36,23 +35,22 @@ class Sequencer(object):
         self.slide = [False] * default_number_of_steps
         self.playhead = playhead
         self.send_osc_func = send_osc_func
-        self.osc_index = osc_index
         self.timeline = timeline.schedule({
             "action": lambda: (tick_callback(self.name, len(self.gate)), self.seq()),
             "duration" : 0.25
         })
 
     def seq(self):
+        #This should be syncing well but for some reason it does not
         playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01) % 64)
-        
-        print(playhead, "seq playhead from beat")
         if self.gate[playhead] is True:
-            self.send_osc_func('/mnote', [float(40), float(0)], self.osc_index)
-            self.send_osc_func('/mnote', [float(40), float(127)], self.osc_index)
-            print("Gate fired")
+            print(self.name, "NAME")
+            print("sent note seq", self.name)
+            self.send_osc_func('/mnote', [float(25), float(0)], self.name)
+            self.send_osc_func('/mnote', [float(25), float(127)], self.name)
         
         if self.gate[playhead] is False:
-            self.send_osc_func('/mnote', [float(40), float(0)], self.osc_index)
+            self.send_osc_func('/mnote', [float(25), float(0)], self.name)
     
 
     def get_track(self, lane):

@@ -102,7 +102,7 @@ class OSCControl(object):
        
 
 
-class OSCMode(PyshaMode):
+class ClipMenuMode(PyshaMode):
 
     osc_address_button_names = [
         push2_python.constants.BUTTON_UPPER_ROW_1,

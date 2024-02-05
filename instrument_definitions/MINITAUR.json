@@ -3,7 +3,8 @@
   "instrument_short_name": "MINITAUR",
   "illuminate_local_notes": true,
   "midi_channel": 2,
-  "osc_port" : 1,
+  "osc_in_port" : 1031,
+  "osc_out_port" : 1041,
   "n_banks": 2,
   "default_layout": "lseq",
   "osc": [

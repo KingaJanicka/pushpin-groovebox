@@ -26,8 +26,6 @@ from ddrm_tone_selector_mode import DDRMToneSelectorMode
 
 from display_utils import show_notification
 
-from pythonosc.udp_client import SimpleUDPClient
-import surge
 import asyncio
 
 class PyshaApp(object):
@@ -71,7 +69,8 @@ class PyshaApp(object):
     last_cp_value_recevied_time = 0
     
     # Surge-XT-CLI settings and config
-    osc_clients = []
+    osc_clients = {}
+
     # client = SimpleUDPClient("127.0.0.1", 1032)
 
     def __init__(self):
@@ -91,14 +90,11 @@ class PyshaApp(object):
         self.init_push()
 
         self.init_modes(settings)
-
-        for x in range(0, 9):
-            self.osc_clients.append(SimpleUDPClient("127.0.0.1", 1030+x))
         
     def init_modes(self, settings):
         self.main_controls_mode = MainControlsMode(self, settings=settings)
         self.active_modes.append(self.main_controls_mode)
-
+ 
         self.melodic_mode = MelodicMode(self, settings=settings, send_osc_func=self.send_osc)
         self.rhyhtmic_mode = RhythmicMode(self, settings=settings)
         self.slice_notes_mode = SliceNotesMode(self, settings=settings)
@@ -108,8 +104,8 @@ class PyshaApp(object):
         self.pyramid_track_triggering_mode = PyramidTrackTriggeringMode(self, settings=settings)
         self.preset_selection_mode = PresetSelectionMode(self, settings=settings)
         self.midi_cc_mode = MIDICCMode(self, settings=settings)  # Must be initialized after track selection mode so it gets info about loaded tracks
-        self.sequencer_mode = SequencerMode(self, settings=settings, send_osc_func=self.send_osc)
         self.osc_mode = OSCMode(self, settings=settings)  # Must be initialized after track selection mode so it gets info about loaded tracks
+        self.sequencer_mode = SequencerMode(self, settings=settings, send_osc_func=self.send_osc)
         # self.active_modes += [self.track_selection_mode, self.midi_cc_mode]
         self.active_modes += [self.track_selection_mode, self.osc_mode]
         self.track_selection_mode.select_track(self.track_selection_mode.selected_track)
@@ -408,11 +404,18 @@ class PyshaApp(object):
         if self.midi_out is not None:
             self.midi_out.send(msg)
 
-    def send_osc(self , address, value, osc_index, use_original_msg_channel=False):
-        #print("OSC", address, value)
-        client = self.osc_clients[osc_index]
-        client.send_message(address, value)
-        #print(self.track_selection_mode.selected_track, "Send OSC Message on adress", address, value )
+    def send_osc(self , address, value, instrument_short_name=None):
+        print(instrument_short_name, self.track_selection_mode.get_current_track_instrument_short_name(), "SEND OSC")
+        if instrument_short_name is not None:
+            #This is for the sequencer
+            self.osc_clients[instrument_short_name].send_message(address, value)
+        else :
+            #This is for wiggling knobs
+            self.osc_clients[self.track_selection_mode.get_current_track_instrument_short_name()].send_message(address, value)
+            # print("adress", address)
+
+        #client.send_message(address, value)
+        # print(self.track_selection_mode.selected_track, "Send OSC Message on adress", address, value )
         
     def send_midi_to_pyramid(self, msg):
         # When sending to Pyramid, don't replace the MIDI channel because msg is already prepared with pyramidi chanel
