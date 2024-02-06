@@ -12,7 +12,7 @@ from display_utils import show_text
 import osc_utils
 
 
-class OSCControl(object):
+class MenuControl(object):
 
     color = definitions.GRAY_LIGHT
     color_rgb = None
@@ -140,7 +140,7 @@ class ClipMenuMode(PyshaMode):
                     section_name = section['section']
                     
                     for name, address, min, max in section['controls']:
-                        control = OSCControl(address, name, min, max, section_name, self.get_current_track_color_helper, self.app.send_osc)
+                        control = MenuControl(address, name, min, max, section_name, self.get_current_track_color_helper, self.app.send_osc)
                         if section.get('control_value_label_maps', {}).get(name, False):
                             control.value_labels_map = section['control_value_label_maps'][name]
                         self.instrument_osc_addresses[instrument_short_name].append(control)
@@ -151,7 +151,7 @@ class ClipMenuMode(PyshaMode):
                 for i in range(0, 128):
                     section_s = (i // 16) * 16
                     section_e = section_s + 15
-                    control = OSCControl(i, 'CC {0}'.format(i), 0.0, 1.0, '{0} to {1}'.format(section_s, section_e), self.get_current_track_color_helper, self.app.send_osc)
+                    control = MenuControl(i, 'CC {0}'.format(i), 0.0, 1.0, '{0} to {1}'.format(section_s, section_e), self.get_current_track_color_helper, self.app.send_osc)
                     self.instrument_osc_addresses[instrument_short_name].append(control)
                 print('Loaded default OSC address mappings for instrument {0}'.format(instrument_short_name))
       

@@ -8,7 +8,7 @@ MELODIC_RHYTHMIC_TOGGLE_BUTTON = push2_python.constants.BUTTON_NOTE
 PYRAMID_TRACK_TRIGGERING_BUTTON = push2_python.constants.BUTTON_ADD_TRACK
 PRESET_SELECTION_MODE_BUTTON = push2_python.constants.BUTTON_ADD_DEVICE
 DDRM_TONE_SELECTION_MODE_BUTTON = push2_python.constants.BUTTON_DEVICE
-
+CLIP_BUTTON = push2_python.constants.BUTTON_CLIP
 
 class MainControlsMode(definitions.PyshaMode):
 
@@ -107,6 +107,11 @@ class MainControlsMode(definitions.PyshaMode):
             self.app.buttons_need_update = True
             return True
         elif button_name == DDRM_TONE_SELECTION_MODE_BUTTON:
+            if self.app.ddrm_tone_selector_mode.should_be_enabled():
+                self.app.toggle_ddrm_tone_selector_mode()
+                self.app.buttons_need_update = True
+            return True
+        elif button_name == CLIP_BUTTON:
             if self.app.ddrm_tone_selector_mode.should_be_enabled():
                 self.app.toggle_ddrm_tone_selector_mode()
                 self.app.buttons_need_update = True
