@@ -1,0 +1,143 @@
+{
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "$ref": "#/definitions/Device",
+    "definitions": {
+        "Device": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "device_name": {
+                    "type": "string"
+                },
+                "device_slots": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer",
+                        "minItems": 1,
+                        "maxItems": 8
+                    }
+                },
+                "init": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Parameter"
+                    }
+                },
+                "osc": {
+                    "$ref": "#/definitions/Osc"
+                }
+            },
+            "required": [
+                "device_name",
+                "device_slots",
+                "init",
+                "osc"
+            ],
+            "title": "Device"
+        },
+        "Parameter": {
+            "type": "array",
+            "title": "Parameter",
+            "minItems": 2,
+            "maxItems": 4,
+            "prefixItems": [
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "number"
+                },
+                {
+                    "type": "number"
+                }
+            ]
+        },
+        "Osc": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "section": {
+                    "type": "string"
+                },
+                "controls": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/OscControl"
+                    }
+                }
+            },
+            "required": [
+                "controls",
+                "section"
+            ],
+            "title": "Osc"
+        },
+        "ControlGroup": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "pages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Page"
+                    }
+                }
+            },
+            "required": [
+                "name",
+                "pages"
+            ],
+            "title": "ControlGroup"
+        },
+        "Page": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "controls": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Parameter"
+                    }
+                }
+            },
+            "required": [
+                "controls",
+                "name"
+            ],
+            "title": "Page"
+        },
+        "OscControl": {
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/Parameter"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Parameter"
+                    }
+                },
+                {
+                    "$ref": "#/definitions/Spacer"
+                },
+                {
+                    "$ref": "#/definitions/ControlGroup"
+                }
+            ],
+            "title": "OscControl"
+        },
+        "Spacer": {
+            "type": "array",
+            "maxItems": 0
+        }
+    }
+}
