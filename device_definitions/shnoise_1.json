@@ -1,0 +1,27 @@
+{
+    "device_name" : "SH NOISE",
+    "device_slots" : [0],
+    "init" : ["unmute osc", "/param/a/mixer/osc1/mute", 0.0 ],
+    "osc": {
+        "section": "SH NOISE",
+        "controls": [
+            ["PITCH", "/param/a/osc/1/pitch", 0.0, 1.0],
+            ["CORR.", "/param/a/osc/1/param1", 0.0, 1.0],
+            ["WIDTH", "/param/a/osc/1/param2", 0.0, 1.0],
+            ["LOW CUT", "/param/a/osc/1/param3", 0.0, 1.0],
+            ["HIGH CUT", "/param/a/osc/1/param4", 0.0 , 1.0],
+            ["SYNC", "/param/a/osc/1/param5", 0.0 , 1.0],
+            ["UNI. DET", "/param/a/osc/1/param6", 0.0, 1.0],
+            ["UNI. VOICES", "/param/a/osc/1/param7", 0.0, 16.0],
+            [],
+            [],
+            ["KEYTRACK", "/param/a/osc/1/keytrack", 0.0, 1.0],
+            ["RETRIG", "/param/a/osc/1/retrigger", 0.0, 1.0],
+            ["FIL ROUTE", "/param/a/mixer/osc1/route", 0.0 , 2.0],
+            [],
+            ["FM DEPTH", "/param/a/osc/fm_depth", 0.0, 1.0],
+            ["FM ROUTING", "/param/a/osc/fm_routing", 0.0, 3.0]
+          ]
+      }
+
+}

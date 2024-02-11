@@ -1,0 +1,27 @@
+{
+    "device_name" : "STRING",
+    "device_slots" : [1],
+    "init" : ["unmute osc", "/param/a/mixer/osc2/mute", 0.0 ],
+    "osc": {
+        "section": "STRING",
+        "controls": [
+            ["PITCH", "/param/a/osc/2/pitch", 0.0, 1.0],
+            ["EXCT TYPE", "/param/a/osc/2/param1", 0.0, 15.0],
+            ["EXCT LVL", "/param/a/osc/2/param2", 0.0, 1.0],
+            ["STR. 1 DEC", "/param/a/osc/2/param3", 0.0, 1.0],
+            ["STR. 2 DEC", "/param/a/osc/2/param4", 0.0 , 1.0],
+            ["STR. 2 DET", "/param/a/osc/2/param5", 0.0 , 1.0],
+            ["STR. BAL", "/param/a/osc/2/param6", 0.0, 1.0],
+            ["STIFFNESS", "/param/a/osc/2/param7", 0.0, 1.0],
+            [],
+            [],
+            ["KEYTRACK", "/param/a/osc/2/keytrack", 0.0, 1.0],
+            ["RETRIG", "/param/a/osc/2/retrigger", 0.0, 1.0],
+            ["FIL ROUTE", "/param/a/mixer/osc2/route", 0.0 , 2.0],
+            [],
+            ["FM DEPTH", "/param/a/osc/fm_depth", 0.0, 1.0],
+            ["FM ROUTING", "/param/a/osc/fm_routing", 0.0, 3.0]
+          ]
+      }
+
+}

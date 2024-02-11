@@ -1,0 +1,27 @@
+{
+    "device_name" : "AMP",
+    "device_slots" : [4],
+    "init" : [],
+    "osc": {
+        "section": "AMP",
+        "controls": [
+            ["ATTACK", "/param/a/aeg/attack", 0.0, 1.0],
+            ["DECAY", "/param/a/aeg/decay", 0.0, 1.0],
+            ["SUSTAIN", "/param/a/aeg/sustain", 0.0, 1.0],
+            ["RELEASE", "/param/a/aeg/release", 0.0, 1.0],
+            ["OSC1 LVL", "/param/a/mixer/osc1/volume", 0.0 , 1.0],
+            ["OSC2 LVL", "/param/a/mixer/osc2/volume", 0.0 , 1.0],
+            ["PRE-FILT GAIN", "/param/a/mixer/prefilter_gain", 0.0, 1.0],
+            ["VCA GAIN", "/param/a/amp/gain", 0.0, 1.0],
+            ["SHAPE A", "/param/a/aeg/attack_shape", 0.0, 2.0],
+            ["SHAPE D", "/param/a/aeg/decay_shape", 0.0, 2.0],
+            ["AMP EG MODE", "/param/a/aeg/mode", 0.0, 1.0],
+            ["SHAPE R", "/param/a/aeg/release_shape", 0.0, 1.0],
+            ["RING LVL", "/param/a/mixer/rm1x2/volume", 0.0, 1.0],
+            ["RING TYPE", "/param/a/mixer/rm1x2/type", 0.0, 11.0],
+            ["SEND 1 LVL", "/param/a/send/1/level", 0.0, 1.0],
+            ["SEND 2 LVL", "/param/a/send/2/level", 0.0, 1.0]
+          ]
+      }
+
+}
