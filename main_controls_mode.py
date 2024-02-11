@@ -71,7 +71,6 @@ class MainControlsMode(definitions.PyshaMode):
 
         #Clip Menu Mode
         if self.app.is_mode_active(self.app.clip_menu_mode):
-            print("clip menu mode")
             self.push.buttons.set_button_color(CLIP_BUTTON, definitions.BLACK)
             self.push.buttons.set_button_color(CLIP_BUTTON, definitions.WHITE, animation=definitions.DEFAULT_ANIMATION)
         else:

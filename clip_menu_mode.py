@@ -127,23 +127,26 @@ class ClipMenuMode(PyshaMode):
             except FileNotFoundError:
                 inst = {}
 
-            osc = inst.get('osc', None)
+            # osc = inst.get('osc', None)
+            clip = inst.get('clip', None)
             osc_port = inst.get('osc_in_port', None)
 
             if (osc_port): 
                 self.app.osc_clients[instrument_short_name] = SimpleUDPClient("127.0.0.1", osc_port)
             
-            if osc is not None:
+            if clip is not None:
                 # Create OSC mappings for instruments with definitions
                 self.instrument_osc_addresses[instrument_short_name] = []
-                for section in osc:
+                for section in clip:
                     section_name = section['section']
                     
                     for name, address, min, max in section['controls']:
                         control = MenuControl(address, name, min, max, section_name, self.get_current_track_color_helper, self.app.send_osc)
                         if section.get('control_value_label_maps', {}).get(name, False):
                             control.value_labels_map = section['control_value_label_maps'][name]
+                        
                         self.instrument_osc_addresses[instrument_short_name].append(control)
+
                 print('Loaded {0} OSC address mappings for instrument {1}'.format(len(self.instrument_osc_addresses[instrument_short_name]), instrument_short_name))
             else:
                 # No definition file for instrument exists, or no midi CC were defined for that instrument
@@ -281,6 +284,7 @@ class ClipMenuMode(PyshaMode):
  
     
     def on_button_pressed(self, button_name):
+        print(self.get_currently_selected_osc_address_section_and_page(), "sel section")
         if  button_name in self.osc_address_button_names:
             current_track_sections = self.get_current_track_osc_address_sections()
             n_sections = len(current_track_sections)
