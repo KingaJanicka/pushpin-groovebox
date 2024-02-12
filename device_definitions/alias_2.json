@@ -1,7 +1,7 @@
 {
     "device_name" : "ALIAS",
     "device_slots" : [1],
-    "init" : ["unmute osc", "/param/a/mixer/osc2/mute", 0.0 ],
+    "init" : [["unmute osc", "/param/a/mixer/osc2/mute", 0.0 ], ["unmute osc", "/param/a/osc/2/type", 11.0 ]],
     "osc": {
         "section": "ALIAS",
         "controls": [

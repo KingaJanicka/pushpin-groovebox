@@ -1,7 +1,7 @@
 {
     "device_name" : "CLASSIC",
     "device_slots" : [1],
-    "init" : ["unmute osc", "/param/a/mixer/osc2/mute", 0.0 ],
+    "init" : [["unmute osc", "/param/a/mixer/osc2/mute", 0.0 ], ["set osc type", "/param/a/osc/2/type", 0.0 ]],
     "osc": {
         "section": "CLASSIC",
         "controls": [

@@ -1,7 +1,7 @@
 {
     "device_name" : "MODERN",
     "device_slots" : [0],
-    "init" : ["unmute osc", "/param/a/mixer/osc1/mute", 0.0 ],
+    "init" : [["unmute osc", "/param/a/mixer/osc1/mute", 0.0 ], ["set osc type", "/param/a/osc/1/type", 8.0 ]],
     "osc": {
         "section": "MODERN",
         "controls": [

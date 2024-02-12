@@ -1,7 +1,7 @@
 {
     "device_name" : "FM2",
     "device_slots" : [0],
-    "init" : ["unmute osc", "/param/a/mixer/osc1/mute", 0.0 ],
+    "init" : [["unmute osc", "/param/a/mixer/osc1/mute", 0.0 ], ["set osc type", "/param/a/osc/1/type", 6.0 ]],
     "osc": {
         "section": "FM2",
         "controls": [
