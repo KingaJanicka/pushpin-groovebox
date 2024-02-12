@@ -281,12 +281,278 @@
                     ]
                 }
             ]
-        },
+          },
           ["CONFIG", "/param/a/filter/config", 0.0, 7.0],
           ["WIDTH", "/param/a/amp/width", 0.0 , 1.0],
-          ["CATEGORY", "", 0.0 , 1.0],
-          ["TYPE", "/param/a/filter/2/type", 0.0, 33.0],
-          ["SUBTYPE", "/param/a/filter/2/subtype", 0.0, 15.0]
+          {
+            "name": "Filter Type",
+            "controls": [
+                {
+                    "name": "Classic",
+                    "controls": [
+                        {
+                            "name": "Response",
+                            "controls": [
+                                ["12db LP", "/param/a/filter/2/type", 1.0],
+                                ["24db LP", "/param/a/filter/2/type", 2.0],
+                                ["12db BP", "/param/a/filter/2/type", 6.0],
+                                ["24db BP", "/param/a/filter/2/type", 23.0],
+                                ["12db HP", "/param/a/filter/2/type", 4.0],
+                                ["24db HP", "/param/a/filter/2/type", 5.0],
+                                ["12db Notch", "/param/a/filter/2/type", 7.0],
+                                ["24db Notch", "/param/a/filter/2/type", 24.0]
+                            ]
+                        },
+                        {
+                            "name": "Subtype",
+                            "controls": [
+                                ["Std", "/param/a/filter/2/subtype", 0.0],
+                                ["Drive", "/param/a/filter/2/subtype", 1.0],
+                                ["Clean", "/param/a/filter/2/subtype", 2.0]
+                            ]
+                        }
+                    ]
+                }, 
+                {
+                    "name": "OB-Xd",
+                    "controls": [
+                        {
+                            "name": "Response",
+                            "controls": [
+                                ["12db LP", "/param/a/filter/2/type", 11.0],
+                                ["24db LP", "/param/a/filter/2/type", 12.0],
+                                ["12db BP", "/param/a/filter/2/type", 22.0],
+                                ["12db HP", "/param/a/filter/2/type", 20.0],
+                                ["12db Notch", "/param/a/filter/2/type", 21.0],
+
+                            ]
+                        },
+                        {
+                            "name": "Subtype",
+                            "controls": [
+                                ["Std", "/param/a/filter/2/subtype", 0.0],
+                                ["Pushed", "/param/a/filter/2/subtype", 1.0]
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Cutoff Warp",
+                    "controls": [
+                        {
+                            "name": "Response",
+                            "controls": [
+                                ["LP", "/param/a/filter/2/type", 16.0],
+                                ["BP", "/param/a/filter/2/type", 19.0],
+                                ["HP", "/param/a/filter/2/type", 17.0],
+                                ["Notch", "/param/a/filter/2/type", 18.0],
+                                ["All-Pass", "/param/a/filter/2/type", 27.0]
+                            ]
+                        },
+                        {
+                            "name": "Subtype",
+                            "controls": [
+                                ["1 Stage tanh", "/param/a/filter/2/subtype", 0.0],
+                                ["2 Stage tanh", "/param/a/filter/2/subtype", 1.0],
+                                ["3 Stage tanh", "/param/a/filter/2/subtype", 2.0],
+                                ["4 Stage tanh", "/param/a/filter/2/subtype", 3.0],
+                                ["1 Stage clip", "/param/a/filter/2/subtype", 4.0],
+                                ["2 Stage clip", "/param/a/filter/2/subtype", 5.0],
+                                ["3 Stage clip", "/param/a/filter/2/subtype", 6.0],
+                                ["4 Stage clip", "/param/a/filter/2/subtype", 7.0],
+                                ["1 Stage OJD", "/param/a/filter/2/subtype", 8.0],
+                                ["2 Stage OJD", "/param/a/filter/2/subtype", 9.0],
+                                ["3 Stage OJD", "/param/a/filter/2/subtype", 10.0],
+                                ["4 Stage OJD", "/param/a/filter/2/subtype", 11.0]
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Res Warp",
+                    "controls": [
+                        {
+                            "name": "Response",
+                            "controls": [
+                                ["LP", "/param/a/filter/2/type", 28.0],
+                                ["BP", "/param/a/filter/2/type", 31.0],
+                                ["HP", "/param/a/filter/2/type", 29.0],
+                                ["Notch", "/param/a/filter/2/type", 30.0],
+                                ["All-Pass", "/param/a/filter/2/type", 32.0]
+                            ]
+                        },
+                        {
+                            "name": "Subtype",
+                            "controls": [
+                                ["1 Stage tanh", "/param/a/filter/2/subtype", 0.0],
+                                ["2 Stage tanh", "/param/a/filter/2/subtype", 1.0],
+                                ["3 Stage tanh", "/param/a/filter/2/subtype", 2.0],
+                                ["4 Stage tanh", "/param/a/filter/2/subtype", 3.0],
+                                ["1 Stage clip", "/param/a/filter/2/subtype", 4.0],
+                                ["2 Stage clip", "/param/a/filter/2/subtype", 5.0],
+                                ["3 Stage clip", "/param/a/filter/2/subtype", 6.0],
+                                ["4 Stage clip", "/param/a/filter/2/subtype", 7.0]
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "K35",
+                    "controls": [
+                        {
+                            "name": "Response",
+                            "controls": [
+                                ["LP", "/param/a/filter/2/type", 13.0],
+                                ["HP", "/param/a/filter/2/type", 14.0]
+                            ]
+                        },
+                        {
+                            "name": "Subtype",
+                            "controls": [
+                                ["Std", "/param/a/filter/2/subtype", 0.0],
+                                ["Mild", "/param/a/filter/2/subtype", 1.0],
+                                ["Medium", "/param/a/filter/2/subtype", 2.0],
+                                ["Heavy", "/param/a/filter/2/subtype", 3.0],
+                                ["XTREME", "/param/a/filter/2/subtype", 4.0]
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Legacy Ladder",
+                    "controls": [
+                        {
+                            "name": "Response",
+                            "controls": [
+                                ["LP", "/param/a/filter/2/type", 3.0]
+                            ]
+                        },
+                        {
+                            "name": "Subtype",
+                            "controls": [
+                                ["6db", "/param/a/filter/2/subtype", 0.0],
+                                ["12db", "/param/a/filter/2/subtype", 1.0],
+                                ["18db", "/param/a/filter/2/subtype", 2.0],
+                                ["24db", "/param/a/filter/2/subtype", 3.0]
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Vintage Ladder",
+                    "controls": [
+                        {
+                            "name": "Response",
+                            "controls": [
+                                ["LP", "/param/a/filter/2/type", 10.0]
+                            ]
+                        },
+                        {
+                            "name": "Subtype",
+                            "controls": [
+                                ["T1", "/param/a/filter/2/subtype", 0.0],
+                                ["T1 Comp", "/param/a/filter/2/subtype", 1.0],
+                                ["T2", "/param/a/filter/2/subtype", 2.0],
+                                ["T2 Comp", "/param/a/filter/2/subtype", 3.0]
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Diode Ladder",
+                    "controls": [
+                        {
+                            "name": "Response",
+                            "controls": [
+                                ["LP", "/param/a/filter/2/type", 15.0]
+                            ]
+                        },
+                        {
+                            "name": "Subtype",
+                            "controls": [
+                                ["6db", "/param/a/filter/2/subtype", 0.0],
+                                ["12db", "/param/a/filter/2/subtype", 1.0],
+                                ["18db", "/param/a/filter/2/subtype", 2.0],
+                                ["24db", "/param/a/filter/2/subtype", 3.0]
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Multi-Tripole",
+                    "controls": [
+                        {
+                            "name": "Response",
+                            "controls": [
+                                ["LP", "/param/a/filter/2/type", 33.0]
+                            ]
+                        },
+                        {
+                            "name": "Subtype",
+                            "controls": [
+                                ["L L L 1", "/param/a/filter/2/subtype", 0.0],
+                                ["L H L 1", "/param/a/filter/2/subtype", 1.0],
+                                ["H L H 1", "/param/a/filter/2/subtype", 2.0],
+                                ["H H H 1", "/param/a/filter/2/subtype", 3.0],
+                                ["L L L 2", "/param/a/filter/2/subtype", 4.0],
+                                ["L H L 2", "/param/a/filter/2/subtype", 5.0],
+                                ["H L H 2", "/param/a/filter/2/subtype", 6.0],
+                                ["H H H 2", "/param/a/filter/2/subtype", 7.0],
+                                ["L L L 3", "/param/a/filter/2/subtype", 8.0],
+                                ["L H L 3", "/param/a/filter/2/subtype", 9.0],
+                                ["H L H 3", "/param/a/filter/2/subtype", 10.0],
+                                ["H H H 3", "/param/a/filter/2/subtype", 11.0]                               
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Comb",
+                    "controls": [
+                        {
+                            "name": "Response",
+                            "controls": [
+                                ["Comb+", "/param/a/filter/2/type", 8.0],
+                                ["Comb-", "/param/a/filter/2/type", 8.0]
+                            ]
+                        },
+                        {
+                            "name": "Subtype",
+                            "controls": [
+                                ["50% Wet", "/param/a/filter/2/subtype", 0.0],
+                                ["100% Wet", "/param/a/filter/2/subtype", 1.0]                           
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Allpass",
+                    "controls": [
+                        {
+                            "name": "Response",
+                            "controls": [
+                                ["Allpass", "/param/a/filter/2/type", 26.0]
+                                
+                            ]
+                        }
+                    
+                    ]
+                },
+                {
+                    "name": "S&H",
+                    "controls": [
+                        {
+                            "name": "Response",
+                            "controls": [
+                                ["S&H", "/param/a/filter/2/type", 9.0]
+                                
+                            ]
+                        }
+                    
+                    ]
+                }
+            ]
+          }
         ]
       }
 
