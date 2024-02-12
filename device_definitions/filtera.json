@@ -5,14 +5,14 @@
     "osc": {
         "section": "FIL A",
         "controls": [
-          ["F1 FREQ", "/param/a/filter/1/cutoff", 0.0, 1.0],
-          ["F1 RES", "/param/a/filter/1/resonance", 0.0, 1.0],
-          ["KEYTR", "/param/a/filter/1/keytrack", 0.0, 1.0],
-          ["DEPTH", "/param/a/filter/1/feg_amount", 0.0, 1.0],
-          ["F2 FREQ", "/param/a/filter/2/cutoff", 0.0, 1.0],
-          ["F2 RES", "/param/a/filter/2/resonance", 0.0, 1.0],
-          ["KEYTR", "/param/a/filter/2/keytrack", 0.0, 1.0],
-          ["DEPTH", "/param/a/filter/2/feg_amount", 0.0, 1.0],
+          ["F1 Freq", "/param/a/filter/1/cutoff", 0.0, 1.0],
+          ["F1 Res", "/param/a/filter/1/resonance", 0.0, 1.0],
+          ["Depth", "/param/a/filter/1/feg_amount", 0.0, 1.0],
+          ["Keytrack", "/param/a/filter/1/keytrack", 0.0, 1.0],
+          ["F2 Freq", "/param/a/filter/2/cutoff", 0.0, 1.0],
+          ["F2 Res", "/param/a/filter/2/resonance", 0.0, 1.0],
+          ["Depth", "/param/a/filter/2/feg_amount", 0.0, 1.0],
+          ["Keytrack", "/param/a/filter/2/keytrack", 0.0, 1.0],
           {
             "name": "Filter Type",
             "controls": [

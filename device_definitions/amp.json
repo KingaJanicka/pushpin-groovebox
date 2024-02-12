@@ -18,7 +18,7 @@
             ["AMP EG MODE", "/param/a/aeg/mode", 0.0, 1.0],
             ["SHAPE R", "/param/a/aeg/release_shape", 0.0, 1.0],
             ["RING LVL", "/param/a/mixer/rm1x2/volume", 0.0, 1.0],
-            ["RING TYPE", "/param/a/mixer/rm1x2/type", 0.0, 11.0],
+            [],
             ["SEND 1 LVL", "/param/a/send/1/level", 0.0, 1.0],
             ["SEND 2 LVL", "/param/a/send/2/level", 0.0, 1.0]
           ]
