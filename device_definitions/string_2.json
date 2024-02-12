@@ -6,7 +6,27 @@
         "section": "STRING",
         "controls": [
             ["PITCH", "/param/a/osc/2/pitch", 0.0, 1.0],
-            ["EXCT TYPE", "/param/a/osc/2/param1", 0.0, 15.0],
+            {
+                "name": "EXC Type",
+                "controls": [
+                    ["Burst Noise", "/param/a/osc/2/param1", 0.0],
+                    ["Burst Pink", "/param/a/osc/2/param1", 1.0],
+                    ["Burst Sine", "/param/a/osc/2/param1", 2.0],
+                    ["Burst Trian", "/param/a/osc/2/param1", 3.0],
+                    ["Burst Ramp", "/param/a/osc/2/param1", 4.0],
+                    ["Burst Sq", "/param/a/osc/2/param1", 5.0],
+                    ["Burst Sweep", "/param/a/osc/2/param1", 6.0],
+                    ["Noise", "/param/a/osc/2/param1", 7.0],
+                    ["Pink", "/param/a/osc/2/param1", 8.0],
+                    ["Sine", "/param/a/osc/2/param1", 9.0],
+                    ["Triangle", "/param/a/osc/2/param1", 10.0],
+                    ["Ramp", "/param/a/osc/2/param1", 11.0],
+                    ["Square", "/param/a/osc/2/param1", 12.0],
+                    ["Sweep", "/param/a/osc/2/param1", 13.0],
+                    ["Audio in", "/param/a/osc/2/param1", 14.0]
+                   
+                ]
+            },
             ["EXCT LVL", "/param/a/osc/2/param2", 0.0, 1.0],
             ["STR. 1 DEC", "/param/a/osc/2/param3", 0.0, 1.0],
             ["STR. 2 DEC", "/param/a/osc/2/param4", 0.0 , 1.0],
