@@ -1,0 +1,187 @@
+{
+    "device_name" : "CLASSIC",
+    "device_slots" : [0],
+    "init" : [["unmute osc", "/param/a/mixer/osc1/mute", 0.0 ], ["set osc type", "/param/a/osc/1/type", 10.0 ]],
+    "osc": {
+        "section": "CLASSIC",
+        "controls": [
+            ["PITCH", "/param/a/osc/1/pitch", 0.0, 1.0],
+            {
+				"name": "Engine",
+				"controls": [
+					{
+						"name": "Waveforms",
+						"value" : ["/param/a/osc/1/param1", 0.0],
+						"controls": [
+							["Detune", "/param/a/osc/1/param2", 0.0, 1.0],
+							["Square Sh.", "/param/a/osc/1/param3", 0.0, 1.0],
+							["Saw Sh.", "/param/a/osc/1/param4", 0.0, 1.0],
+                            ["Sync Mix", "/param/a/osc/1/param5", 0.0, 1.0]
+						]
+					},
+					{
+						"name": "Waveshaper",
+						"value" : ["/param/a/osc/1/param1", 1.0],
+						"controls": [
+							["Waveshaper", "/param/a/osc/1/param2", 0.0, 1.0],
+							["Fold", "/param/a/osc/1/param3", 0.0, 1.0],
+							["Asymmetry", "/param/a/osc/1/param4", 0.0, 1.0],
+                            ["Var. Mix", "/param/a/osc/1/param5", 0.0, 1.0]
+						]
+					},
+					{
+						"name": "2OP FM",
+						"value" : ["/param/a/osc/1/param1", 2.0],
+						"controls": [
+							["Ratio", "/param/a/osc/1/param2", 0.0, 1.0],
+							["Amount", "/param/a/osc/1/param3", 0.0, 1.0],
+							["Feedback", "/param/a/osc/1/param4", 0.0, 1.0],
+                            ["Sub Mix", "/param/a/osc/1/param5", 0.0, 1.0]
+						]
+					},
+					{
+						"name": "Formant",
+						"value" : ["/param/a/osc/1/param1", 3.0],
+						"controls": [
+							["Ratio/Type", "/param/a/osc/1/param2", 0.0, 1.0],
+							["Formant", "/param/a/osc/1/param3", 0.0, 1.0],
+							["Shape", "/param/a/osc/1/param4", 0.0, 1.0],
+                            ["PD Mix", "/param/a/osc/1/param5", 0.0, 1.0]
+						]
+					},
+					{
+						"name": "Harmonic",
+						"value" : ["/param/a/osc/1/param1", 4.0],
+						"controls": [
+							["Bump", "/param/a/osc/1/param2", 0.0, 1.0],
+							["Peak", "/param/a/osc/1/param3", 0.0, 1.0],
+							["Shape", "/param/a/osc/1/param4", 0.0, 1.0],
+                            ["Organ Mix", "/param/a/osc/1/param5", 0.0, 1.0]
+						]
+					},
+					{
+						"name": "Wavetable",
+						"value" : ["/param/a/osc/1/param1", 5.0],
+						"controls": [
+							["Bank", "/param/a/osc/1/param2", 0.0, 1.0],
+							["Morph X", "/param/a/osc/1/param3", 0.0, 1.0],
+							["Morph Y", "/param/a/osc/1/param4", 0.0, 1.0],
+                            ["Lo-Fi Mix", "/param/a/osc/1/param5", 0.0, 1.0]
+						]
+					},
+					{
+						"name": "Chord",
+						"value" : ["/param/a/osc/1/param1", 6.0],
+						"controls": [
+							["Type", "/param/a/osc/1/param2", 0.0, 1.0],
+							["Inversion", "/param/a/osc/1/param3", 0.0, 1.0],
+							["Shape", "/param/a/osc/1/param4", 0.0, 1.0],
+                            ["Root Mix", "/param/a/osc/1/param5", 0.0, 1.0]
+						]
+					},
+					{
+						"name": "Vowel",
+						"value" : ["/param/a/osc/1/param1", 7.0],
+						"controls": [
+							["Speak", "/param/a/osc/1/param2", 0.0, 1.0],
+							["Species", "/param/a/osc/1/param3", 0.0, 1.0],
+							["Segment", "/param/a/osc/1/param4", 0.0, 1.0],
+                            ["Raw Mix", "/param/a/osc/1/param5", 0.0, 1.0]
+						]
+					},
+					{
+						"name": "Granular",
+						"value" : ["/param/a/osc/1/param1", 8.0],
+						"controls": [
+							["Pitch Rand", "/param/a/osc/1/param2", 0.0, 1.0],
+							["Grain Dens", "/param/a/osc/1/param3", 0.0, 1.0],
+							["Grain Dur.", "/param/a/osc/1/param4", 0.0, 1.0],
+                            ["Sine Mix", "/param/a/osc/1/param5", 0.0, 1.0]
+						]
+					},
+					{
+						"name": "Noise",
+						"value" : ["/param/a/osc/1/param1", 9.0],
+						"controls": [
+							["Type", "/param/a/osc/1/param2", 0.0, 1.0],
+							["Clock Freq", "/param/a/osc/1/param3", 0.0, 1.0],
+							["Res", "/param/a/osc/1/param4", 0.0, 1.0],
+                            ["Peak Mix", "/param/a/osc/1/param5", 0.0, 1.0]
+						]
+					},
+					{
+						"name": "Particle",
+						"value" : ["/param/a/osc/1/param1", 10.0],
+						"controls": [
+							["Freq Rand", "/param/a/osc/1/param2", 0.0, 1.0],
+							["Dens", "/param/a/osc/1/param3", 0.0, 1.0],
+							["Filt Type", "/param/a/osc/1/param4", 0.0, 1.0],
+                            ["Raw Mix", "/param/a/osc/1/param5", 0.0, 1.0]
+						]
+					},
+					{
+						"name": "String",
+						"value" : ["/param/a/osc/1/param1", 11.0],
+						"controls": [
+							["Inharm.", "/param/a/osc/1/param2", 0.0, 1.0],
+							["Bright", "/param/a/osc/1/param3", 0.0, 1.0],
+							["Decay", "/param/a/osc/1/param4", 0.0, 1.0],
+                            ["Exct. Mix", "/param/a/osc/1/param5", 0.0, 1.0]
+						]
+					},
+					{
+						"name": "Resonator",
+						"value" : ["/param/a/osc/1/param1", 12.0],
+						"controls": [
+							["Material.", "/param/a/osc/1/param2", 0.0, 1.0],
+							["Bright", "/param/a/osc/1/param3", 0.0, 1.0],
+							["Decay", "/param/a/osc/1/param4", 0.0, 1.0],
+                            ["Exct. Mix", "/param/a/osc/1/param5", 0.0, 1.0]
+						]
+					},
+					{
+						"name": "Kick",
+						"value" : ["/param/a/osc/1/param1", 13.0],
+						"controls": [
+							["Sharp", "/param/a/osc/1/param2", 0.0, 1.0],
+							["Bright", "/param/a/osc/1/param3", 0.0, 1.0],
+							["Decay", "/param/a/osc/1/param4", 0.0, 1.0],
+                            ["Var Mix", "/param/a/osc/1/param5", 0.0, 1.0]
+						]
+					},
+					{
+						"name": "Snare",
+						"value" : ["/param/a/osc/1/param1", 14.0],
+						"controls": [
+							["Tone/Noise", "/param/a/osc/1/param2", 0.0, 1.0],
+							["Model", "/param/a/osc/1/param3", 0.0, 1.0],
+							["Decay", "/param/a/osc/1/param4", 0.0, 1.0],
+                            ["Var Mix", "/param/a/osc/1/param5", 0.0, 1.0]
+						]
+					},
+					{
+						"name": "Hi-Hat",
+						"value" : ["/param/a/osc/1/param1", 15.0],
+						"controls": [
+							["Tone/Noise", "/param/a/osc/1/param2", 0.0, 1.0],
+							["Low Cut", "/param/a/osc/1/param3", 0.0, 1.0],
+							["Decay", "/param/a/osc/1/param4", 0.0, 1.0],
+                            ["Var Mix", "/param/a/osc/1/param5", 0.0, 1.0]
+						]
+					}
+				]
+			},
+            ["LPG Resp", "/param/a/osc/1/param6", 0.0, 1.0],
+            ["LPG Decay", "/param/a/osc/1/param7", 0.0, 1.0],
+            [],
+            [],
+            ["KEYTRACK", "/param/a/osc/1/keytrack", 0.0, 1.0],
+            ["RETRIG", "/param/a/osc/1/retrigger", 0.0, 1.0],
+            ["FIL ROUTE", "/param/a/mixer/osc1/route", 0.0 , 2.0],
+            [],
+            ["FM DEPTH", "/param/a/osc/fm_depth", 0.0, 1.0],
+            ["FM ROUTING", "/param/a/osc/fm_routing", 0.0, 3.0]
+          ]
+      }
+
+}

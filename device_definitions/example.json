@@ -2,11 +2,9 @@
     "device_name" : "name of the device",
     "device_slots" : [5, 6, 7],
     "init" : [
-        ["Command 1", "/param/a/osc/2/pitch", 0.2],
-        ["We can use several commands", "/param/a/osc/2/param1", 0.24],
-        ["To make complex init possible", "/param/a/osc/2/param2", 0.5],
-        ["Osc adresses with a single value behind them both here and in menu pages should send"],
-        ["that value to their respective adress as soon as device or page is init/selected"]
+        ["/param/a/osc/2/pitch", 0.2],
+        ["/param/a/osc/2/param1", 0.24],
+        ["/param/a/osc/2/param2", 0.5]
     ],
     "osc": {
         "section": "Device Name",
@@ -26,12 +24,13 @@
           ["FIL ROUTE", "/param/a/mixer/osc1/route", 0.0 , 2.0],
           [],
           [],
-          [["name", "address1", 0.0 , 1.0], ["comment", "address2", 0.0, 1.0]],
+          ["MACRO", [["/param/a/...", 0.0, 1.0], ["/param/b/...", 0.0, 1.0]]],
 			{
 				"name": "control group",
 				"controls": [
 					{
 						"name": "label for page",
+						"value": ["param1", 1.0], 
 						"controls": [
 							["GAIN 1", "param1", 0.0, 1.0],
 							["FREQ 1", "param2", 0.0, 1.0],
@@ -88,63 +87,6 @@
 				]
 			}
         ]
-      }
-
+    }
 }
 
-
-///
-
-
-
-[
-	{
-	"control" : ["name of page control", "type of page control"],
-	"page_1_controls": [
-		["name of page"],
-		["GAIN 1", "param1", 0.0, 1.0],
-		["FREQ 1", "param2", 0.0, 1.0],
-		["BANDW. 1", "param3", 0.0, 1.0],
-		["this is first page of the device, this would take three param slots on display"],
-		["we need a type of menu where first param scrolls through pages"],
-		["while next three in this case would be the pages being scrolled"]
-	],
-	"page_2_controls": [
-		["name of page"],
-		["GAIN 2", "param3", 0.0, 1.0],
-		["FREQ 2", "param4", 0.0, 1.0],
-		["BANDW. 2", "param5", 0.0, 1.0]
-	],  
-	"page_3_controls": [
-		["name of page"],
-		["GAIN 1", "param6", 0.0, 1.0],
-		["FREQ 1", "param7", 0.0, 1.0],
-		["BANDW. 1", "param8", 0.0, 1.0]
-	] 
-	}
-],
-   {"page": 
-   {
-   "control" : ["FILTER TYPE", "type of page control"],
-   "page_1_controls": [
-		["12db LP"],
-		["12db LP", "/param/a/filter/1/type", 1.0],
-		["we should have a type of control that would just scroll through those pages"],
-		["while sending the message and updating the display"],
-		["it would take just one knob of space"],
-		["in a way this is the same as previous menu, except the knobs aren't displayed"]
-   ],
-   "page_2_controls": [
-		["24db LP"],
-		["24db LP", "/param/a/filter/1/type", 2.0]
-   ],  
-   "page_3_controls": [
-		["12db BP"],
-		["12db BP", "/param/a/filter/1/type", 11.0]
-   ] ,  
-   "page_4_controls": [
-		["24db BP"],
-		["24db BP", "/param/a/filter/1/type", 12.0]
-   ]
-   }
-  }

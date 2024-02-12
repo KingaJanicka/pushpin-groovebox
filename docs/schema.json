@@ -1,0 +1,193 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$ref": "#/definitions/Device",
+    "definitions": {
+        "Device": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "device_name": {
+                    "type": "string"
+                },
+                "device_slots": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer",
+                        "minItems": 1,
+                        "maxItems": 8
+                    }
+                },
+                "init": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/OscMessage"
+                    }
+                },
+                "osc": {
+                    "$ref": "#/definitions/Osc"
+                }
+            },
+            "required": [
+                "device_name",
+                "device_slots",
+                "init",
+                "osc"
+            ],
+            "title": "Device"
+        },
+        "Spacer": {
+            "type": "array",
+            "maxItems": 0
+        },
+        "Parameter": {
+            "type": "array",
+            "title": "Parameter",
+            "minItems": 4,
+            "maxItems": 4,
+            "items": [
+                {
+                    "name": "label",
+                    "type": "string"
+                },
+                {
+                    "name": "address",
+                    "type": "string"
+                },
+                {
+                    "name": "min",
+                    "default": 0.0,
+                    "type": "number"
+                },
+                {
+                    "name": "max",
+                    "default": 1.0,
+                    "type": "number"
+                }
+            ]
+        },
+        "MacroParameter": {
+            "type": "array",
+            "title": "MacroParameter",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": [
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": [
+                            {"name": "address", "type": "string"},
+                            {"name": "min", "type": "number"},
+                            {"name": "max", "type": "number"}
+                        ]
+                    }
+                }
+            ]
+        },
+        "Osc": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "section": {
+                    "type": "string"
+                },
+                "controls": {
+                    "type": "array",
+                    "contains": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/definitions/Parameter"
+                            },
+                            {
+                                "$ref": "#/definitions/MacroParameter"
+                            },
+                            {
+                                "$ref": "#/definitions/Spacer"
+                            },
+                            {
+                                "$ref": "#/definitions/ControlGroup"
+                            }
+                        ]
+                    }
+                }
+            },
+            "required": [
+                "controls",
+                "section"
+            ],
+            "title": "Osc"
+        },
+        "OscMessage": {
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 2,
+            "items": {
+                "items": [
+                    {"name": "address", "type": "string"},
+                    {"name": "value", "type": "number"}
+                ]
+            }
+        },
+        "OscMessageWithLabel": {
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 2,
+            "items": [
+                {"name": "label", "type": "string"},
+                {"name": "address", "type": "string"},
+                {"name": "value", "type": "number"}
+            ]
+        },
+        "ControlGroup": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "controls": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ControlGroupControl"
+                    }
+                }
+            },
+            "required": [
+                "name",
+                "controls"
+            ],
+            "title": "ControlGroup"
+        },
+        "ControlGroupControl": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "value": {
+                    "$ref": "#/definitions/OscMessage"
+                },
+                "controls": {
+                    "type": "array",
+                    "contains": {
+                        "oneOf": [
+                            {"$ref": "#/definitions/ControlGroupControl"},
+                            {"$ref": "#/definitions/Parameter"},
+                            {"$ref": "#/definitions/MacroParameter"},
+                            {"$ref": "#/definitions/OscMessageWithLabel"}
+                        ]
+                    }
+                }
+            },
+            "required": [
+                "name",
+                "controls"                
+            ],
+            "title": "ControlGroupControl"
+        }
+    }
+}
