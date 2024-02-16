@@ -1,6 +1,6 @@
 {
-    "instrument_name": "Send B",
-    "instrument_short_name": "SEND B",
+    "instrument_name": "Synth 7",
+    "instrument_short_name": "Synth 7",
     "illuminate_local_notes": true,
     "midi_channel": 8,
     "osc_in_port" : 1037,

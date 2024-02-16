@@ -442,8 +442,10 @@ class PyshaApp(object):
             self.osc_clients[self.track_selection_mode.get_current_track_instrument_short_name()].send_message(address, value)
             # print("adress", address)
 
-        #client.send_message(address, value)
-        # print(self.track_selection_mode.selected_track, "Send OSC Message on adress", address, value )
+    def send_osc_multi(self,  commands, instrument_short_name=None):
+        for command in commands:
+            address, val = command
+            self.send_osc(address, val, instrument_short_name)
         
     def send_midi_to_pyramid(self, msg):
         # When sending to Pyramid, don't replace the MIDI channel because msg is already prepared with pyramidi chanel
@@ -737,3 +739,4 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
             print('Exiting Pysha...')
             app.push.f_stop.set()
+            app.osc_mode.close_transports()

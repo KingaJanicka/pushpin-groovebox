@@ -17,7 +17,7 @@
             ["Shape D", "/param/a/feg/decay_shape", 0.0, 2.0],
             ["Eg Mode", "/param/a/feg/mode", 0.0, 1.0],
             ["Shape R", "/param/a/feg/release_shape", 0.0, 2.0],
-            ["", "", 0.0 , 1.0],
+            [],
             {
 				"name": "Sh. Cat",
 				"controls": [

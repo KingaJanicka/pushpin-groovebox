@@ -1,106 +1,18 @@
 import definitions
-import mido
 import push2_python
-import time
-import math
 import json
 import os
+import asyncio
 
 from pythonosc.udp_client import SimpleUDPClient
+from pythonosc.osc_server import AsyncIOOSCUDPServer
+from pythonosc.dispatcher import Dispatcher
+
 from definitions import PyshaMode, OFF_BTN_COLOR
 from display_utils import show_text
-import osc_utils
-
-
-class OSCControl(object):
-
-    color = definitions.GRAY_LIGHT
-    color_rgb = None
-    name = 'Unknown'
-    section = 'unknown'
-    address = "/default"
-    min = 0.0
-    max = 1.0
-    value = 64
-    vmin = 0
-    vmax = 127
-    get_color_func = None
-    value_labels_map = {}
-    def __init__(self, address, name, min, max, section_name, get_color_func, send_osc_func=None):
-        self.address = address
-        self.name = name
-        self.section = section_name
-        self.get_color_func = get_color_func
-        self.send_osc_func = send_osc_func
-        self.min = min
-        self.max = max
-
-    def draw(self, ctx, x_part):
-        margin_top = 25
-        
-        # Param name
-        name_height = 20
-        show_text(ctx, x_part, margin_top, self.name, height=name_height, font_color=definitions.WHITE)
-
-        # Param value
-        val_height = 30
-        color = self.get_color_func()
-        show_text(ctx, x_part, margin_top + name_height, self.value_labels_map.get(str(self.value), str(self.value)), height=val_height, font_color=color)
-
-        # Knob
-        ctx.save()
-
-        circle_break_degrees = 80
-        height = 55
-        radius = height/2
-
-        display_w = push2_python.constants.DISPLAY_LINE_PIXELS
-        x = (display_w // 8) * x_part
-        y = margin_top + name_height + val_height + radius + 5
-        
-        start_rad = (90 + circle_break_degrees // 2) * (math.pi / 180)
-        end_rad = (90 - circle_break_degrees // 2) * (math.pi / 180)
-        xc = x + radius + 3
-        yc = y
-
-        def get_rad_for_value(value):
-            total_degrees = 360 - circle_break_degrees
-            return start_rad + total_degrees * ((value - self.vmin)/(self.vmax - self.vmin)) * (math.pi / 180)
-
-        # This is needed to prevent showing line from previous position
-        ctx.set_source_rgb(0, 0, 0)
-        ctx.move_to(xc, yc)
-        ctx.stroke()
-
-        # Inner circle
-        ctx.arc(xc, yc, radius, start_rad, end_rad)
-        ctx.set_source_rgb(*definitions.get_color_rgb_float(definitions.GRAY_LIGHT))
-        ctx.set_line_width(1)
-        ctx.stroke()
-
-        # Outer circle
-        ctx.arc(xc, yc, radius, start_rad, get_rad_for_value(self.value))
-        ctx.set_source_rgb(* definitions.get_color_rgb_float(color))
-        ctx.set_line_width(3)
-        ctx.stroke()
-
-        ctx.restore()
-    
-    def update_value(self, increment): 
-        if self.value + increment > self.vmax:
-            self.value = self.vmax
-        elif self.value + increment < self.vmin:
-            self.value = self.vmin
-        else:
-            self.value += increment
-        #print("update value: adress", self.address, "value", self.value)
-        # Send cc message, subtract 1 to number because MIDO works from 0 - 127
-        # msg = mido.Message('control_change', control=self.address, value=self.value)
-        # msg=f'control_change {self.address} {self.value}'
-        #print(self.address, osc_utils.scale_knob_value([self.value, self.min, self.max]))
-        self.send_osc_func(self.address, osc_utils.scale_knob_value([self.value, self.min, self.max]))
-       
-
+from glob import glob
+from pathlib import Path
+from osc_controls import OSCControl, OSCMacroControl, SpacerControl
 
 class OSCMode(PyshaMode):
 
@@ -118,46 +30,140 @@ class OSCMode(PyshaMode):
     active_osc_addresses = []
     current_selected_section_and_page = {}
     osc_port = None
+    transports = []
+    devices = {}
     
     def initialize(self, settings=None):
-        
+        device_names = [Path(device_file).stem for device_file in glob('./device_definitions/*.json')]
+
+        for device_name in device_names:
+            # print(device_name)
+            try:
+                self.devices[device_name] = json.load(open(os.path.join(definitions.DEVICE_DEFINITION_FOLDER, '{}.json'.format(device_name))))
+            except FileNotFoundError:
+                self.devices[device_name] = {}
+        print("p")
         for instrument_short_name in self.get_all_distinct_instrument_short_names_helper():
             try:
                 inst = json.load(open(os.path.join(definitions.INSTRUMENT_DEFINITION_FOLDER, '{}.json'.format(instrument_short_name))))
             except FileNotFoundError:
                 inst = {}
 
-            osc = inst.get('osc', None)
-            osc_port = inst.get('osc_in_port', None)
+            osc_in_port = inst.get('osc_in_port', None)
+            osc_out_port = inst.get('osc_out_port', None)
+            client = None
+            server = None
+            dispatcher = Dispatcher()
 
-            if (osc_port): 
-                self.app.osc_clients[instrument_short_name] = SimpleUDPClient("127.0.0.1", osc_port)
+            if (osc_in_port): 
+                client = SimpleUDPClient("127.0.0.1", osc_in_port)
+
+            if (osc_out_port):
+                loop = asyncio.get_event_loop()
+                server = AsyncIOOSCUDPServer(("127.0.0.1", osc_out_port), dispatcher, loop)
+                loop.run_until_complete(self.init_server(server, client))
+
+            self.app.osc_clients[instrument_short_name] = {"client": client, "server": server, "dispatcher": dispatcher}
+
+            def param_handler(address, *args):
+                print(f"{instrument_short_name} {address}: {args}")
+
+            # uncomment for debug
+            # dispatcher.map("/param/*", param_handler)
             
-            if osc is not None:
-                # Create OSC mappings for instruments with definitions
-                self.instrument_osc_addresses[instrument_short_name] = []
-                for section in osc:
-                    section_name = section['section']
+            # Create OSC mappings for instruments with definitions
+            self.instrument_osc_addresses[instrument_short_name] = []
+
+            for device_name in self.devices:
+                device = self.devices[device_name]
+                osc = device.get('osc', None)
+                init = device.get('init', [])
+                if client and len(init) > 0:
+                    for cmd in init:
+                        print(cmd)
+                        reversed = list(cmd)
+                        reversed.reverse()
+                        val, address, *rest = reversed
+                        client.send_message(address, val)
                     
-                    for name, address, min, max in section['controls']:
-                        control = OSCControl(address, name, min, max, section_name, self.get_current_track_color_helper, self.app.send_osc)
-                        if section.get('control_value_label_maps', {}).get(name, False):
-                            control.value_labels_map = section['control_value_label_maps'][name]
+                if osc is not None:
+                    section_label = osc.get('section', 'Device')                    
+                    for control_def in osc['controls']:
+                        item_label = ''
+                        if isinstance(control_def, list):
+                            if len(control_def) == 0: # spacer
+                                control = SpacerControl(section_label)
+                                self.instrument_osc_addresses[instrument_short_name].append(control)
+                            elif len(control_def) == 2: # macro
+                                item_label, params = control_def
+                                control = OSCMacroControl(item_label, params, section_label, self.get_current_track_color_helper, self.app.send_osc)
+
+                                def handle_control_response(self, *args):
+                                    value = args
+                                    control.update_value(value)
+                                
+                                for param in params:
+                                    address, min, max = param
+                                    dispatcher.map(address, handle_control_response)
+                                
+                                self.instrument_osc_addresses[instrument_short_name].append(control)   
+                                
+                            else: # individual (normal) control
+                                item_label, address, min, max = control_def
+                                control = OSCControl(address, item_label, min, max, section_label, self.get_current_track_color_helper, self.app.send_osc)
+                                def handle_control_response(self, *args):
+                                    value = args
+                                    control.update_value(value)
+                                    
+                                dispatcher.map(address, handle_control_response)
+                                self.instrument_osc_addresses[instrument_short_name].append(control)        
+                                
+                            # control = OSCControl(address, item_label, min, max, section_label, self.get_current_track_color_helper, self.app.send_osc)
+                            # if osc.get('control_value_label_maps', {}).get(name, False):
+                            #     control.value_labels_map = section['control_value_label_maps'][name]
+                            
+                            
+                                
+                        elif isinstance(control_def, dict):
+                            # control group
+                            print('page')
+                        else:
+                            Exception('Invalid parameter: ', control_def)
+                        
+
+                    print('Loaded {0} OSC address mappings for instrument {1}'.format(len(self.instrument_osc_addresses[instrument_short_name]), instrument_short_name))
+                else:
+                    # No definition file for instrument exists, or no midi CC were defined for that instrument
+                    self.instrument_osc_addresses[instrument_short_name] = []
+                    for i in range(0, 128):
+                        section_s = (i // 16) * 16
+                        section_e = section_s + 15
+                        control = OSCControl(i, 'CC {0}'.format(i), 0.0, 1.0, '{0} to {1}'.format(section_s, section_e), self.get_current_track_color_helper, self.app.send_osc)
                         self.instrument_osc_addresses[instrument_short_name].append(control)
-                print('Loaded {0} OSC address mappings for instrument {1}'.format(len(self.instrument_osc_addresses[instrument_short_name]), instrument_short_name))
-            else:
-                # No definition file for instrument exists, or no midi CC were defined for that instrument
-                self.instrument_osc_addresses[instrument_short_name] = []
-                for i in range(0, 128):
-                    section_s = (i // 16) * 16
-                    section_e = section_s + 15
-                    control = OSCControl(i, 'CC {0}'.format(i), 0.0, 1.0, '{0} to {1}'.format(section_s, section_e), self.get_current_track_color_helper, self.app.send_osc)
-                    self.instrument_osc_addresses[instrument_short_name].append(control)
-                print('Loaded default OSC address mappings for instrument {0}'.format(instrument_short_name))
-      
-        # Fill in current page and section variables
+                    print('Loaded default OSC address mappings for instrument {0}'.format(instrument_short_name))
+        
+        # # Fill in current page and section variables
         for instrument_short_name in self.instrument_osc_addresses:
             self.current_selected_section_and_page[instrument_short_name] = (self.instrument_osc_addresses[instrument_short_name][0].section, 0)
+                
+    """
+    Initialise OSC servers and add to transport array so they can be gracefully closed
+    """
+    async def init_server(self, server, client = None):
+        transport, protocol = await server.create_serve_endpoint()  # Create datagram endpoint and start serving
+        self.transports.append(transport)
+         
+        # call the all_params endpoint
+        if (client):
+            client.send_message('/q/all_params', None) 
+         
+        
+    """
+    Close transports on ctrl+c
+    """
+    def close_transports(self):
+        for transport in self.transports:
+            transport.close()
 
     def get_all_distinct_instrument_short_names_helper(self):
         return self.app.track_selection_mode.get_all_distinct_instrument_short_names()
