@@ -3,7 +3,6 @@
     "device_slots" : [4],
     "init" : [],
     "osc": {
-        "section": "AMP",
         "controls": [
             ["ATTACK", "/param/a/aeg/attack", 0.0, 1.0],
             ["DECAY", "/param/a/aeg/decay", 0.0, 1.0],

@@ -3,7 +3,6 @@
     "device_slots" : [2],
     "init" : [],
     "osc": {
-        "section": "FIL A",
         "controls": [
           ["F1 Freq", "/param/a/filter/1/cutoff", 0.0, 1.0],
           ["F1 Res", "/param/a/filter/1/resonance", 0.0, 1.0],

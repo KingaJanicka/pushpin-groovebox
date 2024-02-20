@@ -3,7 +3,6 @@
     "device_slots" : [1],
     "init" : [["unmute osc", "/param/a/mixer/osc2/mute", 0.0 ], ["set osc type", "/param/a/osc/2/type", 6.0 ]],
     "osc": {
-        "section": "FM2",
         "controls": [
             ["PITCH", "/param/a/osc/2/pitch", 0.0, 1.0],
             ["M1 AMOUNT", "/param/a/osc/2/param1", 0.0, 1.0],

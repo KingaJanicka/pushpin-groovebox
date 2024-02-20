@@ -114,7 +114,7 @@ class ClipMenuMode(PyshaMode):
         push2_python.constants.BUTTON_UPPER_ROW_7,
         push2_python.constants.BUTTON_UPPER_ROW_8
     ]
-    instrument_osc_addresses = {}
+    instrument_devices = {}
     active_osc_addresses = []
     current_selected_section_and_page = {}
     osc_port = None
@@ -136,7 +136,7 @@ class ClipMenuMode(PyshaMode):
             
             if clip is not None:
                 # Create OSC mappings for instruments with definitions
-                self.instrument_osc_addresses[instrument_short_name] = []
+                self.instrument_devices[instrument_short_name] = []
                 for section in clip:
                     section_name = section['section']
                     
@@ -145,22 +145,22 @@ class ClipMenuMode(PyshaMode):
                         if section.get('control_value_label_maps', {}).get(name, False):
                             control.value_labels_map = section['control_value_label_maps'][name]
                         
-                        self.instrument_osc_addresses[instrument_short_name].append(control)
+                        self.instrument_devices[instrument_short_name].append(control)
 
-                print('Loaded {0} OSC address mappings for instrument {1}'.format(len(self.instrument_osc_addresses[instrument_short_name]), instrument_short_name))
+                print('Loaded {0} OSC address mappings for instrument {1}'.format(len(self.instrument_devices[instrument_short_name]), instrument_short_name))
             else:
                 # No definition file for instrument exists, or no midi CC were defined for that instrument
-                self.instrument_osc_addresses[instrument_short_name] = []
+                self.instrument_devices[instrument_short_name] = []
                 for i in range(0, 128):
                     section_s = (i // 16) * 16
                     section_e = section_s + 15
                     control = MenuControl(i, 'CC {0}'.format(i), 0.0, 1.0, '{0} to {1}'.format(section_s, section_e), self.get_current_track_color_helper, self.app.send_osc)
-                    self.instrument_osc_addresses[instrument_short_name].append(control)
+                    self.instrument_devices[instrument_short_name].append(control)
                 print('Loaded default OSC address mappings for instrument {0}'.format(instrument_short_name))
       
         # Fill in current page and section variables
-        for instrument_short_name in self.instrument_osc_addresses:
-            self.current_selected_section_and_page[instrument_short_name] = (self.instrument_osc_addresses[instrument_short_name][0].section, 0)
+        for instrument_short_name in self.instrument_devices:
+            self.current_selected_section_and_page[instrument_short_name] = (self.instrument_devices[instrument_short_name][0].section, 0)
 
     def get_all_distinct_instrument_short_names_helper(self):
         return self.app.track_selection_mode.get_all_distinct_instrument_short_names()
@@ -173,7 +173,7 @@ class ClipMenuMode(PyshaMode):
 
     def get_current_track_osc_address_sections(self):
         section_names = []
-        for control in self.instrument_osc_addresses.get(self.get_current_track_instrument_short_name_helper(), []):
+        for control in self.instrument_devices.get(self.get_current_track_instrument_short_name_helper(), []):
             section_name = control.section
             if section_name not in section_names:
                 section_names.append(section_name)
@@ -184,7 +184,7 @@ class ClipMenuMode(PyshaMode):
 
     def get_osc_address_controls_for_current_track_and_section(self):
         section, _ = self.get_currently_selected_osc_address_section_and_page()
-        return [control for control in self.instrument_osc_addresses.get(self.get_current_track_instrument_short_name_helper(), []) if control.section == section]
+        return [control for control in self.instrument_devices.get(self.get_current_track_instrument_short_name_helper(), []) if control.section == section]
 
     def get_osc_address_controls_for_current_track_section_and_page(self):
         all_section_controls = self.get_osc_address_controls_for_current_track_and_section()

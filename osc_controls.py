@@ -7,9 +7,8 @@ from display_utils import show_text
 class OSCControl(object):
     color = definitions.GRAY_LIGHT
     color_rgb = None
-    name = 'Unknown'
-    section = 'unknown'
-    address = "/default"
+    label = 'Unknown'
+    address = None
     min = 0.0
     max = 1.0
     value = 64
@@ -17,22 +16,30 @@ class OSCControl(object):
     vmax = 127
     get_color_func = None
     value_labels_map = {}
+    size = 1
+    active = False
 
-    def __init__(self, address, name, min, max, section_name, get_color_func, send_osc_func=None):
+    def __init__(self, label, address, min, max, get_color_func=None, send_osc_func=None):
+        self.label = label
         self.address = address
-        self.name = name
-        self.section = section_name
         self.get_color_func = get_color_func
-        self.send_osc_func = send_osc_func
         self.min = min
         self.max = max
+        
+        if (send_osc_func):
+            self.send_osc_func = send_osc_func
+            self.send_osc_func(f"/q{address}", None)
+        
+
+    def send_osc_func(self, address, payload):
+        pass
 
     def draw(self, ctx, x_part):
         margin_top = 25
         
         # Param name
         name_height = 20
-        show_text(ctx, x_part, margin_top, self.name, height=name_height, font_color=definitions.WHITE)
+        show_text(ctx, x_part, margin_top, self.label, height=name_height, font_color=definitions.WHITE)
 
         # Param value
         val_height = 30
@@ -78,7 +85,13 @@ class OSCControl(object):
 
         ctx.restore()
     
-    def update_value(self, increment, *kwargs): 
+    def set_state(self, address, raw):
+        if (not self.active):
+            self.active = True
+        value, *rest = raw.split(' ')
+        self.value = float(value)
+    
+    def update_value(self, increment, **kwargs):
         if self.value + increment > self.vmax:
             self.value = self.vmax
         elif self.value + increment < self.vmin:
@@ -91,34 +104,27 @@ class OSCControl(object):
         # msg=f'control_change {self.address} {self.value}'
         #print(self.address, osc_utils.scale_knob_value([self.value, self.min, self.max]))
         self.send_osc_func(self.address, osc_utils.scale_knob_value([self.value, self.min, self.max]))
-       
-class SpacerControl(object):
-    color = definitions.GRAY_LIGHT
-    color_rgb = None
-    name = 'Spacer'
-    section = 'Unknown'
+
+class SpacerControl(OSCControl):
     address = None
-    get_color_func = None
-    value_labels_map = {}
-    
-    def __init__(self, section_name):
-        self.section = section_name
+
+    def __init__(self):
+        pass
         
     def draw(self, _, __):
         return
     
-    def update_value(self, increment, *kwargs):
+    def update_value(self, **kwargs):
         return
 
 class OSCMacroControl(OSCControl):
-    def __init__(self, name, params, section_name, get_color_func, send_osc_func=None):
-        self.name = name
+    def __init__(self, label, params, get_color_func=None, send_osc_func=None):
+        self.label = label
         self.params = params
-        self.section = section_name
         self.get_color_func = get_color_func
         self.send_osc_func = send_osc_func
 
-    def update_value(self, increment, *kwargs): 
+    def update_value(self, increment, **kwargs): 
         if self.value + increment > self.vmax:
             self.value = self.vmax
         elif self.value + increment < self.vmin:
@@ -137,38 +143,29 @@ class OSCMacroControl(OSCControl):
             # TODO may need to revisit how min/max is set
             self.send_osc_func(address, osc_utils.scale_knob_value([self.value, min, max]))
 
+
+
 class OSCControlGroup(OSCControl):
     name = "Control Group"
     controls = []
-    value = None
-    type = None
-    max_depth = 0
 
-    def __init__(self, config, section_name, get_color_func, send_osc_func=None):
-        self.name = config['name']
-        self.controls = config['controls']
-        
-        temp = self['controls'].copy()
-        self.max_depth = 0
-
-        if temp:
-            while True:
-                self.max_depth += 1
-                has_children = len(temp) > 0 and hasattr(temp[0], 'controls')
-                
-                if has_children: temp = temp[0]['controls']
-                else:
-                    if len(temp) > 0:
-                        self.type = 'OscRotaryControl' if len(temp[0]) is 4 else 'OscParameterControl' if len(temp[0]) else None
-                    break
-                
-
-        
-        self.section = section_name
+    def __init__(self, label, config, get_color_func=None, send_osc_func=None):
+        self.id = id
+        self.label = label
+        self.controls = config.get('controls', [])
         self.get_color_func = get_color_func
         self.send_osc_func = send_osc_func
+        self.size = self.get_group_depth(config)
         
-    def update_value(self, increment, *kwargs): 
+    def get_group_depth(self, arr, level=0):
+        for item in arr:
+            if item['controls']:
+                return self.get_group_depth(item['controls'], level + 1)
+            else:
+                return level
+
+    def update_value(self, increment, **kwargs): 
+        pass
         # if self.value + increment > self.vmax:
         #     self.value = self.vmax
         # elif self.value + increment < self.vmin:
@@ -184,5 +181,7 @@ class OSCControlGroup(OSCControl):
         
         # for param in self.params:
         #     address, min, max = param
-        #     # TODO may need to revisit how min/max is set
+        #     # TODO may need to revisit how min/max is set,
         #     self.send_osc_func(address, osc_utils.scale_knob_value([self.value, min, max]))
+        
+    

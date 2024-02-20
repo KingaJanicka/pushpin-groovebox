@@ -3,7 +3,6 @@
     "device_slots" : [3],
     "init" : [],
     "osc": {
-        "section": "Filter B",
         "controls": [
             ["A", "/param/a/feg/attack", 0.0, 1.0],
             ["D", "/param/a/feg/decay", 0.0, 1.0],
