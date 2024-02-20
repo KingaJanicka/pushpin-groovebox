@@ -14,7 +14,8 @@ class OSCDevice(object):
         self.osc = osc
         self.label = config.get("device_name", "Device")
         self.dispatcher = osc.get('dispatcher', None)
-        self.dispatcher.map('*', print)
+        # Uncomment for debugging
+        # self.dispatcher.map('*', print)
         client = osc.get('client', None)
         init = config.get('init', [])
         get_color = kwargs.get('get_color')

@@ -107,6 +107,7 @@ class OSCControl(object):
 
 class SpacerControl(OSCControl):
     address = None
+    active = True
 
     def __init__(self):
         pass
