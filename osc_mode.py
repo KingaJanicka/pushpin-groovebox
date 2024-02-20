@@ -31,7 +31,7 @@ class OSCMode(PyshaMode):
     current_selected_section_and_page = {}
     osc_port = None
     transports = []
-    devices = {}
+    device_definitions = {}
     
     def initialize(self, settings=None):
         device_names = [Path(device_file).stem for device_file in glob('./device_definitions/*.json')]
@@ -39,10 +39,10 @@ class OSCMode(PyshaMode):
         for device_name in device_names:
             # print(device_name)
             try:
-                self.devices[device_name] = json.load(open(os.path.join(definitions.DEVICE_DEFINITION_FOLDER, '{}.json'.format(device_name))))
+                self.device_definitions[device_name] = json.load(open(os.path.join(definitions.DEVICE_DEFINITION_FOLDER, '{}.json'.format(device_name))))
             except FileNotFoundError:
-                self.devices[device_name] = {}
-        print("p")
+                self.device_definitions[device_name] = {}
+
         for instrument_short_name in self.get_all_distinct_instrument_short_names_helper():
             try:
                 inst = json.load(open(os.path.join(definitions.INSTRUMENT_DEFINITION_FOLDER, '{}.json'.format(instrument_short_name))))
@@ -65,17 +65,16 @@ class OSCMode(PyshaMode):
 
             self.app.osc_clients[instrument_short_name] = {"client": client, "server": server, "dispatcher": dispatcher}
 
-            def param_handler(address, *args):
-                print(f"{instrument_short_name} {address}: {args}")
-
             # uncomment for debug
+            # def param_handler(address, *args):
+            #     print(f"{instrument_short_name} {address}: {args}")
             # dispatcher.map("/param/*", param_handler)
             
             # Create OSC mappings for instruments with definitions
             self.instrument_osc_addresses[instrument_short_name] = []
 
-            for device_name in self.devices:
-                device = self.devices[device_name]
+            for device_name in self.device_definitions:
+                device = self.device_definitions[device_name]
                 osc = device.get('osc', None)
                 init = device.get('init', [])
                 if client and len(init) > 0:
@@ -121,12 +120,12 @@ class OSCMode(PyshaMode):
                             # control = OSCControl(address, item_label, min, max, section_label, self.get_current_track_color_helper, self.app.send_osc)
                             # if osc.get('control_value_label_maps', {}).get(name, False):
                             #     control.value_labels_map = section['control_value_label_maps'][name]
+                        elif isinstance(control_def, dict): # control group
+                            depth = 0
                             
-                            
+                            # while control_def['controls'] is not None:
                                 
-                        elif isinstance(control_def, dict):
-                            # control group
-                            print('page')
+                            self.instrument_osc_addresses[instrument_short_name].append(control)
                         else:
                             Exception('Invalid parameter: ', control_def)
                         
@@ -145,7 +144,10 @@ class OSCMode(PyshaMode):
         # # Fill in current page and section variables
         for instrument_short_name in self.instrument_osc_addresses:
             self.current_selected_section_and_page[instrument_short_name] = (self.instrument_osc_addresses[instrument_short_name][0].section, 0)
-                
+
+    def update_instrument(index):
+        
+
     """
     Initialise OSC servers and add to transport array so they can be gracefully closed
     """
@@ -277,7 +279,7 @@ class OSCMode(PyshaMode):
                     show_text(ctx, i, 0, section_name, height=height,
                             font_color=font_color, background_color=background_color)
 
-            # Draw MIDI CC controls
+            # Draw OSCDevices
             if self.active_osc_addresses:
                 for i in range(0, min(len(self.active_osc_addresses), 8)):
                     try:
@@ -310,7 +312,6 @@ class OSCMode(PyshaMode):
 
 
     def on_encoder_rotated(self, encoder_name, increment):
-      
         try:
             encoder_num = [
                 push2_python.constants.ENCODER_TRACK1_ENCODER,

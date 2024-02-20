@@ -78,7 +78,7 @@ class OSCControl(object):
 
         ctx.restore()
     
-    def update_value(self, increment): 
+    def update_value(self, increment, *kwargs): 
         if self.value + increment > self.vmax:
             self.value = self.vmax
         elif self.value + increment < self.vmin:
@@ -107,7 +107,7 @@ class SpacerControl(object):
     def draw(self, _, __):
         return
     
-    def update_value(self, increment):
+    def update_value(self, increment, *kwargs):
         return
 
 class OSCMacroControl(OSCControl):
@@ -118,7 +118,7 @@ class OSCMacroControl(OSCControl):
         self.get_color_func = get_color_func
         self.send_osc_func = send_osc_func
 
-    def update_value(self, increment): 
+    def update_value(self, increment, *kwargs): 
         if self.value + increment > self.vmax:
             self.value = self.vmax
         elif self.value + increment < self.vmin:
@@ -136,4 +136,53 @@ class OSCMacroControl(OSCControl):
             address, min, max = param
             # TODO may need to revisit how min/max is set
             self.send_osc_func(address, osc_utils.scale_knob_value([self.value, min, max]))
-       
+
+class OSCControlGroup(OSCControl):
+    name = "Control Group"
+    controls = []
+    value = None
+    type = None
+    max_depth = 0
+
+    def __init__(self, config, section_name, get_color_func, send_osc_func=None):
+        self.name = config['name']
+        self.controls = config['controls']
+        
+        temp = self['controls'].copy()
+        self.max_depth = 0
+
+        if temp:
+            while True:
+                self.max_depth += 1
+                has_children = len(temp) > 0 and hasattr(temp[0], 'controls')
+                
+                if has_children: temp = temp[0]['controls']
+                else:
+                    if len(temp) > 0:
+                        self.type = 'OscRotaryControl' if len(temp[0]) is 4 else 'OscParameterControl' if len(temp[0]) else None
+                    break
+                
+
+        
+        self.section = section_name
+        self.get_color_func = get_color_func
+        self.send_osc_func = send_osc_func
+        
+    def update_value(self, increment, *kwargs): 
+        # if self.value + increment > self.vmax:
+        #     self.value = self.vmax
+        # elif self.value + increment < self.vmin:
+        #     self.value = self.vmin
+        # else:
+        #     self.value += increment
+        # #print("update value: adress", self.address, "value", self.value)
+        # # Send cc message, subtract 1 to number because MIDO works from 0 - 127
+        # # msg = mido.Message('control_change', control=self.address, value=self.value)
+        # # msg=f'control_change {self.address} {self.value}'
+        # #print(self.address, osc_utils.scale_knob_value([self.value, self.min, self.max]))
+        # # self.send_osc_func(self.address, osc_utils.scale_knob_value([self.value, self.min, self.max]))
+        
+        # for param in self.params:
+        #     address, min, max = param
+        #     # TODO may need to revisit how min/max is set
+        #     self.send_osc_func(address, osc_utils.scale_knob_value([self.value, min, max]))
