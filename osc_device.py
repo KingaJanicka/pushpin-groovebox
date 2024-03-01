@@ -1,4 +1,4 @@
-from osc_controls import OSCControl, OSCMacroControl, SpacerControl
+from osc_controls import OSCControl, OSCMacroControl, SpacerControl, OSCControlGroup
 
 class OSCDevice(object):
     id = None
@@ -7,6 +7,7 @@ class OSCDevice(object):
     controls = []
     client = None
     osc = {'client': {}, 'server': {}, 'dispatcher': {}}
+    
     
     def __init__(self, filename, config, osc, **kwargs):
         self.id = filename
@@ -43,19 +44,21 @@ class OSCDevice(object):
 
                         for param in params:
                             address, min, max = param
-                            osc['dispatcher'].map(address, control.set_state)
+                            self.dispatcher.map(address, control.set_state)
                         
                         self.controls.append(control)   
                         
                     else: # individual (normal) control
                         item_label, address, min, max = control_def
                         control = OSCControl(item_label, address, min, max, get_color,  client.send_message if client else None)    
-                        osc['dispatcher'].map(address, control.set_state)
+                        self.dispatcher.map(address, control.set_state)
                         self.controls.append(control)        
 
                 elif isinstance(control_def, dict): # control group
-                    # TODO
-                    pass
+                    item_label = control_def.get('name', 'Control')
+                    control = OSCControlGroup(control_def, get_color, client.send_message)
+                    # dispatcher?
+                    self.controls.append(control)
                 else:
                     Exception('Invalid parameter: ', control_def)
                     
@@ -65,3 +68,4 @@ class OSCDevice(object):
         for control in active_controls:
             control.draw(ctx, offset)
             offset += control.size
+            

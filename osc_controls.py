@@ -112,7 +112,7 @@ class SpacerControl(OSCControl):
     def __init__(self):
         pass
         
-    def draw(self, _, __):
+    def draw(self, **kwargs):
         return
     
     def update_value(self, **kwargs):
@@ -146,43 +146,94 @@ class OSCMacroControl(OSCControl):
 
 
 
-class OSCControlGroup(OSCControl):
+class OSCControlGroup(object):
     name = "Control Group"
     controls = []
+    value = None
+    size = 0
+    message = None
 
-    def __init__(self, label, config, get_color_func=None, send_osc_func=None):
+    def __init__(self, config, get_color_func=None, send_osc_func=None):
         self.id = id
-        self.label = label
-        self.controls = config.get('controls', [])
+        self.label = config.get("name", "group")
         self.get_color_func = get_color_func
         self.send_osc_func = send_osc_func
-        self.size = self.get_group_depth(config)
+        self.size = self.get_config_depth(config)
+        self.message = config.get('value', [])
+        self.get_color_func = get_color_func
+        self.send_osc_func = send_osc_func
+        self.controls = []
+        controls = config.get('controls', [])
         
-    def get_group_depth(self, arr, level=0):
-        for item in arr:
-            if item['controls']:
-                return self.get_group_depth(item['controls'], level + 1)
-            else:
-                return level
+        self.size = 0
 
+        for item in controls:
+            if isinstance(item, dict) and "controls" in item: # child control group
+                child_group = OSCControlGroup(item, get_color_func=get_color_func, send_osc_func=send_osc_func)
+                self.controls.append(child_group)
+            elif isinstance(item, list): # bottom-level control group
+                if len(item) == 4: # range controls
+                    label, address, min_val, max_val = item
+                    self.controls.append(OSCControl(label, address, min_val, max_val, get_color_func=get_color_func, send_osc_func=send_osc_func))
+                elif len(item) == 3: # menu controls
+                    self.controls.append(OSCControlGroupMenu(item, get_color_func, send_osc_func))
+        
+        if len(self.controls) > 0:
+            is_bottom_level_group = not all(isinstance(item, OSCControlGroup) for item in self.controls)
+            self.size = len(self.controls) + 1 if is_bottom_level_group else max([group.size for group in self.controls])
+            self.value = 0
+            active_group = self.get_active_group()
+            if active_group:
+                a, v = active_group.message
+                self.send_osc_func(a, v)
+                
+        
     def update_value(self, increment, **kwargs): 
-        pass
-        # if self.value + increment > self.vmax:
-        #     self.value = self.vmax
-        # elif self.value + increment < self.vmin:
-        #     self.value = self.vmin
-        # else:
-        #     self.value += increment
-        # #print("update value: adress", self.address, "value", self.value)
-        # # Send cc message, subtract 1 to number because MIDO works from 0 - 127
-        # # msg = mido.Message('control_change', control=self.address, value=self.value)
-        # # msg=f'control_change {self.address} {self.value}'
-        # #print(self.address, osc_utils.scale_knob_value([self.value, self.min, self.max]))
-        # # self.send_osc_func(self.address, osc_utils.scale_knob_value([self.value, self.min, self.max]))
-        
-        # for param in self.params:
-        #     address, min, max = param
-        #     # TODO may need to revisit how min/max is set,
-        #     self.send_osc_func(address, osc_utils.scale_knob_value([self.value, min, max]))
-        
+        if not self.value:
+            pass
+        if 0 <= (self.value + increment) < len(self.controls):
+            self.value += increment
+            
+            active_group = self.get_active_group()
+            if active_group:
+                a, v = active_group.message
+                self.send_osc_func(a, v)
+
+    def get_config_depth(self, dic, level = 0):
+        if not isinstance(dic, dict) or not dic:
+            return level
+        return max(self.get_config_depth(dic[key], level + 1) for key in dic)
+
+    def get_active_group(self):
+        if all(isinstance(item, OSCControlGroup) for item in self.controls):
+            return self.controls[self.value]
+        else:
+            return None
+
+class OSCControlGroupMenu(object):
+    value = None # currently selected menu index
+    label = ""
+    options = []
+    message = None
     
+    def __init__(self, config, get_color_func=None, send_osc_func=None):
+        self.label = config['name']
+        self.get_color_func = get_color_func
+        self.send_osc_func = send_osc_func
+        self.options = config.get('controls', [])
+        self.value = 0 if len(self.options) > 0 else None
+        if (self.value is not None):
+            self.message = self.options[self.value]
+            key, a, v = self.message
+            self.send_osc_func(a, v)
+    
+    def update_value(self, increment, **kwargs):
+        if not self.value:
+            pass
+        if 0 <= (self.value + increment) < len(self.options):
+            self.value += increment
+            
+            self.message = self.options[self.value]
+            if self.message:
+                key, a, v = self.message
+                self.send_osc_func(a, v)
