@@ -1,0 +1,23 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://pushpin.kinga.dev/schemas/v2/message.json",
+    "title": "Message",
+    "description": "A message to be sent via OSC, containing an address and a value",
+    "type": "object",
+    "properties": {
+        "$type": {
+            "const": "param"
+        },
+        "address": {
+            "type": "string"
+        },
+        "value": {
+            "type": "number"
+        }
+    },
+    "required": [
+        "$type",
+        "address",
+        "value"
+    ]
+}

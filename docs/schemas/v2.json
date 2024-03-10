@@ -1,0 +1,290 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://pushpin.kinga.dev/schemas/v2.json",
+    "$ref": "#/$defs/instrument",
+    "$defs": {
+        "instrument": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "/schemas/v2/instrument.json",
+            "title": "Instrument",
+            "description": "An instrument definition",
+            "type": "object",
+            "properties": {
+                "instrument_name": {
+                    "type": "string"
+                },
+                "instrument_short_name": {
+                    "type": "string"
+                },
+                "illuminate_local_notes": {
+                    "type": "boolean"
+                },
+                "midi_channel": {
+                    "type": "integer"
+                },
+                "osc_in_port": {
+                    "type": "integer"
+                },
+                "osc_out_port": {
+                    "type": "integer"
+                },
+                "default_layout": {
+                    "enum": [
+                        "lseq"
+                    ]
+                }
+            }
+        },
+        "device": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "/schemas/v2/device.json",
+            "title": "Device",
+            "description": "A device in an instrument",
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "slot": {
+                    "type": "integer"
+                },
+                "init": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "/schemas/v2/message.json"
+                    }
+                },
+                "controls": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "/schemas/v2/control.json"
+                    }
+                }
+            },
+            "control": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "$id": "/schemas/v2/control.json",
+                "title": "Control",
+                "description": "A control in a device",
+                "type": "object",
+                "oneOf": [
+                    {
+                        "$ref": "/schemas/v2/control-range.json"
+                    },
+                    {
+                        "$ref": "/schemas/v2/control-macro-range.json"
+                    },
+                    {
+                        "$ref": "/schemas/v2/control-spacer.json"
+                    },
+                    {
+                        "$ref": "/schemas/v2/control-switch.json"
+                    },
+                    {
+                        "$ref": "/schemas/v2/control-menu.json"
+                    }
+                ]
+            },
+            "control-range": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "$id": "/schemas/v2/control-range.json",
+                "title": "Range",
+                "description": "A control representing a discreet range",
+                "type": "object",
+                "properties": {
+                    "$type": {
+                        "const": "control-range"
+                    },
+                    "label": {
+                        "type": "string"
+                    },
+                    "address": {
+                        "type": "string"
+                    },
+                    "min": {
+                        "type": "number"
+                    },
+                    "max": {
+                        "type": "number"
+                    }
+                },
+                "required": [
+                    "$type",
+                    "label",
+                    "address",
+                    "min",
+                    "max"
+                ]
+            },
+            "control-macro-range": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "$id": "/schemas/v2/control-macro-range.json",
+                "title": "Macro Range",
+                "description": "A control that send multiple parameters",
+                "type": "object",
+                "properties": {
+                    "$type": {
+                        "const": "control-macro"
+                    },
+                    "label": {
+                        "type": "string"
+                    },
+                    "params": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "/schemas/control-range.json"
+                        }
+                    }
+                },
+                "required": [
+                    "$type",
+                    "label",
+                    "params"
+                ]
+            },
+            "control-spacer": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "$id": "/schemas/v2/control-spacer.json",
+                "title": "Spacer",
+                "description": "A spacer item with no label, methods or value",
+                "type": "object",
+                "properties": {
+                    "$type": {
+                        "const": "control-spacer"
+                    }
+                }
+            },
+            "control-menu": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "$id": "/schemas/v2/control-menu.json",
+                "title": "Menu",
+                "description": "A control representing a menu storing a state",
+                "type": "object",
+                "properties": {
+                    "$type": {
+                        "const": "control-menu"
+                    },
+                    "onselect": {
+                        "$ref": "/schemas/v2/message.json"
+                    },
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "/schemas/v2/menu-item.json"
+                        }
+                    }
+                },
+                "required": [
+                    "$type",
+                    "items"
+                ]
+            },
+            "menu-item": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "$id": "/schemas/v2/menu-item.json",
+                "title": "Menu Item",
+                "description": "A single item in a menu",
+                "type": "object",
+                "properties": {
+                    "$type": {
+                        "const": "control-menu-item"
+                    },
+                    "label": {
+                        "type": "string"
+                    },
+                    "onselect": {
+                        "$ref": "/schemas/v2/message.json"
+                    }
+                },
+                "required": [
+                    "$type",
+                    "label",
+                    "onselect"
+                ]
+            },
+            "control-switch": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "$id": "/schemas/v2/control-switch.json",
+                "title": "Control group switch",
+                "description": "A control that pages between multiple control groups",
+                "type": "object",
+                "properties": {
+                    "$type": {
+                        "const": "control-switch"
+                    },
+                    "groups": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "/schemas/group.json"
+                        }
+                    }
+                },
+                "required": [
+                    "$type",
+                    "groups"
+                ]
+            },
+            "group": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "$id": "/schemas/v2/group.json",
+                "title": "Group",
+                "description": "A group holding multiple controls",
+                "type": "object",
+                "properties": {
+                    "$type": {
+                        "const": "group"
+                    },
+                    "controls": {
+                        "type": "array",
+                        "items": {
+                            "anyOf": [
+                                {
+                                    "$ref": "/schemas/control-range.json"
+                                },
+                                {
+                                    "$ref": "/schemas/control-menu.json"
+                                },
+                                {
+                                    "$ref": "/schemas/control-spacer.json"
+                                },
+                                {
+                                    "$ref": "/schemas/control-macro.json"
+                                }
+                            ]
+                        }
+                    },
+                    "onselect": {
+                        "$ref": "/schemas/v2/message.json"
+                    }
+                },
+                "required": [
+                    "$type",
+                    "controls"
+                ]
+            },
+            "message": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "$id": "/schemas/v2/message.json",
+                "title": "Message",
+                "description": "A message to be sent via OSC, containing an address and a value",
+                "type": "object",
+                "properties": {
+                    "$type": {
+                        "const": "param"
+                    },
+                    "address": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "number"
+                    }
+                },
+                "required": [
+                    "$type",
+                    "address",
+                    "value"
+                ]
+            }
+        }
+    }
+}

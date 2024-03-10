@@ -1,0 +1,11 @@
+{
+  "name": "@pushpin-groovebox/tools",
+  "type": "module",
+  "scripts": {
+    "rewrite-defs": "node convert.js"
+  },
+  "dependencies": {
+    "glob": "^10.3.10",
+    "jsonschema": "^1.4.1"
+  }
+}

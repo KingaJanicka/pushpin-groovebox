@@ -1,5 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://pushpin.kinga.dev/schemas/v1.json",
     "$ref": "#/definitions/Device",
     "definitions": {
         "Device": {
@@ -79,9 +80,18 @@
                     "items": {
                         "type": "array",
                         "items": [
-                            {"name": "address", "type": "string"},
-                            {"name": "min", "type": "number"},
-                            {"name": "max", "type": "number"}
+                            {
+                                "name": "address",
+                                "type": "string"
+                            },
+                            {
+                                "name": "min",
+                                "type": "number"
+                            },
+                            {
+                                "name": "max",
+                                "type": "number"
+                            }
                         ]
                     }
                 }
@@ -126,8 +136,14 @@
             "minItems": 2,
             "items": {
                 "items": [
-                    {"name": "address", "type": "string"},
-                    {"name": "value", "type": "number"}
+                    {
+                        "name": "address",
+                        "type": "string"
+                    },
+                    {
+                        "name": "value",
+                        "type": "number"
+                    }
                 ]
             }
         },
@@ -136,9 +152,18 @@
             "maxItems": 2,
             "minItems": 2,
             "items": [
-                {"name": "label", "type": "string"},
-                {"name": "address", "type": "string"},
-                {"name": "value", "type": "number"}
+                {
+                    "name": "label",
+                    "type": "string"
+                },
+                {
+                    "name": "address",
+                    "type": "string"
+                },
+                {
+                    "name": "value",
+                    "type": "number"
+                }
             ]
         },
         "ControlGroup": {
@@ -175,17 +200,25 @@
                     "type": "array",
                     "contains": {
                         "oneOf": [
-                            {"$ref": "#/definitions/ControlGroupControl"},
-                            {"$ref": "#/definitions/Parameter"},
-                            {"$ref": "#/definitions/MacroParameter"},
-                            {"$ref": "#/definitions/OscMessageWithLabel"}
+                            {
+                                "$ref": "#/definitions/ControlGroupControl"
+                            },
+                            {
+                                "$ref": "#/definitions/Parameter"
+                            },
+                            {
+                                "$ref": "#/definitions/MacroParameter"
+                            },
+                            {
+                                "$ref": "#/definitions/OscMessageWithLabel"
+                            }
                         ]
                     }
                 }
             },
             "required": [
                 "name",
-                "controls"                
+                "controls"
             ],
             "title": "ControlGroupControl"
         }

@@ -129,14 +129,15 @@ class OSCControl(object):
 class SpacerControl(OSCControl):
     address = None
     active = True
+    label = None
 
     def __init__(self):
         pass
 
-    def draw(self, **kwargs):
+    def draw(self, *args, **kwargs):
         return
 
-    def update_value(self, **kwargs):
+    def update_value(self, *args, **kwargs):
         return
 
 
@@ -235,6 +236,12 @@ class OSCControlGroup(object):
                 isinstance(c, OSCControlGroupMenuItem) for c in self.controls
             ):
                 self.controls[self.value].select()
+                self.label = self.controls[self.value].label
+
+            # Set label to active group
+            active_group = self.get_active_group()
+            if active_group:
+                self.label = active_group.label
 
         # Run init logic
         init = config.get("value", None)
@@ -243,11 +250,13 @@ class OSCControlGroup(object):
             self.send_osc_func(a, v)
 
     def update_value(self, increment, **kwargs):
+        print(self.value + increment, len(self.controls))
         if not self.value:
             pass
 
         if 0 <= (self.value + increment) < len(self.controls):
             self.value += increment
+            print("GROUP UPDATE VAL ", self.value)
 
             active_group = self.get_active_group()
             is_bottom_level_group = all(
@@ -255,6 +264,7 @@ class OSCControlGroup(object):
             )
             if active_group and not is_bottom_level_group:
                 a, v = active_group.message
+                self.label = active_group.label
                 self.send_osc_func(a, v)
 
             # If all controls are menu items, send the active value
@@ -273,6 +283,10 @@ class OSCControlGroup(object):
             return self.controls[self.value]
         else:
             return None
+
+    @property
+    def visible(self):
+        return self.controls[self.value]
 
     def get_control(self, id):
         if isinstance(id, int) and id < len(self.controls):

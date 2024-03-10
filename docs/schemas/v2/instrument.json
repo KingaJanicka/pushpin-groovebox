@@ -1,0 +1,32 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://pushpin.kinga.dev/schemas/v2/instrument.json",
+    "title": "Instrument",
+    "description": "An instrument definition",
+    "type": "object",
+    "properties": {
+        "instrument_name": {
+            "type": "string"
+        },
+        "instrument_short_name": {
+            "type": "string"
+        },
+        "illuminate_local_notes": {
+            "type": "boolean"
+        },
+        "midi_channel": {
+            "type": "integer"
+        },
+        "osc_in_port": {
+            "type": "integer"
+        },
+        "osc_out_port": {
+            "type": "integer"
+        },
+        "default_layout": {
+            "enum": [
+                "lseq"
+            ]
+        }
+    }
+}

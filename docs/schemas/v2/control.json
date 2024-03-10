@@ -1,0 +1,207 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://pushpin.kinga.dev/schemas/v2/control",
+    "title": "Control",
+    "description": "A control in a device",
+    "type": "object",
+    "oneOf": [
+        {
+            "$ref": "#/$defs/control-range"
+        },
+        {
+            "$ref": "#/$defs/control-macro-range"
+        },
+        {
+            "$ref": "#/$defs/control-spacer"
+        },
+        {
+            "$ref": "#/$defs/control-switch"
+        },
+        {
+            "$ref": "#/$defs/control-menu"
+        }
+    ],
+    "$defs": {
+        "control-range": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "/schemas/v2/control-range.json",
+            "title": "Range",
+            "description": "A control representing a discreet range",
+            "type": "object",
+            "properties": {
+                "$type": {
+                    "const": "control-range"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "address": {
+                    "type": "string"
+                },
+                "min": {
+                    "type": "number"
+                },
+                "max": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "$type",
+                "label",
+                "address",
+                "min",
+                "max"
+            ]
+        },
+        "control-macro-range": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "/schemas/v2/control-macro-range.json",
+            "title": "Macro Range",
+            "description": "A control that send multiple parameters",
+            "type": "object",
+            "properties": {
+                "$type": {
+                    "const": "control-macro"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "params": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "/schemas/control#/$defs/control-range"
+                    }
+                }
+            },
+            "required": [
+                "$type",
+                "label",
+                "params"
+            ]
+        },
+        "control-spacer": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "/schemas/v2/control-spacer.json",
+            "title": "Spacer",
+            "description": "A spacer item with no label, methods or value",
+            "type": "object",
+            "properties": {
+                "$type": {
+                    "const": "control-spacer"
+                }
+            }
+        },
+        "control-menu": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "/schemas/v2/control-menu.json",
+            "title": "Menu",
+            "description": "A control representing a menu storing a state",
+            "type": "object",
+            "properties": {
+                "$type": {
+                    "const": "control-menu"
+                },
+                "onselect": {
+                    "$ref": "/schemas/v2/message.json"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/menu-item"
+                    }
+                }
+            },
+            "required": [
+                "$type",
+                "items"
+            ],
+            "$defs": {
+                "menu-item": {
+                    "$schema": "https://json-schema.org/draft/2020-12/schema",
+                    "$id": "/schemas/v2/menu-item.json",
+                    "title": "Menu Item",
+                    "description": "A single item in a menu",
+                    "type": "object",
+                    "properties": {
+                        "$type": {
+                            "const": "control-menu-item"
+                        },
+                        "label": {
+                            "type": "string"
+                        },
+                        "onselect": {
+                            "$ref": "/schemas/v2/message.json"
+                        }
+                    },
+                    "required": [
+                        "$type",
+                        "label",
+                        "onselect"
+                    ]
+                }
+            }
+        },
+        "control-switch": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "/schemas/v2/control-switch.json",
+            "title": "Control group switch",
+            "description": "A control that pages between multiple control groups",
+            "type": "object",
+            "properties": {
+                "$type": {
+                    "const": "control-switch"
+                },
+                "groups": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/group"
+                    }
+                }
+            },
+            "required": [
+                "$type",
+                "groups"
+            ],
+            "$defs": {
+                "group": {
+                    "$schema": "https://json-schema.org/draft/2020-12/schema",
+                    "$id": "/schemas/v2/group.json",
+                    "title": "Group",
+                    "description": "A group holding multiple controls",
+                    "type": "object",
+                    "properties": {
+                        "$type": {
+                            "const": "group"
+                        },
+                        "controls": {
+                            "type": "array",
+                            "items": {
+                                "anyOf": [
+                                    {
+                                        "$ref": "/schemas/control#/$defs/control-range"
+                                    },
+                                    {
+                                        "$ref": "/schemas/control#/$defs/control-menu"
+                                    },
+                                    {
+                                        "$ref": "/schemas/control#/$defs/control-spacer"
+                                    },
+                                    {
+                                        "$ref": "/schemas/control#/$defs/control-macro"
+                                    }
+                                ]
+                            }
+                        },
+                        "onselect": {
+                            "$ref": "/schemas/v2/message.json"
+                        }
+                    },
+                    "required": [
+                        "$type",
+                        "controls"
+                    ]
+                }
+            }
+        }
+    }
+}

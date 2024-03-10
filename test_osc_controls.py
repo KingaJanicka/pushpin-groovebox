@@ -74,6 +74,18 @@ def test_OSCMacroControl(mocker):
     mock_send_osc_func.assert_any_call("/param/b/...", scale_knob_value([65, -99, 2.5]))
 
 
+def test_OSCControlMenuItem(mocker):
+    mock_send_osc_func = mocker.stub(name="send_osc_func")
+
+    control = OSCControlGroupMenuItem(
+        ["Label", "address", 99.0], send_osc_func=mock_send_osc_func
+    )
+
+    control.select()
+
+    mock_send_osc_func.assert_any_call("address", 99.0)
+
+
 def test_OSCControlGroup_range(mocker):
     mock_send_osc_func = mocker.stub(name="send_osc_func")
     mock_get_color_func = mocker.stub(name="get_color_func")
