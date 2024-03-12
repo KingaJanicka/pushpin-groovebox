@@ -47,7 +47,6 @@
             },
             "required": [
                 "$type",
-                "label",
                 "address",
                 "min",
                 "max"
