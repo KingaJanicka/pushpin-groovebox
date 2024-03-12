@@ -1,6 +1,6 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://pushpin.kinga.dev/schemas/v2/control",
+    "$id": "https://pushpin.kinga.dev/schemas/v2/control.json",
     "title": "Control",
     "description": "A control in a device",
     "type": "object",
@@ -124,7 +124,7 @@
                     "type": "object",
                     "properties": {
                         "$type": {
-                            "const": "control-menu-item"
+                            "const": "menu-item"
                         },
                         "label": {
                             "type": "string"

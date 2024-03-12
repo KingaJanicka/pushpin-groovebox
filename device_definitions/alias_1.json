@@ -1,50 +1,298 @@
 {
-    "device_name" : "ALIAS",
-    "device_slots" : [0],
-    "init" : [["unmute osc", "/param/a/mixer/osc1/mute", 0.0 ], ["unmute osc", "/param/a/osc/1/type", 11.0 ]],
-    "osc": {
-        "controls": [
-            ["PITCH", "/param/a/osc/1/pitch", 0.0, 1.0],
-            {
-                "name": "Shape",
-                "controls": [
-                    ["Sine", "/param/a/osc/1/param1", 0.0],
-                    ["Ramp", "/param/a/osc/1/param1", 1.0],
-                    ["Pulse", "/param/a/osc/1/param1", 2.0],
-                    ["Noise", "/param/a/osc/1/param1", 3.0],
-                    ["Addative", "/param/a/osc/1/param1", 17.0],
-                    ["TX2", "/param/a/osc/1/param1", 10.0],
-                    ["TX3", "/param/a/osc/1/param1", 11.0],
-                    ["TX4", "/param/a/osc/1/param1", 12.0],
-                    ["TX5", "/param/a/osc/1/param1", 13.0],
-                    ["TX6", "/param/a/osc/1/param1", 14.0],
-                    ["TX7", "/param/a/osc/1/param1", 15.0],
-                    ["TX8", "/param/a/osc/1/param1", 16.0],
-                    ["Mem Alias", "/param/a/osc/1/param1", 4.0],
-                    ["Mem Osc", "/param/a/osc/1/param1", 5.0],
-                    ["Mem Arp", "/param/a/osc/1/param1", 8.0],
-                    ["Mem Scene", "/param/a/osc/1/param1", 6.0],
-                    ["Mem Daw", "/param/a/osc/1/param1", 7.0],
-                    ["Audio in", "/param/a/osc/1/param1", 9.0]
-                    
-                   
-                ]
-            },
-            ["WARP", "/param/a/osc/1/param2", 0.0, 1.0],
-            ["MASK", "/param/a/osc/1/param3", 0.0, 1.0],
-            ["THRESHOLD", "/param/a/osc/1/param4", 0.0 , 1.0],
-            ["BITCRUSH", "/param/a/osc/1/param5", 0.0 , 1.0],
-            ["UNI. DET", "/param/a/osc/1/param6", 0.0, 1.0],
-            ["UNI. VOICES", "/param/a/osc/1/param7", 0.0, 16.0],
-            [],
-            [],
-            ["KEYTRACK", "/param/a/osc/1/keytrack", 0.0, 1.0],
-            ["RETRIG", "/param/a/osc/1/retrigger", 0.0, 1.0],
-            ["FIL ROUTE", "/param/a/mixer/osc1/route", 0.0 , 2.0],
-            [],
-            ["FM DEPTH", "/param/a/osc/fm_depth", 0.0, 1.0],
-            ["FM ROUTING", "/param/a/osc/fm_routing", 0.0, 3.0]
-          ]
-      }
-
+	"name": "ALIAS",
+	"slot": 0,
+	"init": [
+		{
+			"$type": "message",
+			"$comment": "unmute osc",
+			"address": "/param/a/mixer/osc1/mute",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"$comment": "unmute osc",
+			"address": "/param/a/osc/1/type",
+			"value": 11
+		}
+	],
+	"controls": [
+		{
+			"$type": "control-range",
+			"label": "PITCH",
+			"address": "/param/a/osc/1/pitch",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-menu",
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "Sine",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Sine",
+						"address": "/param/a/osc/1/param1",
+						"value": 0
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Ramp",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Ramp",
+						"address": "/param/a/osc/1/param1",
+						"value": 1
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Pulse",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Pulse",
+						"address": "/param/a/osc/1/param1",
+						"value": 2
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Noise",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Noise",
+						"address": "/param/a/osc/1/param1",
+						"value": 3
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Addative",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Addative",
+						"address": "/param/a/osc/1/param1",
+						"value": 17
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "TX2",
+					"onselect": {
+						"$type": "message",
+						"$comment": "TX2",
+						"address": "/param/a/osc/1/param1",
+						"value": 10
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "TX3",
+					"onselect": {
+						"$type": "message",
+						"$comment": "TX3",
+						"address": "/param/a/osc/1/param1",
+						"value": 11
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "TX4",
+					"onselect": {
+						"$type": "message",
+						"$comment": "TX4",
+						"address": "/param/a/osc/1/param1",
+						"value": 12
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "TX5",
+					"onselect": {
+						"$type": "message",
+						"$comment": "TX5",
+						"address": "/param/a/osc/1/param1",
+						"value": 13
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "TX6",
+					"onselect": {
+						"$type": "message",
+						"$comment": "TX6",
+						"address": "/param/a/osc/1/param1",
+						"value": 14
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "TX7",
+					"onselect": {
+						"$type": "message",
+						"$comment": "TX7",
+						"address": "/param/a/osc/1/param1",
+						"value": 15
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "TX8",
+					"onselect": {
+						"$type": "message",
+						"$comment": "TX8",
+						"address": "/param/a/osc/1/param1",
+						"value": 16
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Mem Alias",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Mem Alias",
+						"address": "/param/a/osc/1/param1",
+						"value": 4
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Mem Osc",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Mem Osc",
+						"address": "/param/a/osc/1/param1",
+						"value": 5
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Mem Arp",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Mem Arp",
+						"address": "/param/a/osc/1/param1",
+						"value": 8
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Mem Scene",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Mem Scene",
+						"address": "/param/a/osc/1/param1",
+						"value": 6
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Mem Daw",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Mem Daw",
+						"address": "/param/a/osc/1/param1",
+						"value": 7
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Audio in",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Audio in",
+						"address": "/param/a/osc/1/param1",
+						"value": 9
+					}
+				}
+			]
+		},
+		{
+			"$type": "control-range",
+			"label": "WARP",
+			"address": "/param/a/osc/1/param2",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "MASK",
+			"address": "/param/a/osc/1/param3",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "THRESHOLD",
+			"address": "/param/a/osc/1/param4",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "BITCRUSH",
+			"address": "/param/a/osc/1/param5",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "UNI. DET",
+			"address": "/param/a/osc/1/param6",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "UNI. VOICES",
+			"address": "/param/a/osc/1/param7",
+			"min": 0,
+			"max": 16
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-range",
+			"label": "KEYTRACK",
+			"address": "/param/a/osc/1/keytrack",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "RETRIG",
+			"address": "/param/a/osc/1/retrigger",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "FIL ROUTE",
+			"address": "/param/a/mixer/osc1/route",
+			"min": 0,
+			"max": 2
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-range",
+			"label": "FM DEPTH",
+			"address": "/param/a/osc/fm_depth",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "FM ROUTING",
+			"address": "/param/a/osc/fm_routing",
+			"min": 0,
+			"max": 3
+		}
+	]
 }

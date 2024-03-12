@@ -1,46 +1,268 @@
 {
-    "device_name" : "STRING",
-    "device_slots" : [1],
-    "init" : [["unmute osc", "/param/a/mixer/osc2/mute", 0.0 ], ["set osc type", "/param/a/osc/2/type", 9.0 ]],
-    "osc": {
-        "controls": [
-            ["PITCH", "/param/a/osc/2/pitch", 0.0, 1.0],
-            {
-                "name": "EXC Type",
-                "controls": [
-                    ["Burst Noise", "/param/a/osc/2/param1", 0.0],
-                    ["Burst Pink", "/param/a/osc/2/param1", 1.0],
-                    ["Burst Sine", "/param/a/osc/2/param1", 2.0],
-                    ["Burst Trian", "/param/a/osc/2/param1", 3.0],
-                    ["Burst Ramp", "/param/a/osc/2/param1", 4.0],
-                    ["Burst Sq", "/param/a/osc/2/param1", 5.0],
-                    ["Burst Sweep", "/param/a/osc/2/param1", 6.0],
-                    ["Noise", "/param/a/osc/2/param1", 7.0],
-                    ["Pink", "/param/a/osc/2/param1", 8.0],
-                    ["Sine", "/param/a/osc/2/param1", 9.0],
-                    ["Triangle", "/param/a/osc/2/param1", 10.0],
-                    ["Ramp", "/param/a/osc/2/param1", 11.0],
-                    ["Square", "/param/a/osc/2/param1", 12.0],
-                    ["Sweep", "/param/a/osc/2/param1", 13.0],
-                    ["Audio in", "/param/a/osc/2/param1", 14.0]
-                   
-                ]
-            },
-            ["EXCT LVL", "/param/a/osc/2/param2", 0.0, 1.0],
-            ["STR. 1 DEC", "/param/a/osc/2/param3", 0.0, 1.0],
-            ["STR. 2 DEC", "/param/a/osc/2/param4", 0.0 , 1.0],
-            ["STR. 2 DET", "/param/a/osc/2/param5", 0.0 , 1.0],
-            ["STR. BAL", "/param/a/osc/2/param6", 0.0, 1.0],
-            ["STIFFNESS", "/param/a/osc/2/param7", 0.0, 1.0],
-            [],
-            [],
-            ["KEYTRACK", "/param/a/osc/2/keytrack", 0.0, 1.0],
-            ["RETRIG", "/param/a/osc/2/retrigger", 0.0, 1.0],
-            ["FIL ROUTE", "/param/a/mixer/osc2/route", 0.0 , 2.0],
-            [],
-            ["FM DEPTH", "/param/a/osc/fm_depth", 0.0, 1.0],
-            ["FM ROUTING", "/param/a/osc/fm_routing", 0.0, 3.0]
-          ]
-      }
-
+	"name": "STRING",
+	"slot": 1,
+	"init": [
+		{
+			"$type": "message",
+			"$comment": "unmute osc",
+			"address": "/param/a/mixer/osc2/mute",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"$comment": "set osc type",
+			"address": "/param/a/osc/2/type",
+			"value": 9
+		}
+	],
+	"controls": [
+		{
+			"$type": "control-range",
+			"label": "PITCH",
+			"address": "/param/a/osc/2/pitch",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-menu",
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "Burst Noise",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Burst Noise",
+						"address": "/param/a/osc/2/param1",
+						"value": 0
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Burst Pink",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Burst Pink",
+						"address": "/param/a/osc/2/param1",
+						"value": 1
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Burst Sine",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Burst Sine",
+						"address": "/param/a/osc/2/param1",
+						"value": 2
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Burst Trian",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Burst Trian",
+						"address": "/param/a/osc/2/param1",
+						"value": 3
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Burst Ramp",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Burst Ramp",
+						"address": "/param/a/osc/2/param1",
+						"value": 4
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Burst Sq",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Burst Sq",
+						"address": "/param/a/osc/2/param1",
+						"value": 5
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Burst Sweep",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Burst Sweep",
+						"address": "/param/a/osc/2/param1",
+						"value": 6
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Noise",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Noise",
+						"address": "/param/a/osc/2/param1",
+						"value": 7
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Pink",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Pink",
+						"address": "/param/a/osc/2/param1",
+						"value": 8
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Sine",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Sine",
+						"address": "/param/a/osc/2/param1",
+						"value": 9
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Triangle",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Triangle",
+						"address": "/param/a/osc/2/param1",
+						"value": 10
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Ramp",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Ramp",
+						"address": "/param/a/osc/2/param1",
+						"value": 11
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Square",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Square",
+						"address": "/param/a/osc/2/param1",
+						"value": 12
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Sweep",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Sweep",
+						"address": "/param/a/osc/2/param1",
+						"value": 13
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Audio in",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Audio in",
+						"address": "/param/a/osc/2/param1",
+						"value": 14
+					}
+				}
+			]
+		},
+		{
+			"$type": "control-range",
+			"label": "EXCT LVL",
+			"address": "/param/a/osc/2/param2",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "STR. 1 DEC",
+			"address": "/param/a/osc/2/param3",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "STR. 2 DEC",
+			"address": "/param/a/osc/2/param4",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "STR. 2 DET",
+			"address": "/param/a/osc/2/param5",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "STR. BAL",
+			"address": "/param/a/osc/2/param6",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "STIFFNESS",
+			"address": "/param/a/osc/2/param7",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-range",
+			"label": "KEYTRACK",
+			"address": "/param/a/osc/2/keytrack",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "RETRIG",
+			"address": "/param/a/osc/2/retrigger",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "FIL ROUTE",
+			"address": "/param/a/mixer/osc2/route",
+			"min": 0,
+			"max": 2
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-range",
+			"label": "FM DEPTH",
+			"address": "/param/a/osc/fm_depth",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "FM ROUTING",
+			"address": "/param/a/osc/fm_routing",
+			"min": 0,
+			"max": 3
+		}
+	]
 }

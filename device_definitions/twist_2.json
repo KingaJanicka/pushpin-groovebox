@@ -1,186 +1,731 @@
 {
-    "device_name" : "CLASSIC",
-    "device_slots" : [0],
-    "init" : [["unmute osc", "/param/a/mixer/osc2/mute", 0.0 ], ["set osc type", "/param/a/osc/2/type", 10.0 ]],
-    "osc": {
-        "controls": [
-            ["PITCH", "/param/a/osc/2/pitch", 0.0, 1.0],
-            {
-				"name": "Engine",
-				"controls": [
-					{
-						"name": "Waveforms",
-						"value" : ["/param/a/osc/2/param1", 0.0],
-						"controls": [
-							["Detune", "/param/a/osc/2/param2", 0.0, 1.0],
-							["Square Sh.", "/param/a/osc/2/param3", 0.0, 1.0],
-							["Saw Sh.", "/param/a/osc/2/param4", 0.0, 1.0],
-                            ["Sync Mix", "/param/a/osc/2/param5", 0.0, 1.0]
-						]
+	"name": "CLASSIC",
+	"slot": 0,
+	"init": [
+		{
+			"$type": "message",
+			"$comment": "unmute osc",
+			"address": "/param/a/mixer/osc2/mute",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"$comment": "set osc type",
+			"address": "/param/a/osc/2/type",
+			"value": 10
+		}
+	],
+	"controls": [
+		{
+			"$type": "control-range",
+			"label": "PITCH",
+			"address": "/param/a/osc/2/pitch",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "group",
+			"label": "Engine",
+			"groups": [
+				{
+					"$type": "group",
+					"label": "Waveforms",
+					"value": {
+						"$type": "message",
+						"$comment": "",
+						"address": "/param/a/osc/2/param1",
+						"value": 0
 					},
-					{
-						"name": "Waveshaper",
-						"value" : ["/param/a/osc/2/param1", 1.0],
-						"controls": [
-							["Waveshaper", "/param/a/osc/2/param2", 0.0, 1.0],
-							["Fold", "/param/a/osc/2/param3", 0.0, 1.0],
-							["Asymmetry", "/param/a/osc/2/param4", 0.0, 1.0],
-                            ["Var. Mix", "/param/a/osc/2/param5", 0.0, 1.0]
-						]
+					"controls": [
+						{
+							"$type": "control-range",
+							"label": "Detune",
+							"address": "/param/a/osc/2/param2",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Square Sh.",
+							"address": "/param/a/osc/2/param3",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Saw Sh.",
+							"address": "/param/a/osc/2/param4",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Sync Mix",
+							"address": "/param/a/osc/2/param5",
+							"min": 0,
+							"max": 1
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "Waveshaper",
+					"value": {
+						"$type": "message",
+						"$comment": "",
+						"address": "/param/a/osc/2/param1",
+						"value": 1
 					},
-					{
-						"name": "2OP FM",
-						"value" : ["/param/a/osc/2/param1", 2.0],
-						"controls": [
-							["Ratio", "/param/a/osc/2/param2", 0.0, 1.0],
-							["Amount", "/param/a/osc/2/param3", 0.0, 1.0],
-							["Feedback", "/param/a/osc/2/param4", 0.0, 1.0],
-                            ["Sub Mix", "/param/a/osc/2/param5", 0.0, 1.0]
-						]
+					"controls": [
+						{
+							"$type": "control-range",
+							"label": "Waveshaper",
+							"address": "/param/a/osc/2/param2",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Fold",
+							"address": "/param/a/osc/2/param3",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Asymmetry",
+							"address": "/param/a/osc/2/param4",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Var. Mix",
+							"address": "/param/a/osc/2/param5",
+							"min": 0,
+							"max": 1
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "2OP FM",
+					"value": {
+						"$type": "message",
+						"$comment": "",
+						"address": "/param/a/osc/2/param1",
+						"value": 2
 					},
-					{
-						"name": "Formant",
-						"value" : ["/param/a/osc/2/param1", 3.0],
-						"controls": [
-							["Ratio/Type", "/param/a/osc/2/param2", 0.0, 1.0],
-							["Formant", "/param/a/osc/2/param3", 0.0, 1.0],
-							["Shape", "/param/a/osc/2/param4", 0.0, 1.0],
-                            ["PD Mix", "/param/a/osc/2/param5", 0.0, 1.0]
-						]
+					"controls": [
+						{
+							"$type": "control-range",
+							"label": "Ratio",
+							"address": "/param/a/osc/2/param2",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Amount",
+							"address": "/param/a/osc/2/param3",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Feedback",
+							"address": "/param/a/osc/2/param4",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Sub Mix",
+							"address": "/param/a/osc/2/param5",
+							"min": 0,
+							"max": 1
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "Formant",
+					"value": {
+						"$type": "message",
+						"$comment": "",
+						"address": "/param/a/osc/2/param1",
+						"value": 3
 					},
-					{
-						"name": "Harmonic",
-						"value" : ["/param/a/osc/2/param1", 4.0],
-						"controls": [
-							["Bump", "/param/a/osc/2/param2", 0.0, 1.0],
-							["Peak", "/param/a/osc/2/param3", 0.0, 1.0],
-							["Shape", "/param/a/osc/2/param4", 0.0, 1.0],
-                            ["Organ Mix", "/param/a/osc/2/param5", 0.0, 1.0]
-						]
+					"controls": [
+						{
+							"$type": "control-range",
+							"label": "Ratio/Type",
+							"address": "/param/a/osc/2/param2",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Formant",
+							"address": "/param/a/osc/2/param3",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Shape",
+							"address": "/param/a/osc/2/param4",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "PD Mix",
+							"address": "/param/a/osc/2/param5",
+							"min": 0,
+							"max": 1
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "Harmonic",
+					"value": {
+						"$type": "message",
+						"$comment": "",
+						"address": "/param/a/osc/2/param1",
+						"value": 4
 					},
-					{
-						"name": "Wavetable",
-						"value" : ["/param/a/osc/2/param1", 5.0],
-						"controls": [
-							["Bank", "/param/a/osc/2/param2", 0.0, 1.0],
-							["Morph X", "/param/a/osc/2/param3", 0.0, 1.0],
-							["Morph Y", "/param/a/osc/2/param4", 0.0, 1.0],
-                            ["Lo-Fi Mix", "/param/a/osc/2/param5", 0.0, 1.0]
-						]
+					"controls": [
+						{
+							"$type": "control-range",
+							"label": "Bump",
+							"address": "/param/a/osc/2/param2",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Peak",
+							"address": "/param/a/osc/2/param3",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Shape",
+							"address": "/param/a/osc/2/param4",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Organ Mix",
+							"address": "/param/a/osc/2/param5",
+							"min": 0,
+							"max": 1
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "Wavetable",
+					"value": {
+						"$type": "message",
+						"$comment": "",
+						"address": "/param/a/osc/2/param1",
+						"value": 5
 					},
-					{
-						"name": "Chord",
-						"value" : ["/param/a/osc/2/param1", 6.0],
-						"controls": [
-							["Type", "/param/a/osc/2/param2", 0.0, 1.0],
-							["Inversion", "/param/a/osc/2/param3", 0.0, 1.0],
-							["Shape", "/param/a/osc/2/param4", 0.0, 1.0],
-                            ["Root Mix", "/param/a/osc/2/param5", 0.0, 1.0]
-						]
+					"controls": [
+						{
+							"$type": "control-range",
+							"label": "Bank",
+							"address": "/param/a/osc/2/param2",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Morph X",
+							"address": "/param/a/osc/2/param3",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Morph Y",
+							"address": "/param/a/osc/2/param4",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Lo-Fi Mix",
+							"address": "/param/a/osc/2/param5",
+							"min": 0,
+							"max": 1
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "Chord",
+					"value": {
+						"$type": "message",
+						"$comment": "",
+						"address": "/param/a/osc/2/param1",
+						"value": 6
 					},
-					{
-						"name": "Vowel",
-						"value" : ["/param/a/osc/2/param1", 7.0],
-						"controls": [
-							["Speak", "/param/a/osc/2/param2", 0.0, 1.0],
-							["Species", "/param/a/osc/2/param3", 0.0, 1.0],
-							["Segment", "/param/a/osc/2/param4", 0.0, 1.0],
-                            ["Raw Mix", "/param/a/osc/2/param5", 0.0, 1.0]
-						]
+					"controls": [
+						{
+							"$type": "control-range",
+							"label": "Type",
+							"address": "/param/a/osc/2/param2",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Inversion",
+							"address": "/param/a/osc/2/param3",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Shape",
+							"address": "/param/a/osc/2/param4",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Root Mix",
+							"address": "/param/a/osc/2/param5",
+							"min": 0,
+							"max": 1
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "Vowel",
+					"value": {
+						"$type": "message",
+						"$comment": "",
+						"address": "/param/a/osc/2/param1",
+						"value": 7
 					},
-					{
-						"name": "Granular",
-						"value" : ["/param/a/osc/2/param1", 8.0],
-						"controls": [
-							["Pitch Rand", "/param/a/osc/2/param2", 0.0, 1.0],
-							["Grain Dens", "/param/a/osc/2/param3", 0.0, 1.0],
-							["Grain Dur.", "/param/a/osc/2/param4", 0.0, 1.0],
-                            ["Sine Mix", "/param/a/osc/2/param5", 0.0, 1.0]
-						]
+					"controls": [
+						{
+							"$type": "control-range",
+							"label": "Speak",
+							"address": "/param/a/osc/2/param2",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Species",
+							"address": "/param/a/osc/2/param3",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Segment",
+							"address": "/param/a/osc/2/param4",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Raw Mix",
+							"address": "/param/a/osc/2/param5",
+							"min": 0,
+							"max": 1
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "Granular",
+					"value": {
+						"$type": "message",
+						"$comment": "",
+						"address": "/param/a/osc/2/param1",
+						"value": 8
 					},
-					{
-						"name": "Noise",
-						"value" : ["/param/a/osc/2/param1", 9.0],
-						"controls": [
-							["Type", "/param/a/osc/2/param2", 0.0, 1.0],
-							["Clock Freq", "/param/a/osc/2/param3", 0.0, 1.0],
-							["Res", "/param/a/osc/2/param4", 0.0, 1.0],
-                            ["Peak Mix", "/param/a/osc/2/param5", 0.0, 1.0]
-						]
+					"controls": [
+						{
+							"$type": "control-range",
+							"label": "Pitch Rand",
+							"address": "/param/a/osc/2/param2",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Grain Dens",
+							"address": "/param/a/osc/2/param3",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Grain Dur.",
+							"address": "/param/a/osc/2/param4",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Sine Mix",
+							"address": "/param/a/osc/2/param5",
+							"min": 0,
+							"max": 1
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "Noise",
+					"value": {
+						"$type": "message",
+						"$comment": "",
+						"address": "/param/a/osc/2/param1",
+						"value": 9
 					},
-					{
-						"name": "Particle",
-						"value" : ["/param/a/osc/2/param1", 10.0],
-						"controls": [
-							["Freq Rand", "/param/a/osc/2/param2", 0.0, 1.0],
-							["Dens", "/param/a/osc/2/param3", 0.0, 1.0],
-							["Filt Type", "/param/a/osc/2/param4", 0.0, 1.0],
-                            ["Raw Mix", "/param/a/osc/2/param5", 0.0, 1.0]
-						]
+					"controls": [
+						{
+							"$type": "control-range",
+							"label": "Type",
+							"address": "/param/a/osc/2/param2",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Clock Freq",
+							"address": "/param/a/osc/2/param3",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Res",
+							"address": "/param/a/osc/2/param4",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Peak Mix",
+							"address": "/param/a/osc/2/param5",
+							"min": 0,
+							"max": 1
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "Particle",
+					"value": {
+						"$type": "message",
+						"$comment": "",
+						"address": "/param/a/osc/2/param1",
+						"value": 10
 					},
-					{
-						"name": "String",
-						"value" : ["/param/a/osc/2/param1", 11.0],
-						"controls": [
-							["Inharm.", "/param/a/osc/2/param2", 0.0, 1.0],
-							["Bright", "/param/a/osc/2/param3", 0.0, 1.0],
-							["Decay", "/param/a/osc/2/param4", 0.0, 1.0],
-                            ["Exct. Mix", "/param/a/osc/2/param5", 0.0, 1.0]
-						]
+					"controls": [
+						{
+							"$type": "control-range",
+							"label": "Freq Rand",
+							"address": "/param/a/osc/2/param2",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Dens",
+							"address": "/param/a/osc/2/param3",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Filt Type",
+							"address": "/param/a/osc/2/param4",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Raw Mix",
+							"address": "/param/a/osc/2/param5",
+							"min": 0,
+							"max": 1
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "String",
+					"value": {
+						"$type": "message",
+						"$comment": "",
+						"address": "/param/a/osc/2/param1",
+						"value": 11
 					},
-					{
-						"name": "Resonator",
-						"value" : ["/param/a/osc/2/param1", 12.0],
-						"controls": [
-							["Material.", "/param/a/osc/2/param2", 0.0, 1.0],
-							["Bright", "/param/a/osc/2/param3", 0.0, 1.0],
-							["Decay", "/param/a/osc/2/param4", 0.0, 1.0],
-                            ["Exct. Mix", "/param/a/osc/2/param5", 0.0, 1.0]
-						]
+					"controls": [
+						{
+							"$type": "control-range",
+							"label": "Inharm.",
+							"address": "/param/a/osc/2/param2",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Bright",
+							"address": "/param/a/osc/2/param3",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Decay",
+							"address": "/param/a/osc/2/param4",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Exct. Mix",
+							"address": "/param/a/osc/2/param5",
+							"min": 0,
+							"max": 1
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "Resonator",
+					"value": {
+						"$type": "message",
+						"$comment": "",
+						"address": "/param/a/osc/2/param1",
+						"value": 12
 					},
-					{
-						"name": "Kick",
-						"value" : ["/param/a/osc/2/param1", 13.0],
-						"controls": [
-							["Sharp", "/param/a/osc/2/param2", 0.0, 1.0],
-							["Bright", "/param/a/osc/2/param3", 0.0, 1.0],
-							["Decay", "/param/a/osc/2/param4", 0.0, 1.0],
-                            ["Var Mix", "/param/a/osc/2/param5", 0.0, 1.0]
-						]
+					"controls": [
+						{
+							"$type": "control-range",
+							"label": "Material.",
+							"address": "/param/a/osc/2/param2",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Bright",
+							"address": "/param/a/osc/2/param3",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Decay",
+							"address": "/param/a/osc/2/param4",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Exct. Mix",
+							"address": "/param/a/osc/2/param5",
+							"min": 0,
+							"max": 1
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "Kick",
+					"value": {
+						"$type": "message",
+						"$comment": "",
+						"address": "/param/a/osc/2/param1",
+						"value": 13
 					},
-					{
-						"name": "Snare",
-						"value" : ["/param/a/osc/2/param1", 14.0],
-						"controls": [
-							["Tone/Noise", "/param/a/osc/2/param2", 0.0, 1.0],
-							["Model", "/param/a/osc/2/param3", 0.0, 1.0],
-							["Decay", "/param/a/osc/2/param4", 0.0, 1.0],
-                            ["Var Mix", "/param/a/osc/2/param5", 0.0, 1.0]
-						]
+					"controls": [
+						{
+							"$type": "control-range",
+							"label": "Sharp",
+							"address": "/param/a/osc/2/param2",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Bright",
+							"address": "/param/a/osc/2/param3",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Decay",
+							"address": "/param/a/osc/2/param4",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Var Mix",
+							"address": "/param/a/osc/2/param5",
+							"min": 0,
+							"max": 1
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "Snare",
+					"value": {
+						"$type": "message",
+						"$comment": "",
+						"address": "/param/a/osc/2/param1",
+						"value": 14
 					},
-					{
-						"name": "Hi-Hat",
-						"value" : ["/param/a/osc/2/param1", 15.0],
-						"controls": [
-							["Tone/Noise", "/param/a/osc/2/param2", 0.0, 1.0],
-							["Low Cut", "/param/a/osc/2/param3", 0.0, 1.0],
-							["Decay", "/param/a/osc/2/param4", 0.0, 1.0],
-                            ["Var Mix", "/param/a/osc/2/param5", 0.0, 1.0]
-						]
-					}
-				]
-			},
-            ["LPG Resp", "/param/a/osc/2/param6", 0.0, 1.0],
-            ["LPG Decay", "/param/a/osc/2/param7", 0.0, 1.0],
-            [],
-            [],
-            ["KEYTRACK", "/param/a/osc/2/keytrack", 0.0, 1.0],
-            ["RETRIG", "/param/a/osc/2/retrigger", 0.0, 1.0],
-            ["FIL ROUTE", "/param/a/mixer/osc1/route", 0.0 , 2.0],
-            [],
-            ["FM DEPTH", "/param/a/osc/fm_depth", 0.0, 1.0],
-            ["FM ROUTING", "/param/a/osc/fm_routing", 0.0, 3.0]
-          ]
-      }
-
+					"controls": [
+						{
+							"$type": "control-range",
+							"label": "Tone/Noise",
+							"address": "/param/a/osc/2/param2",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Model",
+							"address": "/param/a/osc/2/param3",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Decay",
+							"address": "/param/a/osc/2/param4",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Var Mix",
+							"address": "/param/a/osc/2/param5",
+							"min": 0,
+							"max": 1
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "Hi-Hat",
+					"value": {
+						"$type": "message",
+						"$comment": "",
+						"address": "/param/a/osc/2/param1",
+						"value": 15
+					},
+					"controls": [
+						{
+							"$type": "control-range",
+							"label": "Tone/Noise",
+							"address": "/param/a/osc/2/param2",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Low Cut",
+							"address": "/param/a/osc/2/param3",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Decay",
+							"address": "/param/a/osc/2/param4",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Var Mix",
+							"address": "/param/a/osc/2/param5",
+							"min": 0,
+							"max": 1
+						}
+					]
+				}
+			]
+		},
+		{
+			"$type": "control-range",
+			"label": "LPG Resp",
+			"address": "/param/a/osc/2/param6",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "LPG Decay",
+			"address": "/param/a/osc/2/param7",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-range",
+			"label": "KEYTRACK",
+			"address": "/param/a/osc/2/keytrack",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "RETRIG",
+			"address": "/param/a/osc/2/retrigger",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "FIL ROUTE",
+			"address": "/param/a/mixer/osc1/route",
+			"min": 0,
+			"max": 2
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-range",
+			"label": "FM DEPTH",
+			"address": "/param/a/osc/fm_depth",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "FM ROUTING",
+			"address": "/param/a/osc/fm_routing",
+			"min": 0,
+			"max": 3
+		}
+	]
 }

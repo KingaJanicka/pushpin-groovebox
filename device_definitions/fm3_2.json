@@ -1,26 +1,120 @@
 {
-    "device_name" : "FM3",
-    "device_slots" : [1],
-    "init" : [["unmute osc", "/param/a/mixer/osc2/mute", 0.0 ], ["set osc type", "/param/a/osc/2/type", 5.0 ]],
-    "osc": {
-        "controls": [
-            ["PITCH", "/param/a/osc/2/pitch", 0.0, 1.0],
-            ["M1 AMOUNT", "/param/a/osc/2/param1", 0.0, 1.0],
-            ["M1 RATIO", "/param/a/osc/2/param2", 0.0, 32.0],
-            ["M2 AMOUNT", "/param/a/osc/2/param3", 0.0, 1.0],
-            ["M2 RATIO", "/param/a/osc/2/param4", 0.0 , 32.0],
-            ["M3 AMOUNT", "/param/a/osc/2/param5", 0.0 , 1.0],
-            ["M3 FREQ", "/param/a/osc/2/param6", 0.0, 1.0],
-            ["FEEDBACK", "/param/a/osc/2/param7", 0.0, 1.0],
-            [],
-            [],
-            ["KEYTRACK", "/param/a/osc/2/keytrack", 0.0, 1.0],
-            ["RETRIG", "/param/a/osc/2/retrigger", 0.0, 1.0],
-            ["FIL ROUTE", "/param/a/mixer/osc2/route", 0.0 , 2.0],
-            [],
-            ["FM DEPTH", "/param/a/osc/fm_depth", 0.0, 1.0],
-            ["FM ROUTING", "/param/a/osc/fm_routing", 0.0, 3.0]
-          ]
-      }
-
+	"name": "FM3",
+	"slot": 1,
+	"init": [
+		{
+			"$type": "message",
+			"$comment": "unmute osc",
+			"address": "/param/a/mixer/osc2/mute",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"$comment": "set osc type",
+			"address": "/param/a/osc/2/type",
+			"value": 5
+		}
+	],
+	"controls": [
+		{
+			"$type": "control-range",
+			"label": "PITCH",
+			"address": "/param/a/osc/2/pitch",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "M1 AMOUNT",
+			"address": "/param/a/osc/2/param1",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "M1 RATIO",
+			"address": "/param/a/osc/2/param2",
+			"min": 0,
+			"max": 32
+		},
+		{
+			"$type": "control-range",
+			"label": "M2 AMOUNT",
+			"address": "/param/a/osc/2/param3",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "M2 RATIO",
+			"address": "/param/a/osc/2/param4",
+			"min": 0,
+			"max": 32
+		},
+		{
+			"$type": "control-range",
+			"label": "M3 AMOUNT",
+			"address": "/param/a/osc/2/param5",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "M3 FREQ",
+			"address": "/param/a/osc/2/param6",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "FEEDBACK",
+			"address": "/param/a/osc/2/param7",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-range",
+			"label": "KEYTRACK",
+			"address": "/param/a/osc/2/keytrack",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "RETRIG",
+			"address": "/param/a/osc/2/retrigger",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "FIL ROUTE",
+			"address": "/param/a/mixer/osc2/route",
+			"min": 0,
+			"max": 2
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-range",
+			"label": "FM DEPTH",
+			"address": "/param/a/osc/fm_depth",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "FM ROUTING",
+			"address": "/param/a/osc/fm_routing",
+			"min": 0,
+			"max": 3
+		}
+	]
 }

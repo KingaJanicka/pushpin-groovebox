@@ -1,65 +1,416 @@
 {
-    "device_name" : "SINE",
-    "device_slots" : [1],
-    "init" : [["unmute osc", "/param/a/mixer/osc2/mute", 0.0 ], ["set osc type", "/param/a/osc/2/type", 1.0 ]],
-    "osc": {
-        "controls": [
-            ["PITCH", "/param/a/osc/2/pitch", 0.0, 1.0],
-            {
-                "name": "Shape",
-                "controls": [
-                    ["1", "/param/a/osc/2/param1", 0.0],
-                    ["2", "/param/a/osc/2/param1", 1.0],
-                    ["3", "/param/a/osc/2/param1", 2.0],
-                    ["4", "/param/a/osc/2/param1", 3.0],
-                    ["5", "/param/a/osc/2/param1", 4.0],
-                    ["6", "/param/a/osc/2/param1", 5.0],
-                    ["7", "/param/a/osc/2/param1", 6.0],
-                    ["8", "/param/a/osc/2/param1", 7.0],
-                    ["9", "/param/a/osc/2/param1", 8.0],
-                    ["10", "/param/a/osc/2/param1", 9.0],
-                    ["11", "/param/a/osc/2/param1", 10.0],
-                    ["12", "/param/a/osc/2/param1", 11.0],
-                    ["13", "/param/a/osc/2/param1", 12.0],
-                    ["14", "/param/a/osc/2/param1", 13.0],
-                    ["15", "/param/a/osc/2/param1", 14.0],
-                    ["16", "/param/a/osc/2/param1", 15.0],
-                    ["17", "/param/a/osc/2/param1", 16.0],
-                    ["18", "/param/a/osc/2/param1", 17.0],
-                    ["19", "/param/a/osc/2/param1", 18.0],
-                    ["20", "/param/a/osc/2/param1", 19.0],
-                    ["21", "/param/a/osc/2/param1", 20.0],
-                    ["22", "/param/a/osc/2/param1", 21.0],
-                    ["23", "/param/a/osc/2/param1", 22.0],
-                    ["24", "/param/a/osc/2/param1", 23.0],
-                    ["25", "/param/a/osc/2/param1", 24.0],
-                    ["26", "/param/a/osc/2/param1", 25.0],
-                    ["27", "/param/a/osc/2/param1", 26.0],
-                    ["28", "/param/a/osc/2/param1", 27.0]
-                   
-                ]
-            },
-            ["FEEDBACK", "/param/a/osc/2/param2", 0.0, 1.0],
-            {
-                "name": "Behaviour",
-                "controls": [
-                    ["Legacy", "/param/a/osc/2/param3", 0.0],
-                    ["Modern", "/param/a/osc/2/param3", 1.0]
-                ]
-            },
-            ["LOW CUT", "/param/a/osc/2/param4", 0.0 , 1.0],
-            ["HIGH CUT", "/param/a/osc/2/param5", 0.0 , 1.0],
-            ["UN. DET", "/param/a/osc/2/param6", 0.0, 1.0],
-            ["UN. VOICES", "/param/a/osc/2/param7", 0.0, 16.0],
-            [],
-            [],
-            ["KEYTRACK", "/param/a/osc/2/keytrack", 0.0, 1.0],
-            ["RETRIG", "/param/a/osc/2/retrigger", 0.0, 1.0],
-            ["FIL ROUTE", "/param/a/mixer/osc2/route", 0.0 , 2.0],
-            [],
-            ["FM DEPTH", "/param/a/osc/fm_depth", 0.0, 1.0],
-            ["FM ROUTING", "/param/a/osc/fm_routing", 0.0, 3.0]
-          ]
-      }
-
+	"name": "SINE",
+	"slot": 1,
+	"init": [
+		{
+			"$type": "message",
+			"$comment": "unmute osc",
+			"address": "/param/a/mixer/osc2/mute",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"$comment": "set osc type",
+			"address": "/param/a/osc/2/type",
+			"value": 1
+		}
+	],
+	"controls": [
+		{
+			"$type": "control-range",
+			"label": "PITCH",
+			"address": "/param/a/osc/2/pitch",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-menu",
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "1",
+					"onselect": {
+						"$type": "message",
+						"$comment": "1",
+						"address": "/param/a/osc/2/param1",
+						"value": 0
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "2",
+					"onselect": {
+						"$type": "message",
+						"$comment": "2",
+						"address": "/param/a/osc/2/param1",
+						"value": 1
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "3",
+					"onselect": {
+						"$type": "message",
+						"$comment": "3",
+						"address": "/param/a/osc/2/param1",
+						"value": 2
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "4",
+					"onselect": {
+						"$type": "message",
+						"$comment": "4",
+						"address": "/param/a/osc/2/param1",
+						"value": 3
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "5",
+					"onselect": {
+						"$type": "message",
+						"$comment": "5",
+						"address": "/param/a/osc/2/param1",
+						"value": 4
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "6",
+					"onselect": {
+						"$type": "message",
+						"$comment": "6",
+						"address": "/param/a/osc/2/param1",
+						"value": 5
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "7",
+					"onselect": {
+						"$type": "message",
+						"$comment": "7",
+						"address": "/param/a/osc/2/param1",
+						"value": 6
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "8",
+					"onselect": {
+						"$type": "message",
+						"$comment": "8",
+						"address": "/param/a/osc/2/param1",
+						"value": 7
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "9",
+					"onselect": {
+						"$type": "message",
+						"$comment": "9",
+						"address": "/param/a/osc/2/param1",
+						"value": 8
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "10",
+					"onselect": {
+						"$type": "message",
+						"$comment": "10",
+						"address": "/param/a/osc/2/param1",
+						"value": 9
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "11",
+					"onselect": {
+						"$type": "message",
+						"$comment": "11",
+						"address": "/param/a/osc/2/param1",
+						"value": 10
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "12",
+					"onselect": {
+						"$type": "message",
+						"$comment": "12",
+						"address": "/param/a/osc/2/param1",
+						"value": 11
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "13",
+					"onselect": {
+						"$type": "message",
+						"$comment": "13",
+						"address": "/param/a/osc/2/param1",
+						"value": 12
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "14",
+					"onselect": {
+						"$type": "message",
+						"$comment": "14",
+						"address": "/param/a/osc/2/param1",
+						"value": 13
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "15",
+					"onselect": {
+						"$type": "message",
+						"$comment": "15",
+						"address": "/param/a/osc/2/param1",
+						"value": 14
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "16",
+					"onselect": {
+						"$type": "message",
+						"$comment": "16",
+						"address": "/param/a/osc/2/param1",
+						"value": 15
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "17",
+					"onselect": {
+						"$type": "message",
+						"$comment": "17",
+						"address": "/param/a/osc/2/param1",
+						"value": 16
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "18",
+					"onselect": {
+						"$type": "message",
+						"$comment": "18",
+						"address": "/param/a/osc/2/param1",
+						"value": 17
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "19",
+					"onselect": {
+						"$type": "message",
+						"$comment": "19",
+						"address": "/param/a/osc/2/param1",
+						"value": 18
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "20",
+					"onselect": {
+						"$type": "message",
+						"$comment": "20",
+						"address": "/param/a/osc/2/param1",
+						"value": 19
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "21",
+					"onselect": {
+						"$type": "message",
+						"$comment": "21",
+						"address": "/param/a/osc/2/param1",
+						"value": 20
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "22",
+					"onselect": {
+						"$type": "message",
+						"$comment": "22",
+						"address": "/param/a/osc/2/param1",
+						"value": 21
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "23",
+					"onselect": {
+						"$type": "message",
+						"$comment": "23",
+						"address": "/param/a/osc/2/param1",
+						"value": 22
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "24",
+					"onselect": {
+						"$type": "message",
+						"$comment": "24",
+						"address": "/param/a/osc/2/param1",
+						"value": 23
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "25",
+					"onselect": {
+						"$type": "message",
+						"$comment": "25",
+						"address": "/param/a/osc/2/param1",
+						"value": 24
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "26",
+					"onselect": {
+						"$type": "message",
+						"$comment": "26",
+						"address": "/param/a/osc/2/param1",
+						"value": 25
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "27",
+					"onselect": {
+						"$type": "message",
+						"$comment": "27",
+						"address": "/param/a/osc/2/param1",
+						"value": 26
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "28",
+					"onselect": {
+						"$type": "message",
+						"$comment": "28",
+						"address": "/param/a/osc/2/param1",
+						"value": 27
+					}
+				}
+			]
+		},
+		{
+			"$type": "control-range",
+			"label": "FEEDBACK",
+			"address": "/param/a/osc/2/param2",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-menu",
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "Legacy",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Legacy",
+						"address": "/param/a/osc/2/param3",
+						"value": 0
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Modern",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Modern",
+						"address": "/param/a/osc/2/param3",
+						"value": 1
+					}
+				}
+			]
+		},
+		{
+			"$type": "control-range",
+			"label": "LOW CUT",
+			"address": "/param/a/osc/2/param4",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "HIGH CUT",
+			"address": "/param/a/osc/2/param5",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "UN. DET",
+			"address": "/param/a/osc/2/param6",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "UN. VOICES",
+			"address": "/param/a/osc/2/param7",
+			"min": 0,
+			"max": 16
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-range",
+			"label": "KEYTRACK",
+			"address": "/param/a/osc/2/keytrack",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "RETRIG",
+			"address": "/param/a/osc/2/retrigger",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "FIL ROUTE",
+			"address": "/param/a/mixer/osc2/route",
+			"min": 0,
+			"max": 2
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-range",
+			"label": "FM DEPTH",
+			"address": "/param/a/osc/fm_depth",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "FM ROUTING",
+			"address": "/param/a/osc/fm_routing",
+			"min": 0,
+			"max": 3
+		}
+	]
 }

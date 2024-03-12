@@ -1,113 +1,583 @@
 {
-    "device_name" : "Filter B",
-    "device_slots" : [3],
-    "init" : [],
-    "osc": {
-        "controls": [
-            ["A", "/param/a/feg/attack", 0.0, 1.0],
-            ["D", "/param/a/feg/decay", 0.0, 1.0],
-            ["S", "/param/a/feg/sustain", 0.0, 1.0],
-            ["R", "/param/a/feg/release", 0.0, 1.0],
-            ["Feedb.", "/param/a/filter/feedback", 0.0, 1.0],
-            ["Shaper", "/param/a/waveshaper/drive", 0.0, 1.0],
-            ["HP", "/param/a/highpass", 0.0, 1.0],
-            ["Filt Bal", "/param/a/filter/balance", 0.0, 1.0],
-            ["Shape A", "/param/a/feg/attack_shape", 0.0, 2.0],
-            ["Shape D", "/param/a/feg/decay_shape", 0.0, 2.0],
-            ["Eg Mode", "/param/a/feg/mode", 0.0, 1.0],
-            ["Shape R", "/param/a/feg/release_shape", 0.0, 2.0],
-            [],
-            {
-				"name": "Sh. Cat",
-				"controls": [
-					{
-						"name": "Off",
-						"controls": [
-							["Off", "/param/a/waveshaper/type", 0.0]
-						]
-					},
-                    {
-						"name": "Saturator",
-						"controls": [
-							["Soft", "/param/a/waveshaper/type", 1.0],
-                            ["Med", "/param/a/waveshaper/type", 40.0],
-                            ["Hard", "/param/a/waveshaper/type", 2.0],
-                            ["Asymm.", "/param/a/waveshaper/type", 3.0],
-                            ["OJD", "/param/a/waveshaper/type", 41.0]
-						]
-					},
-                    {
-						"name": "Effect",
-						"controls": [
-							["Sine", "/param/a/waveshaper/type", 4.0],
-                            ["Digital", "/param/a/waveshaper/type", 5.0]
-						]
-					},
-                    {
-						"name": "Harm",
-						"controls": [
-							["Harm 2", "/param/a/waveshaper/type", 6.0],
-                            ["Harm 3", "/param/a/waveshaper/type", 7.0],
-                            ["Harm 4", "/param/a/waveshaper/type", 8.0],
-                            ["Harm 5", "/param/a/waveshaper/type", 9.0],
-                            ["Add 12", "/param/a/waveshaper/type", 17.0],
-                            ["Add 13", "/param/a/waveshaper/type", 18.0],
-                            ["Add 14", "/param/a/waveshaper/type", 19.0],
-                            ["Add 15", "/param/a/waveshaper/type", 20.0],
-                            ["Add 1-5", "/param/a/waveshaper/type", 21.0],
-                            ["Add Saw3", "/param/a/waveshaper/type", 22.0],
-                            ["Add Sq3", "/param/a/waveshaper/type", 23.0],
-                            ["Full Rect", "/param/a/waveshaper/type", 10.0]
-						]
-					},
-                    {
-						"name": "Rectifier",
-						"controls": [
-                            ["Full Rect", "/param/a/waveshaper/type", 10.0],
-                            ["Half Pos", "/param/a/waveshaper/type", 11.0],
-                            ["Half Neg", "/param/a/waveshaper/type", 12.0],
-                            ["Soft Rect", "/param/a/waveshaper/type", 13.0]
-						]
-					},
-                    {
-						"name": "Wavefolders",
-						"controls": [
-                            ["Soft Single", "/param/a/waveshaper/type", 42.0],
-                            ["One", "/param/a/waveshaper/type", 14.0],
-                            ["Two", "/param/a/waveshaper/type", 15.0],
-                            ["West Coast", "/param/a/waveshaper/type", 16.0]
-						]
-					},
-                    {
-						"name": "Fuzz",
-						"controls": [
-                            ["Fuzz", "/param/a/waveshaper/type", 24.0],
-                            ["Heavy", "/param/a/waveshaper/type", 26.0],
-                            ["Center", "/param/a/waveshaper/type", 27.0],
-                            ["Soft", "/param/a/waveshaper/type", 25.0],
-                            ["Edge", "/param/a/waveshaper/type", 228.0]
-						]
-					},
-                    {
-						"name": "Trig",
-						"controls": [
-                            ["Sin+x", "/param/a/waveshaper/type", 29.0],
-                            ["Sin 2x+x", "/param/a/waveshaper/type", 30.0],
-                            ["Sin 3x+x", "/param/a/waveshaper/type", 31.0],
-                            ["Sin 7x+x", "/param/a/waveshaper/type", 32.0],
-                            ["Sin 10x+x", "/param/a/waveshaper/type", 33.0],
-                            ["2 Cycle", "/param/a/waveshaper/type", 34.0],
-                            ["7 Cycle", "/param/a/waveshaper/type", 35.0],
-                            ["10 Cycle", "/param/a/waveshaper/type", 36.0],
-                            ["2 Bound", "/param/a/waveshaper/type", 37.0],
-                            ["7 Bound", "/param/a/waveshaper/type", 38.0],
-                            ["10 Bound", "/param/a/waveshaper/type", 39.0]
-						]
-					}
-				]
-			},
-            []
-          ]
-      }
-
+	"name": "Filter B",
+	"slot": 3,
+	"init": [],
+	"controls": [
+		{
+			"$type": "control-range",
+			"label": "A",
+			"address": "/param/a/feg/attack",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "D",
+			"address": "/param/a/feg/decay",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "S",
+			"address": "/param/a/feg/sustain",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "R",
+			"address": "/param/a/feg/release",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Feedb.",
+			"address": "/param/a/filter/feedback",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Shaper",
+			"address": "/param/a/waveshaper/drive",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "HP",
+			"address": "/param/a/highpass",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Filt Bal",
+			"address": "/param/a/filter/balance",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Shape A",
+			"address": "/param/a/feg/attack_shape",
+			"min": 0,
+			"max": 2
+		},
+		{
+			"$type": "control-range",
+			"label": "Shape D",
+			"address": "/param/a/feg/decay_shape",
+			"min": 0,
+			"max": 2
+		},
+		{
+			"$type": "control-range",
+			"label": "Eg Mode",
+			"address": "/param/a/feg/mode",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Shape R",
+			"address": "/param/a/feg/release_shape",
+			"min": 0,
+			"max": 2
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "group",
+			"label": "Sh. Cat",
+			"groups": [
+				{
+					"$type": "control-menu",
+					"items": [
+						{
+							"$type": "menu-item",
+							"label": "Off",
+							"onselect": {
+								"$type": "message",
+								"$comment": "Off",
+								"address": "/param/a/waveshaper/type",
+								"value": 0
+							}
+						}
+					]
+				},
+				{
+					"$type": "control-menu",
+					"items": [
+						{
+							"$type": "menu-item",
+							"label": "Soft",
+							"onselect": {
+								"$type": "message",
+								"$comment": "Soft",
+								"address": "/param/a/waveshaper/type",
+								"value": 1
+							}
+						},
+						{
+							"$type": "menu-item",
+							"label": "Med",
+							"onselect": {
+								"$type": "message",
+								"$comment": "Med",
+								"address": "/param/a/waveshaper/type",
+								"value": 40
+							}
+						},
+						{
+							"$type": "menu-item",
+							"label": "Hard",
+							"onselect": {
+								"$type": "message",
+								"$comment": "Hard",
+								"address": "/param/a/waveshaper/type",
+								"value": 2
+							}
+						},
+						{
+							"$type": "menu-item",
+							"label": "Asymm.",
+							"onselect": {
+								"$type": "message",
+								"$comment": "Asymm.",
+								"address": "/param/a/waveshaper/type",
+								"value": 3
+							}
+						},
+						{
+							"$type": "menu-item",
+							"label": "OJD",
+							"onselect": {
+								"$type": "message",
+								"$comment": "OJD",
+								"address": "/param/a/waveshaper/type",
+								"value": 41
+							}
+						}
+					]
+				},
+				{
+					"$type": "control-menu",
+					"items": [
+						{
+							"$type": "menu-item",
+							"label": "Sine",
+							"onselect": {
+								"$type": "message",
+								"$comment": "Sine",
+								"address": "/param/a/waveshaper/type",
+								"value": 4
+							}
+						},
+						{
+							"$type": "menu-item",
+							"label": "Digital",
+							"onselect": {
+								"$type": "message",
+								"$comment": "Digital",
+								"address": "/param/a/waveshaper/type",
+								"value": 5
+							}
+						}
+					]
+				},
+				{
+					"$type": "control-menu",
+					"items": [
+						{
+							"$type": "menu-item",
+							"label": "Harm 2",
+							"onselect": {
+								"$type": "message",
+								"$comment": "Harm 2",
+								"address": "/param/a/waveshaper/type",
+								"value": 6
+							}
+						},
+						{
+							"$type": "menu-item",
+							"label": "Harm 3",
+							"onselect": {
+								"$type": "message",
+								"$comment": "Harm 3",
+								"address": "/param/a/waveshaper/type",
+								"value": 7
+							}
+						},
+						{
+							"$type": "menu-item",
+							"label": "Harm 4",
+							"onselect": {
+								"$type": "message",
+								"$comment": "Harm 4",
+								"address": "/param/a/waveshaper/type",
+								"value": 8
+							}
+						},
+						{
+							"$type": "menu-item",
+							"label": "Harm 5",
+							"onselect": {
+								"$type": "message",
+								"$comment": "Harm 5",
+								"address": "/param/a/waveshaper/type",
+								"value": 9
+							}
+						},
+						{
+							"$type": "menu-item",
+							"label": "Add 12",
+							"onselect": {
+								"$type": "message",
+								"$comment": "Add 12",
+								"address": "/param/a/waveshaper/type",
+								"value": 17
+							}
+						},
+						{
+							"$type": "menu-item",
+							"label": "Add 13",
+							"onselect": {
+								"$type": "message",
+								"$comment": "Add 13",
+								"address": "/param/a/waveshaper/type",
+								"value": 18
+							}
+						},
+						{
+							"$type": "menu-item",
+							"label": "Add 14",
+							"onselect": {
+								"$type": "message",
+								"$comment": "Add 14",
+								"address": "/param/a/waveshaper/type",
+								"value": 19
+							}
+						},
+						{
+							"$type": "menu-item",
+							"label": "Add 15",
+							"onselect": {
+								"$type": "message",
+								"$comment": "Add 15",
+								"address": "/param/a/waveshaper/type",
+								"value": 20
+							}
+						},
+						{
+							"$type": "menu-item",
+							"label": "Add 1-5",
+							"onselect": {
+								"$type": "message",
+								"$comment": "Add 1-5",
+								"address": "/param/a/waveshaper/type",
+								"value": 21
+							}
+						},
+						{
+							"$type": "menu-item",
+							"label": "Add Saw3",
+							"onselect": {
+								"$type": "message",
+								"$comment": "Add Saw3",
+								"address": "/param/a/waveshaper/type",
+								"value": 22
+							}
+						},
+						{
+							"$type": "menu-item",
+							"label": "Add Sq3",
+							"onselect": {
+								"$type": "message",
+								"$comment": "Add Sq3",
+								"address": "/param/a/waveshaper/type",
+								"value": 23
+							}
+						},
+						{
+							"$type": "menu-item",
+							"label": "Full Rect",
+							"onselect": {
+								"$type": "message",
+								"$comment": "Full Rect",
+								"address": "/param/a/waveshaper/type",
+								"value": 10
+							}
+						}
+					]
+				},
+				{
+					"$type": "control-menu",
+					"items": [
+						{
+							"$type": "menu-item",
+							"label": "Full Rect",
+							"onselect": {
+								"$type": "message",
+								"$comment": "Full Rect",
+								"address": "/param/a/waveshaper/type",
+								"value": 10
+							}
+						},
+						{
+							"$type": "menu-item",
+							"label": "Half Pos",
+							"onselect": {
+								"$type": "message",
+								"$comment": "Half Pos",
+								"address": "/param/a/waveshaper/type",
+								"value": 11
+							}
+						},
+						{
+							"$type": "menu-item",
+							"label": "Half Neg",
+							"onselect": {
+								"$type": "message",
+								"$comment": "Half Neg",
+								"address": "/param/a/waveshaper/type",
+								"value": 12
+							}
+						},
+						{
+							"$type": "menu-item",
+							"label": "Soft Rect",
+							"onselect": {
+								"$type": "message",
+								"$comment": "Soft Rect",
+								"address": "/param/a/waveshaper/type",
+								"value": 13
+							}
+						}
+					]
+				},
+				{
+					"$type": "control-menu",
+					"items": [
+						{
+							"$type": "menu-item",
+							"label": "Soft Single",
+							"onselect": {
+								"$type": "message",
+								"$comment": "Soft Single",
+								"address": "/param/a/waveshaper/type",
+								"value": 42
+							}
+						},
+						{
+							"$type": "menu-item",
+							"label": "One",
+							"onselect": {
+								"$type": "message",
+								"$comment": "One",
+								"address": "/param/a/waveshaper/type",
+								"value": 14
+							}
+						},
+						{
+							"$type": "menu-item",
+							"label": "Two",
+							"onselect": {
+								"$type": "message",
+								"$comment": "Two",
+								"address": "/param/a/waveshaper/type",
+								"value": 15
+							}
+						},
+						{
+							"$type": "menu-item",
+							"label": "West Coast",
+							"onselect": {
+								"$type": "message",
+								"$comment": "West Coast",
+								"address": "/param/a/waveshaper/type",
+								"value": 16
+							}
+						}
+					]
+				},
+				{
+					"$type": "control-menu",
+					"items": [
+						{
+							"$type": "menu-item",
+							"label": "Fuzz",
+							"onselect": {
+								"$type": "message",
+								"$comment": "Fuzz",
+								"address": "/param/a/waveshaper/type",
+								"value": 24
+							}
+						},
+						{
+							"$type": "menu-item",
+							"label": "Heavy",
+							"onselect": {
+								"$type": "message",
+								"$comment": "Heavy",
+								"address": "/param/a/waveshaper/type",
+								"value": 26
+							}
+						},
+						{
+							"$type": "menu-item",
+							"label": "Center",
+							"onselect": {
+								"$type": "message",
+								"$comment": "Center",
+								"address": "/param/a/waveshaper/type",
+								"value": 27
+							}
+						},
+						{
+							"$type": "menu-item",
+							"label": "Soft",
+							"onselect": {
+								"$type": "message",
+								"$comment": "Soft",
+								"address": "/param/a/waveshaper/type",
+								"value": 25
+							}
+						},
+						{
+							"$type": "menu-item",
+							"label": "Edge",
+							"onselect": {
+								"$type": "message",
+								"$comment": "Edge",
+								"address": "/param/a/waveshaper/type",
+								"value": 228
+							}
+						}
+					]
+				},
+				{
+					"$type": "control-menu",
+					"items": [
+						{
+							"$type": "menu-item",
+							"label": "Sin+x",
+							"onselect": {
+								"$type": "message",
+								"$comment": "Sin+x",
+								"address": "/param/a/waveshaper/type",
+								"value": 29
+							}
+						},
+						{
+							"$type": "menu-item",
+							"label": "Sin 2x+x",
+							"onselect": {
+								"$type": "message",
+								"$comment": "Sin 2x+x",
+								"address": "/param/a/waveshaper/type",
+								"value": 30
+							}
+						},
+						{
+							"$type": "menu-item",
+							"label": "Sin 3x+x",
+							"onselect": {
+								"$type": "message",
+								"$comment": "Sin 3x+x",
+								"address": "/param/a/waveshaper/type",
+								"value": 31
+							}
+						},
+						{
+							"$type": "menu-item",
+							"label": "Sin 7x+x",
+							"onselect": {
+								"$type": "message",
+								"$comment": "Sin 7x+x",
+								"address": "/param/a/waveshaper/type",
+								"value": 32
+							}
+						},
+						{
+							"$type": "menu-item",
+							"label": "Sin 10x+x",
+							"onselect": {
+								"$type": "message",
+								"$comment": "Sin 10x+x",
+								"address": "/param/a/waveshaper/type",
+								"value": 33
+							}
+						},
+						{
+							"$type": "menu-item",
+							"label": "2 Cycle",
+							"onselect": {
+								"$type": "message",
+								"$comment": "2 Cycle",
+								"address": "/param/a/waveshaper/type",
+								"value": 34
+							}
+						},
+						{
+							"$type": "menu-item",
+							"label": "7 Cycle",
+							"onselect": {
+								"$type": "message",
+								"$comment": "7 Cycle",
+								"address": "/param/a/waveshaper/type",
+								"value": 35
+							}
+						},
+						{
+							"$type": "menu-item",
+							"label": "10 Cycle",
+							"onselect": {
+								"$type": "message",
+								"$comment": "10 Cycle",
+								"address": "/param/a/waveshaper/type",
+								"value": 36
+							}
+						},
+						{
+							"$type": "menu-item",
+							"label": "2 Bound",
+							"onselect": {
+								"$type": "message",
+								"$comment": "2 Bound",
+								"address": "/param/a/waveshaper/type",
+								"value": 37
+							}
+						},
+						{
+							"$type": "menu-item",
+							"label": "7 Bound",
+							"onselect": {
+								"$type": "message",
+								"$comment": "7 Bound",
+								"address": "/param/a/waveshaper/type",
+								"value": 38
+							}
+						},
+						{
+							"$type": "menu-item",
+							"label": "10 Bound",
+							"onselect": {
+								"$type": "message",
+								"$comment": "10 Bound",
+								"address": "/param/a/waveshaper/type",
+								"value": 39
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"$type": "control-spacer"
+		}
+	]
 }
