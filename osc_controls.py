@@ -250,23 +250,6 @@ class OSCControlSwitch(object):
             active_group = self.get_active_group()
             if hasattr(active_group, "select"):
                 active_group.select()
-            # is_bottom_level_group = all(
-            #     not isinstance(item, OSCGroup) for item in self.groups
-            # )
-            # if active_group and not is_bottom_level_group:
-            #     self.label = active_group.label
-            #     self.send_osc_func(a, v)
-
-            # # If all controls are menu items, send the active value
-            # if is_bottom_level_group and all(
-            #     isinstance(c, OSCMenuItem) for c in self.groups
-            # ):
-            #     self.groups[self.value].select()
-
-    # def get_config_depth(self, dic, level=0):
-    #     if not isinstance(dic, dict) or not dic:
-    #         return level
-    #     return max(self.get_config_depth(dic[key], level + 1) for key in dic)
 
     def get_active_group(self):
         if self.value < len(self.groups):
@@ -329,30 +312,6 @@ class OSCGroup(object):
                         )
                     )
 
-        # if len(self.controls) > 0:
-        #     is_bottom_level_group = all(
-        #         not isinstance(item, OSCGroup) for item in self.controls
-        #     )
-        #     self.size = (
-        #         len(self.controls) + 1
-        #         if is_bottom_level_group
-        #         else max([group.size for group in self.controls])
-        #     )
-        #     # Set initial index to 0 here
-        #     self.value = 0
-
-        #     # If all controls are menu items, send the active value
-        #     if is_bottom_level_group and all(
-        #         isinstance(c, OSCMenuItem) for c in self.controls
-        #     ):
-        #         self.controls[self.value].select()
-        #         self.label = self.controls[self.value].label
-
-        #     # Set label to active group
-        #     active_group = self.get_active_group()
-        #     if active_group:
-        #         self.label = active_group.label
-
     def get_control(self, id):
         if isinstance(id, int) and id < len(self.controls):
             return self.controls[id]
@@ -368,6 +327,13 @@ class OSCGroup(object):
 
 class OSCControlMenu(object):
     name = "Menu"
+
+    @property
+    def label(self):
+        active = self.get_active_menu_item()
+        if active:
+            return active.label
+        return ""
 
     def __init__(self, config, get_color_func=None, send_osc_func=None):
         if config["$type"] != "control-menu":
@@ -388,16 +354,17 @@ class OSCControlMenu(object):
                 )
             )
 
-        self.send_osc_func(self.message["address"], self.message["value"])
+        if self.message:
+            self.send_osc_func(self.message["address"], self.message["value"])
 
     def update_value(self, increment, **kwargs):
+        print(increment)
         if not self.value:
             pass
 
         if 0 <= (self.value + increment) < len(self.items):
             self.value += increment
             active_item = self.get_active_menu_item()
-            self.label = active_item.label
             if hasattr(active_item, "select"):
                 active_item.select()
 

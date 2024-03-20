@@ -5,36 +5,133 @@ import push2_python
 import osc_utils
 import pytest
 
-fixture = {
+nested_switch_groups_menu_fixture = {
     "device_name": "Filter B",
     "init": [],
-    "osc": {
-        "controls": [
-            ["A", "/param/a/feg/attack", 0.0, 1.0],
-            ["Shape R", "/param/a/feg/release_shape", 0.0, 2.0],
-            [],
-            {
-                "name": "Sh. Cat",
-                "controls": [
-                    {
-                        "name": "Off",
-                        "controls": [["Off", "/param/a/waveshaper/type", 0.0]],
-                    },
-                    {
-                        "name": "Saturator",
-                        "controls": [
-                            ["Soft", "/param/a/waveshaper/type", 1.0],
-                            ["Med", "/param/a/waveshaper/type", 40.0],
-                        ],
-                    },
-                ],
-            },
-        ]
-    },
+    "osc": [
+        {
+            "$type": "control-range",
+            "label": "Shape R",
+            "address": "/param/a/feg/release_shape",
+            "min": 0,
+            "max": 2,
+        },
+        {"$type": "control-spacer"},
+        {
+            "$type": "control-switch",
+            "groups": [
+                {
+                    "$type": "group",
+                    "label": "Sh. Cat",
+                    "controls": [
+                        {
+                            "$type": "control-menu",
+                            "items": [
+                                {
+                                    "$type": "menu-item",
+                                    "label": "Off",
+                                    "onselect": {
+                                        "$type": "message",
+                                        "$comment": "Off",
+                                        "address": "/param/a/waveshaper/type",
+                                        "value": 0,
+                                    },
+                                }
+                            ],
+                        },
+                        {
+                            "$type": "control-menu",
+                            "items": [
+                                {
+                                    "$type": "menu-item",
+                                    "label": "Soft",
+                                    "onselect": {
+                                        "$type": "message",
+                                        "$comment": "Soft",
+                                        "address": "/param/a/waveshaper/type",
+                                        "value": 1,
+                                    },
+                                },
+                                {
+                                    "$type": "menu-item",
+                                    "label": "Med",
+                                    "onselect": {
+                                        "$type": "message",
+                                        "$comment": "Med",
+                                        "address": "/param/a/waveshaper/type",
+                                        "value": 40,
+                                    },
+                                },
+                                {
+                                    "$type": "menu-item",
+                                    "label": "Hard",
+                                    "onselect": {
+                                        "$type": "message",
+                                        "$comment": "Hard",
+                                        "address": "/param/a/waveshaper/type",
+                                        "value": 2,
+                                    },
+                                },
+                                {
+                                    "$type": "menu-item",
+                                    "label": "Asymm.",
+                                    "onselect": {
+                                        "$type": "message",
+                                        "$comment": "Asymm.",
+                                        "address": "/param/a/waveshaper/type",
+                                        "value": 3,
+                                    },
+                                },
+                                {
+                                    "$type": "menu-item",
+                                    "label": "OJD",
+                                    "onselect": {
+                                        "$type": "message",
+                                        "$comment": "OJD",
+                                        "address": "/param/a/waveshaper/type",
+                                        "value": 41,
+                                    },
+                                },
+                            ],
+                        },
+                    ],
+                },
+                {
+                    "$type": "group",
+                    "controls": [
+                        {
+                            "$type": "control-menu",
+                            "items": [
+                                {
+                                    "$type": "menu-item",
+                                    "label": "Sine",
+                                    "onselect": {
+                                        "$type": "message",
+                                        "$comment": "Sine",
+                                        "address": "/param/a/waveshaper/type",
+                                        "value": 4,
+                                    },
+                                },
+                                {
+                                    "$type": "menu-item",
+                                    "label": "Digital",
+                                    "onselect": {
+                                        "$type": "message",
+                                        "$comment": "Digital",
+                                        "address": "/param/a/waveshaper/type",
+                                        "value": 5,
+                                    },
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        },
+    ],
 }
 
 
-@pytest.mark.skip
 def test_OSCDevice(mocker):
     # prepare
     mocker.patch("pythonosc.udp_client.SimpleUDPClient.send_message")
@@ -45,46 +142,43 @@ def test_OSCDevice(mocker):
     osc = {"client": client, "server": None, "dispatcher": dispatcher}
 
     # test
-    device = OSCDevice(fixture, osc)
-
-    group = device.controls[3]
+    device = OSCDevice(nested_switch_groups_menu_fixture, osc)
+    switch = device.controls[2]
 
     # assert
-    assert group.label == "Sh. Cat"
+    assert switch.label == "Sh. Cat"
     assert (
-        len(device.controls) == 4
-    ), "Should spawn 4 controls (2 normal, 1 spacer, 1 group)"
+        len(device.controls) == 3
+    ), "Should spawn 3 controls (1 normal, 1 spacer, 1 group)"
 
     # Test first encoder/device CW rotate
     device.on_encoder_rotated(push2_python.constants.ENCODER_TRACK1_ENCODER, 1)
-    control_under_test = device.get_control_at_index()
 
-    # Test second encoder/device CCW rotate
-    device.on_encoder_rotated(push2_python.constants.ENCODER_TRACK2_ENCODER, -1)
+    client.send_message.assert_any_call(
+        "/param/a/feg/release_shape", osc_utils.scale_knob_value([65.0, 0.0, 2.0])
+    )
 
     # Spacer shouldn't throw if passed value
+    device.on_encoder_rotated(push2_python.constants.ENCODER_TRACK2_ENCODER, -1)
+
+    # Group should update on TRACK3 CW rotate
     device.on_encoder_rotated(push2_python.constants.ENCODER_TRACK3_ENCODER, 1)
 
-    # Group should update on TRACK4 CW rotate
+    active_group = switch.get_active_group()
+
+    assert active_group == switch.groups[1], "Can get active group"
+    assert switch.value == 1, "Switch value should increment"
+
+    first_group_control = active_group.controls[0]
+    assert (
+        first_group_control.label == "Sine"
+    ), "Menu should take label of chosen element"
+
+    # Menu should update on TRACK4 CW rotate
     device.on_encoder_rotated(push2_python.constants.ENCODER_TRACK4_ENCODER, 1)
+    assert first_group_control.label == "Digital", "Menu label should update"
 
-    active_group = group.get_active_group()
-    assert active_group == group.controls[1], "Can get active group"
-
-    assert active_group.value == 1, "Group value should increment"
-
-    # Group should update on TRACK4 CW rotate
-    device.on_encoder_rotated(push2_python.constants.ENCODER_TRACK4_ENCODER, 1)
-
-    client.send_message.assert_any_call(
-        "/param/a/feg/attack", osc_utils.scale_knob_value([65.0, 0.0, 1.0])
-    )
-
-    client.send_message.assert_any_call(
-        "/param/a/feg/release_shape", osc_utils.scale_knob_value([63.0, 0.0, 2.0])
-    )
-
-    assert False
+    client.send_message.assert_any_call("/param/a/waveshaper/type", 5)
 
 
 bonkers_paging_fixture = {
