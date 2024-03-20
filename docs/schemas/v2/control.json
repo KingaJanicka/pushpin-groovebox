@@ -172,6 +172,7 @@
                         "$type": {
                             "const": "group"
                         },
+                        "label": {"type": "string"},
                         "controls": {
                             "type": "array",
                             "items": {

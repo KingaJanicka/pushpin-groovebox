@@ -4,21 +4,22 @@ from osc_controls import (
     ControlSpacer,
     OSCControlSwitch,
     OSCControlMenu,
+    OSCGroup,
 )
 import push2_python
 
 
 class OSCDevice(object):
-    id = None
-    label = ""
-    definition = {}
-    controls = []
-    client = None
-    page = 0
-    slot = None
-    osc = {"client": {}, "server": {}, "dispatcher": {}}
-
-    def __init__(self, config, osc, **kwargs):
+    def __init__(
+        self, config, osc={"client": {}, "server": {}, "dispatcher": {}}, **kwargs
+    ):
+        self.id = None
+        self.label = ""
+        self.definition = {}
+        self.controls = []
+        self.client = None
+        self.page = 0
+        self.slot = None
         self.definition = config
         self.osc = osc
         self.label = config.get("name", "Device")
@@ -29,7 +30,7 @@ class OSCDevice(object):
         client = osc.get("client", None)
         init = config.get("init", [])
         get_color = kwargs.get("get_color")
-        control_definitions = config.get("controls", [])
+        control_definitions = config.get("osc", [])
 
         if client and len(init) > 0:
             for cmd in init:
@@ -44,8 +45,7 @@ class OSCDevice(object):
                     case "control-macro":
                         self.controls.append(
                             OSCControlMacro(
-                                control_def["label"],
-                                control_def["params"],
+                                control_def,
                                 get_color,
                                 client.send_message if client else None,
                             )
@@ -54,10 +54,7 @@ class OSCDevice(object):
                             self.dispatcher.map(param.address, control.set_state)
                     case "control-range":
                         control = OSCControl(
-                            control_def["label"],
-                            control_def["address"],
-                            control_def["min"],
-                            control_def["max"],
+                            control_def,
                             get_color,
                             client.send_message if client else None,
                         )
@@ -65,8 +62,7 @@ class OSCDevice(object):
                         self.controls.append(control)
                     case "control-switch":
                         control = OSCControlSwitch(
-                            control_def.get("label", ""),
-                            control_def.get("groups", []),
+                            control_def,
                             get_color,
                             client.send_message,
                         )
@@ -74,8 +70,7 @@ class OSCDevice(object):
                         self.controls.append(control)
                     case "control-menu":
                         control = OSCControlMenu(
-                            control_def.get("label", ""),
-                            control_def.get("items", []),
+                            control_def,
                             get_color,
                             client.send_message,
                         )
@@ -112,17 +107,26 @@ class OSCDevice(object):
         visible_controls = []
         i = 0
         for control in self.controls:
+            print(
+                "size",
+                control.size,
+                "idx",
+                i,
+                "lower",
+                self.page * 8,
+                "upper",
+                self.page * 8 + 8,
+            )
+
             if (
                 i + control.size > self.page * 8
                 and i + control.size <= self.page * 8 + 8
             ):
                 visible_controls.append(control)
-                if control.size > 1:  # append group controls
-                    child = control.get_active_group()
-                    visible_controls.append(child)
 
-                    while hasattr(child, "visible"):
-                        child = child.visible
+                if isinstance(control, OSCControlSwitch):
+                    active_group: OSCGroup = control.get_active_group()
+                    for child in active_group.controls:
                         visible_controls.append(child)
             elif i + control.size > self.page * 8 + 8:
                 diff = (self.page * 8 + 8) - i

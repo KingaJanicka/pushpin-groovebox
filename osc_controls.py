@@ -6,23 +6,24 @@ from display_utils import show_text
 
 
 class OSCControl(object):
-    color = definitions.GRAY_LIGHT
-    color_rgb = None
-    label = "Unknown"
-    address = None
-    min = 0.0
-    max = 1.0
-    value = 64
-    vmin = 0
-    vmax = 127
-    get_color_func = None
-    value_labels_map = {}
+    name = "Range"
     size = 1
-    active = False
 
     def __init__(self, config, get_color_func=None, send_osc_func=None):
         if config["$type"] != "control-range":
             raise Exception("Invalid config passed to new OSCControl")
+        self.color = definitions.GRAY_LIGHT
+        self.color_rgb = None
+        self.label = "Unknown"
+        self.address = None
+        self.min = 0.0
+        self.max = 1.0
+        self.value = 64
+        self.vmin = 0
+        self.vmax = 127
+        self.get_color_func = None
+        self.value_labels_map = {}
+        self.active = False
         self.label = config["label"]
         self.address = config["address"]
         self.get_color_func = get_color_func
@@ -126,26 +127,50 @@ class OSCControl(object):
         )
 
 
-class ControlSpacer(OSCControl):
+class ControlSpacer(object):
+    name = "Spacer"
+
     address = None
     active = True
     label = None
+    size = 1
+    color = definitions.GRAY_LIGHT
+    color_rgb = None
+    label = ""
+    get_color_func = None
 
     def __init__(self):
         pass
 
     def draw(self, *args, **kwargs):
-        return
+        pass
 
     def update_value(self, *args, **kwargs):
-        return
+        pass
 
 
-class OSCControlMacro(OSCControl):
+class OSCControlMacro(object):
+    name = "Macro"
+    size = 1
+
     def __init__(self, config, get_color_func=None, send_osc_func=None):
         if config["$type"] != "control-macro":
             raise Exception("Invalid config passed to new OSCControlMacro")
+
+        self.color = definitions.GRAY_LIGHT
+        self.color_rgb = None
+        self.label = "Unknown"
+        self.address = None
+        self.min = 0.0
+        self.max = 1.0
+        self.value = 64
+        self.vmin = 0
+        self.vmax = 127
+        self.get_color_func = None
+        self.value_labels_map = {}
+        self.active = False
         self.label = config["label"]
+        self.get_color_func = get_color_func
         self.params = config["params"]
         self.get_color_func = get_color_func
         self.send_osc_func = send_osc_func
@@ -174,20 +199,31 @@ class OSCControlMacro(OSCControl):
 
 class OSCControlSwitch(object):
     name = "Switch"
-    groups = []
-    value = 0
-    size = 0
+
+    @property
+    def visible(self):
+        return self.groups[self.value]
+
+    @property
+    def size(self):
+        return max(group.size for group in self.groups) + 1
+
+    @property
+    def label(self):
+        active = self.get_active_group()
+        if active:
+            return active.label
+
+        return None
 
     def __init__(self, config, get_color_func=None, send_osc_func=None):
         if config["$type"] != "control-switch":
             raise Exception("Invalid config passed to new OSCControlSwitch")
-
+        self.groups = []
+        self.value = 0
         self.get_color_func = get_color_func
         self.send_osc_func = send_osc_func
-        self.groups = []
         groups = config.get("groups", [])
-
-        self.size = 0
 
         for item in groups:
             self.groups.append(
@@ -198,62 +234,63 @@ class OSCControlSwitch(object):
                 )
             )
 
+        if (
+            len(self.groups) > 0
+            and self.groups[self.value]
+            and hasattr(self.groups[self.value], "select")
+        ):
+            self.groups[self.value].select()
+
     def update_value(self, increment, **kwargs):
-        print(self.value + increment, len(self.groups))
         if not self.value:
             pass
 
         if 0 <= (self.value + increment) < len(self.groups):
             self.value += increment
-            print("GROUP UPDATE VAL ", self.value)
-
             active_group = self.get_active_group()
-            is_bottom_level_group = all(
-                not isinstance(item, OSCGroup) for item in self.groups
-            )
-            if active_group and not is_bottom_level_group:
-                a, v = active_group.message
-                self.label = active_group.label
-                self.send_osc_func(a, v)
+            if hasattr(active_group, "select"):
+                active_group.select()
+            # is_bottom_level_group = all(
+            #     not isinstance(item, OSCGroup) for item in self.groups
+            # )
+            # if active_group and not is_bottom_level_group:
+            #     self.label = active_group.label
+            #     self.send_osc_func(a, v)
 
-            # If all controls are menu items, send the active value
-            if is_bottom_level_group and all(
-                isinstance(c, OSCMenuItem) for c in self.groups
-            ):
-                self.groups[self.value].select()
+            # # If all controls are menu items, send the active value
+            # if is_bottom_level_group and all(
+            #     isinstance(c, OSCMenuItem) for c in self.groups
+            # ):
+            #     self.groups[self.value].select()
 
-    def get_config_depth(self, dic, level=0):
-        if not isinstance(dic, dict) or not dic:
-            return level
-        return max(self.get_config_depth(dic[key], level + 1) for key in dic)
+    # def get_config_depth(self, dic, level=0):
+    #     if not isinstance(dic, dict) or not dic:
+    #         return level
+    #     return max(self.get_config_depth(dic[key], level + 1) for key in dic)
 
     def get_active_group(self):
         if self.value < len(self.groups):
             return self.groups[self.value]
 
-    @property
-    def visible(self):
-        return self.groups[self.value]
-
-    def get_control(self, id):
-        if isinstance(id, int) and id < len(self.groups):
-            return self.groups[id]
-        elif isinstance(id, str):
-            el = next(x for x in self.groups if x.label == id)
-            if el:
-                return el
-
 
 class OSCGroup(object):
     name = "Group"
-    message = None
-    controls = []
+
+    @property
+    def size(self):
+        return sum([control.size for control in self.controls])
 
     def __init__(self, config, get_color_func=None, send_osc_func=None):
         if config["$type"] != "group":
             raise Exception("Invalid type passed to new OSCGroup")
+        self.message = None
+        self.label = ""
+        self.controls = []
 
         self.message = config.get("onselect", None)
+        self.label = config.get("label", "Group")
+        self.send_osc_func = send_osc_func
+        self.get_color_func = get_color_func
 
         for item in config["controls"]:
             match item["$type"]:
@@ -291,6 +328,7 @@ class OSCGroup(object):
                             send_osc_func=send_osc_func,
                         )
                     )
+
         # if len(self.controls) > 0:
         #     is_bottom_level_group = all(
         #         not isinstance(item, OSCGroup) for item in self.controls
@@ -315,57 +353,75 @@ class OSCGroup(object):
         #     if active_group:
         #         self.label = active_group.label
 
+    def get_control(self, id):
+        if isinstance(id, int) and id < len(self.controls):
+            return self.controls[id]
+        elif isinstance(id, str):
+            el = next(x for x in self.controls if x.label == id)
+            if el:
+                return el
+
     def select(self):
-        self.send_osc_func(self.message["address"], self.message["value"])
+        if self.message:
+            self.send_osc_func(self.message["address"], self.message["value"])
 
 
 class OSCControlMenu(object):
     name = "Menu"
-    items = []
-    value = 0
-    message = None
 
     def __init__(self, config, get_color_func=None, send_osc_func=None):
         if config["$type"] != "control-menu":
             raise Exception("Invalid config passed to new OSCControlMenu")
 
+        self.items = []
+        self.value = 0
+        self.message = None
         self.get_color_func = get_color_func
         self.send_osc_func = send_osc_func
         self.message = config.get("onselect", None)
         self.size = 0
 
         for item in config.get("items", []):
-            self.items.append(OSCMenuItem(item))
+            self.items.append(
+                OSCMenuItem(
+                    item, send_osc_func=send_osc_func, get_color_func=get_color_func
+                )
+            )
 
         self.send_osc_func(self.message["address"], self.message["value"])
 
     def update_value(self, increment, **kwargs):
-        if self.value + increment > self.vmax:
-            self.value = self.vmax
-        elif self.value + increment < self.vmin:
-            self.value = self.vmin
-        else:
-            self.value += increment
+        if not self.value:
+            pass
 
-        self.items[self.value].select()
+        if 0 <= (self.value + increment) < len(self.items):
+            self.value += increment
+            active_item = self.get_active_menu_item()
+            self.label = active_item.label
+            if hasattr(active_item, "select"):
+                active_item.select()
+
+    def get_active_menu_item(self):
+        if len(self.items) > self.value:
+            return self.items[self.value]
 
     def select(self):
-        self.send_osc_func(self.message["address"], self.message["value"])
+        active_item = self.get_active_menu_item()
+        if hasattr(active_item, "select"):
+            active_item.select()
 
 
 class OSCMenuItem(object):
     name = "Menu Item"
-    label = ""
-    message = None
 
     def __init__(self, config, get_color_func=None, send_osc_func=None):
         if config.get("$type", None) != "menu-item":
             raise Exception("Invalid config passed to new OSCMenuItem")
+
         self.label = config.get("label", "")
         self.message = config.get("onselect", None)
         self.get_color_func = get_color_func
         self.send_osc_func = send_osc_func
 
     def select(self):
-        if self.message:
-            self.send_osc_func(self.message["address"], self.message["value"])
+        self.send_osc_func(self.message["address"], self.message["value"])

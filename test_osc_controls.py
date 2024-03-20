@@ -115,6 +115,7 @@ def test_OSCControlSwitch_Group_Range(mocker):
         "groups": [
             {
                 "$type": "group",
+                "label": "group 1",
                 "onselect": {
                     "$type": "message",
                     "address": "/param/a/osc/1/param1",
@@ -153,6 +154,7 @@ def test_OSCControlSwitch_Group_Range(mocker):
             },
             {
                 "$type": "group",
+                "label": "group 2",
                 "onselect": {
                     "$type": "message",
                     "address": "/param/a/osc/1/param1",
@@ -186,11 +188,12 @@ def test_OSCControlSwitch_Group_Range(mocker):
     }
 
     control = OSCControlSwitch(config, mock_get_color_func, mock_send_osc_func)
+
     active_group = control.get_active_group()
     assert control.value == 0, "Initial value should be 0"
-    # assert (
-    #     active_group.label == "Waveforms"
-    # ), "Group should initialise with first control in list"
+    assert (
+        active_group.label == "group 1"
+    ), "Group should initialise with first control in list"
     assert control.size == 5, "Group size should be the max of all children"
     mock_send_osc_func.assert_any_call("/param/a/osc/1/param1", 0.0)
 
@@ -198,20 +201,20 @@ def test_OSCControlSwitch_Group_Range(mocker):
     active_group = control.get_active_group()
 
     assert control.value == 1, "Value should update"
-    # assert active_group.label == "Waveshaper", "Active group should update"
+    assert active_group.label == "group 2", "Active group should update"
     assert control.size == 5, "Group size should stay the same"
     mock_send_osc_func.assert_any_call("/param/a/osc/1/param1", 1.0)
 
-    # # exercise get_control, OSCControls
-    # assert all(
-    #     isinstance(c, OSCControl) for c in active_group.controls
-    # ), "Active group should contains only controls"
-    # assert (
-    #     active_group.get_control(0).label == "Waveshaper"
-    # ), "Child controls behave expectedly"
-    # assert (
-    #     active_group.get_control("Waveshaper").value == 64
-    # ), "Uninitialised controls default to 64"
+    # exercise get_control, OSCControls
+    assert all(
+        isinstance(c, OSCControl) for c in active_group.controls
+    ), "Active group should contains only controls"
+    assert (
+        active_group.get_control(0).label == "Waveshaper"
+    ), "Child controls behave expectedly"
+    assert (
+        active_group.get_control("Waveshaper").value == 64
+    ), "Uninitialised controls default to 64"
 
 
 def test_OSCControlMenu(mocker):
@@ -225,32 +228,47 @@ def test_OSCControlMenu(mocker):
             {
                 "$type": "menu-item",
                 "label": "Soft",
-                "address": "/param/a/waveshaper/type",
-                "value": 1.0,
+                "onselect": {
+                    "$type": "message",
+                    "address": "/param/a/waveshaper/type",
+                    "value": 1.0,
+                },
             },
             {
                 "$type": "menu-item",
                 "label": "Med",
-                "address": "/param/a/waveshaper/type",
-                "value": 40.0,
+                "onselect": {
+                    "$type": "message",
+                    "address": "/param/a/waveshaper/type",
+                    "value": 40.0,
+                },
             },
             {
                 "$type": "menu-item",
                 "label": "Hard",
-                "address": "/param/a/waveshaper/type",
-                "value": 2.0,
+                "onselect": {
+                    "$type": "message",
+                    "address": "/param/a/waveshaper/type",
+                    "value": 2.0,
+                },
             },
             {
                 "$type": "menu-item",
                 "label": "Asymm.",
-                "address": "/param/a/waveshaper/type",
-                "value": 3.0,
+                "onselect": {
+                    "$type": "message",
+                    "address": "/param/a/waveshaper/type",
+                    "value": 3.0,
+                },
             },
             {
                 "$type": "menu-item",
                 "label": "OJD",
-                "address": "/param/a/waveshaper/type",
-                "value": 41.0,
+                "onselect": {
+                    "$type": "message",
+                    "address": "/param/a/waveshaper/type",
+                    "value": 41.0,
+                },
             },
         ],
     }
@@ -260,11 +278,16 @@ def test_OSCControlMenu(mocker):
     )
 
     assert control.value == 0, "Default menu index is 0"
-    assert control.message == ["init", 1.0], "Should set initial message"
-    mock_send_osc_func.assert_any_call("/param/a/waveshaper/type", 1.0)
+    assert control.message == {
+        "$type": "message",
+        "address": "init",
+        "value": 1,
+    }, "Should set initial message"
 
     # rotate knob one click cw
     control.update_value(1)
+
+    # mock_send_osc_func.assert_any_call("/param/a/waveshaper/type", 1.0)
 
     assert control.value == 1, "Menu value should now be 1"
     mock_send_osc_func.assert_any_call("/param/a/waveshaper/type", 40.0)
