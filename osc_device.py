@@ -104,36 +104,84 @@ class OSCDevice(object):
         self.page = page
 
     def get_visible_controls(self):
-        visible_controls = []
-        i = 0
+        pages = [[]]
+        idx = 0
+        min_idx = self.page * 8
+        max_idx = self.page * 8 + 8
+
         for control in self.controls:
-            print(
-                "size",
-                control.size,
-                "idx",
-                i,
-                "lower",
-                self.page * 8,
-                "upper",
-                self.page * 8 + 8,
-            )
+            current_page = pages[idx]
 
-            if (
-                i + control.size > self.page * 8
-                and i + control.size <= self.page * 8 + 8
-            ):
-                visible_controls.append(control)
+            # If control won't fit
+            if len(current_page) + control.size > 8:
+                # Fill remaining page with spacers
+                for x in range(8 - len(current_page)):
+                    current_page.append(ControlSpacer())
 
-                if isinstance(control, OSCControlSwitch):
-                    active_group: OSCGroup = control.get_active_group()
-                    for child in active_group.controls:
-                        visible_controls.append(child)
-            elif i + control.size > self.page * 8 + 8:
-                diff = (self.page * 8 + 8) - i
-                for x in range(diff):
-                    visible_controls.append(ControlSpacer())
+                # Create a new page and make it current
+                pages.append([])
+                idx += 1
+                current_page = pages[idx]
 
-            i += control.size
+            current_page.append(control)
+            if isinstance(control, OSCControlSwitch):
+                active_group: OSCGroup = control.get_active_group()
+                for c in active_group.controls:
+                    current_page.append(c)
+
+        return pages[self.page]
+        # for idx, control in enumerate(self.controls):
+        #     if control.size > 1:
+        #         if int((idx + control.size) / 8) > int(idx / 8):
+        #             for x in range(idx % 8):
+        #                 flat_controls.append(ControlSpacer())
+
+        #     flat_controls.append(control)
+
+        #     if isinstance(control, OSCControlSwitch):
+        #         active_group: OSCGroup = control.get_active_group()
+        #         max_size = control.size
+        #         spacers = max_size - active_group.size
+        #         for c in active_group.controls:
+        #             flat_controls.append(c)
+        #         for x in range(spacers):
+        #             flat_controls.append(ControlSpacer())
+
+        return flat_controls[min_idx:max_idx]
+        # idx += control.size
+        # # print(
+        # #     "idx",
+        # #     idx,
+        # #     "size",
+        # #     control.size,
+        # #     "min",
+        # #     min_idx,
+        # #     "max",
+        # #     max_idx,
+        # #     "if",
+        # #     idx > min_idx and idx <= max_idx,
+        # #     "else",
+        # #     idx > max_idx and (idx - control.size) < max_idx,
+        # # )
+
+        # if idx > min_idx and idx <= max_idx:
+        #     visible_controls.append(control)
+
+        #     if isinstance(control, OSCControlSwitch):
+        #         active_group: OSCGroup = control.get_active_group()
+        #         for child in active_group.controls:
+        #             visible_controls.append(child)
+
+        #         # If control is being added to a new group
+        #         # due to constraints increment again
+        #         if idx - control.size < min_idx:
+        #             idx += control.size - 1
+
+        # elif idx > max_idx and (idx - control.size) < max_idx:
+        #     diff = max_idx - (idx - control.size)
+
+        #     for x in range(diff):
+        #         visible_controls.append(ControlSpacer())
 
         return visible_controls
 

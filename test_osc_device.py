@@ -427,3 +427,13 @@ def test_that_bit_of_logic_in_oscdevice(mocker):
         "",
         "X",
     ], "Should display groups and spacers"
+
+    device.set_page(4)
+    visible = [control.label for control in device.get_visible_controls()]
+
+    assert visible == [
+        "",
+        "Y",
+        "",
+        "Z",
+    ], "Should display groups and spacers"
