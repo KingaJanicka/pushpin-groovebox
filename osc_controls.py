@@ -22,7 +22,6 @@ class OSCControl(object):
         self.vmin = 0
         self.vmax = 127
         self.get_color_func = None
-        self.value_labels_map = {}
         self.active = False
         self.label = config["label"]
         self.address = config["address"]
@@ -58,7 +57,7 @@ class OSCControl(object):
             ctx,
             x_part,
             margin_top + name_height,
-            self.value_labels_map.get(str(self.value), str(self.value)),
+            str(self.value),
             height=val_height,
             font_color=color,
         )
@@ -167,7 +166,6 @@ class OSCControlMacro(object):
         self.vmin = 0
         self.vmax = 127
         self.get_color_func = None
-        self.value_labels_map = {}
         self.active = False
         self.label = config["label"]
         self.get_color_func = get_color_func
@@ -254,6 +252,92 @@ class OSCControlSwitch(object):
     def get_active_group(self):
         if self.value < len(self.groups):
             return self.groups[self.value]
+
+    def draw(self, ctx, offset):
+        margin_top = 50
+        next_prev_height = 20
+        val_height = 30
+        next_label = ""
+        prev_label = ""
+
+        if len(self.groups) > self.value + 1:
+            next_label = self.groups[self.value + 1].label
+
+        if (self.value - 1) >= 0:
+            prev_label = self.groups[self.value - 1].label
+
+        # Param name
+        show_text(
+            ctx,
+            offset,
+            margin_top,
+            prev_label,
+            height=next_prev_height,
+            font_color=definitions.WHITE,
+        )
+
+        # Param value
+        color = self.get_color_func()
+        show_text(
+            ctx,
+            offset,
+            margin_top + next_prev_height,
+            str(self.label),
+            height=val_height,
+            font_color=color,
+        )
+
+        # Param name
+        name_height = 20
+        show_text(
+            ctx,
+            offset,
+            margin_top + next_prev_height + val_height,
+            next_label,
+            height=next_prev_height,
+            font_color=definitions.WHITE,
+        )
+
+        # # Knob
+        # ctx.save()
+
+        # circle_break_degrees = 80
+        # height = 55
+        # radius = height / 2
+
+        # display_w = push2_python.constants.DISPLAY_LINE_PIXELS
+        # x = (display_w // 8) * offset
+        # y = margin_top + name_height + val_height + radius + 5
+
+        # start_rad = (90 + circle_break_degrees // 2) * (math.pi / 180)
+        # end_rad = (90 - circle_break_degrees // 2) * (math.pi / 180)
+        # xc = x + radius + 3
+        # yc = y
+
+        # def get_rad_for_value(value):
+        #     total_degrees = 360 - circle_break_degrees
+        #     return start_rad + total_degrees * (
+        #         (value - self.vmin) / (self.vmax - self.vmin)
+        #     ) * (math.pi / 180)
+
+        # # This is needed to prevent showing line from previous position
+        # ctx.set_source_rgb(0, 0, 0)
+        # ctx.move_to(xc, yc)
+        # ctx.stroke()
+
+        # # Inner circle
+        # ctx.arc(xc, yc, radius, start_rad, end_rad)
+        # ctx.set_source_rgb(*definitions.get_color_rgb_float(definitions.GRAY_LIGHT))
+        # ctx.set_line_width(1)
+        # ctx.stroke()
+
+        # # Outer circle
+        # ctx.arc(xc, yc, radius, start_rad, get_rad_for_value(self.value))
+        # ctx.set_source_rgb(*definitions.get_color_rgb_float(color))
+        # ctx.set_line_width(3)
+        # ctx.stroke()
+
+        # ctx.restore()
 
 
 class OSCGroup(object):
@@ -358,7 +442,6 @@ class OSCControlMenu(object):
             self.send_osc_func(self.message["address"], self.message["value"])
 
     def update_value(self, increment, **kwargs):
-        print(increment)
         if not self.value:
             pass
 
@@ -376,6 +459,9 @@ class OSCControlMenu(object):
         active_item = self.get_active_menu_item()
         if hasattr(active_item, "select"):
             active_item.select()
+
+    def draw(self, ctx, offset):
+        pass
 
 
 class OSCMenuItem(object):

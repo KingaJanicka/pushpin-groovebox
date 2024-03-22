@@ -1,5 +1,5 @@
 {
-	"name": "CLASSIC",
+	"name": "Twist",
 	"slot": 0,
 	"init": [
 		{
@@ -24,7 +24,7 @@
 			"max": 1
 		},
 		{
-			"$type": "group",
+			"$type": "control-switch",
 			"label": "Engine",
 			"groups": [
 				{

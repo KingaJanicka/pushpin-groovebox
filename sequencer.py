@@ -5,8 +5,17 @@ from pythonosc.udp_client import SimpleUDPClient
 
 default_number_of_steps = 64
 
-TRACK_NAMES = ["gate", "pitch1", "pitch2", "pitch3",
-               "trig_mute", "accent", "swing", "slide"]
+TRACK_NAMES = [
+    "gate",
+    "pitch1",
+    "pitch2",
+    "pitch3",
+    "trig_mute",
+    "accent",
+    "swing",
+    "slide",
+]
+
 
 class Sequencer(object):
     pitch = 64
@@ -14,16 +23,19 @@ class Sequencer(object):
     tick_callback = None
     send_osc_func = None
     playhead = 0
-    gate = list() #boolean
-    pitch1 = list() #int (midi note)
+    gate = list()  # boolean
+    pitch1 = list()  # int (midi note)
     pitch2 = list()
     pitch3 = list()
-    trig_mute = list() #boolean
-    accent = list() #int
-    swing = list() #int
-    slide = list() #boolean
+    trig_mute = list()  # boolean
+    accent = list()  # int
+    swing = list()  # int
+    slide = list()  # boolean
     timeline = iso.timeline
-    def __init__(self, instrument_name, timeline, tick_callback, playhead, send_osc_func):
+
+    def __init__(
+        self, instrument_name, timeline, tick_callback, playhead, send_osc_func
+    ):
         self.name = instrument_name
         self.gate = [False] * default_number_of_steps
         self.pitch1 = [False] * default_number_of_steps
@@ -35,63 +47,65 @@ class Sequencer(object):
         self.slide = [False] * default_number_of_steps
         self.playhead = playhead
         self.send_osc_func = send_osc_func
-        self.timeline = timeline.schedule({
-            "action": lambda: (tick_callback(self.name, len(self.gate)), self.seq()),
-            "duration" : 0.25
-        })
+        self.timeline = timeline.schedule(
+            {
+                "action": lambda: (
+                    tick_callback(self.name, len(self.gate)),
+                    self.seq(),
+                ),
+                "duration": 0.25,
+            }
+        )
 
     def seq(self):
-        #This should be syncing well but for some reason it does not
+        # This should be syncing well but for some reason it does not
         playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01) % 64)
         if self.gate[playhead] is True:
             print(self.name, "NAME")
             print("sent note seq", self.name)
-            self.send_osc_func('/mnote', [float(25), float(0)], self.name)
-            self.send_osc_func('/mnote', [float(25), float(127)], self.name)
-        
+            self.send_osc_func("/mnote", [float(25), float(0)], self.name)
+            self.send_osc_func("/mnote", [float(25), float(127)], self.name)
+
         if self.gate[playhead] is False:
-            self.send_osc_func('/mnote', [float(25), float(0)], self.name)
-    
+            self.send_osc_func("/mnote", [float(25), float(0)], self.name)
 
     def get_track(self, lane):
-        if lane == 'gate':
-           return self.gate
-        elif lane == 'pitch1':
+        if lane == "gate":
+            return self.gate
+        elif lane == "pitch1":
             return self.pitch1
-        elif lane == 'pitch2':
+        elif lane == "pitch2":
             return self.pitch2
-        elif lane == 'pitch3':
+        elif lane == "pitch3":
             return self.pitch3
-        elif lane == 'trig_mute':
+        elif lane == "trig_mute":
             return self.trig_mute
-        elif lane == 'accent':
+        elif lane == "accent":
             return self.accent
-        elif lane == 'swing':
+        elif lane == "swing":
             return self.swing
-        elif lane == 'slide':
+        elif lane == "slide":
             return self.slide
-           
 
     def set_states(self, lane, values):
-        for index, value in enumerate(values): 
-            self.set_state(lane, index, value) 
+        for index, value in enumerate(values):
+            self.set_state(lane, index, value)
 
     def set_state(self, lane, index, value):
         print(f"lane: {lane} index: {index} value: {value}")
-        if lane == 'gate':
+        if lane == "gate":
             self.gate[index] = value
-        elif lane == 'pitch1':
+        elif lane == "pitch1":
             self.pitch1[index] = value
-        elif lane == 'pitch2':
+        elif lane == "pitch2":
             self.pitch2[index] = value
-        elif lane == 'pitch3':
+        elif lane == "pitch3":
             self.pitch3[index] = value
-        elif lane == 'trig_mute':
+        elif lane == "trig_mute":
             self.trig_mute[index] = value
-        elif lane == 'accent':
+        elif lane == "accent":
             self.accent[index] = value
-        elif lane == 'swing':
+        elif lane == "swing":
             self.swing[index] = value
-        elif lane == 'slide':
+        elif lane == "slide":
             self.slide[index] = value
-        

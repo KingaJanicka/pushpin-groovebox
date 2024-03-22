@@ -27,7 +27,7 @@ class OSCMode(PyshaMode):
         push2_python.constants.BUTTON_UPPER_ROW_8,
     ]
     instrument_devices = {}
-    current_device_index_and_page = (0, 0)
+    current_device_index_and_page = [0, 0]
     transports = []
 
     def initialize(self, settings=None):
@@ -54,6 +54,12 @@ class OSCMode(PyshaMode):
             instrument_short_name
         ) in self.get_all_distinct_instrument_short_names_helper():
             try:
+                print(
+                    os.path.join(
+                        definitions.INSTRUMENT_DEFINITION_FOLDER,
+                        "{}.json".format(instrument_short_name),
+                    )
+                )
                 inst = json.load(
                     open(
                         os.path.join(
@@ -73,6 +79,8 @@ class OSCMode(PyshaMode):
 
             if osc_in_port:
                 client = SimpleUDPClient("127.0.0.1", osc_in_port)
+            else:
+                print("HOOOO", inst)
 
             if osc_out_port:
                 loop = asyncio.get_event_loop()
@@ -89,7 +97,6 @@ class OSCMode(PyshaMode):
 
             for device_name in device_definitions:
                 device = OSCDevice(
-                    device_name,
                     device_definitions[device_name],
                     osc,
                     get_color=self.get_current_track_color_helper,
@@ -190,15 +197,16 @@ class OSCMode(PyshaMode):
 
     def update_current_device_page(self, new_device=None, new_page=None):
         current_device_idx, current_page = self.current_device_index_and_page
-        result = (current_device_idx, current_page)
-        if new_device is not None:
+
+        result = [current_device_idx, current_page]
+
+        if new_device != None:
             result[0] = new_device
-        if new_page is not None:
+
+        if new_page != None:
             result[1] = new_page
 
-        self.current_device_index_and_page[
-            self.get_current_track_instrument_short_name_helper()
-        ] = result
+        self.current_device_index_and_page = result
 
         new_current_device = self.get_current_instrument_device()
         new_current_device.set_page(new_page)
@@ -252,7 +260,10 @@ class OSCMode(PyshaMode):
         """
         if not self.app.is_mode_active(self.app.settings_mode):
             # Draw OSCDevice names
-            devices = self.get_current_instrument_devices()[0:8]
+            devices = self.get_current_instrument_devices()[
+                0:8
+            ]  # TODO paging for modulation and stuff
+
             if devices:
                 height = 20
                 for i, device in enumerate(devices):
@@ -260,7 +271,7 @@ class OSCMode(PyshaMode):
 
                     is_selected = False
                     selected_device, _ = self.get_current_instrument_device_and_page()
-                    if selected_device.config.name == device.config.name:
+                    if selected_device == device:
                         is_selected = True
 
                     current_track_color = self.get_current_track_color_helper()
@@ -297,9 +308,9 @@ class OSCMode(PyshaMode):
             idx = self.upper_row_button_names.index(button_name)
             if idx < len(current_track_devices):
                 new_device = current_track_devices[idx]
-                # TODO check this logic still makes sense
+                # Stay on the same device page if new instrument, otherwise go to next page
                 new_page = (
-                    current_page
+                    0
                     if new_device != selected_device
                     else (
                         current_page - 1
@@ -307,9 +318,8 @@ class OSCMode(PyshaMode):
                         else current_page + 1 if show_next else 0
                     )
                 )
-                self.update_current_device_page(
-                    new_device=new_device, new_page=new_page
-                )
+
+                self.update_current_device_page(idx, new_page=new_page)
             return True
 
         elif button_name in [

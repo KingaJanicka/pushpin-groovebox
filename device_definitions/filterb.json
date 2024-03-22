@@ -93,7 +93,7 @@
 		{
 			"$type": "group",
 			"label": "Sh. Cat",
-			"groups": [
+			"controls": [
 				{
 					"$type": "control-menu",
 					"items": [

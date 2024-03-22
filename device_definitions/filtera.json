@@ -65,7 +65,7 @@
 				{
 					"$type": "group",
 					"label": "Classic",
-					"groups": [
+					"controls": [
 						{
 							"$type": "control-menu",
 							"items": [
@@ -191,7 +191,7 @@
 				{
 					"$type": "group",
 					"label": "OB-Xd",
-					"groups": [
+					"controls": [
 						{
 							"$type": "control-menu",
 							"items": [
@@ -277,7 +277,7 @@
 				{
 					"$type": "group",
 					"label": "Cutoff Warp",
-					"groups": [
+					"controls": [
 						{
 							"$type": "control-menu",
 							"items": [
@@ -463,7 +463,7 @@
 				{
 					"$type": "group",
 					"label": "Res Warp",
-					"groups": [
+					"controls": [
 						{
 							"$type": "control-menu",
 							"items": [
@@ -609,7 +609,7 @@
 				{
 					"$type": "group",
 					"label": "K35",
-					"groups": [
+					"controls": [
 						{
 							"$type": "control-menu",
 							"items": [
@@ -695,7 +695,7 @@
 				{
 					"$type": "group",
 					"label": "Legacy Ladder",
-					"groups": [
+					"controls": [
 						{
 							"$type": "control-menu",
 							"items": [
@@ -761,7 +761,7 @@
 				{
 					"$type": "group",
 					"label": "Vintage Ladder",
-					"groups": [
+					"controls": [
 						{
 							"$type": "control-menu",
 							"items": [
@@ -827,7 +827,7 @@
 				{
 					"$type": "group",
 					"label": "Diode Ladder",
-					"groups": [
+					"controls": [
 						{
 							"$type": "control-menu",
 							"items": [
@@ -893,7 +893,7 @@
 				{
 					"$type": "group",
 					"label": "Multi-Tripole",
-					"groups": [
+					"controls": [
 						{
 							"$type": "control-menu",
 							"items": [
@@ -1039,7 +1039,7 @@
 				{
 					"$type": "group",
 					"label": "Comb",
-					"groups": [
+					"controls": [
 						{
 							"$type": "control-menu",
 							"items": [
@@ -1095,7 +1095,7 @@
 				{
 					"$type": "group",
 					"label": "Allpass",
-					"groups": [
+					"controls": [
 						{
 							"$type": "control-menu",
 							"items": [
@@ -1116,7 +1116,7 @@
 				{
 					"$type": "group",
 					"label": "S&H",
-					"groups": [
+					"controls": [
 						{
 							"$type": "control-menu",
 							"items": [
@@ -1156,7 +1156,7 @@
 				{
 					"$type": "group",
 					"label": "Classic",
-					"groups": [
+					"controls": [
 						{
 							"$type": "control-menu",
 							"items": [
@@ -1282,7 +1282,7 @@
 				{
 					"$type": "group",
 					"label": "OB-Xd",
-					"groups": [
+					"controls": [
 						{
 							"$type": "control-menu",
 							"items": [
@@ -1368,7 +1368,7 @@
 				{
 					"$type": "group",
 					"label": "Cutoff Warp",
-					"groups": [
+					"controls": [
 						{
 							"$type": "control-menu",
 							"items": [
@@ -1554,7 +1554,7 @@
 				{
 					"$type": "group",
 					"label": "Res Warp",
-					"groups": [
+					"controls": [
 						{
 							"$type": "control-menu",
 							"items": [
@@ -1700,7 +1700,7 @@
 				{
 					"$type": "group",
 					"label": "K35",
-					"groups": [
+					"controls": [
 						{
 							"$type": "control-menu",
 							"items": [
@@ -1786,7 +1786,7 @@
 				{
 					"$type": "group",
 					"label": "Legacy Ladder",
-					"groups": [
+					"controls": [
 						{
 							"$type": "control-menu",
 							"items": [
@@ -1852,7 +1852,7 @@
 				{
 					"$type": "group",
 					"label": "Vintage Ladder",
-					"groups": [
+					"controls": [
 						{
 							"$type": "control-menu",
 							"items": [
@@ -1918,7 +1918,7 @@
 				{
 					"$type": "group",
 					"label": "Diode Ladder",
-					"groups": [
+					"controls": [
 						{
 							"$type": "control-menu",
 							"items": [
@@ -1984,7 +1984,7 @@
 				{
 					"$type": "group",
 					"label": "Multi-Tripole",
-					"groups": [
+					"controls": [
 						{
 							"$type": "control-menu",
 							"items": [
@@ -2130,7 +2130,7 @@
 				{
 					"$type": "group",
 					"label": "Comb",
-					"groups": [
+					"controls": [
 						{
 							"$type": "control-menu",
 							"items": [
@@ -2186,7 +2186,7 @@
 				{
 					"$type": "group",
 					"label": "Allpass",
-					"groups": [
+					"controls": [
 						{
 							"$type": "control-menu",
 							"items": [
@@ -2207,7 +2207,7 @@
 				{
 					"$type": "group",
 					"label": "S&H",
-					"groups": [
+					"controls": [
 						{
 							"$type": "control-menu",
 							"items": [
