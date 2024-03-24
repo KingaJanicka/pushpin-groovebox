@@ -8,6 +8,14 @@ from osc_controls import (
 )
 
 import push2_python
+import logging
+
+# logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger("osc_device")
+logger.setLevel(logging.DEBUG)
+log_in = logger.getChild("in")
+log_out = logger.getChild("out")
 
 
 class OSCDevice(object):
@@ -58,16 +66,14 @@ class OSCDevice(object):
         self.label = config.get("name", "Device")
         self.dispatcher = osc.get("dispatcher", None)
         self.slot = config.get("slot", None)
-        # Uncomment for debugging
-        # self.dispatcher.map('*', print)
-        client = self.osc.get("client", None)
+        self.dispatcher.map("*", lambda *message: log_in.debug(message))
         init = config.get("init", [])
         get_color = kwargs.get("get_color")
         control_definitions = config.get("controls", [])
 
-        if client and len(init) > 0:
+        if self.osc["client"] and len(init) > 0:
             for cmd in init:
-                client.send_message(cmd["address"], cmd["value"])
+                self.send_message(cmd["address"], float(cmd["value"]))
 
         # Configure controls
         if len(control_definitions) > 0:
@@ -77,14 +83,12 @@ class OSCDevice(object):
                         self.controls.append(ControlSpacer())
                     case "control-macro":
                         self.controls.append(
-                            OSCControlMacro(control_def, get_color, client.send_message)
+                            OSCControlMacro(control_def, get_color, self.send_message)
                         )
                         for param in control_def["params"]:
                             self.dispatcher.map(param.address, control.set_state)
                     case "control-range":
-                        control = OSCControl(
-                            control_def, get_color, client.send_message
-                        )
+                        control = OSCControl(control_def, get_color, self.send_message)
                         self.dispatcher.map(control_def["address"], control.set_state)
                         self.controls.append(control)
                     case "control-switch":
@@ -92,7 +96,7 @@ class OSCDevice(object):
                             control = OSCControlSwitch(
                                 control_def,
                                 get_color,
-                                client.send_message,
+                                self.send_message,
                             )
 
                             self.controls.append(control)
@@ -101,13 +105,17 @@ class OSCDevice(object):
 
                     case "control-menu":
                         control = OSCControlMenu(
-                            control_def, get_color, client.send_message
+                            control_def, get_color, self.send_message
                         )
                         self.controls.append(control)
                     case _:
                         Exception(
                             f"Invalid parameter: {control_def}; did you forget $type?"
                         )
+
+    def send_message(self, *args):
+        log_out.debug(args)
+        return self.osc["client"].send_message(*args)
 
     def draw(self, ctx):
         visible_controls = self.pages[self.page]

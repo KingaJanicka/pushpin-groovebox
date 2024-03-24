@@ -13,6 +13,15 @@ from display_utils import show_text
 from glob import glob
 from pathlib import Path
 from osc_device import OSCDevice
+import logging
+
+
+# logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger("osc_device")
+logger.setLevel(logging.DEBUG)
+log_in = logger.getChild("in")
+log_out = logger.getChild("out")
 
 
 class OSCMode(PyshaMode):
@@ -33,7 +42,7 @@ class OSCMode(PyshaMode):
     def initialize(self, settings=None):
         device_names = [
             Path(device_file).stem
-            for device_file in glob("./device_definitions/*.json")
+            for device_file in glob("./effect_definitions/*.json")
         ]
         device_definitions = {}
 
@@ -42,7 +51,7 @@ class OSCMode(PyshaMode):
                 device_definitions[device_name] = json.load(
                     open(
                         os.path.join(
-                            definitions.DEVICE_DEFINITION_FOLDER,
+                            definitions.EFFECT_DEFINITION_FOLDER,
                             "{}.json".format(device_name),
                         )
                     )
@@ -76,6 +85,7 @@ class OSCMode(PyshaMode):
             client = None
             server = None
             dispatcher = Dispatcher()
+            dispatcher.set_default_handler(lambda *message: log_in.debug(message))
 
             if osc_in_port:
                 client = SimpleUDPClient("127.0.0.1", osc_in_port)

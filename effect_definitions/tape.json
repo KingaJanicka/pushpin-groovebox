@@ -1,0 +1,125 @@
+{
+	"name": "Tape",
+	"slot": 0,
+	"init": [
+		{
+			"$type": "message",
+			"$comment": "unmute osc",
+			"address": "/param/fx/a/1/type",
+			"value": 23
+		}
+	],
+	"controls": [
+		{
+			"$type": "control-switch",
+			"label": "Band",
+			"groups": [
+				{
+					"$type": "group",
+					"label": "Hysterisis",
+					"controls": [
+						{
+							"$type": "control-range",
+							"label": "Drive",
+							"address": "/param/fx/a/1/param1",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Saturation",
+							"address": "/param/fx/a/1/param2",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Bias",
+							"address": "/param/fx/a/1/param3",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Tone",
+							"address": "/param/fx/a/1/param4",
+							"min": 0,
+							"max": 1
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "Loss",
+					"controls": [
+						{
+							"$type": "control-range",
+							"label": "Speed",
+							"address": "/param/fx/a/1/param5",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Gap",
+							"address": "/param/fx/a/1/param6",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Spacing",
+							"address": "/param/fx/a/1/param7",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Thickness",
+							"address": "/param/fx/a/1/param8",
+							"min": 0,
+							"max": 1
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "Degrade",
+					"controls": [
+						{
+							"$type": "control-range",
+							"label": "Depth",
+							"address": "/param/fx/a/1/param9",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Amount",
+							"address": "/param/fx/a/1/param10",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Variance",
+							"address": "/param/fx/a/1/param11",
+							"min": 0,
+							"max": 1
+						}
+					]
+				}
+			]
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-range",
+			"label": "Mix",
+			"address": "/param/fx/a/1/param12",
+			"min": 0,
+			"max": 1
+		}
+	]
+}
