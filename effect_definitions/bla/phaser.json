@@ -1,0 +1,174 @@
+{
+	"name": "Phaser",
+	"slot": 0,
+	"init": [
+		{
+			"$type": "message",
+			"$comment": "unmute osc",
+			"address": "/param/fx/a/1/type",
+			"value": 3
+		}
+	],
+	"controls": [
+		{
+			"$type": "control-switch",
+			"label": "Band",
+			"groups": [
+				{
+					"$type": "group",
+					"label": "Modulation",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "Sine",
+									"onselect": {
+										"$type": "message",
+										"$comment": "1",
+										"address": "/param/fx/a/1/param11",
+										"value": 0
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Triangle",
+									"onselect": {
+										"$type": "message",
+										"$comment": "2",
+										"address": "/param/fx/a/1/param11",
+										"value": 1
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Sawtooth",
+									"onselect": {
+										"$type": "message",
+										"$comment": "3",
+										"address": "/param/fx/a/1/param11",
+										"value": 2
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Noise",
+									"onselect": {
+										"$type": "message",
+										"$comment": "4",
+										"address": "/param/fx/a/1/param11",
+										"value": 3
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "S&H",
+									"onselect": {
+										"$type": "message",
+										"$comment": "5",
+										"address": "/param/fx/a/1/param11",
+										"value": 4
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Square",
+									"onselect": {
+										"$type": "message",
+										"$comment": "6",
+										"address": "/param/fx/a/1/param11",
+										"value": 5
+									}
+								}
+							]
+						},
+						{
+							"$type": "control-range",
+							"label": "Rate",
+							"address": "/param/fx/a/1/param4",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Depth",
+							"address": "/param/fx/a/1/param5",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Stereo",
+							"address": "/param/fx/a/1/param6",
+							"min": 0,
+							"max": 1
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "Stages",
+					"controls": [
+						{
+							"$type": "control-range",
+							"label": "Count",
+							"address": "/param/fx/a/1/param9",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Spread",
+							"address": "/param/fx/a/1/param10",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Center",
+							"address": "/param/fx/a/1/param1",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Sharpness",
+							"address": "/param/fx/a/1/param3",
+							"min": 0,
+							"max": 1
+						},
+						{
+							"$type": "control-range",
+							"label": "Feedback",
+							"address": "/param/fx/a/1/param2",
+							"min": 0,
+							"max": 1
+						}
+					]
+				}
+			]
+		},
+		{
+			"$type": "control-range",
+			"label": "Tone",
+			"address": "/param/fx/a/1/param12",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Mix",
+			"address": "/param/fx/a/1/param7",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Width",
+			"address": "/param/fx/a/1/param8",
+			"min": 0,
+			"max": 1
+		}
+	]
+}
