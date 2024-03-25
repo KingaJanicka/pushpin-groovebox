@@ -336,9 +336,11 @@ class OSCMode(PyshaMode):
             push2_python.constants.BUTTON_PAGE_RIGHT,
         ]:
             if button_name == push2_python.constants.BUTTON_PAGE_LEFT and show_prev:
+                print("new page", current_page - 1)
                 self.update_current_device_page(new_page=current_page - 1)
             elif button_name == push2_python.constants.BUTTON_PAGE_RIGHT and show_next:
                 self.update_current_device_page(new_page=current_page + 1)
+                print("new page", current_page + 1)
             return True
 
     def on_encoder_rotated(self, encoder_name, increment):

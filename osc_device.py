@@ -165,7 +165,7 @@ class OSCDevice(object):
 
         offset = 0
         for control in visible_controls:
-            if offset + control.size <= 8:
+            if offset + 1 <= 8:
                 control.draw(ctx, offset)
                 offset += 1
 
@@ -175,13 +175,15 @@ class OSCDevice(object):
             show_prev = True
 
         show_next = False
-        if (self.page + 1) * 8 < len(self.controls):  # TODO FIX
+        if (self.page + 1) < len(self.pages):
             show_next = True
 
         return show_prev, show_next
 
     def set_page(self, page):
         self.page = page
+        # print("PAGE: ", self.page)
+        # print(*self.pages[self.page], sep="\n")
 
     def get_visible_controls(self):
         return self.pages[self.page]
