@@ -108,6 +108,14 @@ class OSCMode(PyshaMode):
             osc = {"client": client, "server": server, "dispatcher": dispatcher}
             self.app.osc_clients[instrument_short_name] = osc
 
+            # populate slot values
+            for slot_idx, slot in enumerate(self.slots):
+                if slot:
+                    dispatcher.map(
+                        slot["address"],
+                        lambda *resp: self.set_slot_state(slot_idx, resp),
+                    )
+
             # Create OSC mappings for instruments with definitions
             self.instrument_devices[instrument_short_name] = []
             for x in range(8):
@@ -141,6 +149,11 @@ class OSCMode(PyshaMode):
     """
     Initialise OSC servers and add to transport array so they can be gracefully closed
     """
+
+    def set_slot_state(self, slot, resp):
+        address, *raw = resp
+        value, *rest = raw.split(" ")
+        self.slots[slot]["value"] = int(value)
 
     async def init_server(self, server):
         transport, protocol = (
@@ -177,10 +190,9 @@ class OSCMode(PyshaMode):
                     devices.append(device)
                 else:
                     for init in device.init:
-                        if (
-                            init["address"] == self.slots[slot_idx]["address"]
-                            and init["value"] == self.slots[slot_idx]["value"]
-                        ):
+                        if init["address"] == self.slots[slot_idx]["address"] and int(
+                            init["value"]
+                        ) == int(self.slots[slot_idx]["value"]):
                             devices.append(device)
 
         return devices
