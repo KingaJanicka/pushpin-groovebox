@@ -220,7 +220,6 @@ class OSCMode(PyshaMode):
 
         new_current_device = self.get_current_instrument_device()
         new_current_device.set_page(new_page)
-
         self.app.buttons_need_update = True
 
     # TODO populate display when new instrument selected

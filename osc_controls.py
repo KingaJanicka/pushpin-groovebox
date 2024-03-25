@@ -22,7 +22,6 @@ class OSCControl(object):
         self.vmin = 0
         self.vmax = 127
         self.get_color_func = None
-        self.active = False
         self.label = config["label"]
         self.address = config["address"]
         self.get_color_func = get_color_func
@@ -104,8 +103,6 @@ class OSCControl(object):
         ctx.restore()
 
     def set_state(self, address, raw):
-        if not self.active:
-            self.active = True
         value, *rest = raw.split(" ")
         self.value = float(value)
 
@@ -130,7 +127,6 @@ class ControlSpacer(object):
     name = "Spacer"
 
     address = None
-    active = True
     label = None
     size = 1
     color = definitions.GRAY_LIGHT
@@ -166,7 +162,6 @@ class OSCControlMacro(object):
         self.vmin = 0
         self.vmax = 127
         self.get_color_func = None
-        self.active = False
         self.label = config["label"]
         self.get_color_func = get_color_func
         self.params = config["params"]
@@ -194,6 +189,11 @@ class OSCControlMacro(object):
                 osc_utils.scale_knob_value([self.value, param["min"], param["max"]]),
             )
 
+    def set_state(self, address, raw):
+        value, *rest = raw.split(" ")
+        self.value = float(value)
+        ###TODO: Find by index
+
 
 class OSCControlSwitch(object):
     name = "Switch"
@@ -219,7 +219,6 @@ class OSCControlSwitch(object):
             raise Exception("Invalid config passed to new OSCControlSwitch")
         self.groups = []
         self.value = 0
-        self.active = False
         self.get_color_func = get_color_func
         self.send_osc_func = send_osc_func
         groups = config.get("groups", [])
@@ -255,8 +254,6 @@ class OSCControlSwitch(object):
             return self.groups[self.value]
 
     def set_state(self, address, raw):
-        if not self.active:
-            self.active = True
         value, *rest = raw.split(" ")
 
         for idx, group in enumerate(self.groups):
@@ -335,7 +332,6 @@ class OSCGroup(object):
         self.message = None
         self.label = ""
         self.controls = []
-        self.active = False
         self.message = config.get("onselect", None)
         self.label = config.get("label", "Group")
         self.send_osc_func = send_osc_func
@@ -407,7 +403,6 @@ class OSCControlMenu(object):
 
         self.items = []
         self.value = 0
-        self.active = False
         self.get_color_func = get_color_func
         self.send_osc_func = send_osc_func
         self.message = config.get("onselect", None)
@@ -424,18 +419,14 @@ class OSCControlMenu(object):
             self.send_osc_func(self.message["address"], self.message["value"])
 
     def set_state(self, address, raw):
-        if not self.active:
-            self.active = True
         value, *rest = raw.split(" ")
-        self.value = self.items.index(
-            next(
-                filter(
-                    lambda x: x.get("message", {}).get("address", None) == address
-                    and float(x.get("message", {}).get("value", None)) == float(value),
-                    self.items,
-                )
-            )
-        )
+        for idx, item in enumerate(self.items):
+            if (
+                item.message is not None
+                and item.message["address"] == address
+                and float(item.message["value"]) == float(value)
+            ):
+                self.value = idx
 
     def update_value(self, increment, **kwargs):
         if not self.value:

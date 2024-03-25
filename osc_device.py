@@ -16,6 +16,7 @@ logger = logging.getLogger("osc_device")
 logger.setLevel(logging.DEBUG)
 log_in = logger.getChild("in")
 log_out = logger.getChild("out")
+log = logger.getChild("DEBUGGER")
 
 
 class OSCDevice(object):
@@ -31,8 +32,7 @@ class OSCDevice(object):
     def pages(self):
         pages = [[]]
         idx = 0
-        # print(self.controls)
-        for control in [control for control in self.controls if control.active]:
+        for control in self.controls:
             current_page = pages[idx]
 
             # If control won't fit
@@ -63,7 +63,6 @@ class OSCDevice(object):
         self.slot = None
         self.definition = config
         self.osc = osc
-        self.active = False
         self.label = config.get("name", "Device")
         self.dispatcher = osc.get("dispatcher", None)
         self.slot = config.get("slot", None)
@@ -110,25 +109,29 @@ class OSCDevice(object):
                                     elif isinstance(child, OSCControlMacro):
                                         for param in child.params:
                                             self.dispatcher.map(
-                                                param.address,
+                                                param["address"],
                                                 lambda *x: control.set_state(*x)
                                                 and child.set_state(*x),
                                             )
                                     elif isinstance(child, OSCControlMenu):
-                                        self.dispatcher.map(
-                                            child.message.address,
-                                            lambda *x: control.set_state(*x)
-                                            and child.set_state(*x),
-                                        )
-                                        for item in child.items:
+                                        if child.message is not None:
                                             self.dispatcher.map(
-                                                item.onselect.address,
+                                                child.message["address"],
                                                 lambda *x: control.set_state(*x)
                                                 and child.set_state(*x),
                                             )
-                                        self.controls.append(control)
-                        except:
-                            print(control_def)
+                                        for item in child.items:
+                                            if item.message is not None:
+                                                self.dispatcher.map(
+                                                    item.message["address"],
+                                                    lambda *x: control.set_state(*x)
+                                                    and child.set_state(*x),
+                                                )
+
+                            self.controls.append(control)
+                        except Exception as e:
+                            print("EXCEPT", e)
+                            # print(control_def)
 
                     case "control-menu":
                         control = OSCControlMenu(
@@ -136,12 +139,17 @@ class OSCDevice(object):
                         )
                         if control.message:
                             self.dispatcher.map(
-                                control.message.address, control.set_state
+                                control.message["address"], control.set_state
                             )
                         for item in control.items:
-                            self.dispatcher.map(
-                                item.message["address"], control.set_state
-                            )
+                            if item.message and item.message["address"]:
+                                self.dispatcher.map(
+                                    item.message["address"], control.set_state
+                                )
+                            else:
+                                raise Exception(
+                                    f"{item} has no message.address property"
+                                )
                         self.controls.append(control)
                     case _:
                         Exception(
@@ -153,7 +161,7 @@ class OSCDevice(object):
         return self.osc["client"].send_message(*args)
 
     def draw(self, ctx):
-        visible_controls = self.pages[self.page]
+        visible_controls = self.get_visible_controls()
 
         offset = 0
         for control in visible_controls:

@@ -61,7 +61,6 @@ def test_SpacerControl(mocker):
 
     assert control.size == 1, "SpacerControl size should always be 1"
     assert control.address == None, "Address should match init"
-    assert control.active == True
     assert control.draw() == None, "Function should return none"
     assert control.update_value() == None
 

@@ -2,6 +2,9 @@
 SAMPLE_RATE=96000
 # SAMPLE_RATE=48000
 BUFFER_SIZE=512
+
+killall -9 surge-xt-cli
+
 (trap 'kill 0' SIGINT;\
    surge-xt-cli --audio-interface=[0.0] --sample-rate=$SAMPLE_RATE --buffer-size=$BUFFER_SIZE --osc-in-port=1030 --osc-out-port=1040 1>/var/log/surge-xt-cli/0.log 2>/var/log/surge-xt-cli/0-err.log\
  & surge-xt-cli --audio-interface=[0.0] --sample-rate=$SAMPLE_RATE --buffer-size=$BUFFER_SIZE --osc-in-port=1031 --osc-out-port=1041 1>/var/log/surge-xt-cli/1.log 2>/var/log/surge-xt-cli/1-err.log\
