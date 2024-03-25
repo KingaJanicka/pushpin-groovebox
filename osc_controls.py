@@ -219,6 +219,7 @@ class OSCControlSwitch(object):
             raise Exception("Invalid config passed to new OSCControlSwitch")
         self.groups = []
         self.value = 0
+        self.active = False
         self.get_color_func = get_color_func
         self.send_osc_func = send_osc_func
         groups = config.get("groups", [])
@@ -252,6 +253,28 @@ class OSCControlSwitch(object):
     def get_active_group(self):
         if self.value < len(self.groups):
             return self.groups[self.value]
+
+    def set_state(self, address, raw):
+        if not self.active:
+            self.active = True
+        value, *rest = raw.split(" ")
+
+        for idx, group in enumerate(self.groups):
+            for control in group.controls:
+                if isinstance(OSCControl, control) and control.address == address:
+                    self.value = idx
+                elif isinstance(OSCControlMacro, control) and any(
+                    [param for param in control.params if param["address"] == address]
+                ):
+                    self.value = idx
+                elif isinstance(OSCControlMenu, control) and any(
+                    [
+                        item
+                        for item in control.items
+                        if item.message["address"] == address
+                    ]
+                ):
+                    self.value = idx
 
     def draw(self, ctx, offset):
         margin_top = 50
@@ -312,7 +335,7 @@ class OSCGroup(object):
         self.message = None
         self.label = ""
         self.controls = []
-
+        self.active = False
         self.message = config.get("onselect", None)
         self.label = config.get("label", "Group")
         self.send_osc_func = send_osc_func
@@ -384,7 +407,7 @@ class OSCControlMenu(object):
 
         self.items = []
         self.value = 0
-        self.message = None
+        self.active = False
         self.get_color_func = get_color_func
         self.send_osc_func = send_osc_func
         self.message = config.get("onselect", None)
@@ -399,6 +422,20 @@ class OSCControlMenu(object):
 
         if self.message:
             self.send_osc_func(self.message["address"], self.message["value"])
+
+    def set_state(self, address, raw):
+        if not self.active:
+            self.active = True
+        value, *rest = raw.split(" ")
+        self.value = self.items.index(
+            next(
+                filter(
+                    lambda x: x.get("message", {}).get("address", None) == address
+                    and float(x.get("message", {}).get("value", None)) == float(value),
+                    self.items,
+                )
+            )
+        )
 
     def update_value(self, increment, **kwargs):
         if not self.value:

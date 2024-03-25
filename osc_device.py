@@ -32,7 +32,7 @@ class OSCDevice(object):
         pages = [[]]
         idx = 0
         # print(self.controls)
-        for control in self.controls:
+        for control in [control for control in self.controls if control.active]:
             current_page = pages[idx]
 
             # If control won't fit
@@ -63,6 +63,7 @@ class OSCDevice(object):
         self.slot = None
         self.definition = config
         self.osc = osc
+        self.active = False
         self.label = config.get("name", "Device")
         self.dispatcher = osc.get("dispatcher", None)
         self.slot = config.get("slot", None)
@@ -98,8 +99,34 @@ class OSCDevice(object):
                                 get_color,
                                 self.send_message,
                             )
-
-                            self.controls.append(control)
+                            for group in control.groups:
+                                for child in group.controls:
+                                    if isinstance(child, OSCControl):
+                                        self.dispatcher.map(
+                                            child.address,
+                                            lambda *x: control.set_state(*x)
+                                            and child.set_state(*x),
+                                        )
+                                    elif isinstance(child, OSCControlMacro):
+                                        for param in child.params:
+                                            self.dispatcher.map(
+                                                param.address,
+                                                lambda *x: control.set_state(*x)
+                                                and child.set_state(*x),
+                                            )
+                                    elif isinstance(child, OSCControlMenu):
+                                        self.dispatcher.map(
+                                            child.message.address,
+                                            lambda *x: control.set_state(*x)
+                                            and child.set_state(*x),
+                                        )
+                                        for item in child.items:
+                                            self.dispatcher.map(
+                                                item.onselect.address,
+                                                lambda *x: control.set_state(*x)
+                                                and child.set_state(*x),
+                                            )
+                                        self.controls.append(control)
                         except:
                             print(control_def)
 
@@ -107,6 +134,14 @@ class OSCDevice(object):
                         control = OSCControlMenu(
                             control_def, get_color, self.send_message
                         )
+                        if control.message:
+                            self.dispatcher.map(
+                                control.message.address, control.set_state
+                            )
+                        for item in control.items:
+                            self.dispatcher.map(
+                                item.message["address"], control.set_state
+                            )
                         self.controls.append(control)
                     case _:
                         Exception(

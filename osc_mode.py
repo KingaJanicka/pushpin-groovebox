@@ -42,7 +42,7 @@ class OSCMode(PyshaMode):
     def initialize(self, settings=None):
         device_names = [
             Path(device_file).stem
-            for device_file in glob("./effect_definitions/*.json")
+            for device_file in glob("./device_definitions/*.json")
         ]
         device_definitions = {}
 
@@ -51,7 +51,7 @@ class OSCMode(PyshaMode):
                 device_definitions[device_name] = json.load(
                     open(
                         os.path.join(
-                            definitions.EFFECT_DEFINITION_FOLDER,
+                            definitions.DEVICE_DEFINITION_FOLDER,
                             "{}.json".format(device_name),
                         )
                     )
