@@ -15,11 +15,7 @@ from pathlib import Path
 from osc_device import OSCDevice
 import logging
 
-
-# logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
-logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("osc_device")
-logger.setLevel(logging.DEBUG)
 log_in = logger.getChild("in")
 log_out = logger.getChild("out")
 
@@ -38,6 +34,16 @@ class OSCMode(PyshaMode):
     instrument_devices = {}
     current_device_index_and_page = [0, 0]
     transports = []
+    slots = [
+        {"address": "/param/a/osc/1/type", "value": 0},
+        {"address": "/param/a/osc/2/type", "value": 0},
+        None,
+        None,
+        None,
+        {"address": "/param/fx/a/1/type", "value": 0},
+        {"address": "/param/fx/a/2/type", "value": 0},
+        {"address": "/param/fx/global/1/type", "value": 0},
+    ]
 
     def initialize(self, settings=None):
         device_names = [
@@ -104,22 +110,30 @@ class OSCMode(PyshaMode):
 
             # Create OSC mappings for instruments with definitions
             self.instrument_devices[instrument_short_name] = []
+            for x in range(8):
+                self.instrument_devices[instrument_short_name].append([])
 
+            instrument_slots = self.instrument_devices[instrument_short_name]
             for device_name in device_definitions:
                 device = OSCDevice(
                     device_definitions[device_name],
                     osc,
                     get_color=self.get_current_track_color_helper,
                 )
-                self.instrument_devices[instrument_short_name].append(device)
+                slot_idx = device_definitions[device_name]["slot"]
+                instrument_slots[slot_idx].append(device)
 
-            # call the all_params endpoint to populate device controls
-            if client:
-                print(f"Populating {instrument_short_name}")
-
+            # # call the all_params endpoint to populate device controls
+            # if client:
+            #     print(f"Populating {instrument_short_name}")
             print(
                 "Loaded {0} devices for instrument {1}".format(
-                    len(self.instrument_devices[instrument_short_name]),
+                    sum(
+                        [
+                            len(slot)
+                            for slot in self.instrument_devices[instrument_short_name]
+                        ]
+                    ),
                     instrument_short_name,
                 )
             )
@@ -152,24 +166,24 @@ class OSCMode(PyshaMode):
         return self.app.track_selection_mode.get_current_track_instrument_short_name()
 
     def get_current_instrument_devices(self):
-        return self.instrument_devices.get(
+        slots = self.instrument_devices.get(
             self.get_current_track_instrument_short_name_helper(), []
         )
+        devices = []
 
-    # def get_current_instrument_device_labels(self):
-    #     return [
-    #         device.label for device in self.get_current_instrument_devices_controls()
-    #     ]
+        for slot_idx, slot in enumerate(slots):
+            for device in slot:
+                if slot_idx == 2 or slot_idx == 3 or slot_idx == 4:
+                    devices.append(device)
+                else:
+                    for init in device.init:
+                        if (
+                            init["address"] == self.slots[slot_idx]["address"]
+                            and init["value"] == self.slots[slot_idx]["value"]
+                        ):
+                            devices.append(device)
 
-    # def get_current_instrument_devices_control_ids(self):
-    #     return [
-    #         control.id for control in self.get_current_instrument_devices_controls()
-    #     ]
-
-    # def get_current_instrument_devices_control_labels(self):
-    #     return [
-    #         control.label for control in self.get_current_instrument_devices_controls()
-    #     ]
+        return devices
 
     def get_current_instrument_device(self):
         device, __ = self.get_current_instrument_device_and_page()
@@ -179,31 +193,6 @@ class OSCMode(PyshaMode):
         device_idx, page = self.current_device_index_and_page
         current_device = self.get_current_instrument_devices()[device_idx]
         return (current_device, page)
-
-    # def get_controls_for_current_device(self):
-    #     device, _ = self.get_current_instrument_device_and_page()
-    #     return device.controls
-
-    # # TODO make page indexing consistent between instruments
-    # TODO move to Device
-    # def get_controls_for_current_device_and_page(self):
-    #     all_device_controls = self.get_controls_for_current_device()
-    #     _, page = self.get_current_instrument_device_and_page()
-    #     visible_controls = []
-    #     idx = 0
-    #     page_offset = page * 8
-    #     page_max = (page + 1) * 8
-    #     try:
-    #         for control in all_device_controls:
-    #             if control.size + idx < page_offset:
-    #                 idx += control.size
-    #             elif idx + control.size <= page_max:
-    #                 visible_controls.append(control)
-    #                 idx += control.size
-
-    #         return visible_controls
-    #     except IndexError:
-    #         return []
 
     def update_current_device_page(self, new_device=None, new_page=None):
         current_device_idx, current_page = self.current_device_index_and_page
@@ -269,10 +258,7 @@ class OSCMode(PyshaMode):
         """
         if not self.app.is_mode_active(self.app.settings_mode):
             # Draw OSCDevice names
-            devices = self.get_current_instrument_devices()[
-                0:8
-            ]  # TODO paging for modulation and stuff
-
+            devices = self.get_current_instrument_devices()
             if devices:
                 height = 20
                 for i, device in enumerate(devices):
@@ -336,11 +322,9 @@ class OSCMode(PyshaMode):
             push2_python.constants.BUTTON_PAGE_RIGHT,
         ]:
             if button_name == push2_python.constants.BUTTON_PAGE_LEFT and show_prev:
-                print("new page", current_page - 1)
                 self.update_current_device_page(new_page=current_page - 1)
             elif button_name == push2_python.constants.BUTTON_PAGE_RIGHT and show_next:
                 self.update_current_device_page(new_page=current_page + 1)
-                print("new page", current_page + 1)
             return True
 
     def on_encoder_rotated(self, encoder_name, increment):

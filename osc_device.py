@@ -10,10 +10,7 @@ from osc_controls import (
 import push2_python
 import logging
 
-# logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.DEBUG)
-logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("osc_device")
-logger.setLevel(logging.DEBUG)
 log_in = logger.getChild("in")
 log_out = logger.getChild("out")
 log = logger.getChild("DEBUGGER")
@@ -67,12 +64,12 @@ class OSCDevice(object):
         self.dispatcher = osc.get("dispatcher", None)
         self.slot = config.get("slot", None)
         self.dispatcher.map("*", lambda *message: log_in.debug(message))
-        init = config.get("init", [])
+        self.init = config.get("init", [])
         get_color = kwargs.get("get_color")
         control_definitions = config.get("controls", [])
 
-        if self.osc["client"] and len(init) > 0:
-            for cmd in init:
+        if self.osc["client"] and len(self.init) > 0:
+            for cmd in self.init:
                 self.send_message(cmd["address"], float(cmd["value"]))
 
         # Configure controls
