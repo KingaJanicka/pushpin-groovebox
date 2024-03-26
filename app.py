@@ -75,9 +75,6 @@ class PyshaApp(object):
     last_cp_value_recevied = 0
     last_cp_value_recevied_time = 0
 
-    # Surge-XT-CLI settings and config
-    osc_clients = {}
-
     # client = SimpleUDPClient("127.0.0.1", 1032)
 
     def __init__(self):
@@ -524,12 +521,19 @@ class PyshaApp(object):
         # print(instrument_short_name, self.track_selection_mode.get_current_track_instrument_short_name(), "SEND OSC")
         if instrument_short_name is not None:
             # This is for the sequencer
-            self.osc_clients[instrument_short_name].send_message(address, value)
+            client = self.osc_mode.instruments[instrument_short_name].get(
+                "client", None
+            )
+            if client:
+                client.send_message(address, value)
         else:
             # This is for wiggling knobs
-            self.osc_clients[
+            client = self.osc_mode.instruments[
                 self.track_selection_mode.get_current_track_instrument_short_name()
-            ].send_message(address, value)
+            ].get("client", None)
+
+            if client:
+                client.send_message(address, value)
             # print("adress", address)
 
     def send_osc_multi(self, commands, instrument_short_name=None):

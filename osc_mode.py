@@ -2,18 +2,12 @@ import definitions
 import push2_python
 import json
 import os
-import asyncio
-
-from pythonosc.udp_client import SimpleUDPClient
-from pythonosc.osc_server import AsyncIOOSCUDPServer
-from pythonosc.dispatcher import Dispatcher
-
+import logging
 from definitions import PyshaMode, OFF_BTN_COLOR
 from display_utils import show_text
 from glob import glob
 from pathlib import Path
-from osc_device import OSCDevice
-import logging
+from osc_instrument import OSCInstrument
 
 logger = logging.getLogger("osc_device")
 
@@ -41,19 +35,9 @@ class OSCMode(PyshaMode):
         push2_python.constants.BUTTON_LOWER_ROW_8,
     ]
 
-    instrument_devices = {}
+    instruments = {}
     current_device_index_and_page = [0, 0]
     transports = []
-    slots = [
-        {"address": "/param/a/osc/1/type", "value": 0},
-        {"address": "/param/a/osc/2/type", "value": 0},
-        None,
-        None,
-        None,
-        {"address": "/param/fx/a/1/type", "value": 0},
-        {"address": "/param/fx/a/2/type", "value": 0},
-        {"address": "/param/fx/global/1/type", "value": 0},
-    ]
 
     def initialize(self, settings=None):
         device_names = [
@@ -85,7 +69,7 @@ class OSCMode(PyshaMode):
                         "{}.json".format(instrument_short_name),
                     )
                 )
-                inst = json.load(
+                instrument_definition = json.load(
                     open(
                         os.path.join(
                             definitions.INSTRUMENT_DEFINITION_FOLDER,
@@ -93,95 +77,19 @@ class OSCMode(PyshaMode):
                         )
                     )
                 )
-            except FileNotFoundError:
-                inst = {}
-            osc_in_port = inst.get("osc_in_port", None)
-            osc_out_port = inst.get("osc_out_port", None)
-            log_in = logger.getChild(f"in-{osc_in_port}")
-            log_out = logger.getChild(f"out-{osc_out_port}")
-            client = None
-            server = None
-            dispatcher = Dispatcher()
-            dispatcher.set_default_handler(lambda *message: log_in.debug(message))
 
-            if osc_in_port:
-                client = SimpleUDPClient("127.0.0.1", osc_in_port)
-
-            if osc_out_port:
-                loop = asyncio.get_event_loop()
-                server = AsyncIOOSCUDPServer(
-                    ("127.0.0.1", osc_out_port), dispatcher, loop
-                )
-                loop.run_until_complete(self.init_server(server))
-
-            osc = {"client": client, "server": server, "dispatcher": dispatcher}
-            self.app.osc_clients[instrument_short_name] = osc
-
-            # populate slot values
-            for slot_idx, slot in enumerate(self.slots):
-                if slot:
-                    dispatcher.map(
-                        slot["address"],
-                        lambda *resp: self.set_slot_state(slot_idx, resp),
-                    )
-
-            # Create OSC mappings for instruments with definitions
-            self.instrument_devices[instrument_short_name] = []
-            for x in range(8):
-                self.instrument_devices[instrument_short_name].append([])
-
-            instrument_slots = self.instrument_devices[instrument_short_name]
-            for device_name in device_definitions:
-                device = OSCDevice(
-                    device_definitions[device_name],
-                    osc,
-                    get_color=self.get_current_track_color_helper,
-                )
-                slot_idx = device_definitions[device_name]["slot"]
-                instrument_slots[slot_idx].append(device)
-
-            # # call the all_params endpoint to populate device controls
-            if client:
-                print(f"Populating {instrument_short_name}")
-                for slot in self.slots:
-                    if slot:
-                        log_out.debug("/q" + slot["address"])
-                        client.send_message("/q" + slot["address"], 1.0)
-
-            print(
-                "Loaded {0} devices for instrument {1}".format(
-                    sum(
-                        [
-                            len(slot)
-                            for slot in self.instrument_devices[instrument_short_name]
-                        ]
-                    ),
+                self.instruments[instrument_short_name] = OSCInstrument(
                     instrument_short_name,
+                    instrument_definition,
+                    device_definitions,
+                    get_current_track_color_helper=self.get_current_track_color_helper,
                 )
-            )
-
-    """
-    Initialise OSC servers and add to transport array so they can be gracefully closed
-    """
-
-    def set_slot_state(self, slot, resp):
-        address, *payload = resp
-        value, *rest = payload
-        self.slots[slot]["value"] = int(value)
-
-    async def init_server(self, server):
-        transport, protocol = (
-            await server.create_serve_endpoint()
-        )  # Create datagram endpoint and start serving
-        self.transports.append(transport)
-
-    """
-    Close transports on ctrl+c
-    """
+            except Exception:
+                pass
 
     def close_transports(self):
-        for transport in self.transports:
-            transport.close()
+        for instrument in self.instruments:
+            self.instruments[instrument].close_transports()
 
     def get_all_distinct_instrument_short_names_helper(self):
         return self.app.track_selection_mode.get_all_distinct_instrument_short_names()
@@ -193,20 +101,21 @@ class OSCMode(PyshaMode):
         return self.app.track_selection_mode.get_current_track_instrument_short_name()
 
     def get_current_instrument_devices(self):
-        slots = self.instrument_devices.get(
-            self.get_current_track_instrument_short_name_helper(), []
-        )
+        instrument_shortname = self.get_current_track_instrument_short_name_helper()
+        instrument = self.instruments.get(instrument_shortname, None)
+
         devices = []
 
-        for slot_idx, slot in enumerate(slots):
-            for device in slot:
+        for slot_idx, slot_devices in enumerate(instrument.devices):
+            for device in slot_devices:
                 if slot_idx == 2 or slot_idx == 3 or slot_idx == 4:
                     devices.append(device)
                 else:
+                    slot = instrument.slots[slot_idx]
                     for init in device.init:
-                        if init["address"] == self.slots[slot_idx]["address"] and int(
+                        if init["address"] == slot["address"] and int(
                             init["value"]
-                        ) == int(self.slots[slot_idx]["value"]):
+                        ) == float(slot["value"]):
                             devices.append(device)
 
         return devices
@@ -321,6 +230,11 @@ class OSCMode(PyshaMode):
                 device.draw(ctx)
 
     def on_button_pressed(self, button_name):
+        print(
+            self.instruments[
+                self.get_current_track_instrument_short_name_helper()
+            ].slots
+        )
         selected_device, _ = self.get_current_instrument_device_and_page()
         show_prev, show_next = selected_device.get_next_prev_pages()
         _, current_page = self.get_current_instrument_device_and_page()

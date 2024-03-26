@@ -160,11 +160,6 @@ class ClipMenuMode(PyshaMode):
             clip = inst.get("clip", None)
             osc_port = inst.get("osc_in_port", None)
 
-            if osc_port:
-                self.app.osc_clients[instrument_short_name] = SimpleUDPClient(
-                    "127.0.0.1", osc_port
-                )
-
             if clip is not None:
                 # Create OSC mappings for instruments with definitions
                 self.instrument_devices[instrument_short_name] = []
