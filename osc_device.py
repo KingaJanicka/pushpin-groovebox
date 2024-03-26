@@ -11,10 +11,7 @@ import push2_python
 import logging
 
 logger = logging.getLogger("osc_device")
-# logger.setLevel(level=logging.DEBUG)
-log_in = logger.getChild("in")
-log_out = logger.getChild("out")
-log = logger.getChild("DEBUGGER")
+logger.setLevel(level=logging.DEBUG)
 
 # logging.basicConfig(level=logging.DEBUG)
 # logging.getLogger().setLevel(level=logging.DEBUG)
@@ -67,14 +64,13 @@ class OSCDevice(object):
         self.label = config.get("name", "Device")
         self.dispatcher = osc.get("dispatcher", None)
         self.slot = config.get("slot", None)
-        self.dispatcher.map("*", lambda *message: log_in.debug(message))
+        _, osc_port = osc["server"]._server_address
+        self.log_in = logger.getChild(f"in-{osc_port}")
+        self.log_out = logger.getChild(f"out-{osc['client']._port}")
+        self.dispatcher.map("*", lambda *message: self.log_in.debug(message))
         self.init = config.get("init", [])
         get_color = kwargs.get("get_color")
         control_definitions = config.get("controls", [])
-
-        if self.osc["client"] and len(self.init) > 0:
-            for cmd in self.init:
-                self.send_message(cmd["address"], float(cmd["value"]))
 
         # Configure controls
         if len(control_definitions) > 0:
@@ -157,8 +153,12 @@ class OSCDevice(object):
                             f"Invalid parameter: {control_def}; did you forget $type?"
                         )
 
+    def select(self):
+        for cmd in self.init:
+            self.send_message(cmd["address"], float(cmd["value"]))
+
     def send_message(self, *args):
-        log_out.debug(args)
+        self.log_out.debug(args)
         return self.osc["client"].send_message(*args)
 
     def draw(self, ctx):

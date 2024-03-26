@@ -16,8 +16,6 @@ from osc_device import OSCDevice
 import logging
 
 logger = logging.getLogger("osc_device")
-log_in = logger.getChild("in")
-log_out = logger.getChild("out")
 
 
 class OSCMode(PyshaMode):
@@ -97,9 +95,10 @@ class OSCMode(PyshaMode):
                 )
             except FileNotFoundError:
                 inst = {}
-
             osc_in_port = inst.get("osc_in_port", None)
             osc_out_port = inst.get("osc_out_port", None)
+            log_in = logger.getChild(f"in-{osc_in_port}")
+            log_out = logger.getChild(f"out-{osc_out_port}")
             client = None
             server = None
             dispatcher = Dispatcher()
@@ -142,8 +141,13 @@ class OSCMode(PyshaMode):
                 instrument_slots[slot_idx].append(device)
 
             # # call the all_params endpoint to populate device controls
-            # if client:
-            #     print(f"Populating {instrument_short_name}")
+            if client:
+                print(f"Populating {instrument_short_name}")
+                for slot in self.slots:
+                    if slot:
+                        log_out.debug("/q" + slot["address"])
+                        client.send_message("/q" + slot["address"], 1.0)
+
             print(
                 "Loaded {0} devices for instrument {1}".format(
                     sum(
@@ -161,8 +165,8 @@ class OSCMode(PyshaMode):
     """
 
     def set_slot_state(self, slot, resp):
-        address, *raw = resp
-        value, *rest = raw.split(" ")
+        address, *payload = resp
+        value, *rest = payload
         self.slots[slot]["value"] = int(value)
 
     async def init_server(self, server):

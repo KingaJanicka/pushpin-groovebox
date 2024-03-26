@@ -12,15 +12,15 @@ class PresetSelectionMode(definitions.PyshaMode):
 
     xor_group = "pads"
 
-    favourtie_presets = {}
-    favourtie_presets_filename = "favourite_presets.json"
+    favourite_presets = {}
+    favourite_presets_filename = "favourite_presets.json"
     pad_pressing_states = {}
     pad_quick_press_time = 0.400
     current_page = 0
 
     def initialize(self, settings=None):
-        if os.path.exists(self.favourtie_presets_filename):
-            self.favourtie_presets = json.load(open(self.favourtie_presets_filename))
+        if os.path.exists(self.favourite_presets_filename):
+            self.favourite_presets = json.load(open(self.favourite_presets_filename))
 
     def activate(self):
         self.current_page = 0
@@ -36,38 +36,38 @@ class PresetSelectionMode(definitions.PyshaMode):
         instrument_short_name = (
             self.app.track_selection_mode.get_current_track_instrument_short_name()
         )
-        if instrument_short_name not in self.favourtie_presets:
-            self.favourtie_presets[instrument_short_name] = []
-        self.favourtie_presets[instrument_short_name].append(
+        if instrument_short_name not in self.favourite_presets:
+            self.favourite_presets[instrument_short_name] = []
+        self.favourite_presets[instrument_short_name].append(
             (preset_number, bank_number)
         )
         json.dump(
-            self.favourtie_presets, open(self.favourtie_presets_filename, "w")
+            self.favourite_presets, open(self.favourite_presets_filename, "w")
         )  # Save to file
 
     def remove_favourite_preset(self, preset_number, bank_number):
         instrument_short_name = (
             self.app.track_selection_mode.get_current_track_instrument_short_name()
         )
-        if instrument_short_name in self.favourtie_presets:
-            self.favourtie_presets[instrument_short_name] = [
+        if instrument_short_name in self.favourite_presets:
+            self.favourite_presets[instrument_short_name] = [
                 (fp_preset_number, fp_bank_number)
-                for fp_preset_number, fp_bank_number in self.favourtie_presets[
+                for fp_preset_number, fp_bank_number in self.favourite_presets[
                     instrument_short_name
                 ]
                 if preset_number != fp_preset_number or bank_number != fp_bank_number
             ]
             json.dump(
-                self.favourtie_presets, open(self.favourtie_presets_filename, "w")
+                self.favourite_presets, open(self.favourite_presets_filename, "w")
             )  # Save to file
 
     def preset_num_in_favourites(self, preset_number, bank_number):
         instrument_short_name = (
             self.app.track_selection_mode.get_current_track_instrument_short_name()
         )
-        if instrument_short_name not in self.favourtie_presets:
+        if instrument_short_name not in self.favourite_presets:
             return False
-        for fp_preset_number, fp_bank_number in self.favourtie_presets[
+        for fp_preset_number, fp_bank_number in self.favourite_presets[
             instrument_short_name
         ]:
             if preset_number == fp_preset_number and bank_number == fp_bank_number:
