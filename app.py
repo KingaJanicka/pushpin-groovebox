@@ -13,7 +13,6 @@ import asyncio
 
 from melodic_mode import MelodicMode
 from track_selection_mode import TrackSelectionMode
-from pyramid_track_triggering_mode import PyramidTrackTriggeringMode
 from rhythmic_mode import RhythmicMode
 from slice_notes_mode import SliceNotesMode
 from sequencer_mode import SequencerMode
@@ -115,9 +114,6 @@ class PyshaApp(object):
         self.set_melodic_mode()
 
         self.track_selection_mode = TrackSelectionMode(self, settings=settings)
-        self.pyramid_track_triggering_mode = PyramidTrackTriggeringMode(
-            self, settings=settings
-        )
         self.preset_selection_mode = PresetSelectionMode(self, settings=settings)
         self.midi_cc_mode = MIDICCMode(
             self, settings=settings
@@ -296,12 +292,6 @@ class PyshaApp(object):
 
     def set_sequencer_mode(self):
         self.set_mode_for_xor_group(self.sequencer_mode)
-
-    def set_pyramid_track_triggering_mode(self):
-        self.set_mode_for_xor_group(self.pyramid_track_triggering_mode)
-
-    def unset_pyramid_track_triggering_mode(self):
-        self.unset_mode_for_xor_group(self.pyramid_track_triggering_mode)
 
     def set_preset_selection_mode(self):
         self.set_mode_for_xor_group(self.preset_selection_mode)
@@ -546,10 +536,6 @@ class PyshaApp(object):
         for command in commands:
             address, val = command
             self.send_osc(address, val, instrument_short_name)
-
-    def send_midi_to_pyramid(self, msg):
-        # When sending to Pyramid, don't replace the MIDI channel because msg is already prepared with pyramidi chanel
-        self.send_midi(msg, use_original_msg_channel=True)
 
     def midi_in_handler(self, msg):
         if hasattr(

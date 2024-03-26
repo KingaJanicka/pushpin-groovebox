@@ -34,13 +34,12 @@ class TrackSelectionMode(definitions.PyshaMode):
     ]
     selected_track = 0
     track_selection_quick_press_time = 0.400
-    pyramidi_channel = 15
 
     def initialize(self, settings=None):
-        if settings is not None:
-            self.pyramidi_channel = settings.get(
-                "pyramidi_channel", self.pyramidi_channel
-            )
+        # if settings is not None:
+        #   self.pyramidi_channel = settings.get(
+        #         "pyramidi_channel", self.pyramidi_channel
+        #   )
 
         self.create_tracks()
 
@@ -116,16 +115,7 @@ class TrackSelectionMode(definitions.PyshaMode):
                 )
 
     def get_settings_to_save(self):
-        return {
-            "pyramidi_channel": self.pyramidi_channel,
-        }
-
-    def set_pyramidi_channel(self, channel, wrap=False):
-        self.pyramidi_channel = channel
-        if self.pyramidi_channel < 0:
-            self.pyramidi_channel = 0 if not wrap else 15
-        elif self.pyramidi_channel > 15:
-            self.pyramidi_channel = 15 if not wrap else 0
+        return {}
 
     def get_all_distinct_instrument_short_names(self):
         return list(set([track["instrument_short_name"] for track in self.tracks_info]))
@@ -177,29 +167,17 @@ class TrackSelectionMode(definitions.PyshaMode):
         elif self.app.is_mode_active(self.app.sequencer_mode):
             self.app.sequencer_mode.update_pads()
 
-    def send_select_track_to_pyramid(self, track_idx):
-        # Follows pyramidi specification (Pyramid configured to receive on ch 16)
-        msg = mido.Message(
-            "control_change",
-            control=0,
-            value=track_idx + 1,
-            channel=self.pyramidi_channel,
-        )
-        self.app.send_midi_to_pyramid(msg)
-
     def select_track(self, track_idx):
         # Selects a track and activates its melodic/rhythmic layout
         # Note that if this is called from a mode form the same xor group with melodic/rhythmic modes,
         # that other mode will be deactivated.
         self.selected_track = track_idx
-        self.send_select_track_to_pyramid(self.selected_track)
         self.load_current_default_layout()
         self.clean_currently_notes_being_played()
         try:
             # self.app.midi_cc_mode.new_instrument_selected()
             self.app.osc_mode.new_instrument_selected()
             self.app.preset_selection_mode.new_instrument_selected()
-            self.app.pyramid_track_triggering_mode.new_instrument_selected()
             self.app.sequencer_mode.new_instrument_selected()
         except AttributeError:
             print("ATTRIBUTE ERROR")
