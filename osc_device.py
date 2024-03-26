@@ -11,9 +11,13 @@ import push2_python
 import logging
 
 logger = logging.getLogger("osc_device")
+# logger.setLevel(level=logging.DEBUG)
 log_in = logger.getChild("in")
 log_out = logger.getChild("out")
 log = logger.getChild("DEBUGGER")
+
+# logging.basicConfig(level=logging.DEBUG)
+# logging.getLogger().setLevel(level=logging.DEBUG)
 
 
 class OSCDevice(object):

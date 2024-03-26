@@ -26,7 +26,8 @@ from ddrm_tone_selector_mode import DDRMToneSelectorMode
 from clip_menu_mode import ClipMenuMode
 from display_utils import show_notification
 
-# logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG)
+# logging.getLogger().setLevel(level=logging.DEBUG)
 
 
 class PyshaApp(object):

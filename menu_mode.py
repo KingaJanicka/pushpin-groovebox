@@ -10,28 +10,28 @@ from definitions import PyshaMode
 from display_utils import show_text
 
 
-NAME_STRING_1 = 'String\n1'
-NAME_STRING_2 = 'String\n2'
-NAME_STRING_3 = 'String\n3'
-NAME_STRING_4 = 'String\n4'
-NAME_BRASS_1 = 'Brass\n1'
-NAME_BRASS_2 = 'Brass\n2'
-NAME_BRASS_3 = 'Brass\n3'
-NAME_FLUTE = 'Flute'
-NAME_ELECTRIC_PIANO = 'Electric\nPiano'
-NAME_BASS = 'Bass'
-NAME_CLAVI_1 = 'Clavi-\nChord\n1'
-NAME_CLAVI_2 = 'Clavi-\nChord\n2'
-NAME_HARPSI_1 = 'Harpsi-\nChord\n1'
-NAME_HARPSI_2 = 'Harpsi-\nChord\n2'
-NAME_ORGAN_1 = 'Organ\n1'
-NAME_ORGAN_2 = 'Organ\n2'
-NAME_GUITAR_1 = 'Guitar\n1'
-NAME_GUITAR_2 = 'Guitar\n2'
-NAME_FUNKY_1 = 'Funky\n1'
-NAME_FUNKY_2 = 'Funky\n2'
-NAME_FUNKY_3 = 'Funky\n3'
-NAME_FUNKY_4 = 'Funky\n4'
+NAME_STRING_1 = "String\n1"
+NAME_STRING_2 = "String\n2"
+NAME_STRING_3 = "String\n3"
+NAME_STRING_4 = "String\n4"
+NAME_BRASS_1 = "Brass\n1"
+NAME_BRASS_2 = "Brass\n2"
+NAME_BRASS_3 = "Brass\n3"
+NAME_FLUTE = "Flute"
+NAME_ELECTRIC_PIANO = "Electric\nPiano"
+NAME_BASS = "Bass"
+NAME_CLAVI_1 = "Clavi-\nChord\n1"
+NAME_CLAVI_2 = "Clavi-\nChord\n2"
+NAME_HARPSI_1 = "Harpsi-\nChord\n1"
+NAME_HARPSI_2 = "Harpsi-\nChord\n2"
+NAME_ORGAN_1 = "Organ\n1"
+NAME_ORGAN_2 = "Organ\n2"
+NAME_GUITAR_1 = "Guitar\n1"
+NAME_GUITAR_2 = "Guitar\n2"
+NAME_FUNKY_1 = "Funky\n1"
+NAME_FUNKY_2 = "Funky\n2"
+NAME_FUNKY_3 = "Funky\n3"
+NAME_FUNKY_4 = "Funky\n4"
 
 
 class MenuMode(PyshaMode):
@@ -44,7 +44,7 @@ class MenuMode(PyshaMode):
         push2_python.constants.BUTTON_UPPER_ROW_5,
         push2_python.constants.BUTTON_UPPER_ROW_6,
         push2_python.constants.BUTTON_UPPER_ROW_7,
-        push2_python.constants.BUTTON_UPPER_ROW_8
+        push2_python.constants.BUTTON_UPPER_ROW_8,
     ]
 
     lower_row_button_names = [
@@ -55,7 +55,7 @@ class MenuMode(PyshaMode):
         push2_python.constants.BUTTON_LOWER_ROW_5,
         push2_python.constants.BUTTON_LOWER_ROW_6,
         push2_python.constants.BUTTON_LOWER_ROW_7,
-        push2_python.constants.BUTTON_LOWER_ROW_8
+        push2_python.constants.BUTTON_LOWER_ROW_8,
     ]
 
     upper_row_names = [
@@ -83,7 +83,7 @@ class MenuMode(PyshaMode):
         NAME_ORGAN_2,
         NAME_GUITAR_2,
         NAME_FUNKY_2,
-        #NAME_FUNKY_4
+        # NAME_FUNKY_4
     ]
 
     colors = {
@@ -108,21 +108,21 @@ class MenuMode(PyshaMode):
         NAME_ORGAN_2: definitions.WHITE,
         NAME_GUITAR_2: definitions.YELLOW,
         NAME_FUNKY_2: definitions.GREEN,
-        NAME_FUNKY_4: definitions.GREEN
+        NAME_FUNKY_4: definitions.GREEN,
     }
 
     font_colors = {
         definitions.YELLOW: definitions.BLACK,
         definitions.RED: definitions.WHITE,
         definitions.WHITE: definitions.BLACK,
-        definitions.GREEN: definitions.WHITE
+        definitions.GREEN: definitions.WHITE,
     }
 
     page_n = 0
-    upper_row_selected = ''
-    lower_row_selected = ''
+    upper_row_selected = ""
+    lower_row_selected = ""
     inter_message_message_min_time_ms = 4  # ms wait time after each message to DDRM
-    
+
     def should_be_enabled(self):
         return True
 
@@ -155,7 +155,14 @@ class MenuMode(PyshaMode):
         self.update_buttons()
 
     def deactivate(self):
-        for button_name in self.upper_row_button_names + self.lower_row_button_names + [push2_python.constants.BUTTON_PAGE_LEFT, push2_python.constants.BUTTON_PAGE_RIGHT]:
+        for button_name in (
+            self.upper_row_button_names
+            + self.lower_row_button_names
+            + [
+                push2_python.constants.BUTTON_PAGE_LEFT,
+                push2_python.constants.BUTTON_PAGE_RIGHT,
+            ]
+        ):
             self.push.buttons.set_button_color(button_name, definitions.BLACK)
 
     def update_buttons(self):
@@ -176,13 +183,21 @@ class MenuMode(PyshaMode):
 
         show_prev, show_next = self.get_should_show_next_prev()
         if show_prev:
-            self.push.buttons.set_button_color(push2_python.constants.BUTTON_PAGE_LEFT, definitions.WHITE)
+            self.push.buttons.set_button_color(
+                push2_python.constants.BUTTON_PAGE_LEFT, definitions.WHITE
+            )
         else:
-            self.push.buttons.set_button_color(push2_python.constants.BUTTON_PAGE_LEFT, definitions.BLACK)
+            self.push.buttons.set_button_color(
+                push2_python.constants.BUTTON_PAGE_LEFT, definitions.BLACK
+            )
         if show_next:
-            self.push.buttons.set_button_color(push2_python.constants.BUTTON_PAGE_RIGHT, definitions.WHITE)
+            self.push.buttons.set_button_color(
+                push2_python.constants.BUTTON_PAGE_RIGHT, definitions.WHITE
+            )
         else:
-            self.push.buttons.set_button_color(push2_python.constants.BUTTON_PAGE_RIGHT, definitions.BLACK)
+            self.push.buttons.set_button_color(
+                push2_python.constants.BUTTON_PAGE_RIGHT, definitions.BLACK
+            )
 
     def update_display(self, ctx, w, h):
 
@@ -198,11 +213,22 @@ class MenuMode(PyshaMode):
                 if name == self.upper_row_selected:
                     background_color = self.colors[name]
                 else:
-                    background_color = self.colors[name] + '_darker1'
+                    background_color = self.colors[name] + "_darker1"
                 height = 80
                 top_offset = 0
-                show_text(ctx, i, top_offset, name.upper(), height=height, font_color=font_color, background_color=background_color,
-                          font_size_percentage=0.2, center_vertically=True, center_horizontally=True, rectangle_padding=1)
+                show_text(
+                    ctx,
+                    i,
+                    top_offset,
+                    name.upper(),
+                    height=height,
+                    font_color=font_color,
+                    background_color=background_color,
+                    font_size_percentage=0.2,
+                    center_vertically=True,
+                    center_horizontally=True,
+                    rectangle_padding=1,
+                )
 
             # Draw lower row
             for i, name in enumerate(self.lower_row_names[start:][:8]):
@@ -211,11 +237,22 @@ class MenuMode(PyshaMode):
                     if name == self.lower_row_selected:
                         background_color = self.colors[name]
                     else:
-                        background_color = self.colors[name] + '_darker1'
+                        background_color = self.colors[name] + "_darker1"
                     height = 80
                     top_offset = 80
-                    show_text(ctx, i, top_offset, name.upper(), height=height,
-                              font_color=font_color, background_color=background_color, font_size_percentage=0.2, center_vertically=True, center_horizontally=True, rectangle_padding=1)
+                    show_text(
+                        ctx,
+                        i,
+                        top_offset,
+                        name.upper(),
+                        height=height,
+                        font_color=font_color,
+                        background_color=background_color,
+                        font_size_percentage=0.2,
+                        center_vertically=True,
+                        center_horizontally=True,
+                        rectangle_padding=1,
+                    )
 
     def on_button_pressed(self, button_name):
         if button_name in self.upper_row_button_names:
@@ -240,7 +277,10 @@ class MenuMode(PyshaMode):
                 pass
             return True
 
-        elif button_name in [push2_python.constants.BUTTON_PAGE_LEFT, push2_python.constants.BUTTON_PAGE_RIGHT]:
+        elif button_name in [
+            push2_python.constants.BUTTON_PAGE_LEFT,
+            push2_python.constants.BUTTON_PAGE_RIGHT,
+        ]:
             show_prev, show_next = self.get_should_show_next_prev()
             if button_name == push2_python.constants.BUTTON_PAGE_LEFT and show_prev:
                 self.page_n = 0

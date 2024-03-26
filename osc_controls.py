@@ -102,9 +102,15 @@ class OSCControl(object):
 
         ctx.restore()
 
-    def set_state(self, address, raw):
-        value, *rest = raw.split(" ")
-        self.value = float(value)
+    def set_state(self, address, *args):
+        value, *rest = args
+        # print(
+        #     address,
+        #     args,
+        #     "______________________________________________________________",
+        # )
+
+        self.value = int(value * 127)
 
     def update_value(self, increment, **kwargs):
         if self.value + increment > self.vmax:
@@ -189,9 +195,10 @@ class OSCControlMacro(object):
                 osc_utils.scale_knob_value([self.value, param["min"], param["max"]]),
             )
 
-    def set_state(self, address, raw):
-        value, *rest = raw.split(" ")
-        self.value = float(value)
+    def set_state(self, address, *args):
+        value, *rest = args
+
+        self.value = int(value * 127)
         ###TODO: Find by index
 
 
@@ -253,8 +260,8 @@ class OSCControlSwitch(object):
         if self.value < len(self.groups):
             return self.groups[self.value]
 
-    def set_state(self, address, raw):
-        value, *rest = raw.split(" ")
+    def set_state(self, address, *args):
+        value, *rest = args
 
         for idx, group in enumerate(self.groups):
             for control in group.controls:
@@ -418,8 +425,8 @@ class OSCControlMenu(object):
         if self.message:
             self.send_osc_func(self.message["address"], self.message["value"])
 
-    def set_state(self, address, raw):
-        value, *rest = raw.split(" ")
+    def set_state(self, address, *args):
+        value, *rest = args
         for idx, item in enumerate(self.items):
             if (
                 item.message is not None
@@ -506,4 +513,5 @@ class OSCMenuItem(object):
         self.send_osc_func = send_osc_func
 
     def select(self):
+        print(self.message["address"], self.message["value"], "MENU ITEM DEBUG")
         self.send_osc_func(self.message["address"], self.message["value"])

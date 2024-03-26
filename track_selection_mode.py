@@ -32,8 +32,6 @@ class TrackSelectionMode(definitions.PyshaMode):
         push2_python.constants.BUTTON_1_4T,
         push2_python.constants.BUTTON_1_4,
     ]
-    track_selection_button_a = False
-    track_selection_button_a_pressing_time = 0
     selected_track = 0
     track_selection_quick_press_time = 0.400
     pyramidi_channel = 15
@@ -222,31 +220,15 @@ class TrackSelectionMode(definitions.PyshaMode):
             self.push.buttons.set_button_color(name, color)
 
         for count, name in enumerate(self.track_button_names_b):
-            if self.track_selection_button_a:
-                color = self.tracks_info[
-                    self.track_button_names_a.index(self.track_selection_button_a)
-                ]["color"]
-                equivalent_track_num = (
-                    self.track_button_names_a.index(self.track_selection_button_a)
-                    + count * 8
+            color = self.get_current_track_color()
+            equivalent_track_num = (self.selected_track % 8) + count * 8
+            if self.selected_track == equivalent_track_num:
+                self.push.buttons.set_button_color(name, definitions.WHITE)
+                self.push.buttons.set_button_color(
+                    name, color, animation=definitions.DEFAULT_ANIMATION
                 )
-                if self.selected_track == equivalent_track_num:
-                    self.push.buttons.set_button_color(name, definitions.WHITE)
-                    self.push.buttons.set_button_color(
-                        name, color, animation=definitions.DEFAULT_ANIMATION
-                    )
-                else:
-                    self.push.buttons.set_button_color(name, color)
             else:
-                color = self.get_current_track_color()
-                equivalent_track_num = (self.selected_track % 8) + count * 8
-                if self.selected_track == equivalent_track_num:
-                    self.push.buttons.set_button_color(name, definitions.WHITE)
-                    self.push.buttons.set_button_color(
-                        name, color, animation=definitions.DEFAULT_ANIMATION
-                    )
-                else:
-                    self.push.buttons.set_button_color(name, color)
+                self.push.buttons.set_button_color(name, color)
 
     def update_display(self, ctx, w, h):
 
@@ -273,44 +255,19 @@ class TrackSelectionMode(definitions.PyshaMode):
 
     def on_button_pressed(self, button_name):
         if button_name in self.track_button_names_a:
-            self.track_selection_button_a = button_name
-            self.track_selection_button_a_pressing_time = time.time()
+            self.select_track(self.track_button_names_a.index(button_name))
             self.app.buttons_need_update = True
+            self.app.pads_need_update = True
             return True
 
         elif button_name in self.track_button_names_b:
-            if self.track_selection_button_a:
-                # While pressing one of the track selection a buttons
-                self.select_track(
-                    self.track_button_names_a.index(self.track_selection_button_a)
-                    + self.track_button_names_b.index(button_name) * 8
-                )
-                self.app.buttons_need_update = True
-                self.app.pads_need_update = True
-                self.track_selection_button_a = False
-                self.track_selection_button_a_pressing_time = 0
-                return True
-            else:
-                # No track selection a button being pressed...
-                self.select_track(
-                    self.selected_track % 8
-                    + 8 * self.track_button_names_b.index(button_name)
-                )
-                self.app.buttons_need_update = True
-                self.app.pads_need_update = True
-                return True
+            self.select_track(
+                self.selected_track % 8
+                + 8 * self.track_button_names_b.index(button_name)
+            )
+            self.app.buttons_need_update = True
+            self.app.pads_need_update = True
+            return True
 
     def on_button_released(self, button_name):
-        if button_name in self.track_button_names_a:
-            if self.track_selection_button_a:
-                if (
-                    time.time() - self.track_selection_button_a_pressing_time
-                    < self.track_selection_quick_press_time
-                ):
-                    # Only switch to track if it was a quick press
-                    self.select_track(self.track_button_names_a.index(button_name))
-                self.track_selection_button_a = False
-                self.track_selection_button_a_pressing_time = 0
-                self.app.buttons_need_update = True
-                self.app.pads_need_update = True
-                return True
+        return True

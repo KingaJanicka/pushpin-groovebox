@@ -31,6 +31,18 @@ class OSCMode(PyshaMode):
         push2_python.constants.BUTTON_UPPER_ROW_7,
         push2_python.constants.BUTTON_UPPER_ROW_8,
     ]
+
+    lower_row_button_names = [
+        push2_python.constants.BUTTON_LOWER_ROW_1,
+        push2_python.constants.BUTTON_LOWER_ROW_2,
+        push2_python.constants.BUTTON_LOWER_ROW_3,
+        push2_python.constants.BUTTON_LOWER_ROW_4,
+        push2_python.constants.BUTTON_LOWER_ROW_5,
+        push2_python.constants.BUTTON_LOWER_ROW_6,
+        push2_python.constants.BUTTON_LOWER_ROW_7,
+        push2_python.constants.BUTTON_LOWER_ROW_8,
+    ]
+
     instrument_devices = {}
     current_device_index_and_page = [0, 0]
     transports = []
@@ -95,8 +107,6 @@ class OSCMode(PyshaMode):
 
             if osc_in_port:
                 client = SimpleUDPClient("127.0.0.1", osc_in_port)
-            else:
-                print("HOOOO", inst)
 
             if osc_out_port:
                 loop = asyncio.get_event_loop()
@@ -208,8 +218,11 @@ class OSCMode(PyshaMode):
 
     def update_current_device_page(self, new_device=None, new_page=None):
         current_device_idx, current_page = self.current_device_index_and_page
-
         result = [current_device_idx, current_page]
+
+        # resets page if device is swapepd
+        if new_device != current_device_idx:
+            result[1] = 0
 
         if new_device != None:
             result[0] = new_device
@@ -218,8 +231,8 @@ class OSCMode(PyshaMode):
             result[1] = new_page
 
         self.current_device_index_and_page = result
-
         new_current_device = self.get_current_instrument_device()
+        print("new page", new_page)
         new_current_device.set_page(new_page)
         self.app.buttons_need_update = True
 
@@ -316,6 +329,7 @@ class OSCMode(PyshaMode):
             if idx < len(current_track_devices):
                 new_device = current_track_devices[idx]
                 # Stay on the same device page if new instrument, otherwise go to next page
+
                 new_page = (
                     0
                     if new_device != selected_device
@@ -328,7 +342,8 @@ class OSCMode(PyshaMode):
 
                 self.update_current_device_page(idx, new_page=new_page)
             return True
-
+        elif button_name in self.lower_row_button_names:
+            self.update_current_device_page(new_page=0)  # Reset page on new instrument
         elif button_name in [
             push2_python.constants.BUTTON_PAGE_LEFT,
             push2_python.constants.BUTTON_PAGE_RIGHT,
@@ -338,6 +353,9 @@ class OSCMode(PyshaMode):
             elif button_name == push2_python.constants.BUTTON_PAGE_RIGHT and show_next:
                 self.update_current_device_page(new_page=current_page + 1)
             return True
+
+        elif button_name in [push2_python.constants.BUTTON_ADD_DEVICE]:
+            print("ADD DEVICE PRESSED")
 
     def on_encoder_rotated(self, encoder_name, increment):
         try:
