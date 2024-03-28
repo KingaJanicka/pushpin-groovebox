@@ -22,7 +22,6 @@ from midi_cc_mode import MIDICCMode
 from osc_mode import OSCMode
 from preset_selection_mode import PresetSelectionMode
 from ddrm_tone_selector_mode import DDRMToneSelectorMode
-from clip_menu_mode import ClipMenuMode
 from display_utils import show_notification
 
 logging.basicConfig(level=logging.DEBUG)
@@ -125,8 +124,6 @@ class PyshaApp(object):
         self.active_modes += [self.track_selection_mode, self.osc_mode]
         self.track_selection_mode.select_track(self.track_selection_mode.selected_track)
         self.ddrm_tone_selector_mode = DDRMToneSelectorMode(self, settings=settings)
-        self.clip_menu_mode = ClipMenuMode(self, settings=settings)
-
         self.settings_mode = SettingsMode(self, settings=settings)
 
     def get_all_modes(self):
@@ -169,11 +166,7 @@ class PyshaApp(object):
             # Activate (replace midi cc and track selection mode by ddrm tone selector mode)
             new_active_modes = []
             for mode in self.active_modes:
-                if (
-                    mode != self.track_selection_mode
-                    and mode != self.osc_mode
-                    and mode != self.clip_menu_mode
-                ):
+                if mode != self.track_selection_mode and mode != self.osc_mode:
                     new_active_modes.append(mode)
                 elif mode == self.osc_mode:
                     new_active_modes.append(self.ddrm_tone_selector_mode)
@@ -181,37 +174,6 @@ class PyshaApp(object):
             self.osc_mode.deactivate()
             self.track_selection_mode.deactivate()
             self.ddrm_tone_selector_mode.activate()
-
-    def toggle_clip_menu_mode(self):
-        if self.is_mode_active(self.clip_menu_mode):
-            # Deactivate (replace clip menu mode by midi cc and track selection mode)
-            new_active_modes = []
-            for mode in self.active_modes:
-                if mode != self.clip_menu_mode:
-                    new_active_modes.append(mode)
-                else:
-                    new_active_modes.append(self.track_selection_mode)
-                    new_active_modes.append(self.osc_mode)
-            self.active_modes = new_active_modes
-            self.clip_menu_mode.deactivate()
-            self.osc_mode.activate()
-            self.track_selection_mode.activate()
-        else:
-            # Activate (replace midi cc and track selection mode by clip menu mode)
-            new_active_modes = []
-            for mode in self.active_modes:
-                if (
-                    mode != self.track_selection_mode
-                    and mode != self.osc_mode
-                    and mode != self.ddrm_tone_selector_mode
-                ):
-                    new_active_modes.append(mode)
-                elif mode == self.osc_mode:
-                    new_active_modes.append(self.clip_menu_mode)
-            self.active_modes = new_active_modes
-            self.osc_mode.deactivate()
-            self.track_selection_mode.deactivate()
-            self.clip_menu_mode.activate()
 
     def set_mode_for_xor_group(self, mode_to_set):
         """This activates the mode_to_set, but makes sure that if any other modes are currently activated
@@ -664,7 +626,7 @@ class PyshaApp(object):
 
     async def run_loop(self):
         print("Pysha is running...")
-        # try:
+
         while True:
             before_draw_time = time.time()
 
@@ -691,7 +653,9 @@ class PyshaApp(object):
                 after_draw_time - before_draw_time
             )
             if sleep_time > 0:
-                time.sleep(sleep_time)
+                await asyncio.sleep(sleep_time)
+            else:
+                await asyncio.sleep(0)
 
         # except KeyboardInterrupt:
         #     print('Exiting Pysha...')
@@ -840,6 +804,13 @@ def on_midi_connected(_):
 
 
 async def main():
+    # Initialise OSC Instruments
+    loop = asyncio.get_event_loop()
+
+    for instrument in app.osc_mode.instruments:
+        print("woop woop")
+        await app.osc_mode.instruments[instrument].start(loop)
+
     while True:
         await app.run_loop()
 
@@ -848,13 +819,12 @@ async def main():
 if __name__ == "__main__":
     try:
         app = PyshaApp()
-        if midi_connected_received_before_app:
-            # App received the "on_midi_connected" call before it was initialized. Do it now!
-            print("Missed MIDI initialization call, doing it now...")
-            app.on_midi_push_connection_established()
+        # if midi_connected_received_before_app:
+        #     # App received the "on_midi_connected" call before it was initialized. Do it now!
+        #     print("Missed MIDI initialization call, doing it now...")
+        #     app.on_midi_push_connection_established()
 
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(asyncio.gather(main()))
+        asyncio.run(main())
     except KeyboardInterrupt:
         print("Exiting Pysha...")
         app.push.f_stop.set()

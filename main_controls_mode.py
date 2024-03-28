@@ -97,15 +97,6 @@ class MainControlsMode(definitions.PyshaMode):
                 DDRM_TONE_SELECTION_MODE_BUTTON, definitions.BLACK
             )
 
-        # Clip Menu Mode
-        if self.app.is_mode_active(self.app.clip_menu_mode):
-            self.push.buttons.set_button_color(CLIP_BUTTON, definitions.BLACK)
-            self.push.buttons.set_button_color(
-                CLIP_BUTTON, definitions.WHITE, animation=definitions.DEFAULT_ANIMATION
-            )
-        else:
-            self.push.buttons.set_button_color(CLIP_BUTTON, definitions.OFF_BTN_COLOR)
-
     def on_button_pressed(self, button_name):
         if button_name == MELODIC_RHYTHMIC_TOGGLE_BUTTON:
             self.app.toggle_melodic_rhythmic_slice_modes()
@@ -141,10 +132,6 @@ class MainControlsMode(definitions.PyshaMode):
             if self.app.ddrm_tone_selector_mode.should_be_enabled():
                 self.app.toggle_ddrm_tone_selector_mode()
                 self.app.buttons_need_update = True
-            return True
-        elif button_name == CLIP_BUTTON:
-            self.app.toggle_clip_menu_mode()
-            self.app.buttons_need_update = True
             return True
 
     def on_button_released(self, button_name):

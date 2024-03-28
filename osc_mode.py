@@ -8,6 +8,7 @@ from display_utils import show_text
 from glob import glob
 from pathlib import Path
 from osc_instrument import OSCInstrument
+import asyncio
 
 logger = logging.getLogger("osc_device")
 
@@ -84,8 +85,12 @@ class OSCMode(PyshaMode):
                     device_definitions,
                     get_current_track_color_helper=self.get_current_track_color_helper,
                 )
-            except Exception:
-                pass
+
+                # TODO figure out how to start a server lol
+                # await self.instruments[instrument_short_name].start()
+
+            except Exception as e:
+                print(e, "Exception")
 
     def close_transports(self):
         for instrument in self.instruments:

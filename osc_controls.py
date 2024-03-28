@@ -104,13 +104,7 @@ class OSCControl(object):
 
     def set_state(self, address, *args):
         value, *rest = args
-        # print(
-        #     address,
-        #     args,
-        #     "______________________________________________________________",
-        # )
-
-        self.value = int(value * 127)
+        self.value = osc_utils.scale_osc_value(value, self.min, self.max)
 
     def update_value(self, increment, **kwargs):
         if self.value + increment > self.vmax:
@@ -125,7 +119,7 @@ class OSCControl(object):
         # msg=f'control_change {self.address} {self.value}'
         # print(self.address, osc_utils.scale_knob_value([self.value, self.min, self.max]))
         self.send_osc_func(
-            self.address, osc_utils.scale_knob_value([self.value, self.min, self.max])
+            self.address, osc_utils.scale_knob_value(self.value, self.min, self.max)
         )
 
 

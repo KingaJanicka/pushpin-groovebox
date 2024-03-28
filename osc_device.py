@@ -64,9 +64,8 @@ class OSCDevice(object):
         self.label = config.get("name", "Device")
         self.dispatcher = osc.get("dispatcher", None)
         self.slot = config.get("slot", None)
-        _, osc_port = osc["server"]._server_address
-        self.log_in = logger.getChild(f"in-{osc_port}")
-        self.log_out = logger.getChild(f"out-{osc['client']._port}")
+        self.log_in = logger.getChild(f"in-{kwargs['osc_in_port']}")
+        self.log_out = logger.getChild(f"out-{kwargs['osc_out_port']}")
         self.dispatcher.map("*", lambda *message: self.log_in.debug(message))
         self.init = config.get("init", [])
         get_color = kwargs.get("get_color")
