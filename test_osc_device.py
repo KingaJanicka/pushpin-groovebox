@@ -2,7 +2,6 @@ from osc_device import OSCDevice
 from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.dispatcher import Dispatcher
 import push2_python
-import osc_utils
 import pytest
 
 nested_switch_groups_menu_fixture = {
@@ -154,9 +153,7 @@ def test_OSCDevice(mocker):
     # Test first encoder/device CW rotate
     device.on_encoder_rotated(push2_python.constants.ENCODER_TRACK1_ENCODER, 1)
 
-    client.send_message.assert_any_call(
-        "/param/a/feg/release_shape", osc_utils.scale_knob_value([65.0, 0.0, 2.0])
-    )
+    client.send_message.assert_any_call("/param/a/feg/release_shape", 1.0)
 
     # Spacer shouldn't throw if passed value
     device.on_encoder_rotated(push2_python.constants.ENCODER_TRACK2_ENCODER, -1)

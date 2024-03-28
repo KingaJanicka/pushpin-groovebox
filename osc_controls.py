@@ -1,8 +1,23 @@
 import definitions
-import osc_utils
 import math
 import push2_python
 from display_utils import show_text
+
+
+SCALING_FACTOR = 127  # MIDI-style responsiveness for knobs
+DECIMAL_PLACES = 2
+
+"""
+scale_value() -> float()
+    value float(): value to be scaled
+    min_val float(): minimum value, inclusive
+    max_val float(): maximum value, exclusive
+    decimals int(): number of decimal places
+"""
+
+
+def scale_value(value, min_val, max_val, decimals=DECIMAL_PLACES):
+    return round(float(value / SCALING_FACTOR * (max_val - min_val)), decimals)
 
 
 class OSCControl(object):
@@ -18,9 +33,7 @@ class OSCControl(object):
         self.address = None
         self.min = 0.0
         self.max = 1.0
-        self.value = 64
-        self.vmin = 0
-        self.vmax = 127
+        self.value = 0.0
         self.get_color_func = None
         self.label = config["label"]
         self.address = config["address"]
@@ -56,7 +69,7 @@ class OSCControl(object):
             ctx,
             x_part,
             margin_top + name_height,
-            str(self.value),
+            str(round(self.value, 2)),
             height=val_height,
             font_color=color,
         )
@@ -80,7 +93,7 @@ class OSCControl(object):
         def get_rad_for_value(value):
             total_degrees = 360 - circle_break_degrees
             return start_rad + total_degrees * (
-                (value - self.vmin) / (self.vmax - self.vmin)
+                (value - self.min) / (self.max - self.min)
             ) * (math.pi / 180)
 
         # This is needed to prevent showing line from previous position
@@ -104,23 +117,22 @@ class OSCControl(object):
 
     def set_state(self, address, *args):
         value, *rest = args
-        self.value = osc_utils.scale_osc_value(value, self.min, self.max)
+        scaled = scale_value(value, self.min, self.max)
+        self.value = scaled
 
     def update_value(self, increment, **kwargs):
-        if self.value + increment > self.vmax:
-            self.value = self.vmax
-        elif self.value + increment < self.vmin:
-            self.value = self.vmin
+        scaled = scale_value(increment, self.min, self.max)
+        if self.value + scaled > self.max:
+            self.value = self.max
+        elif self.value + scaled < self.min:
+            self.value = self.min
         else:
-            self.value += increment
+            self.value += scaled
         # print("update value: adress", self.address, "value", self.value)
         # Send cc message, subtract 1 to number because MIDO works from 0 - 127
         # msg = mido.Message('control_change', control=self.address, value=self.value)
         # msg=f'control_change {self.address} {self.value}'
-        # print(self.address, osc_utils.scale_knob_value([self.value, self.min, self.max]))
-        self.send_osc_func(
-            self.address, osc_utils.scale_knob_value(self.value, self.min, self.max)
-        )
+        self.send_osc_func(self.address, float(self.value))
 
 
 class ControlSpacer(object):
@@ -158,9 +170,7 @@ class OSCControlMacro(object):
         self.address = None
         self.min = 0.0
         self.max = 1.0
-        self.value = 64
-        self.vmin = 0
-        self.vmax = 127
+        self.value = 0.0
         self.get_color_func = None
         self.label = config["label"]
         self.get_color_func = get_color_func
@@ -169,30 +179,25 @@ class OSCControlMacro(object):
         self.send_osc_func = send_osc_func
 
     def update_value(self, increment, **kwargs):
-        if self.value + increment > self.vmax:
-            self.value = self.vmax
-        elif self.value + increment < self.vmin:
-            self.value = self.vmin
+        scaled = scale_value(increment, self.min, self.max)
+        if self.value + scaled > self.max:
+            self.value = self.max
+        elif self.value + scaled < self.min:
+            self.value = self.min
         else:
-            self.value += increment
+            self.value += scaled
         # print("update value: adress", self.address, "value", self.value)
         # Send cc message, subtract 1 to number because MIDO works from 0 - 127
         # msg = mido.Message('control_change', control=self.address, value=self.value)
         # msg=f'control_change {self.address} {self.value}'
-        # print(self.address, osc_utils.scale_knob_value([self.value, self.min, self.max]))
-        # self.send_osc_func(self.address, osc_utils.scale_knob_value([self.value, self.min, self.max]))
 
         for param in self.params:
-            # TODO may need to revisit how min/max is set
-            self.send_osc_func(
-                param["address"],
-                osc_utils.scale_knob_value([self.value, param["min"], param["max"]]),
-            )
+            self.send_osc_func(param["address"], float(self.value))
 
     def set_state(self, address, *args):
         value, *rest = args
 
-        self.value = int(value * 127)
+        self.value = scale_value(value)
         ###TODO: Find by index
 
 
@@ -219,7 +224,7 @@ class OSCControlSwitch(object):
         if config["$type"] != "control-switch":
             raise Exception("Invalid config passed to new OSCControlSwitch")
         self.groups = []
-        self.value = 0
+        self.value = 0.0
         self.get_color_func = get_color_func
         self.send_osc_func = send_osc_func
         groups = config.get("groups", [])
@@ -235,44 +240,46 @@ class OSCControlSwitch(object):
 
         if (
             len(self.groups) > 0
-            and self.groups[self.value]
-            and hasattr(self.groups[self.value], "select")
+            and self.groups[int(self.value)]
+            and hasattr(self.groups[int(self.value)], "select")
         ):
-            self.groups[self.value].select()
+            self.groups[int(self.value)].select()
 
     def update_value(self, increment, **kwargs):
         if not self.value:
             pass
 
-        if 0 <= (self.value + increment) < len(self.groups):
-            self.value += increment
+        scaled = scale_value(increment, 0, len(self.groups))
+
+        if 0 <= (self.value + scaled) <= len(self.groups):
+            self.value += scaled
             active_group = self.get_active_group()
             if hasattr(active_group, "select"):
                 active_group.select()
 
     def get_active_group(self):
-        if self.value < len(self.groups):
-            return self.groups[self.value]
+        if int(self.value) <= len(self.groups):
+            return self.groups[int(self.value)]  # nasty but enables less-twitchy knobs
 
     def set_state(self, address, *args):
         value, *rest = args
-
-        for idx, group in enumerate(self.groups):
-            for control in group.controls:
-                if isinstance(OSCControl, control) and control.address == address:
-                    self.value = idx
-                elif isinstance(OSCControlMacro, control) and any(
-                    [param for param in control.params if param["address"] == address]
-                ):
-                    self.value = idx
-                elif isinstance(OSCControlMenu, control) and any(
-                    [
-                        item
-                        for item in control.items
-                        if item.message["address"] == address
-                    ]
-                ):
-                    self.value = idx
+        self.value = scale_value(value, 0, len(self.groups))
+        # for idx, group in enumerate(self.groups):
+        #     for control in group.controls:
+        #         if isinstance(OSCControl, control) and control.address == address:
+        #             self.value = idx
+        #         elif isinstance(OSCControlMacro, control) and any(
+        #             [param for param in control.params if param["address"] == address]
+        #         ):
+        #             self.value = idx
+        #         elif isinstance(OSCControlMenu, control) and any(
+        #             [
+        #                 item
+        #                 for item in control.items
+        #                 if item.message["address"] == address
+        #             ]
+        #         ):
+        #             self.value = idx
 
     def draw(self, ctx, offset):
         margin_top = 50
@@ -280,12 +287,12 @@ class OSCControlSwitch(object):
         val_height = 30
         next_label = ""
         prev_label = ""
+        idx = int(self.value)
+        if len(self.groups) > idx + 1:
+            next_label = self.groups[idx + 1].label
 
-        if len(self.groups) > self.value + 1:
-            next_label = self.groups[self.value + 1].label
-
-        if (self.value - 1) >= 0:
-            prev_label = self.groups[self.value - 1].label
+        if (idx - 1) >= 0:
+            prev_label = self.groups[idx - 1].label
 
         # Param name
         show_text(
@@ -385,7 +392,7 @@ class OSCGroup(object):
 
     def select(self):
         if self.message:
-            self.send_osc_func(self.message["address"], self.message["value"])
+            self.send_osc_func(self.message["address"], float(self.message["value"]))
 
 
 class OSCControlMenu(object):
@@ -417,31 +424,35 @@ class OSCControlMenu(object):
             )
 
         if self.message:
-            self.send_osc_func(self.message["address"], self.message["value"])
+            self.send_osc_func(self.message["address"], float(self.message["value"]))
 
     def set_state(self, address, *args):
         value, *rest = args
-        for idx, item in enumerate(self.items):
-            if (
-                item.message is not None
-                and item.message["address"] == address
-                and float(item.message["value"]) == float(value)
-            ):
-                self.value = idx
+        scaled = scale_value(value, 0, len(self.items))
+        self.value = scaled
+        # for item in self.items:
+        #     if (
+        #         item.message is not None
+        #         and item.message["address"] == address
+        #         and round(float(item.message["value"]), DECIMAL_PLACES) == scaled
+        #     ):
+        #         self.value = scaled
 
     def update_value(self, increment, **kwargs):
         if not self.value:
             pass
 
-        if 0 <= (self.value + increment) < len(self.items):
-            self.value += increment
+        scaled = scale_value(increment, 0, len(self.items))
+
+        if 0 <= (self.value + scaled) <= len(self.items):
+            self.value += scaled
             active_item = self.get_active_menu_item()
             if hasattr(active_item, "select"):
                 active_item.select()
 
     def get_active_menu_item(self):
-        if len(self.items) > self.value:
-            return self.items[self.value]
+        if 0 <= len(self.items) > int(self.value):
+            return self.items[int(self.value)]
 
     def select(self):
         active_item = self.get_active_menu_item()
@@ -454,12 +465,12 @@ class OSCControlMenu(object):
         val_height = 30
         next_label = ""
         prev_label = ""
-
-        if len(self.items) > self.value + 1:
-            next_label = self.items[self.value + 1].label
+        idx = int(self.value)
+        if len(self.items) > idx + 1:
+            next_label = self.items[idx + 1].label
 
         if (self.value - 1) >= 0:
-            prev_label = self.items[self.value - 1].label
+            prev_label = self.items[idx - 1].label
 
         # Param name
         show_text(
@@ -508,4 +519,4 @@ class OSCMenuItem(object):
 
     def select(self):
         print(self.message["address"], self.message["value"], "MENU ITEM DEBUG")
-        self.send_osc_func(self.message["address"], self.message["value"])
+        self.send_osc_func(self.message["address"], float(self.message["value"]))
