@@ -117,8 +117,7 @@ class OSCControl(object):
 
     def set_state(self, address, *args):
         value, *rest = args
-        scaled = scale_value(value, self.min, self.max)
-        self.value = scaled
+        self.value = value
 
     def update_value(self, increment, **kwargs):
         scaled = scale_value(increment, self.min, self.max)

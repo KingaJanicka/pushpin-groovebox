@@ -652,6 +652,7 @@ class PyshaApp(object):
             sleep_time = (1.0 / self.target_frame_rate) - (
                 after_draw_time - before_draw_time
             )
+
             if sleep_time > 0:
                 await asyncio.sleep(sleep_time)
             else:

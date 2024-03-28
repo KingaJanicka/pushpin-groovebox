@@ -235,11 +235,6 @@ class OSCMode(PyshaMode):
                 device.draw(ctx)
 
     def on_button_pressed(self, button_name):
-        print(
-            self.instruments[
-                self.get_current_track_instrument_short_name_helper()
-            ].slots
-        )
         selected_device, _ = self.get_current_instrument_device_and_page()
         show_prev, show_next = selected_device.get_next_prev_pages()
         _, current_page = self.get_current_instrument_device_and_page()

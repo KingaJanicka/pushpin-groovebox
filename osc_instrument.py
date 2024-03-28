@@ -102,10 +102,7 @@ class OSCInstrument(object):
 
             if client:
                 print(f"Populating {self.name}")
-                for slot in self.slots:
-                    if slot:
-                        self.log_out.debug("/q" + slot["address"])
-                        client.send_message("/q" + slot["address"], None)
+                client.send_message("/q/all_params", None)
 
     """
     Close transports on ctrl+c

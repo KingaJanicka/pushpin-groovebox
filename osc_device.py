@@ -13,9 +13,6 @@ import logging
 logger = logging.getLogger("osc_device")
 logger.setLevel(level=logging.DEBUG)
 
-# logging.basicConfig(level=logging.DEBUG)
-# logging.getLogger().setLevel(level=logging.DEBUG)
-
 
 class OSCDevice(object):
     @property
