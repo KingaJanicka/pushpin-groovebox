@@ -7,7 +7,7 @@ import time
 from osc_device import OSCDevice
 
 logger = logging.getLogger("osc_device")
-logger.setLevel(level=logging.DEBUG)
+# logger.setLevel(level=logging.DEBUG)
 
 
 class OSCInstrument(object):
@@ -83,7 +83,18 @@ class OSCInstrument(object):
                     slot["value"] = float(value)
                     break
 
-        # self.query_all_params()
+    def query_devices(self):
+        for slot_idx, slot_devices in enumerate(self.devices):
+            for device in slot_devices:
+                if slot_idx == 2 or slot_idx == 3 or slot_idx == 4:
+                    device.query_visible_controls()
+                else:
+                    slot = self.slots[slot_idx]
+                    for init in device.init:
+                        if init["address"] == slot["address"] and int(
+                            init["value"]
+                        ) == float(slot["value"]):
+                            device.query_visible_controls()
 
     """
     Initialise OSC servers and add to transport array so they can be gracefully closed
