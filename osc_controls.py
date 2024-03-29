@@ -413,6 +413,7 @@ class OSCControlMenu(object):
         self.get_color_func = get_color_func
         self.send_osc_func = send_osc_func
         self.message = config.get("onselect", None)
+        self.address = self.message["address"] if self.message else None
         self.size = 0
 
         for item in config.get("items", []):

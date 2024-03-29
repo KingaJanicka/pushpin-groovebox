@@ -124,7 +124,7 @@ class OSCDevice(object):
                             self.controls.append(control)
                         except Exception as e:
                             print("EXCEPT", e)
-                            # print(control_def)
+                            print(control_def)
 
                     case "control-menu":
                         control = OSCControlMenu(
@@ -148,8 +148,11 @@ class OSCDevice(object):
                         Exception(
                             f"Invalid parameter: {control_def}; did you forget $type?"
                         )
+        self.query_visible_controls()
 
     def select(self):
+        self.query_visible_controls()
+
         for cmd in self.init:
             self.send_message(cmd["address"], float(cmd["value"]))
 
@@ -179,8 +182,15 @@ class OSCDevice(object):
 
     def set_page(self, page):
         self.page = page
+        self.query_visible_controls()
         # print("PAGE: ", self.page)
         # print(*self.pages[self.page], sep="\n")
+
+    def query_visible_controls(self):
+        visible_controls = self.get_visible_controls()
+        for control in visible_controls:
+            if hasattr(control, "address") and control.address is not None:
+                self.send_message("/q" + control.address, None)
 
     def get_visible_controls(self):
         return self.pages[self.page]

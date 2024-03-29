@@ -75,11 +75,15 @@ class OSCInstrument(object):
 
     def set_slot_state(self, *resp):
         address, value, *rest = resp
+        # print("__SET_SLOT_STATE__", address, value)
+
         for slot in self.slots:
             if slot and slot["address"] == address:
                 if float(slot["value"]) != float(value):
                     slot["value"] = float(value)
                     break
+
+        # self.query_all_params()
 
     """
     Initialise OSC servers and add to transport array so they can be gracefully closed
