@@ -94,10 +94,6 @@ class OSCMode(PyshaMode):
             self.instruments[instrument].close_transports()
 
     def get_all_distinct_instrument_short_names_helper(self):
-        print(
-            "SHORT_NAMES",
-            self.app.instrument_selection_mode.get_all_distinct_instrument_short_names(),
-        )
         return (
             self.app.instrument_selection_mode.get_all_distinct_instrument_short_names()
         )

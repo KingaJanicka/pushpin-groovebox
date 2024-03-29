@@ -86,8 +86,6 @@ class OSCInstrument(object):
     """
 
     async def start(self, loop):
-        print("start")
-
         if self.osc_out_port:
             server = AsyncIOOSCUDPServer(
                 ("127.0.0.1", self.osc_out_port), self.osc["dispatcher"], loop
@@ -98,6 +96,7 @@ class OSCInstrument(object):
             )  # Create datagram endpoint and start serving
 
             self.transports.append(transport)
+            self.log_out.debug(f"Receiving OSC on port {self.osc_out_port}")
 
     def query_all_params(self):
         client = self.osc["client"]

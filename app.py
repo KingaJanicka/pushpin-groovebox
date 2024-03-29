@@ -569,6 +569,9 @@ class PyshaApp(object):
             # "ALSA lib seq_hw.c:466:(snd_seq_hw_open) open /dev/snd/seq failed: Cannot allocate memory" issues.
             # A work around is make the reconnection time bigger, but a better solution should probably be found.
             self.push.set_push2_reconnect_call_interval(2)
+        # for y in range(0, 8):
+        #     for x in range(0, 8):
+        #         self.push.pads.set_pad_color((x, y), color=definitions.OFF_BTN_COLOR)
 
     def update_push2_pads(self):
         for mode in self.active_modes:
@@ -808,8 +811,8 @@ def on_midi_connected(_):
     except NameError as e:
         global midi_connected_received_before_app
         midi_connected_received_before_app = True
-        print("Error:  {}".format(str(e)))
-        traceback.print_exc()
+        # print("Error:  {}".format(str(e)))
+        # traceback.print_exc()
 
 
 async def main():
@@ -827,10 +830,10 @@ async def main():
 if __name__ == "__main__":
     try:
         app = PyshaApp()
-        # if midi_connected_received_before_app:
-        #     # App received the "on_midi_connected" call before it was initialized. Do it now!
-        #     print("Missed MIDI initialization call, doing it now...")
-        #     app.on_midi_push_connection_established()
+        if midi_connected_received_before_app:
+            # App received the "on_midi_connected" call before it was initialized. Do it now!
+            print("Missed MIDI initialization call, doing it now...")
+            app.on_midi_push_connection_established()
 
         asyncio.run(main())
     except KeyboardInterrupt:

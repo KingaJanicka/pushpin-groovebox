@@ -70,7 +70,6 @@ class Sequencer(object):
             self.send_osc_func("/mnote", [float(25), float(0)], self.name)
 
     def get_track(self, lane):
-        print("lane", lane)
         if lane == "gate":
             return self.gate
         elif lane == "pitch1":
