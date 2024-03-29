@@ -418,7 +418,7 @@ class SettingsMode(definitions.PyshaMode):
                 elif i == 4:  # Pyramidi out channel
                     pass
                     # show_title(ctx, part_x, h, 'PYRAMIDI CH')
-                    # show_value(ctx, part_x, h, self.app.track_selection_mode.pyramidi_channel + 1, color)
+                    # show_value(ctx, part_x, h, self.app.instrument_selection_mode.pyramidi_channel + 1, color)
 
                 elif i == 5:  # Notes MIDI in device
                     if self.app.notes_midi_in_tmp_device_idx is not None:
@@ -623,8 +623,8 @@ class SettingsMode(definitions.PyshaMode):
 
             elif encoder_name == push2_python.constants.ENCODER_TRACK5_ENCODER:
                 pass
-                # self.app.track_selection_mode.set_pyramidi_channel(
-                #     self.app.track_selection_mode.pyramidi_channel + increment,
+                # self.app.instrument_selection_mode.set_pyramidi_channel(
+                #     self.app.instrument_selection_mode.pyramidi_channel + increment,
                 #     wrap=False,
                 # )
 
@@ -728,8 +728,8 @@ class SettingsMode(definitions.PyshaMode):
                 return True
 
             elif button_name == push2_python.constants.BUTTON_UPPER_ROW_5:
-                # self.app.track_selection_mode.set_pyramidi_channel(
-                #     self.app.track_selection_mode.pyramidi_channel + 1, wrap=False
+                # self.app.instrument_selection_mode.set_pyramidi_channel(
+                #     self.app.instrument_selection_mode.pyramidi_channel + 1, wrap=False
                 # )
                 return True
 

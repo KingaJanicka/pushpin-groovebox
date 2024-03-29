@@ -107,7 +107,7 @@ DEFAULT_ANIMATION = push2_python.constants.ANIMATION_PULSING_QUARTER
 INSTRUMENT_DEFINITION_FOLDER = "instrument_definitions"
 DEVICE_DEFINITION_FOLDER = "device_definitions"
 EFFECT_DEFINITION_FOLDER = "effect_definitions"
-TRACK_LISTING_PATH = "track_listing.json"
+INSTRUMENT_LISTING_PATH = "instrument_listing.json"
 
 
 class PyshaMode(object):

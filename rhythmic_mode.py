@@ -13,7 +13,7 @@ class RhythmicMode(MelodicMode):
         [48, 49, 50, 51, 80, 81, 82, 83],
         [44, 45, 46, 47, 76, 77, 78, 79],
         [40, 41, 42, 43, 72, 73, 74, 75],
-        [36, 37, 38, 39, 68, 69, 70, 71]
+        [36, 37, 38, 39, 68, 69, 70, 71],
     ]
 
     def get_settings_to_save(self):
@@ -35,7 +35,9 @@ class RhythmicMode(MelodicMode):
                 cell_color = definitions.BLACK
                 if i >= 4 and j < 4:
                     # This is the main 4x4 grid
-                    cell_color = self.app.track_selection_mode.get_current_track_color()
+                    cell_color = (
+                        self.app.instrument_selection_mode.get_current_instrument_color()
+                    )
                 elif i >= 4 and j >= 4:
                     cell_color = definitions.GRAY_LIGHT
                 elif i < 4 and j < 4:
@@ -51,7 +53,10 @@ class RhythmicMode(MelodicMode):
         self.push.pads.set_pads_color(color_matrix)
 
     def on_button_pressed(self, button_name):
-        if button_name == push2_python.constants.BUTTON_OCTAVE_UP or button_name == push2_python.constants.BUTTON_OCTAVE_DOWN:
+        if (
+            button_name == push2_python.constants.BUTTON_OCTAVE_UP
+            or button_name == push2_python.constants.BUTTON_OCTAVE_DOWN
+        ):
             # Don't react to octave up/down buttons as these are not used in rhythm mode
             pass
         else:

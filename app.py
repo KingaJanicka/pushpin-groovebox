@@ -12,7 +12,7 @@ import logging
 import asyncio
 
 from melodic_mode import MelodicMode
-from track_selection_mode import TrackSelectionMode
+from instrument_selection_mode import InstrumentSelectionMode
 from rhythmic_mode import RhythmicMode
 from slice_notes_mode import SliceNotesMode
 from sequencer_mode import SequencerMode
@@ -109,20 +109,24 @@ class PyshaApp(object):
         self.slice_notes_mode = SliceNotesMode(self, settings=settings)
         self.set_melodic_mode()
 
-        self.track_selection_mode = TrackSelectionMode(self, settings=settings)
+        self.instrument_selection_mode = InstrumentSelectionMode(
+            self, settings=settings
+        )
         self.preset_selection_mode = PresetSelectionMode(self, settings=settings)
         self.midi_cc_mode = MIDICCMode(
             self, settings=settings
-        )  # Must be initialized after track selection mode so it gets info about loaded tracks
+        )  # Must be initialized after instrument selection mode so it gets info about loaded instruments
         self.osc_mode = OSCMode(
             self, settings=settings
-        )  # Must be initialized after track selection mode so it gets info about loaded tracks
+        )  # Must be initialized after instrument selection mode so it gets info about loaded instruments
         self.sequencer_mode = SequencerMode(
             self, settings=settings, send_osc_func=self.send_osc
         )
-        # self.active_modes += [self.track_selection_mode, self.midi_cc_mode]
-        self.active_modes += [self.track_selection_mode, self.osc_mode]
-        self.track_selection_mode.select_track(self.track_selection_mode.selected_track)
+        # self.active_modes += [self.instrument_selection_mode, self.midi_cc_mode]
+        self.active_modes += [self.instrument_selection_mode, self.osc_mode]
+        self.instrument_selection_mode.select_instrument(
+            self.instrument_selection_mode.selected_instrument
+        )
         self.ddrm_tone_selector_mode = DDRMToneSelectorMode(self, settings=settings)
         self.settings_mode = SettingsMode(self, settings=settings)
 
@@ -150,29 +154,29 @@ class PyshaApp(object):
 
     def toggle_ddrm_tone_selector_mode(self):
         if self.is_mode_active(self.ddrm_tone_selector_mode):
-            # Deactivate (replace ddrm tone selector mode by midi cc and track selection mode)
+            # Deactivate (replace ddrm tone selector mode by midi cc and instrument selection mode)
             new_active_modes = []
             for mode in self.active_modes:
                 if mode != self.ddrm_tone_selector_mode:
                     new_active_modes.append(mode)
                 else:
-                    new_active_modes.append(self.track_selection_mode)
+                    new_active_modes.append(self.instrument_selection_mode)
                     new_active_modes.append(self.osc_mode)
             self.active_modes = new_active_modes
             self.ddrm_tone_selector_mode.deactivate()
             self.osc_mode.activate()
-            self.track_selection_mode.activate()
+            self.instrument_selection_mode.activate()
         else:
-            # Activate (replace midi cc and track selection mode by ddrm tone selector mode)
+            # Activate (replace midi cc and instrument selection mode by ddrm tone selector mode)
             new_active_modes = []
             for mode in self.active_modes:
-                if mode != self.track_selection_mode and mode != self.osc_mode:
+                if mode != self.instrument_selection_mode and mode != self.osc_mode:
                     new_active_modes.append(mode)
                 elif mode == self.osc_mode:
                     new_active_modes.append(self.ddrm_tone_selector_mode)
             self.active_modes = new_active_modes
             self.osc_mode.deactivate()
-            self.track_selection_mode.deactivate()
+            self.instrument_selection_mode.deactivate()
             self.ddrm_tone_selector_mode.activate()
 
     def set_mode_for_xor_group(self, mode_to_set):
@@ -426,7 +430,7 @@ class PyshaApp(object):
             self.midi_in_channel = 15 if not wrap else -1
 
     def set_midi_out_channel(self, channel, wrap=False):
-        # We use channel -1 for the "track setting" in which midi channel is taken from currently selected track
+        # We use channel -1 for the "instrument setting" in which midi channel is taken from currently selected instrument
         self.midi_out_channel = channel
         if self.midi_out_channel < -1:
             self.midi_out_channel = -1 if not wrap else 15
@@ -434,7 +438,7 @@ class PyshaApp(object):
             self.midi_out_channel = 15 if not wrap else -1
 
     def set_osc_in_port(self, port, wrap=False):
-        # We use channel -1 for the "track setting" in which midi channel is taken from currently selected track
+        # We use channel -1 for the "instrument setting" in which midi channel is taken from currently selected instrument
         self.osc_in_port = port
         if self.osc_in_port < 1030:
             self.osc_in_port = -1 if not wrap else 10
@@ -460,19 +464,21 @@ class PyshaApp(object):
             self.init_notes_midi_in(None)
 
     def send_midi(self, msg, use_original_msg_channel=False):
-        # Unless we specifically say we want to use the original msg mnidi channel, set it to global midi out channel or to the channel of the current track
+        # Unless we specifically say we want to use the original msg mnidi channel, set it to global midi out channel or to the channel of the current instrument
         if not use_original_msg_channel and hasattr(msg, "channel"):
             midi_out_channel = self.midi_out_channel
             if self.midi_out_channel == -1:
-                # Send the message to the midi channel of the currently selected track (or to track 1 if selected track has no midi channel information)
-                track_midi_channel = self.track_selection_mode.get_current_track_info()[
-                    "midi_channel"
-                ]
-                if track_midi_channel == -1:
+                # Send the message to the midi channel of the currently selected instrument (or to instrument 1 if selected instrument has no midi channel information)
+                instrument_midi_channel = (
+                    self.instrument_selection_mode.get_current_instrument_info()[
+                        "midi_channel"
+                    ]
+                )
+                if instrument_midi_channel == -1:
                     midi_out_channel = 0
                 else:
                     midi_out_channel = (
-                        track_midi_channel - 1
+                        instrument_midi_channel - 1
                     )  # msg.channel is 0-indexed
             msg = msg.copy(channel=midi_out_channel)
 
@@ -480,10 +486,10 @@ class PyshaApp(object):
             self.midi_out.send(msg)
 
     def send_osc(self, address, value, instrument_short_name=None):
-        # print(instrument_short_name, self.track_selection_mode.get_current_track_instrument_short_name(), "SEND OSC")
+        # print(instrument_short_name, self.instrument_selection_mode.get_current_instrument_short_name(), "SEND OSC")
         if instrument_short_name is not None:
             # This is for the sequencer
-            client = self.osc_mode.instruments[instrument_short_name].get(
+            client = self.osc_mode.instruments[instrument_short_name].osc.get(
                 "client", None
             )
             if client:
@@ -491,7 +497,7 @@ class PyshaApp(object):
         else:
             # This is for wiggling knobs
             client = self.osc_mode.instruments[
-                self.track_selection_mode.get_current_track_instrument_short_name()
+                self.instrument_selection_mode.get_current_instrument_short_name()
             ].get("client", None)
 
             if client:
@@ -531,13 +537,15 @@ class PyshaApp(object):
                         mode.on_midi_in(msg, source=self.midi_in.name)
 
     def notes_midi_in_handler(self, msg):
-        # Check if message is note on or off and check if the MIDI channel is the one assigned to the currently selected track
+        # Check if message is note on or off and check if the MIDI channel is the one assigned to the currently selected instrument
         # Then, send message to the melodic/rhythmic active modes so the notes are shown in pads/keys
         if msg.type == "note_on" or msg.type == "note_off":
-            track_midi_channel = self.track_selection_mode.get_current_track_info()[
-                "midi_channel"
-            ]
-            if msg.channel == track_midi_channel - 1:  # msg.channel is 0-indexed
+            instrument_midi_channel = (
+                self.instrument_selection_mode.get_current_instrumentument_info()[
+                    "midi_channel"
+                ]
+            )
+            if msg.channel == instrument_midi_channel - 1:  # msg.channel is 0-indexed
                 for mode in self.active_modes:
                     if mode == self.melodic_mode or mode == self.rhyhtmic_mode:
                         mode.on_midi_in(msg, source=self.notes_midi_in.name)
@@ -809,7 +817,6 @@ async def main():
     loop = asyncio.get_event_loop()
 
     for instrument in app.osc_mode.instruments:
-        print("woop woop")
         await app.osc_mode.instruments[instrument].start(loop)
 
     while True:

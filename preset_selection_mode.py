@@ -34,7 +34,7 @@ class PresetSelectionMode(definitions.PyshaMode):
 
     def add_favourite_preset(self, preset_number, bank_number):
         instrument_short_name = (
-            self.app.track_selection_mode.get_current_track_instrument_short_name()
+            self.app.instrument_selection_mode.get_current_instrument_short_name()
         )
         if instrument_short_name not in self.favourite_presets:
             self.favourite_presets[instrument_short_name] = []
@@ -47,7 +47,7 @@ class PresetSelectionMode(definitions.PyshaMode):
 
     def remove_favourite_preset(self, preset_number, bank_number):
         instrument_short_name = (
-            self.app.track_selection_mode.get_current_track_instrument_short_name()
+            self.app.instrument_selection_mode.get_current_instrument_short_name()
         )
         if instrument_short_name in self.favourite_presets:
             self.favourite_presets[instrument_short_name] = [
@@ -63,7 +63,7 @@ class PresetSelectionMode(definitions.PyshaMode):
 
     def preset_num_in_favourites(self, preset_number, bank_number):
         instrument_short_name = (
-            self.app.track_selection_mode.get_current_track_instrument_short_name()
+            self.app.instrument_selection_mode.get_current_instrument_short_name()
         )
         if instrument_short_name not in self.favourite_presets:
             return False
@@ -86,11 +86,15 @@ class PresetSelectionMode(definitions.PyshaMode):
 
     def get_num_banks(self):
         # Returns the number of available banks of the selected instrument
-        return self.app.track_selection_mode.get_current_track_info()["n_banks"]
+        return self.app.instrument_selection_mode.get_current_instrument_info()[
+            "n_banks"
+        ]
 
     def get_bank_names(self):
         # Returns list of bank names
-        return self.app.track_selection_mode.get_current_track_info()["bank_names"]
+        return self.app.instrument_selection_mode.get_current_instrument_info()[
+            "bank_names"
+        ]
 
     def get_num_pages(self):
         # Returns the number of available preset pages per instrument (2 per bank)
@@ -189,17 +193,19 @@ class PresetSelectionMode(definitions.PyshaMode):
 
     def update_pads(self):
         instrument_short_name = (
-            self.app.track_selection_mode.get_current_track_instrument_short_name()
+            self.app.instrument_selection_mode.get_current_instrument_short_name()
         )
-        track_color = self.app.track_selection_mode.get_current_track_color()
+        instrument_color = (
+            self.app.instrument_selection_mode.get_current_instrument_color()
+        )
         color_matrix = []
         for i in range(0, 8):
             row_colors = []
             for j in range(0, 8):
-                cell_color = track_color
+                cell_color = instrument_color
                 preset_num, bank_num = self.pad_ij_to_bank_and_preset_num((i, j))
                 if not self.preset_num_in_favourites(preset_num, bank_num):
-                    cell_color = f"{cell_color}_darker2"  # If preset not in favourites, use a darker version of the track color
+                    cell_color = f"{cell_color}_darker2"  # If preset not in favourites, use a darker version of the instrument color
                 row_colors.append(cell_color)
             color_matrix.append(row_colors)
         self.push.pads.set_pads_color(color_matrix)

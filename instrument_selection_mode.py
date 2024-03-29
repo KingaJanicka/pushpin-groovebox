@@ -1,18 +1,15 @@
 import definitions
-import mido
 import push2_python
-import time
-import math
 import os
 import json
 
 from display_utils import show_text
 
 
-class TrackSelectionMode(definitions.PyshaMode):
+class InstrumentSelectionMode(definitions.PyshaMode):
 
-    tracks_info = []
-    track_button_names_a = [
+    instruments_info = []
+    instrument_button_names_a = [
         push2_python.constants.BUTTON_LOWER_ROW_1,
         push2_python.constants.BUTTON_LOWER_ROW_2,
         push2_python.constants.BUTTON_LOWER_ROW_3,
@@ -22,7 +19,7 @@ class TrackSelectionMode(definitions.PyshaMode):
         push2_python.constants.BUTTON_LOWER_ROW_7,
         push2_python.constants.BUTTON_LOWER_ROW_8,
     ]
-    track_button_names_b = [
+    instrument_button_names_b = [
         push2_python.constants.BUTTON_1_32T,
         push2_python.constants.BUTTON_1_32,
         push2_python.constants.BUTTON_1_16T,
@@ -32,8 +29,8 @@ class TrackSelectionMode(definitions.PyshaMode):
         push2_python.constants.BUTTON_1_4T,
         push2_python.constants.BUTTON_1_4,
     ]
-    selected_track = 0
-    track_selection_quick_press_time = 0.400
+    selected_instrument = 0
+    instrument_selection_quick_press_time = 0.400
 
     def initialize(self, settings=None):
         # if settings is not None:
@@ -41,18 +38,13 @@ class TrackSelectionMode(definitions.PyshaMode):
         #         "pyramidi_channel", self.pyramidi_channel
         #   )
 
-        self.create_tracks()
+        self.create_instruments()
 
-    def create_tracks(self):
-        """This method creates 64 tracks corresponding to the Pyramid tracks that I use in my live setup.
-        Instrument names are assigned according to the way I have them configured in the 64 tracks of Pyramid.
-        Instrument names per track are loaded from "track_listing.json" file, and should correspond to instrument
-        definition filenames from "instrument_definitions" folder.
-        """
+    def create_instruments(self):
         tmp_instruments_data = {}
 
-        if os.path.exists(definitions.TRACK_LISTING_PATH):
-            track_instruments = json.load(open(definitions.TRACK_LISTING_PATH))
+        if os.path.exists(definitions.INSTRUMENT_LISTING_PATH):
+            track_instruments = json.load(open(definitions.INSTRUMENT_LISTING_PATH))
             for i, instrument_short_name in enumerate(track_instruments):
                 if instrument_short_name not in tmp_instruments_data:
                     try:
@@ -76,9 +68,9 @@ class TrackSelectionMode(definitions.PyshaMode):
                         color = definitions.COLORS_NAMES[i % 8]
                     else:
                         color = definitions.GRAY_DARK
-                self.tracks_info.append(
+                self.instruments_info.append(
                     {
-                        "track_name": "{0}{1}".format(
+                        "instrument_name": "{0}{1}".format(
                             (i % 16) + 1, ["A", "B", "C", "D"][i // 16]
                         ),
                         "instrument_name": instrument_data.get("instrument_name", "-"),
@@ -96,65 +88,57 @@ class TrackSelectionMode(definitions.PyshaMode):
                         ),
                     }
                 )
-            print("Created {0} tracks!".format(len(self.tracks_info)))
-        else:
-            # Create 64 empty tracks
-            for i in range(0, 64):
-                self.tracks_info.append(
-                    {
-                        "track_name": "{0}{1}".format(
-                            (i % 16) + 1, ["A", "B", "C", "D"][i // 16]
-                        ),
-                        "instrument_name": "-",
-                        "instrument_short_name": "-",
-                        "midi_channel": -1,
-                        "color": definitions.ORANGE,
-                        "default_layout": definitions.LAYOUT_SEQUENCER,
-                        "illuminate_local_notes": True,
-                    }
-                )
+            print("Created {0} instruments!".format(len(self.instruments_info)))
 
     def get_settings_to_save(self):
         return {}
 
     def get_all_distinct_instrument_short_names(self):
-        return list(set([track["instrument_short_name"] for track in self.tracks_info]))
+        return list(
+            set(
+                [
+                    instrument["instrument_short_name"]
+                    for instrument in self.instruments_info
+                ]
+            )
+        )
 
-    def get_current_track_info(self):
-        return self.tracks_info[self.selected_track]
+    def get_current_instrument_info(self):
+        return self.instruments_info[self.selected_instrument]
 
-    def get_current_track_osc_port(self):
-        return self.get_current_track_info()["osc_port"]
+    def get_current_instrument_osc_port(self):
+        return self.get_current_instrument_info()["osc_port"]
 
-    def get_current_track_instrument_short_name(self):
-        return self.get_current_track_info()["instrument_short_name"]
+    def get_current_instrument_short_name(self):
+        return self.get_current_instrument_info()["instrument_short_name"]
 
-    def get_track_color(self, i):
-        return self.tracks_info[i]["color"]
+    def get_instrument_color(self, i):
+        return self.instruments_info[i]["color"]
 
-    def get_current_track_color(self):
-        return self.get_track_color(self.selected_track)
+    def get_current_instrument_color(self):
+        return self.get_instrument_color(self.selected_instrument)
 
-    def get_current_track_color_rgb(self):
-        return definitions.get_color_rgb_float(self.get_current_track_color())
+    def get_current_instrument_color_rgb(self):
+        return definitions.get_color_rgb_float(self.get_current_instrument_color())
 
     def load_current_default_layout(self):
         if (
-            self.get_current_track_info()["default_layout"]
+            self.get_current_instrument_info()["default_layout"]
             == definitions.LAYOUT_MELODIC
         ):
             self.app.set_melodic_mode()
         elif (
-            self.get_current_track_info()["default_layout"]
+            self.get_current_instrument_info()["default_layout"]
             == definitions.LAYOUT_RHYTHMIC
         ):
             self.app.set_rhythmic_mode()
         elif (
-            self.get_current_track_info()["default_layout"] == definitions.LAYOUT_SLICES
+            self.get_current_instrument_info()["default_layout"]
+            == definitions.LAYOUT_SLICES
         ):
             self.app.set_slice_notes_mode()
         elif (
-            self.get_current_track_info()["default_layout"]
+            self.get_current_instrument_info()["default_layout"]
             == definitions.LAYOUT_SEQUENCER
         ):
             self.app.set_sequencer_mode()
@@ -167,11 +151,11 @@ class TrackSelectionMode(definitions.PyshaMode):
         elif self.app.is_mode_active(self.app.sequencer_mode):
             self.app.sequencer_mode.update_pads()
 
-    def select_track(self, track_idx):
-        # Selects a track and activates its melodic/rhythmic layout
+    def select_instrument(self, instrument_idx):
+        # Selects a instrument and activates its melodic/rhythmic layout
         # Note that if this is called from a mode form the same xor group with melodic/rhythmic modes,
         # that other mode will be deactivated.
-        self.selected_track = track_idx
+        self.selected_instrument = instrument_idx
         self.load_current_default_layout()
         self.clean_currently_notes_being_played()
         try:
@@ -189,18 +173,20 @@ class TrackSelectionMode(definitions.PyshaMode):
         self.update_pads()
 
     def deactivate(self):
-        for button_name in self.track_button_names_a + self.track_button_names_b:
+        for button_name in (
+            self.instrument_button_names_a + self.instrument_button_names_b
+        ):
             self.push.buttons.set_button_color(button_name, definitions.BLACK)
 
     def update_buttons(self):
-        for count, name in enumerate(self.track_button_names_a):
-            color = self.tracks_info[count]["color"]
+        for count, name in enumerate(self.instrument_button_names_a):
+            color = self.instruments_info[count]["color"]
             self.push.buttons.set_button_color(name, color)
 
-        for count, name in enumerate(self.track_button_names_b):
-            color = self.get_current_track_color()
-            equivalent_track_num = (self.selected_track % 8) + count * 8
-            if self.selected_track == equivalent_track_num:
+        for count, name in enumerate(self.instrument_button_names_b):
+            color = self.get_current_instrument_color()
+            equivalent_instrument_num = (self.selected_instrument % 8) + count * 8
+            if self.selected_instrument == equivalent_instrument_num:
                 self.push.buttons.set_button_color(name, definitions.WHITE)
                 self.push.buttons.set_button_color(
                     name, color, animation=definitions.DEFAULT_ANIMATION
@@ -210,17 +196,17 @@ class TrackSelectionMode(definitions.PyshaMode):
 
     def update_display(self, ctx, w, h):
 
-        # Draw track selector labels
+        # Draw instrument selector labels
         height = 20
         for i in range(0, 8):
-            track_color = self.tracks_info[i]["color"]
-            if self.selected_track % 8 == i:
-                background_color = track_color
+            instrument_color = self.instruments_info[i]["color"]
+            if self.selected_instrument % 8 == i:
+                background_color = instrument_color
                 font_color = definitions.BLACK
             else:
                 background_color = definitions.BLACK
-                font_color = track_color
-            instrument_short_name = self.tracks_info[i]["instrument_short_name"]
+                font_color = instrument_color
+            instrument_short_name = self.instruments_info[i]["instrument_short_name"]
             show_text(
                 ctx,
                 i,
@@ -232,15 +218,15 @@ class TrackSelectionMode(definitions.PyshaMode):
             )
 
     def on_button_pressed(self, button_name):
-        if button_name in self.track_button_names_a:
-            self.select_track(self.track_button_names_a.index(button_name))
+        if button_name in self.instrument_button_names_a:
+            self.select_instrument(self.instrument_button_names_a.index(button_name))
             self.app.buttons_need_update = True
             self.app.pads_need_update = True
             return True
 
-        elif button_name in self.track_button_names_b:
-            self.select_track(
-                self.selected_track % 8
+        elif button_name in self.instrument_button_names_b:
+            self.select_instrument(
+                self.selected_instrument % 8
                 + 8 * self.track_button_names_b.index(button_name)
             )
             self.app.buttons_need_update = True

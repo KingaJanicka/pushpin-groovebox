@@ -69,7 +69,7 @@ class Sequencer(object):
         if self.gate[playhead] is False:
             self.send_osc_func("/mnote", [float(25), float(0)], self.name)
 
-    def get_track(self, lane):
+    def get_instrument(self, lane):
         if lane == "gate":
             return self.gate
         elif lane == "pitch1":

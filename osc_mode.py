@@ -83,7 +83,7 @@ class OSCMode(PyshaMode):
                     instrument_short_name,
                     instrument_definition,
                     device_definitions,
-                    get_current_track_color_helper=self.get_current_track_color_helper,
+                    get_current_instrument_color_helper=self.get_current_instrument_color_helper,
                 )
 
                 # TODO figure out how to start a server lol
@@ -97,16 +97,18 @@ class OSCMode(PyshaMode):
             self.instruments[instrument].close_transports()
 
     def get_all_distinct_instrument_short_names_helper(self):
-        return self.app.track_selection_mode.get_all_distinct_instrument_short_names()
+        return (
+            self.app.instrument_selection_mode.get_all_distinct_instrument_short_names()
+        )
 
-    def get_current_track_color_helper(self):
-        return self.app.track_selection_mode.get_current_track_color()
+    def get_current_instrument_color_helper(self):
+        return self.app.instrument_selection_mode.get_current_instrument_color()
 
-    def get_current_track_instrument_short_name_helper(self):
-        return self.app.track_selection_mode.get_current_track_instrument_short_name()
+    def get_current_instrument_short_name_helper(self):
+        return self.app.instrument_selection_mode.get_current_instrument_short_name()
 
     def get_current_instrument_devices(self):
-        instrument_shortname = self.get_current_track_instrument_short_name_helper()
+        instrument_shortname = self.get_current_instrument_short_name_helper()
         instrument = self.instruments.get(instrument_shortname, None)
 
         devices = []
@@ -154,9 +156,13 @@ class OSCMode(PyshaMode):
         new_current_device.set_page(new_page)
         self.app.buttons_need_update = True
 
-    # TODO populate display when new instrument selected
     def new_instrument_selected(self):
-        pass
+        new_instrument = self.instruments.get(
+            self.get_current_instrument_short_name_helper(), None
+        )
+        print("NEW INSTRUMENT", new_instrument)
+        if new_instrument:
+            new_instrument.query_all_params()
 
     def activate(self):
         self.update_buttons()
@@ -212,13 +218,15 @@ class OSCMode(PyshaMode):
                     if selected_device == device:
                         is_selected = True
 
-                    current_track_color = self.get_current_track_color_helper()
+                    current_instrument_color = (
+                        self.get_current_instrument_color_helper()
+                    )
                     if is_selected:
-                        background_color = current_track_color
+                        background_color = current_instrument_color
                         font_color = definitions.BLACK
                     else:
                         background_color = definitions.BLACK
-                        font_color = current_track_color
+                        font_color = current_instrument_color
                     show_text(
                         ctx,
                         i,
@@ -240,12 +248,12 @@ class OSCMode(PyshaMode):
         _, current_page = self.get_current_instrument_device_and_page()
 
         if button_name in self.upper_row_button_names:
-            current_track_devices = self.get_current_instrument_devices()
+            current_instrument_devices = self.get_current_instrument_devices()
             _, current_page = self.get_current_instrument_device_and_page()
 
             idx = self.upper_row_button_names.index(button_name)
-            if idx < len(current_track_devices):
-                new_device = current_track_devices[idx]
+            if idx < len(current_instrument_devices):
+                new_device = current_instrument_devices[idx]
                 # Stay on the same device page if new instrument, otherwise go to next page
 
                 new_page = (

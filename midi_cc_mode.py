@@ -154,7 +154,7 @@ class MIDICCMode(PyshaMode):
                             cc_number,
                             name,
                             section_name,
-                            self.get_current_track_color_helper,
+                            self.get_current_instrument_color_helper,
                             self.app.send_midi,
                         )
                         if section.get("control_value_label_maps", {}).get(name, False):
@@ -180,7 +180,7 @@ class MIDICCMode(PyshaMode):
                         i,
                         "CC {0}".format(i),
                         "{0} to {1}".format(section_s, section_e),
-                        self.get_current_track_color_helper,
+                        self.get_current_instrument_color_helper,
                         self.app.send_midi,
                     )
                     self.instrument_midi_control_ccs[instrument_short_name].append(
@@ -200,18 +200,20 @@ class MIDICCMode(PyshaMode):
             )
 
     def get_all_distinct_instrument_short_names_helper(self):
-        return self.app.track_selection_mode.get_all_distinct_instrument_short_names()
+        return (
+            self.app.instrument_selection_mode.get_all_distinct_instrument_short_names()
+        )
 
-    def get_current_track_color_helper(self):
-        return self.app.track_selection_mode.get_current_track_color()
+    def get_current_instrument_color_helper(self):
+        return self.app.instrument_selection_mode.get_current_instrument_color()
 
-    def get_current_track_instrument_short_name_helper(self):
-        return self.app.track_selection_mode.get_current_track_instrument_short_name()
+    def get_current_instrument_short_name_helper(self):
+        return self.app.instrument_selection_mode.get_current_instrument_short_name()
 
-    def get_current_track_midi_cc_sections(self):
+    def get_current_instrument_midi_cc_sections(self):
         section_names = []
         for control in self.instrument_midi_control_ccs.get(
-            self.get_current_track_instrument_short_name_helper(), []
+            self.get_current_instrument_short_name_helper(), []
         ):
             section_name = control.section
             if section_name not in section_names:
@@ -220,21 +222,23 @@ class MIDICCMode(PyshaMode):
 
     def get_currently_selected_midi_cc_section_and_page(self):
         return self.current_selected_section_and_page[
-            self.get_current_track_instrument_short_name_helper()
+            self.get_current_instrument_short_name_helper()
         ]
 
-    def get_midi_cc_controls_for_current_track_and_section(self):
+    def get_midi_cc_controls_for_current_instrument_and_section(self):
         section, _ = self.get_currently_selected_midi_cc_section_and_page()
         return [
             control
             for control in self.instrument_midi_control_ccs.get(
-                self.get_current_track_instrument_short_name_helper(), []
+                self.get_current_instrument_short_name_helper(), []
             )
             if control.section == section
         ]
 
-    def get_midi_cc_controls_for_current_track_section_and_page(self):
-        all_section_controls = self.get_midi_cc_controls_for_current_track_and_section()
+    def get_midi_cc_controls_for_current_instrument_section_and_page(self):
+        all_section_controls = (
+            self.get_midi_cc_controls_for_current_instrument_and_section()
+        )
         print(all_section_controls)
         _, page = self.get_currently_selected_midi_cc_section_and_page()
         try:
@@ -252,15 +256,17 @@ class MIDICCMode(PyshaMode):
         if new_page is not None:
             result[1] = new_page
         self.current_selected_section_and_page[
-            self.get_current_track_instrument_short_name_helper()
+            self.get_current_instrument_short_name_helper()
         ] = result
         self.active_midi_control_ccs = (
-            self.get_midi_cc_controls_for_current_track_section_and_page()
+            self.get_midi_cc_controls_for_current_instrument_section_and_page()
         )
         self.app.buttons_need_update = True
 
     def get_should_show_midi_cc_next_prev_pages_for_section(self):
-        all_section_controls = self.get_midi_cc_controls_for_current_track_and_section()
+        all_section_controls = (
+            self.get_midi_cc_controls_for_current_instrument_and_section()
+        )
         _, page = self.get_currently_selected_midi_cc_section_and_page()
         show_prev = False
         if page > 0:
@@ -272,7 +278,7 @@ class MIDICCMode(PyshaMode):
 
     def new_instrument_selected(self):
         self.active_midi_control_ccs = (
-            self.get_midi_cc_controls_for_current_track_section_and_page()
+            self.get_midi_cc_controls_for_current_instrument_section_and_page()
         )
 
     def activate(self):
@@ -287,7 +293,7 @@ class MIDICCMode(PyshaMode):
 
     def update_buttons(self):
 
-        n_midi_cc_sections = len(self.get_current_track_midi_cc_sections())
+        n_midi_cc_sections = len(self.get_current_instrument_midi_cc_sections())
         for count, name in enumerate(self.midi_cc_button_names):
             if count < n_midi_cc_sections:
                 self.push.buttons.set_button_color(name, definitions.WHITE)
@@ -321,7 +327,7 @@ class MIDICCMode(PyshaMode):
             # "cover them"
 
             # Draw MIDI CCs section names
-            section_names = self.get_current_track_midi_cc_sections()[0:8]
+            section_names = self.get_current_instrument_midi_cc_sections()[0:8]
             if section_names:
                 height = 20
                 for i, section_name in enumerate(section_names):
@@ -334,13 +340,15 @@ class MIDICCMode(PyshaMode):
                     if selected_section == section_name:
                         is_selected = True
 
-                    current_track_color = self.get_current_track_color_helper()
+                    current_instrument_color = (
+                        self.get_current_instrument_color_helper()
+                    )
                     if is_selected:
-                        background_color = current_track_color
+                        background_color = current_instrument_color
                         font_color = definitions.BLACK
                     else:
                         background_color = definitions.BLACK
-                        font_color = current_track_color
+                        font_color = current_instrument_color
                     show_text(
                         ctx,
                         i,
@@ -361,11 +369,11 @@ class MIDICCMode(PyshaMode):
 
     def on_button_pressed(self, button_name):
         if button_name in self.midi_cc_button_names:
-            current_track_sections = self.get_current_track_midi_cc_sections()
-            n_sections = len(current_track_sections)
+            current_instrument_sections = self.get_current_instrument_midi_cc_sections()
+            n_sections = len(current_instrument_sections)
             idx = self.midi_cc_button_names.index(button_name)
             if idx < n_sections:
-                new_section = current_track_sections[idx]
+                new_section = current_instrument_sections[idx]
                 self.update_current_section_page(new_section=new_section, new_page=0)
             return True
 

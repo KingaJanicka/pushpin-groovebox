@@ -16,7 +16,7 @@ class OSCInstrument(object):
         instrument_short_name,
         instrument_definition,
         device_definitions,
-        get_current_track_color_helper,
+        get_current_instrument_color_helper,
     ):
         self.transports = []
         self.devices = []
@@ -58,7 +58,7 @@ class OSCInstrument(object):
             device = OSCDevice(
                 device_definitions[device_name],
                 self.osc,
-                get_color=get_current_track_color_helper,
+                get_color=get_current_instrument_color_helper,
                 osc_in_port=self.osc_in_port,
                 osc_out_port=self.osc_out_port,
             )
@@ -98,11 +98,12 @@ class OSCInstrument(object):
             )  # Create datagram endpoint and start serving
 
             self.transports.append(transport)
-            client = self.osc["client"]
 
-            if client:
-                print(f"Populating {self.name}")
-                client.send_message("/q/all_params", None)
+    def query_all_params(self):
+        client = self.osc["client"]
+        if client:
+            print(f"Querying all_params on {self.name}")
+            client.send_message("/q/all_params", None)
 
     """
     Close transports on ctrl+c

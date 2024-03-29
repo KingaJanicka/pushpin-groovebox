@@ -15,7 +15,7 @@ class SliceNotesMode(MelodicMode):
         definitions.PINK,
         definitions.PURPLE,
         definitions.CYAN,
-        definitions.BLUE
+        definitions.BLUE,
     ]
 
     def get_settings_to_save(self):
@@ -31,9 +31,11 @@ class SliceNotesMode(MelodicMode):
             for j in range(0, 8):
                 corresponding_midi_note = self.pad_ij_to_midi_note([i, j])
                 midi_16_note_groups_idx = corresponding_midi_note // 16
-                #cell_color = self.color_groups[midi_16_note_groups_idx]
+                # cell_color = self.color_groups[midi_16_note_groups_idx]
                 if midi_16_note_groups_idx % 2 == 0:
-                    cell_color = self.app.track_selection_mode.get_current_track_color()
+                    cell_color = (
+                        self.app.instrument_selection_mode.get_current_instrument_color()
+                    )
                 else:
                     cell_color = definitions.WHITE
                 if self.is_midi_note_being_played(corresponding_midi_note):
@@ -50,10 +52,12 @@ class SliceNotesMode(MelodicMode):
             if self.start_note > 128 - 16 * 4:
                 self.start_note = 128 - 16 * 4
             self.app.pads_need_update = True
-            self.app.add_display_notification("MIDI notes range: {0} to {1}".format(
-                self.pad_ij_to_midi_note((7, 0)),
-                self.pad_ij_to_midi_note((0, 7)),
-            ))
+            self.app.add_display_notification(
+                "MIDI notes range: {0} to {1}".format(
+                    self.pad_ij_to_midi_note((7, 0)),
+                    self.pad_ij_to_midi_note((0, 7)),
+                )
+            )
             return True
 
         elif button_name == push2_python.constants.BUTTON_OCTAVE_DOWN:
@@ -61,10 +65,12 @@ class SliceNotesMode(MelodicMode):
             if self.start_note < 0:
                 self.start_note = 0
             self.app.pads_need_update = True
-            self.app.add_display_notification("MIDI notes range: {0} to {1}".format(
-                self.pad_ij_to_midi_note((7, 0)),
-                self.pad_ij_to_midi_note((0, 7)),
-            ))
+            self.app.add_display_notification(
+                "MIDI notes range: {0} to {1}".format(
+                    self.pad_ij_to_midi_note((7, 0)),
+                    self.pad_ij_to_midi_note((0, 7)),
+                )
+            )
             return True
 
         else:

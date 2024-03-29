@@ -5,7 +5,7 @@ import time
 TOGGLE_DISPLAY_BUTTON = push2_python.constants.BUTTON_USER
 SETTINGS_BUTTON = push2_python.constants.BUTTON_SETUP
 MELODIC_RHYTHMIC_TOGGLE_BUTTON = push2_python.constants.BUTTON_NOTE
-PYRAMID_TRACK_TRIGGERING_BUTTON = push2_python.constants.BUTTON_ADD_TRACK
+ADD_TRACK_TRIGGERING_BUTTON = push2_python.constants.BUTTON_ADD_TRACK
 PRESET_SELECTION_MODE_BUTTON = push2_python.constants.BUTTON_ADD_DEVICE
 DDRM_TONE_SELECTION_MODE_BUTTON = push2_python.constants.BUTTON_DEVICE
 CLIP_BUTTON = push2_python.constants.BUTTON_CLIP
@@ -25,7 +25,7 @@ class MainControlsMode(definitions.PyshaMode):
         self.push.buttons.set_button_color(TOGGLE_DISPLAY_BUTTON, definitions.BLACK)
         self.push.buttons.set_button_color(SETTINGS_BUTTON, definitions.BLACK)
         self.push.buttons.set_button_color(
-            PYRAMID_TRACK_TRIGGERING_BUTTON, definitions.BLACK
+            ADD_TRACK_TRIGGERING_BUTTON, definitions.BLACK
         )
         self.push.buttons.set_button_color(
             PRESET_SELECTION_MODE_BUTTON, definitions.BLACK
