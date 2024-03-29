@@ -19,16 +19,7 @@ class InstrumentSelectionMode(definitions.PyshaMode):
         push2_python.constants.BUTTON_LOWER_ROW_7,
         push2_python.constants.BUTTON_LOWER_ROW_8,
     ]
-    instrument_button_names_b = [
-        push2_python.constants.BUTTON_1_32T,
-        push2_python.constants.BUTTON_1_32,
-        push2_python.constants.BUTTON_1_16T,
-        push2_python.constants.BUTTON_1_16,
-        push2_python.constants.BUTTON_1_8T,
-        push2_python.constants.BUTTON_1_8,
-        push2_python.constants.BUTTON_1_4T,
-        push2_python.constants.BUTTON_1_4,
-    ]
+
     selected_instrument = 0
     instrument_selection_quick_press_time = 0.400
 
@@ -94,7 +85,7 @@ class InstrumentSelectionMode(definitions.PyshaMode):
         return {}
 
     def get_all_distinct_instrument_short_names(self):
-        return list(
+        distinct = list(
             set(
                 [
                     instrument["instrument_short_name"]
@@ -102,6 +93,11 @@ class InstrumentSelectionMode(definitions.PyshaMode):
                 ]
             )
         )
+
+        # Ensure instrument short names are in order
+        distinct.sort()
+
+        return distinct
 
     def get_current_instrument_info(self):
         return self.instruments_info[self.selected_instrument]
@@ -173,9 +169,7 @@ class InstrumentSelectionMode(definitions.PyshaMode):
         self.update_pads()
 
     def deactivate(self):
-        for button_name in (
-            self.instrument_button_names_a + self.instrument_button_names_b
-        ):
+        for button_name in self.instrument_button_names_a:
             self.push.buttons.set_button_color(button_name, definitions.BLACK)
 
     def update_buttons(self):
@@ -183,16 +177,16 @@ class InstrumentSelectionMode(definitions.PyshaMode):
             color = self.instruments_info[count]["color"]
             self.push.buttons.set_button_color(name, color)
 
-        for count, name in enumerate(self.instrument_button_names_b):
-            color = self.get_current_instrument_color()
-            equivalent_instrument_num = (self.selected_instrument % 8) + count * 8
-            if self.selected_instrument == equivalent_instrument_num:
-                self.push.buttons.set_button_color(name, definitions.WHITE)
-                self.push.buttons.set_button_color(
-                    name, color, animation=definitions.DEFAULT_ANIMATION
-                )
-            else:
-                self.push.buttons.set_button_color(name, color)
+        # for count, name in enumerate(self.instrument_button_names_b):
+        #     color = self.get_current_instrument_color()
+        #     equivalent_instrument_num = (self.selected_instrument % 8) + count * 8
+        #     if self.selected_instrument == equivalent_instrument_num:
+        #         self.push.buttons.set_button_color(name, definitions.WHITE)
+        #         self.push.buttons.set_button_color(
+        #             name, color, animation=definitions.DEFAULT_ANIMATION
+        #         )
+        #     else:
+        #         self.push.buttons.set_button_color(name, color)
 
     def update_display(self, ctx, w, h):
 
@@ -220,15 +214,6 @@ class InstrumentSelectionMode(definitions.PyshaMode):
     def on_button_pressed(self, button_name):
         if button_name in self.instrument_button_names_a:
             self.select_instrument(self.instrument_button_names_a.index(button_name))
-            self.app.buttons_need_update = True
-            self.app.pads_need_update = True
-            return True
-
-        elif button_name in self.instrument_button_names_b:
-            self.select_instrument(
-                self.selected_instrument % 8
-                + 8 * self.track_button_names_b.index(button_name)
-            )
             self.app.buttons_need_update = True
             self.app.pads_need_update = True
             return True

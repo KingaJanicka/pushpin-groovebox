@@ -86,9 +86,6 @@ class OSCMode(PyshaMode):
                     get_current_instrument_color_helper=self.get_current_instrument_color_helper,
                 )
 
-                # TODO figure out how to start a server lol
-                # await self.instruments[instrument_short_name].start()
-
             except Exception as e:
                 print(e, "Exception")
 
@@ -97,6 +94,10 @@ class OSCMode(PyshaMode):
             self.instruments[instrument].close_transports()
 
     def get_all_distinct_instrument_short_names_helper(self):
+        print(
+            "SHORT_NAMES",
+            self.app.instrument_selection_mode.get_all_distinct_instrument_short_names(),
+        )
         return (
             self.app.instrument_selection_mode.get_all_distinct_instrument_short_names()
         )
