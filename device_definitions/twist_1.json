@@ -470,7 +470,7 @@
 				{
 					"$type": "group",
 					"label": "String",
-					"value": {
+					"onselect": {
 						"$type": "message",
 						"$comment": "",
 						"address": "/param/a/osc/1/param1",
@@ -510,7 +510,7 @@
 				{
 					"$type": "group",
 					"label": "Resonator",
-					"value": {
+					"onselect": {
 						"$type": "message",
 						"$comment": "",
 						"address": "/param/a/osc/1/param1",
@@ -550,7 +550,7 @@
 				{
 					"$type": "group",
 					"label": "Kick",
-					"value": {
+					"onselect": {
 						"$type": "message",
 						"$comment": "",
 						"address": "/param/a/osc/1/param1",
@@ -590,7 +590,7 @@
 				{
 					"$type": "group",
 					"label": "Snare",
-					"value": {
+					"onselect": {
 						"$type": "message",
 						"$comment": "",
 						"address": "/param/a/osc/1/param1",
@@ -630,7 +630,7 @@
 				{
 					"$type": "group",
 					"label": "Hi-Hat",
-					"value": {
+					"onselect": {
 						"$type": "message",
 						"$comment": "",
 						"address": "/param/a/osc/1/param1",

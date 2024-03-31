@@ -30,7 +30,7 @@
 				{
 					"$type": "group",
 					"label": "Waveforms",
-					"value": {
+					"onselect": {
 						"$type": "message",
 						"$comment": "",
 						"address": "/param/a/osc/2/param1",
@@ -70,7 +70,7 @@
 				{
 					"$type": "group",
 					"label": "Waveshaper",
-					"value": {
+					"onselect": {
 						"$type": "message",
 						"$comment": "",
 						"address": "/param/a/osc/2/param1",
@@ -110,7 +110,7 @@
 				{
 					"$type": "group",
 					"label": "2OP FM",
-					"value": {
+					"onselect": {
 						"$type": "message",
 						"$comment": "",
 						"address": "/param/a/osc/2/param1",
@@ -150,7 +150,7 @@
 				{
 					"$type": "group",
 					"label": "Formant",
-					"value": {
+					"onselect": {
 						"$type": "message",
 						"$comment": "",
 						"address": "/param/a/osc/2/param1",
@@ -190,7 +190,7 @@
 				{
 					"$type": "group",
 					"label": "Harmonic",
-					"value": {
+					"onselect": {
 						"$type": "message",
 						"$comment": "",
 						"address": "/param/a/osc/2/param1",
@@ -230,7 +230,7 @@
 				{
 					"$type": "group",
 					"label": "Wavetable",
-					"value": {
+					"onselect": {
 						"$type": "message",
 						"$comment": "",
 						"address": "/param/a/osc/2/param1",
@@ -270,7 +270,7 @@
 				{
 					"$type": "group",
 					"label": "Chord",
-					"value": {
+					"onselect": {
 						"$type": "message",
 						"$comment": "",
 						"address": "/param/a/osc/2/param1",
@@ -310,7 +310,7 @@
 				{
 					"$type": "group",
 					"label": "Vowel",
-					"value": {
+					"onselect": {
 						"$type": "message",
 						"$comment": "",
 						"address": "/param/a/osc/2/param1",
@@ -350,7 +350,7 @@
 				{
 					"$type": "group",
 					"label": "Granular",
-					"value": {
+					"onselect": {
 						"$type": "message",
 						"$comment": "",
 						"address": "/param/a/osc/2/param1",
@@ -390,7 +390,7 @@
 				{
 					"$type": "group",
 					"label": "Noise",
-					"value": {
+					"onselect": {
 						"$type": "message",
 						"$comment": "",
 						"address": "/param/a/osc/2/param1",
@@ -430,7 +430,7 @@
 				{
 					"$type": "group",
 					"label": "Particle",
-					"value": {
+					"onselect": {
 						"$type": "message",
 						"$comment": "",
 						"address": "/param/a/osc/2/param1",
@@ -470,7 +470,7 @@
 				{
 					"$type": "group",
 					"label": "String",
-					"value": {
+					"onselect": {
 						"$type": "message",
 						"$comment": "",
 						"address": "/param/a/osc/2/param1",
@@ -510,7 +510,7 @@
 				{
 					"$type": "group",
 					"label": "Resonator",
-					"value": {
+					"onselect": {
 						"$type": "message",
 						"$comment": "",
 						"address": "/param/a/osc/2/param1",
@@ -550,7 +550,7 @@
 				{
 					"$type": "group",
 					"label": "Kick",
-					"value": {
+					"onselect": {
 						"$type": "message",
 						"$comment": "",
 						"address": "/param/a/osc/2/param1",
@@ -590,7 +590,7 @@
 				{
 					"$type": "group",
 					"label": "Snare",
-					"value": {
+					"onselect": {
 						"$type": "message",
 						"$comment": "",
 						"address": "/param/a/osc/2/param1",
@@ -630,7 +630,7 @@
 				{
 					"$type": "group",
 					"label": "Hi-Hat",
-					"value": {
+					"onselect": {
 						"$type": "message",
 						"$comment": "",
 						"address": "/param/a/osc/2/param1",

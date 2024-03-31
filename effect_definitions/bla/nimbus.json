@@ -17,7 +17,7 @@
 				{
 					"$type": "group",
 					"label": "Granular",
-					"value": {
+					"onselect": {
 						"$type": "message",
 						"$comment": "",
 						"address": "/param/a/osc/1/param1",
@@ -52,7 +52,7 @@
 							"min": 0,
 							"max": 1
 						},
-							{
+						{
 							"$type": "control-range",
 							"label": "Texture",
 							"address": "/param/a/osc/1/param6",
@@ -66,12 +66,11 @@
 							"min": 0,
 							"max": 1
 						}
-
 					]
 				}
 			]
 		},
-	{
+		{
 			"$type": "control-menu",
 			"items": [
 				{
