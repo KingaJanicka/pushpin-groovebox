@@ -257,12 +257,13 @@ class OSCControlSwitch(object):
 
         if 0 <= (self.value + scaled) <= len(self.groups):
             self.value += scaled
+
             active_group = self.get_active_group()
             if hasattr(active_group, "select"):
                 active_group.select()
 
     def get_active_group(self):
-        if int(self.value) <= len(self.groups):
+        if int(self.value) <= len(self.groups) - 1:
             return self.groups[int(self.value)]  # nasty but enables less-twitchy knobs
 
     def set_state(self, address, *args):
@@ -414,8 +415,7 @@ class OSCControlMenu(object):
         self.send_osc_func = send_osc_func
         self.message = config.get("onselect", None)
         self.address = self.message["address"] if self.message else None
-
-        self.value = self.message["value"] if self.message else 0
+        self.value = self.message["value"] if self.message else None
         self.size = 0
 
         for item in config.get("items", []):
@@ -426,9 +426,13 @@ class OSCControlMenu(object):
             )
 
         if self.value is None and len(self.items) > 0:
-            self.value = self.items[0].value
+            self.value = 0
         if self.address is None and len(self.items) > 0:
             self.address = self.items[0].address
+
+        active_item = self.get_active_menu_item()
+        if active_item:
+            active_item.select()
 
     def set_state(self, address, value, *args):
         self.value = self.get_closest_idx(self.value)
