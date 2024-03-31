@@ -159,8 +159,8 @@ class InstrumentSelectionMode(definitions.PyshaMode):
             self.app.osc_mode.new_instrument_selected()
             self.app.preset_selection_mode.new_instrument_selected()
             self.app.sequencer_mode.new_instrument_selected()
-        except AttributeError:
-            print("ATTRIBUTE ERROR")
+        except AttributeError as e:
+            print("ATTRIBUTE ERROR", e)
             # Might fail if MIDICCMode/PresetSelectionMode/PyramidTrackTriggeringMode not initialized
             pass
 

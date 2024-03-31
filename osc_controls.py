@@ -20,6 +20,10 @@ def scale_value(value, min_val, max_val, decimals=DECIMAL_PLACES):
     return round(float(value / SCALING_FACTOR * (max_val - min_val)), decimals)
 
 
+def closest(lst, K):
+    return lst[min(range(len(lst)), key=lambda i: abs(lst[i] - K))]
+
+
 class OSCControl(object):
     name = "Range"
     size = 1
@@ -202,6 +206,7 @@ class OSCControlMacro(object):
 
 class OSCControlSwitch(object):
     name = "Switch"
+    address = None
 
     @property
     def visible(self):
@@ -261,24 +266,19 @@ class OSCControlSwitch(object):
             return self.groups[int(self.value)]  # nasty but enables less-twitchy knobs
 
     def set_state(self, address, *args):
-        value, *rest = args
-        self.value = scale_value(value, 0, len(self.groups))
-        # for idx, group in enumerate(self.groups):
-        #     for control in group.controls:
-        #         if isinstance(OSCControl, control) and control.address == address:
-        #             self.value = idx
-        #         elif isinstance(OSCControlMacro, control) and any(
-        #             [param for param in control.params if param["address"] == address]
-        #         ):
-        #             self.value = idx
-        #         elif isinstance(OSCControlMenu, control) and any(
-        #             [
-        #                 item
-        #                 for item in control.items
-        #                 if item.message["address"] == address
-        #             ]
-        #         ):
-        #             self.value = idx
+        for idx, group in enumerate(self.groups):
+            for control in group.controls:
+                if isinstance(control, OSCControl) and control.address == address:
+                    self.value = float(idx)
+                elif isinstance(control, OSCControlMacro) and any(
+                    [param for param in control.params if param["address"] == address]
+                ):
+                    self.value = float(idx)
+                elif isinstance(control, OSCControlMenu) and (
+                    any([item for item in control.items if item.address == address])
+                    or control.address == address
+                ):
+                    self.value = float(idx)
 
     def draw(self, ctx, offset):
         margin_top = 50
@@ -328,6 +328,7 @@ class OSCControlSwitch(object):
 
 class OSCGroup(object):
     name = "Group"
+    address = None
 
     @property
     def size(self):
@@ -409,11 +410,12 @@ class OSCControlMenu(object):
             raise Exception("Invalid config passed to new OSCControlMenu")
 
         self.items = []
-        self.value = 0
         self.get_color_func = get_color_func
         self.send_osc_func = send_osc_func
         self.message = config.get("onselect", None)
         self.address = self.message["address"] if self.message else None
+
+        self.value = self.message["value"] if self.message else 0
         self.size = 0
 
         for item in config.get("items", []):
@@ -423,41 +425,52 @@ class OSCControlMenu(object):
                 )
             )
 
-        if self.message:
-            self.send_osc_func(self.message["address"], float(self.message["value"]))
+        if self.value is None and len(self.items) > 0:
+            self.value = self.items[0].value
+        if self.address is None and len(self.items) > 0:
+            self.address = self.items[0].address
 
-    def set_state(self, address, *args):
-        value, *rest = args
-        scaled = scale_value(value, 0, len(self.items))
-        self.value = scaled
-        # for item in self.items:
-        #     if (
-        #         item.message is not None
-        #         and item.message["address"] == address
-        #         and round(float(item.message["value"]), DECIMAL_PLACES) == scaled
-        #     ):
-        #         self.value = scaled
+    def set_state(self, address, value, *args):
+        self.value = self.get_closest_idx(self.value)
 
     def update_value(self, increment, **kwargs):
         if not self.value:
             pass
 
         scaled = scale_value(increment, 0, len(self.items))
+        new_value = self.value + scaled
 
-        if 0 <= (self.value + scaled) <= len(self.items):
-            self.value += scaled
-            active_item = self.get_active_menu_item()
-            if hasattr(active_item, "select"):
-                active_item.select()
+        # print(self.label, min_item_value, max_item_value, scaled, self.value, new_value)
+        if 0 <= new_value < len(self.items):
+            self.value = new_value
+        elif new_value < 0:
+            self.value = 0
+        elif new_value > len(self.items) - 1:
+            self.value = len(self.items) - 1
 
-    def get_active_menu_item(self):
-        if 0 <= len(self.items) > int(self.value):
-            return self.items[int(self.value)]
-
-    def select(self):
         active_item = self.get_active_menu_item()
         if hasattr(active_item, "select"):
             active_item.select()
+
+    def get_active_menu_item(self):
+        return self.items[math.floor(self.value)]
+
+    def get_closest_idx(self, value):
+        closest_value = closest([item.value for item in self.items], value)
+        idx, item = next(
+            enumerate([item for item in self.items if item.value == closest_value])
+        )
+        return idx
+
+    def select(self):
+        print(self.label, "SELECTED")
+        unique_addresses = list(
+            set([*[item.address for item in self.items], self.address])
+        )
+        print(unique_addresses, self.value)
+        for address in unique_addresses:
+            if address:
+                self.send_osc_func("/q" + address, None)
 
     def draw(self, ctx, offset):
         margin_top = 50
@@ -465,24 +478,27 @@ class OSCControlMenu(object):
         val_height = 30
         next_label = ""
         prev_label = ""
-        idx = int(self.value)
+
+        idx = int(math.floor(self.value))
+
         if len(self.items) > idx + 1:
             next_label = self.items[idx + 1].label
 
-        if (self.value - 1) >= 0:
+        if (idx - 1) >= 0:
             prev_label = self.items[idx - 1].label
 
-        # Param name
-        show_text(
-            ctx,
-            offset,
-            margin_top,
-            prev_label,
-            height=next_prev_height,
-            font_color=definitions.WHITE,
-        )
+        if prev_label:
+            # Last param name
+            show_text(
+                ctx,
+                offset,
+                margin_top,
+                prev_label,
+                height=next_prev_height,
+                font_color=definitions.WHITE,
+            )
 
-        # Param value
+        # Current param value
         color = self.get_color_func()
         show_text(
             ctx,
@@ -493,16 +509,16 @@ class OSCControlMenu(object):
             font_color=color,
         )
 
-        # Param name
-        name_height = 20
-        show_text(
-            ctx,
-            offset,
-            margin_top + next_prev_height + val_height,
-            next_label,
-            height=next_prev_height,
-            font_color=definitions.WHITE,
-        )
+        # Next param name
+        if next_label:
+            show_text(
+                ctx,
+                offset,
+                margin_top + next_prev_height + val_height,
+                next_label,
+                height=next_prev_height,
+                font_color=definitions.WHITE,
+            )
 
 
 class OSCMenuItem(object):
@@ -514,9 +530,11 @@ class OSCMenuItem(object):
 
         self.label = config.get("label", "")
         self.message = config.get("onselect", None)
+        self.address = self.message["address"] if self.message else None
+        self.value = self.message["value"] if self.message else None
         self.get_color_func = get_color_func
         self.send_osc_func = send_osc_func
 
     def select(self):
         print(self.message["address"], self.message["value"], "MENU ITEM DEBUG")
-        self.send_osc_func(self.message["address"], float(self.message["value"]))
+        self.send_osc_func(self.address, float(self.value))

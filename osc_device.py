@@ -11,7 +11,7 @@ import push2_python
 import logging
 
 logger = logging.getLogger("osc_device")
-# logger.setLevel(level=logging.DEBUG)
+logger.setLevel(level=logging.DEBUG)
 
 
 class OSCDevice(object):
@@ -69,86 +69,65 @@ class OSCDevice(object):
         control_definitions = config.get("controls", [])
 
         # Configure controls
-        if len(control_definitions) > 0:
-            for control_def in control_definitions:
-                match control_def["$type"]:
-                    case "control-spacer":
-                        self.controls.append(ControlSpacer())
-                    case "control-macro":
-                        self.controls.append(
-                            OSCControlMacro(control_def, get_color, self.send_message)
-                        )
-                        for param in control_def["params"]:
-                            self.dispatcher.map(param.address, control.set_state)
-                    case "control-range":
-                        control = OSCControl(control_def, get_color, self.send_message)
-                        self.dispatcher.map(control_def["address"], control.set_state)
-                        self.controls.append(control)
-                    case "control-switch":
-                        try:
-                            control = OSCControlSwitch(
-                                control_def,
-                                get_color,
-                                self.send_message,
-                            )
-                            for group in control.groups:
-                                for child in group.controls:
-                                    if isinstance(child, OSCControl):
-                                        self.dispatcher.map(
-                                            child.address,
-                                            lambda *x: control.set_state(*x)
-                                            and child.set_state(*x),
-                                        )
-                                    elif isinstance(child, OSCControlMacro):
-                                        for param in child.params:
-                                            self.dispatcher.map(
-                                                param["address"],
-                                                lambda *x: control.set_state(*x)
-                                                and child.set_state(*x),
-                                            )
-                                    elif isinstance(child, OSCControlMenu):
-                                        if child.message is not None:
-                                            self.dispatcher.map(
-                                                child.message["address"],
-                                                lambda *x: control.set_state(*x)
-                                                and child.set_state(*x),
-                                            )
-                                        for item in child.items:
-                                            if item.message is not None:
-                                                self.dispatcher.map(
-                                                    item.message["address"],
-                                                    lambda *x: control.set_state(*x)
-                                                    and child.set_state(*x),
-                                                )
-
-                            self.controls.append(control)
-                        except Exception as e:
-                            print("EXCEPT", e)
-                            print(control_def)
-
-                    case "control-menu":
-                        control = OSCControlMenu(
-                            control_def, get_color, self.send_message
-                        )
-                        if control.message:
-                            self.dispatcher.map(
-                                control.message["address"], control.set_state
-                            )
-                        for item in control.items:
-                            if item.message and item.message["address"]:
+        for control_def in control_definitions:
+            match control_def["$type"]:
+                case "control-spacer":
+                    self.controls.append(ControlSpacer())
+                case "control-macro":
+                    self.controls.append(
+                        OSCControlMacro(control_def, get_color, self.send_message)
+                    )
+                    for param in control_def["params"]:
+                        self.dispatcher.map(param.address, control.set_state)
+                case "control-range":
+                    control = OSCControl(control_def, get_color, self.send_message)
+                    self.dispatcher.map(control.address, control.set_state)
+                    self.controls.append(control)
+                case "control-switch":
+                    control = OSCControlSwitch(
+                        control_def,
+                        get_color,
+                        self.send_message,
+                    )
+                    if control.address:
+                        # self.dispatcher.map(control.address, control.set_state)
+                        pass  # Switches don't have oninit stanzas
+                    for group in control.groups:
+                        for group_control in group.controls:
+                            if group_control.address:
                                 self.dispatcher.map(
-                                    item.message["address"], control.set_state
+                                    group_control.address, control.set_state
                                 )
-                            else:
-                                raise Exception(
-                                    f"{item} has no message.address property"
+                                self.dispatcher.map(
+                                    group_control.address, group_control.set_state
                                 )
-                        self.controls.append(control)
-                    case _:
-                        Exception(
-                            f"Invalid parameter: {control_def}; did you forget $type?"
-                        )
+
+                    self.controls.append(control)
+
+                case "control-menu":
+                    control = OSCControlMenu(control_def, get_color, self.send_message)
+                    if control.address:
+                        self.dispatcher.map(control.address, control.set_state)
+
+                    for item in control.items:
+                        if item.address:
+                            self.dispatcher.map(item.address, control.set_state)
+                        else:
+                            raise Exception(f"{item} has no message.address property")
+
+                    self.controls.append(control)
+                case _:
+                    Exception(
+                        f"Invalid parameter: {control_def}; did you forget $type?"
+                    )
+
+        # Call /q endpoints for each control currently displayed
         self.query_visible_controls()
+
+        # Select if it has a select attribute
+        for control in self.get_visible_controls():
+            if hasattr(control, "select"):
+                control.select()
 
     def select(self):
         self.query_visible_controls()

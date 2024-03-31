@@ -63,31 +63,27 @@ class OSCMode(PyshaMode):
         for (
             instrument_short_name
         ) in self.get_all_distinct_instrument_short_names_helper():
-            try:
-                print(
+            print(
+                os.path.join(
+                    definitions.INSTRUMENT_DEFINITION_FOLDER,
+                    "{}.json".format(instrument_short_name),
+                )
+            )
+            instrument_definition = json.load(
+                open(
                     os.path.join(
                         definitions.INSTRUMENT_DEFINITION_FOLDER,
                         "{}.json".format(instrument_short_name),
                     )
                 )
-                instrument_definition = json.load(
-                    open(
-                        os.path.join(
-                            definitions.INSTRUMENT_DEFINITION_FOLDER,
-                            "{}.json".format(instrument_short_name),
-                        )
-                    )
-                )
+            )
 
-                self.instruments[instrument_short_name] = OSCInstrument(
-                    instrument_short_name,
-                    instrument_definition,
-                    device_definitions,
-                    get_current_instrument_color_helper=self.get_current_instrument_color_helper,
-                )
-
-            except Exception as e:
-                print(e, "Exception")
+            self.instruments[instrument_short_name] = OSCInstrument(
+                instrument_short_name,
+                instrument_definition,
+                device_definitions,
+                get_current_instrument_color_helper=self.get_current_instrument_color_helper,
+            )
 
     def close_transports(self):
         for instrument in self.instruments:
@@ -292,6 +288,7 @@ class OSCMode(PyshaMode):
             current_device = self.get_current_instrument_device()
             current_device.on_encoder_rotated(encoder_name, increment)
         except Exception:
+            print("encoder not in list")
             pass  # Encoder not in list
 
         return True  # Always return True because encoder should not be used in any other mode if this is first active
