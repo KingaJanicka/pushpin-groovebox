@@ -5,33 +5,10 @@ import time
 import math
 import json
 import os
+import push2_constants
 
 from definitions import PyshaMode
 from display_utils import show_text
-
-
-NAME_STRING_1 = "String\n1"
-NAME_STRING_2 = "String\n2"
-NAME_STRING_3 = "String\n3"
-NAME_STRING_4 = "String\n4"
-NAME_BRASS_1 = "Brass\n1"
-NAME_BRASS_2 = "Brass\n2"
-NAME_BRASS_3 = "Brass\n3"
-NAME_FLUTE = "Flute"
-NAME_ELECTRIC_PIANO = "Electric\nPiano"
-NAME_BASS = "Bass"
-NAME_CLAVI_1 = "Clavi-\nChord\n1"
-NAME_CLAVI_2 = "Clavi-\nChord\n2"
-NAME_HARPSI_1 = "Harpsi-\nChord\n1"
-NAME_HARPSI_2 = "Harpsi-\nChord\n2"
-NAME_ORGAN_1 = "Organ\n1"
-NAME_ORGAN_2 = "Organ\n2"
-NAME_GUITAR_1 = "Guitar\n1"
-NAME_GUITAR_2 = "Guitar\n2"
-NAME_FUNKY_1 = "Funky\n1"
-NAME_FUNKY_2 = "Funky\n2"
-NAME_FUNKY_3 = "Funky\n3"
-NAME_FUNKY_4 = "Funky\n4"
 
 
 class MenuMode(PyshaMode):
@@ -58,70 +35,14 @@ class MenuMode(PyshaMode):
         push2_python.constants.BUTTON_LOWER_ROW_8,
     ]
 
-    upper_row_names = [
-        NAME_STRING_1,
-        NAME_STRING_3,
-        NAME_BRASS_1,
-        NAME_FLUTE,
-        NAME_ELECTRIC_PIANO,
-        NAME_CLAVI_1,
-        NAME_HARPSI_1,
-        NAME_ORGAN_1,
-        NAME_GUITAR_1,
-        NAME_FUNKY_1,
-        NAME_FUNKY_3,
-    ]
-
-    lower_row_names = [
-        NAME_STRING_2,
-        NAME_STRING_4,
-        NAME_BRASS_2,
-        NAME_BRASS_3,
-        NAME_BASS,
-        NAME_CLAVI_2,
-        NAME_HARPSI_2,
-        NAME_ORGAN_2,
-        NAME_GUITAR_2,
-        NAME_FUNKY_2,
-        # NAME_FUNKY_4
-    ]
-
-    colors = {
-        NAME_STRING_1: definitions.YELLOW,
-        NAME_STRING_3: definitions.YELLOW,
-        NAME_BRASS_1: definitions.RED,
-        NAME_FLUTE: definitions.WHITE,
-        NAME_ELECTRIC_PIANO: definitions.YELLOW,
-        NAME_CLAVI_1: definitions.YELLOW,
-        NAME_HARPSI_1: definitions.YELLOW,
-        NAME_ORGAN_1: definitions.WHITE,
-        NAME_GUITAR_1: definitions.YELLOW,
-        NAME_FUNKY_1: definitions.GREEN,
-        NAME_FUNKY_3: definitions.GREEN,
-        NAME_STRING_2: definitions.YELLOW,
-        NAME_STRING_4: definitions.YELLOW,
-        NAME_BRASS_2: definitions.RED,
-        NAME_BRASS_3: definitions.RED,
-        NAME_BASS: definitions.WHITE,
-        NAME_CLAVI_2: definitions.YELLOW,
-        NAME_HARPSI_2: definitions.YELLOW,
-        NAME_ORGAN_2: definitions.WHITE,
-        NAME_GUITAR_2: definitions.YELLOW,
-        NAME_FUNKY_2: definitions.GREEN,
-        NAME_FUNKY_4: definitions.GREEN,
-    }
-
-    font_colors = {
-        definitions.YELLOW: definitions.BLACK,
-        definitions.RED: definitions.WHITE,
-        definitions.WHITE: definitions.BLACK,
-        definitions.GREEN: definitions.WHITE,
-    }
-
     page_n = 0
     upper_row_selected = ""
     lower_row_selected = ""
     inter_message_message_min_time_ms = 4  # ms wait time after each message to DDRM
+
+    def __init__(self, app, settings=None, send_osc_func=None):
+        super().__init__(app, settings=settings)
+        self.send_osc_func = send_osc_func
 
     def should_be_enabled(self):
         return True
@@ -200,59 +121,72 @@ class MenuMode(PyshaMode):
             )
 
     def update_display(self, ctx, w, h):
+        show_text(
+            ctx,
+            7,
+            20,
+            "menu mode",
+            height=50,
+            font_color=definitions.BLACK,
+            background_color=definitions.GRAY_LIGHT,
+            font_size_percentage=0.2,
+            center_vertically=True,
+            center_horizontally=True,
+            rectangle_padding=1,
+        )
 
-        if not self.app.is_mode_active(self.app.settings_mode):
-            # If settings mode is active, don't draw the upper parts of the screen because settings page will
-            # "cover them"
+    # if not self.app.is_mode_active(self.app.settings_mode):
+    #     # If settings mode is active, don't draw the upper parts of the screen because settings page will
+    #     # "cover them"
 
-            start = self.page_n * 8
+    #     start = self.page_n * 8
 
-            # Draw upper row
-            for i, name in enumerate(self.upper_row_names[start:][:8]):
-                font_color = self.font_colors[self.colors[name]]
-                if name == self.upper_row_selected:
-                    background_color = self.colors[name]
-                else:
-                    background_color = self.colors[name] + "_darker1"
-                height = 80
-                top_offset = 0
-                show_text(
-                    ctx,
-                    i,
-                    top_offset,
-                    name.upper(),
-                    height=height,
-                    font_color=font_color,
-                    background_color=background_color,
-                    font_size_percentage=0.2,
-                    center_vertically=True,
-                    center_horizontally=True,
-                    rectangle_padding=1,
-                )
+    #     # Draw upper row
+    #     for i, name in enumerate(self.upper_row_names[start:][:8]):
+    #         font_color = self.font_colors[self.colors[name]]
+    #         if name == self.upper_row_selected:
+    #             background_color = self.colors[name]
+    #         else:
+    #             background_color = self.colors[name] + "_darker1"
+    #         height = 80
+    #         top_offset = 0
+    #         show_text(
+    #             ctx,
+    #             i,
+    #             top_offset,
+    #             name.upper(),
+    #             height=height,
+    #             font_color=font_color,
+    #             background_color=background_color,
+    #             font_size_percentage=0.2,
+    #             center_vertically=True,
+    #             center_horizontally=True,
+    #             rectangle_padding=1,
+    #         )
 
-            # Draw lower row
-            for i, name in enumerate(self.lower_row_names[start:][:8]):
-                if name != NAME_FUNKY_4:
-                    font_color = self.font_colors[self.colors[name]]
-                    if name == self.lower_row_selected:
-                        background_color = self.colors[name]
-                    else:
-                        background_color = self.colors[name] + "_darker1"
-                    height = 80
-                    top_offset = 80
-                    show_text(
-                        ctx,
-                        i,
-                        top_offset,
-                        name.upper(),
-                        height=height,
-                        font_color=font_color,
-                        background_color=background_color,
-                        font_size_percentage=0.2,
-                        center_vertically=True,
-                        center_horizontally=True,
-                        rectangle_padding=1,
-                    )
+    #     # Draw lower row
+    #     for i, name in enumerate(self.lower_row_names[start:][:8]):
+    #         if name != NAME_FUNKY_4:
+    #             font_color = self.font_colors[self.colors[name]]
+    #             if name == self.lower_row_selected:
+    #                 background_color = self.colors[name]
+    #             else:
+    #                 background_color = self.colors[name] + "_darker1"
+    #             height = 80
+    #             top_offset = 80
+    #             show_text(
+    #                 ctx,
+    #                 i,
+    #                 top_offset,
+    #                 name.upper(),
+    #                 height=height,
+    #                 font_color=font_color,
+    #                 background_color=background_color,
+    #                 font_size_percentage=0.2,
+    #                 center_vertically=True,
+    #                 center_horizontally=True,
+    #                 rectangle_padding=1,
+    #             )
 
     def on_button_pressed(self, button_name):
         if button_name in self.upper_row_button_names:

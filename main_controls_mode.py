@@ -3,12 +3,16 @@ import push2_python
 import time
 
 TOGGLE_DISPLAY_BUTTON = push2_python.constants.BUTTON_USER
-SETTINGS_BUTTON = push2_python.constants.BUTTON_SETUP
-MELODIC_RHYTHMIC_TOGGLE_BUTTON = push2_python.constants.BUTTON_NOTE
-ADD_TRACK_TRIGGERING_BUTTON = push2_python.constants.BUTTON_ADD_TRACK
-PRESET_SELECTION_MODE_BUTTON = push2_python.constants.BUTTON_ADD_DEVICE
-DDRM_TONE_SELECTION_MODE_BUTTON = push2_python.constants.BUTTON_DEVICE
+SETUP_BUTTON = push2_python.constants.BUTTON_SETUP
+NOTE_BUTTON = push2_python.constants.BUTTON_NOTE
+ADD_TRACK_BUTTON = push2_python.constants.BUTTON_ADD_TRACK
+ADD_DEVICE_BUTTON = push2_python.constants.BUTTON_ADD_DEVICE
+DEVICE_BUTTON = push2_python.constants.BUTTON_DEVICE
 CLIP_BUTTON = push2_python.constants.BUTTON_CLIP
+BROWSE_BUTTON = push2_python.constants.BUTTON_BROWSE
+CONVERT_BUTTON = push2_python.constants.BUTTON_CONVERT
+DOUBLE_LOOP_BUTTON = push2_python.constants.BUTTON_DOUBLE_LOOP
+QUANTIZE_BUTTON = push2_python.constants.BUTTON_QUANTIZE
 
 
 class MainControlsMode(definitions.PyshaMode):
@@ -19,27 +23,17 @@ class MainControlsMode(definitions.PyshaMode):
         self.update_buttons()
 
     def deactivate(self):
-        self.push.buttons.set_button_color(
-            MELODIC_RHYTHMIC_TOGGLE_BUTTON, definitions.BLACK
-        )
+        self.push.buttons.set_button_color(NOTE_BUTTON, definitions.BLACK)
         self.push.buttons.set_button_color(TOGGLE_DISPLAY_BUTTON, definitions.BLACK)
-        self.push.buttons.set_button_color(SETTINGS_BUTTON, definitions.BLACK)
-        self.push.buttons.set_button_color(
-            ADD_TRACK_TRIGGERING_BUTTON, definitions.BLACK
-        )
-        self.push.buttons.set_button_color(
-            PRESET_SELECTION_MODE_BUTTON, definitions.BLACK
-        )
-        self.push.buttons.set_button_color(
-            DDRM_TONE_SELECTION_MODE_BUTTON, definitions.BLACK
-        )
+        self.push.buttons.set_button_color(SETUP_BUTTON, definitions.BLACK)
+        self.push.buttons.set_button_color(ADD_TRACK_BUTTON, definitions.BLACK)
+        self.push.buttons.set_button_color(ADD_DEVICE_BUTTON, definitions.BLACK)
+        self.push.buttons.set_button_color(DEVICE_BUTTON, definitions.BLACK)
         self.push.buttons.set_button_color(CLIP_BUTTON, definitions.BLACK)
 
     def update_buttons(self):
         # Note button, to toggle melodic/rhythmic mode
-        self.push.buttons.set_button_color(
-            MELODIC_RHYTHMIC_TOGGLE_BUTTON, definitions.WHITE
-        )
+        self.push.buttons.set_button_color(NOTE_BUTTON, definitions.WHITE)
 
         # Mute button, to toggle display on/off
         if self.app.use_push2_display:
@@ -51,59 +45,65 @@ class MainControlsMode(definitions.PyshaMode):
 
         # Settings button, to toggle settings mode
         if self.app.is_mode_active(self.app.settings_mode):
-            self.push.buttons.set_button_color(SETTINGS_BUTTON, definitions.BLACK)
+            self.push.buttons.set_button_color(SETUP_BUTTON, definitions.BLACK)
             self.push.buttons.set_button_color(
-                SETTINGS_BUTTON,
+                SETUP_BUTTON,
                 definitions.WHITE,
                 animation=definitions.DEFAULT_ANIMATION,
             )
         else:
-            self.push.buttons.set_button_color(
-                SETTINGS_BUTTON, definitions.OFF_BTN_COLOR
-            )
+            self.push.buttons.set_button_color(SETUP_BUTTON, definitions.OFF_BTN_COLOR)
 
         # Preset selection mode
         if self.app.is_mode_active(self.app.preset_selection_mode):
+            self.push.buttons.set_button_color(BROWSE_BUTTON, definitions.BLACK)
             self.push.buttons.set_button_color(
-                PRESET_SELECTION_MODE_BUTTON, definitions.BLACK
-            )
-            self.push.buttons.set_button_color(
-                PRESET_SELECTION_MODE_BUTTON,
+                BROWSE_BUTTON,
                 definitions.WHITE,
                 animation=definitions.DEFAULT_ANIMATION,
             )
         else:
-            self.push.buttons.set_button_color(
-                PRESET_SELECTION_MODE_BUTTON, definitions.OFF_BTN_COLOR
-            )
+            self.push.buttons.set_button_color(BROWSE_BUTTON, definitions.OFF_BTN_COLOR)
 
-        # DDRM tone selector mode
-        if self.app.ddrm_tone_selector_mode.should_be_enabled():
-            if self.app.is_mode_active(self.app.ddrm_tone_selector_mode):
+        # Menu mode
+        if self.app.menu_mode.should_be_enabled():
+            if self.app.is_mode_active(self.app.menu_mode):
+                self.push.buttons.set_button_color(ADD_DEVICE_BUTTON, definitions.BLACK)
                 self.push.buttons.set_button_color(
-                    DDRM_TONE_SELECTION_MODE_BUTTON, definitions.BLACK
-                )
-                self.push.buttons.set_button_color(
-                    DDRM_TONE_SELECTION_MODE_BUTTON,
+                    ADD_DEVICE_BUTTON,
                     definitions.WHITE,
                     animation=definitions.DEFAULT_ANIMATION,
                 )
             else:
                 self.push.buttons.set_button_color(
-                    DDRM_TONE_SELECTION_MODE_BUTTON, definitions.OFF_BTN_COLOR
+                    ADD_DEVICE_BUTTON, definitions.OFF_BTN_COLOR
                 )
         else:
-            self.push.buttons.set_button_color(
-                DDRM_TONE_SELECTION_MODE_BUTTON, definitions.BLACK
-            )
+            self.push.buttons.set_button_color(ADD_DEVICE_BUTTON, definitions.BLACK)
+
+        # # DDRM tone selector mode
+        # if self.app.ddrm_tone_selector_mode.should_be_enabled():
+        #     if self.app.is_mode_active(self.app.ddrm_tone_selector_mode):
+        #         self.push.buttons.set_button_color(ADD_DEVICE_BUTTON, definitions.BLACK)
+        #         self.push.buttons.set_button_color(
+        #             ADD_DEVICE_BUTTON,
+        #             definitions.WHITE,
+        #             animation=definitions.DEFAULT_ANIMATION,
+        #         )
+        #     else:
+        #         self.push.buttons.set_button_color(
+        #             ADD_DEVICE_BUTTON, definitions.OFF_BTN_COLOR
+        #         )
+        # else:
+        #     self.push.buttons.set_button_color(ADD_DEVICE_BUTTON, definitions.BLACK)
 
     def on_button_pressed(self, button_name):
-        if button_name == MELODIC_RHYTHMIC_TOGGLE_BUTTON:
+        if button_name == NOTE_BUTTON:
             self.app.toggle_melodic_rhythmic_slice_modes()
             self.app.pads_need_update = True
             self.app.buttons_need_update = True
             return True
-        elif button_name == SETTINGS_BUTTON:
+        elif button_name == SETUP_BUTTON:
             self.app.toggle_and_rotate_settings_mode()
             self.app.buttons_need_update = True
             return True
@@ -117,7 +117,7 @@ class MainControlsMode(definitions.PyshaMode):
                 )
             self.app.buttons_need_update = True
             return True
-        elif button_name == PRESET_SELECTION_MODE_BUTTON:
+        elif button_name == BROWSE_BUTTON:
             if self.app.is_mode_active(self.app.preset_selection_mode):
                 # If already active, deactivate and set pressing time to None
                 self.app.unset_preset_selection_mode()
@@ -128,14 +128,14 @@ class MainControlsMode(definitions.PyshaMode):
                 self.preset_selection_button_pressing_time = time.time()
             self.app.buttons_need_update = True
             return True
-        elif button_name == DDRM_TONE_SELECTION_MODE_BUTTON:
-            if self.app.ddrm_tone_selector_mode.should_be_enabled():
-                self.app.toggle_ddrm_tone_selector_mode()
+        elif button_name == ADD_DEVICE_BUTTON:
+            if self.app.menu_mode.should_be_enabled():
+                self.app.toggle_menu_mode()
                 self.app.buttons_need_update = True
             return True
 
     def on_button_released(self, button_name):
-        if button_name == PRESET_SELECTION_MODE_BUTTON:
+        if button_name == BROWSE_BUTTON:
             # Decide if short press or long press
             pressing_time = self.preset_selection_button_pressing_time
             is_long_press = False

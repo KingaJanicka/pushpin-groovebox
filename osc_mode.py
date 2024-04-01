@@ -280,9 +280,6 @@ class OSCMode(PyshaMode):
                 self.update_current_device_page(new_page=current_page + 1)
             return True
 
-        elif button_name in [push2_python.constants.BUTTON_ADD_DEVICE]:
-            print("ADD DEVICE PRESSED")
-
     def on_encoder_rotated(self, encoder_name, increment):
         try:
             current_device = self.get_current_instrument_device()

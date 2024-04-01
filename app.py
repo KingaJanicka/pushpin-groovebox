@@ -22,6 +22,7 @@ from midi_cc_mode import MIDICCMode
 from osc_mode import OSCMode
 from preset_selection_mode import PresetSelectionMode
 from ddrm_tone_selector_mode import DDRMToneSelectorMode
+from menu_mode import MenuMode
 from display_utils import show_notification
 
 logging.basicConfig(level=logging.DEBUG)
@@ -128,6 +129,7 @@ class PyshaApp(object):
             self.instrument_selection_mode.selected_instrument
         )
         self.ddrm_tone_selector_mode = DDRMToneSelectorMode(self, settings=settings)
+        self.menu_mode = MenuMode(self, settings=settings, send_osc_func=self.send_osc)
         self.settings_mode = SettingsMode(self, settings=settings)
 
     def get_all_modes(self):
@@ -151,6 +153,26 @@ class PyshaApp(object):
         else:
             self.active_modes.append(self.settings_mode)
             self.settings_mode.activate()
+
+    def toggle_menu_mode(self):
+        if self.is_mode_active(self.menu_mode):
+            # Deactivate (replace ddrm tone selector mode by midi cc and instrument selection mode)
+            new_active_modes = []
+            for mode in self.active_modes:
+                if mode != self.menu_mode:
+                    new_active_modes.append(mode)
+
+            self.active_modes = new_active_modes
+            self.menu_mode.deactivate()
+        else:
+            # Activate (replace midi cc and instrument selection mode by ddrm tone selector mode)
+            new_active_modes = []
+            for mode in self.active_modes:
+                new_active_modes.append(mode)
+
+            new_active_modes.append(self.menu_mode)
+            self.active_modes = new_active_modes
+            self.menu_mode.activate()
 
     def toggle_ddrm_tone_selector_mode(self):
         if self.is_mode_active(self.ddrm_tone_selector_mode):
