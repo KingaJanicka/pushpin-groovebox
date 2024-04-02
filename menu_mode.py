@@ -52,26 +52,6 @@ class MenuMode(PyshaMode):
         show_next = self.page_n == 0
         return show_prev, show_next
 
-    # def send_lower_row(self):
-    #     if self.lower_row_selected in tone_selector_values:
-    #         for _, midi_cc, midi_val in tone_selector_values[self.lower_row_selected]:
-    #             values_to_send = [midi_val]
-    #             for val in values_to_send:
-    #                 msg = mido.Message('control_change', control=midi_cc, value=val)  # Should we subtract 1 from midi_cc because mido being 0-indexed?
-    #                 self.app.send_midi(msg)
-    #                 if self.inter_message_message_min_time_ms:
-    #                     time.sleep(self.inter_message_message_min_time_ms*1.0/1000)
-
-    # def send_upper_row(self):
-    #     if self.upper_row_selected in tone_selector_values:
-    #         for midi_cc, _, midi_val in tone_selector_values[self.upper_row_selected]:
-    #             values_to_send = [midi_val]
-    #             for val in values_to_send:
-    #                 msg = mido.Message('control_change', control=midi_cc, value=val)  # Should we subtract 1 from midi_cc because mido being 0-indexed?
-    #                 self.app.send_midi(msg)
-    #                 if self.inter_message_message_min_time_ms:
-    #                     time.sleep(self.inter_message_message_min_time_ms*1.0/1000)
-
     def activate(self):
         self.update_buttons()
 
@@ -85,6 +65,38 @@ class MenuMode(PyshaMode):
             ]
         ):
             self.push.buttons.set_button_color(button_name, definitions.BLACK)
+
+    def update_display(self, ctx, w, h):
+        devices_in_current_slot = self.app.osc_mode.get_current_slot_devices()
+        for idx, device in enumerate(devices_in_current_slot):
+            if idx < 8:
+                show_text(
+                    ctx,
+                    idx,
+                    20,
+                    device.label,
+                    height=50,
+                    font_color=definitions.BLACK,
+                    background_color=definitions.GRAY_LIGHT,
+                    font_size_percentage=0.2,
+                    center_vertically=True,
+                    center_horizontally=True,
+                    rectangle_padding=1,
+                )
+            elif idx < 16:
+                show_text(
+                    ctx,
+                    idx - 8,
+                    80,
+                    device.label,
+                    height=50,
+                    font_color=definitions.BLACK,
+                    background_color=definitions.GRAY_LIGHT,
+                    font_size_percentage=0.2,
+                    center_vertically=True,
+                    center_horizontally=True,
+                    rectangle_padding=1,
+                )
 
     def update_buttons(self):
 
@@ -120,123 +132,41 @@ class MenuMode(PyshaMode):
                 push2_python.constants.BUTTON_PAGE_RIGHT, definitions.BLACK
             )
 
-    def update_display(self, ctx, w, h):
-        # instrumet_shortname = (
-        #     self.app.osc_mode.get_current_instrument_short_name_helper()
-        # )
-        # instrument = self.app.osc_mode.instruments.get(instrumet_shortname, None)
-        # current_device = self.app.osc_mode.get_current_instrument_device()
-        # current_device_slot = current_device.slot
-
-        # devices_in_current_slot = []
-
-        # for slot_idx, slot_devices in enumerate(instrument.devices):
-        #     for device in slot_devices:
-        #         if device.slot == current_device_slot:
-        #             devices_in_current_slot.append(device)
-        #             # print(device.label)
-        devices_in_current_slot = self.app.osc_mode.get_current_slot_devices()
-        for idx, device in enumerate(devices_in_current_slot):
-            if idx < 8:
-                show_text(
-                    ctx,
-                    idx,
-                    20,
-                    device.label,
-                    height=50,
-                    font_color=definitions.BLACK,
-                    background_color=definitions.GRAY_LIGHT,
-                    font_size_percentage=0.2,
-                    center_vertically=True,
-                    center_horizontally=True,
-                    rectangle_padding=1,
-                )
-            elif idx < 16:
-                show_text(
-                    ctx,
-                    idx - 8,
-                    80,
-                    device.label,
-                    height=50,
-                    font_color=definitions.BLACK,
-                    background_color=definitions.GRAY_LIGHT,
-                    font_size_percentage=0.2,
-                    center_vertically=True,
-                    center_horizontally=True,
-                    rectangle_padding=1,
-                )
-
-    # if not self.app.is_mode_active(self.app.settings_mode):
-    #     # If settings mode is active, don't draw the upper parts of the screen because settings page will
-    #     # "cover them"
-
-    #     start = self.page_n * 8
-
-    #     # Draw upper row
-    #     for i, name in enumerate(self.upper_row_names[start:][:8]):
-    #         font_color = self.font_colors[self.colors[name]]
-    #         if name == self.upper_row_selected:
-    #             background_color = self.colors[name]
-    #         else:
-    #             background_color = self.colors[name] + "_darker1"
-    #         height = 80
-    #         top_offset = 0
-    #         show_text(
-    #             ctx,
-    #             i,
-    #             top_offset,
-    #             name.upper(),
-    #             height=height,
-    #             font_color=font_color,
-    #             background_color=background_color,
-    #             font_size_percentage=0.2,
-    #             center_vertically=True,
-    #             center_horizontally=True,
-    #             rectangle_padding=1,
-    #         )
-
-    #     # Draw lower row
-    #     for i, name in enumerate(self.lower_row_names[start:][:8]):
-    #         if name != NAME_FUNKY_4:
-    #             font_color = self.font_colors[self.colors[name]]
-    #             if name == self.lower_row_selected:
-    #                 background_color = self.colors[name]
-    #             else:
-    #                 background_color = self.colors[name] + "_darker1"
-    #             height = 80
-    #             top_offset = 80
-    #             show_text(
-    #                 ctx,
-    #                 i,
-    #                 top_offset,
-    #                 name.upper(),
-    #                 height=height,
-    #                 font_color=font_color,
-    #                 background_color=background_color,
-    #                 font_size_percentage=0.2,
-    #                 center_vertically=True,
-    #                 center_horizontally=True,
-    #                 rectangle_padding=1,
-    #             )
-
     def on_button_pressed(self, button_name):
+        devices_in_current_slot = self.app.osc_mode.get_current_slot_devices()
+        instrument_shortname = (
+            self.app.osc_mode.get_current_instrument_short_name_helper()
+        )
+
         if button_name in self.upper_row_button_names:
             start = self.page_n * 8
             button_idx = self.upper_row_button_names.index(button_name)
+            selected_device = devices_in_current_slot[button_idx]
             try:
-                self.upper_row_selected = self.upper_row_names[button_idx + start]
-                self.send_upper_row()
+                # print(selected_device.init)
+                for message in selected_device.init:
+                    print(message["address"], message["value"], instrument_shortname)
+                    self.app.send_osc(
+                        message["address"],
+                        float(message["value"]),
+                        instrument_shortname,
+                    )
+                # self.upper_row_selected = self.upper_row_names[button_idx + start]
+                # self.send_upper_row()
             except IndexError:
                 # Do nothing because the button has no assigned tone
+                print("index error")
                 pass
             return True
 
         elif button_name in self.lower_row_button_names:
             start = self.page_n * 8
             button_idx = self.lower_row_button_names.index(button_name)
+            selected_device = devices_in_current_slot[button_idx + 8]
             try:
-                self.lower_row_selected = self.lower_row_names[button_idx + start]
-                self.send_lower_row()
+                print(button_name, selected_device.label)
+                # self.lower_row_selected = self.lower_row_names[button_idx + start]
+                # self.send_lower_row()
             except IndexError:
                 # Do nothing because the button has no assigned tone
                 pass
