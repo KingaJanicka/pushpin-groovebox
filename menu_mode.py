@@ -121,6 +121,23 @@ class MenuMode(PyshaMode):
             )
 
     def update_display(self, ctx, w, h):
+        # instrumet_shortname = (
+        #     self.app.osc_mode.get_current_instrument_short_name_helper()
+        # )
+        # instrument = self.app.osc_mode.instruments.get(instrumet_shortname, None)
+        # current_device = self.app.osc_mode.get_current_instrument_device()
+        # current_device_slot = current_device.slot
+
+        # devices_in_current_slot = []
+
+        # for slot_idx, slot_devices in enumerate(instrument.devices):
+        #     for device in slot_devices:
+        #         if device.slot == current_device_slot:
+        #             devices_in_current_slot.append(device)
+        #             # print(device.label)
+        devices_in_current_slot = self.app.osc_mode.get_current_slot_devices()
+        for device in devices_in_current_slot:
+            print(device.label)
         show_text(
             ctx,
             7,
