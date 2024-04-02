@@ -147,20 +147,31 @@ class MenuMode(PyshaMode):
             return True
 
         elif button_name is push2_constants.BUTTON_LEFT:
-            print(self.selected_menu_item_index - 1 >= 0)
             if self.selected_menu_item_index - 1 >= 0:
                 self.selected_menu_item_index -= 1
         elif button_name is push2_constants.BUTTON_RIGHT:
             number_of_devices_in_current_slot = len(devices_in_current_slot)
-            if 0 <= self.selected_menu_item_index < number_of_devices_in_current_slot:
+            if (
+                0
+                <= self.selected_menu_item_index + 1
+                < number_of_devices_in_current_slot
+            ):
                 self.selected_menu_item_index += 1
         elif button_name is push2_constants.BUTTON_UP:
             number_of_devices_in_current_slot = len(devices_in_current_slot)
-            if 0 <= self.selected_menu_item_index < number_of_devices_in_current_slot:
+            if (
+                0
+                <= self.selected_menu_item_index - 8
+                < number_of_devices_in_current_slot
+            ):
                 self.selected_menu_item_index -= 8
         elif button_name is push2_constants.BUTTON_DOWN:
             number_of_devices_in_current_slot = len(devices_in_current_slot)
-            if 0 <= self.selected_menu_item_index < number_of_devices_in_current_slot:
+            if (
+                0
+                <= self.selected_menu_item_index + 8
+                < number_of_devices_in_current_slot
+            ):
                 self.selected_menu_item_index += 8
 
         elif button_name == push2_constants.BUTTON_ADD_DEVICE:
