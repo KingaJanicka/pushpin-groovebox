@@ -136,21 +136,35 @@ class MenuMode(PyshaMode):
         #             devices_in_current_slot.append(device)
         #             # print(device.label)
         devices_in_current_slot = self.app.osc_mode.get_current_slot_devices()
-        for device in devices_in_current_slot:
-            print(device.label)
-        show_text(
-            ctx,
-            7,
-            20,
-            "menu mode",
-            height=50,
-            font_color=definitions.BLACK,
-            background_color=definitions.GRAY_LIGHT,
-            font_size_percentage=0.2,
-            center_vertically=True,
-            center_horizontally=True,
-            rectangle_padding=1,
-        )
+        for idx, device in enumerate(devices_in_current_slot):
+            if idx < 8:
+                show_text(
+                    ctx,
+                    idx,
+                    20,
+                    device.label,
+                    height=50,
+                    font_color=definitions.BLACK,
+                    background_color=definitions.GRAY_LIGHT,
+                    font_size_percentage=0.2,
+                    center_vertically=True,
+                    center_horizontally=True,
+                    rectangle_padding=1,
+                )
+            elif idx < 16:
+                show_text(
+                    ctx,
+                    idx - 8,
+                    80,
+                    device.label,
+                    height=50,
+                    font_color=definitions.BLACK,
+                    background_color=definitions.GRAY_LIGHT,
+                    font_size_percentage=0.2,
+                    center_vertically=True,
+                    center_horizontally=True,
+                    rectangle_padding=1,
+                )
 
     # if not self.app.is_mode_active(self.app.settings_mode):
     #     # If settings mode is active, don't draw the upper parts of the screen because settings page will

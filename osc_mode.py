@@ -135,10 +135,10 @@ class OSCMode(PyshaMode):
         return (current_device, page)
 
     def get_current_slot_devices(self):
-        instrumet_shortname = (
+        instrument_shortname = (
             self.app.osc_mode.get_current_instrument_short_name_helper()
         )
-        instrument = self.app.osc_mode.instruments.get(instrumet_shortname, None)
+        instrument = self.app.osc_mode.instruments.get(instrument_shortname, None)
         current_device = self.app.osc_mode.get_current_instrument_device()
         current_device_slot = current_device.slot
 
@@ -148,8 +148,10 @@ class OSCMode(PyshaMode):
             for device in slot_devices:
                 if device.slot == current_device_slot:
                     devices_in_current_slot.append(device)
-                    # print(device.label)
-        return devices_in_current_slot
+        devices_in_current_slot_sorted = devices_in_current_slot.copy()
+        devices_in_current_slot_sorted.sort(key=lambda x: x.label)
+
+        return devices_in_current_slot_sorted
 
     def update_current_device_page(self, new_device=None, new_page=None):
         current_device_idx, current_page = self.current_device_index_and_page
