@@ -99,38 +99,7 @@ class MenuMode(PyshaMode):
                 )
 
     def update_buttons(self):
-
-        for count, name in enumerate(self.upper_row_button_names):
-            try:
-                tone_name = self.upper_row_names[count + self.page_n * 8]
-                self.push.buttons.set_button_color(name, self.colors[tone_name])
-            except IndexError:
-                self.push.buttons.set_button_color(name, definitions.OFF_BTN_COLOR)
-
-        for count, name in enumerate(self.lower_row_button_names):
-            try:
-                tone_name = self.lower_row_names[count + self.page_n * 8]
-                self.push.buttons.set_button_color(name, self.colors[tone_name])
-            except IndexError:
-                self.push.buttons.set_button_color(name, definitions.OFF_BTN_COLOR)
-
-        show_prev, show_next = self.get_should_show_next_prev()
-        if show_prev:
-            self.push.buttons.set_button_color(
-                push2_python.constants.BUTTON_PAGE_LEFT, definitions.WHITE
-            )
-        else:
-            self.push.buttons.set_button_color(
-                push2_python.constants.BUTTON_PAGE_LEFT, definitions.BLACK
-            )
-        if show_next:
-            self.push.buttons.set_button_color(
-                push2_python.constants.BUTTON_PAGE_RIGHT, definitions.WHITE
-            )
-        else:
-            self.push.buttons.set_button_color(
-                push2_python.constants.BUTTON_PAGE_RIGHT, definitions.BLACK
-            )
+        pass
 
     def on_button_pressed(self, button_name):
         devices_in_current_slot = self.app.osc_mode.get_current_slot_devices()
@@ -139,11 +108,9 @@ class MenuMode(PyshaMode):
         )
 
         if button_name in self.upper_row_button_names:
-            start = self.page_n * 8
             button_idx = self.upper_row_button_names.index(button_name)
             selected_device = devices_in_current_slot[button_idx]
             try:
-                # print(selected_device.init)
                 for message in selected_device.init:
                     print(message["address"], message["value"], instrument_shortname)
                     self.app.send_osc(
@@ -151,22 +118,24 @@ class MenuMode(PyshaMode):
                         float(message["value"]),
                         instrument_shortname,
                     )
-                # self.upper_row_selected = self.upper_row_names[button_idx + start]
-                # self.send_upper_row()
+                self.app.toggle_menu_mode()
             except IndexError:
                 # Do nothing because the button has no assigned tone
-                print("index error")
                 pass
             return True
 
         elif button_name in self.lower_row_button_names:
-            start = self.page_n * 8
             button_idx = self.lower_row_button_names.index(button_name)
             selected_device = devices_in_current_slot[button_idx + 8]
             try:
-                print(button_name, selected_device.label)
-                # self.lower_row_selected = self.lower_row_names[button_idx + start]
-                # self.send_lower_row()
+                for message in selected_device.init:
+                    print(message["address"], message["value"], instrument_shortname)
+                    self.app.send_osc(
+                        message["address"],
+                        float(message["value"]),
+                        instrument_shortname,
+                    )
+                self.app.toggle_menu_mode()
             except IndexError:
                 # Do nothing because the button has no assigned tone
                 pass
