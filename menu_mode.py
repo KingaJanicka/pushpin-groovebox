@@ -36,6 +36,7 @@ class MenuMode(PyshaMode):
     ]
 
     page_n = 0
+    selected_menu_item_index = 0
     upper_row_selected = ""
     lower_row_selected = ""
     inter_message_message_min_time_ms = 4  # ms wait time after each message to DDRM
@@ -69,6 +70,10 @@ class MenuMode(PyshaMode):
     def update_display(self, ctx, w, h):
         devices_in_current_slot = self.app.osc_mode.get_current_slot_devices()
         for idx, device in enumerate(devices_in_current_slot):
+            if idx == self.selected_menu_item_index:
+                background_color = definitions.YELLOW
+            else:
+                background_color = definitions.GRAY_LIGHT
             if idx < 8:
                 show_text(
                     ctx,
@@ -77,7 +82,7 @@ class MenuMode(PyshaMode):
                     device.label,
                     height=50,
                     font_color=definitions.BLACK,
-                    background_color=definitions.GRAY_LIGHT,
+                    background_color=background_color,
                     font_size_percentage=0.2,
                     center_vertically=True,
                     center_horizontally=True,
@@ -91,7 +96,7 @@ class MenuMode(PyshaMode):
                     device.label,
                     height=50,
                     font_color=definitions.BLACK,
-                    background_color=definitions.GRAY_LIGHT,
+                    background_color=background_color,
                     font_size_percentage=0.2,
                     center_vertically=True,
                     center_horizontally=True,
@@ -112,7 +117,6 @@ class MenuMode(PyshaMode):
             selected_device = devices_in_current_slot[button_idx]
             try:
                 for message in selected_device.init:
-                    print(message["address"], message["value"], instrument_shortname)
                     self.app.send_osc(
                         message["address"],
                         float(message["value"]),
@@ -130,13 +134,46 @@ class MenuMode(PyshaMode):
             selected_device = devices_in_current_slot[button_idx + 8]
             try:
                 for message in selected_device.init:
-                    print(message["address"], message["value"], instrument_shortname)
                     self.app.send_osc(
                         message["address"],
                         float(message["value"]),
                         instrument_shortname,
                     )
                 self.app.toggle_menu_mode()
+                self.app.buttons_need_update = True
+            except IndexError:
+                # Do nothing because the button has no assigned tone
+                pass
+            return True
+
+        elif button_name is push2_constants.BUTTON_LEFT:
+            print(self.selected_menu_item_index - 1 >= 0)
+            if self.selected_menu_item_index - 1 >= 0:
+                self.selected_menu_item_index -= 1
+        elif button_name is push2_constants.BUTTON_RIGHT:
+            number_of_devices_in_current_slot = len(devices_in_current_slot)
+            if 0 <= self.selected_menu_item_index < number_of_devices_in_current_slot:
+                self.selected_menu_item_index += 1
+        elif button_name is push2_constants.BUTTON_UP:
+            number_of_devices_in_current_slot = len(devices_in_current_slot)
+            if 0 <= self.selected_menu_item_index < number_of_devices_in_current_slot:
+                self.selected_menu_item_index -= 8
+        elif button_name is push2_constants.BUTTON_DOWN:
+            number_of_devices_in_current_slot = len(devices_in_current_slot)
+            if 0 <= self.selected_menu_item_index < number_of_devices_in_current_slot:
+                self.selected_menu_item_index += 8
+
+        elif button_name == push2_constants.BUTTON_ADD_DEVICE:
+            selected_device = devices_in_current_slot[self.selected_menu_item_index]
+            try:
+                for message in selected_device.init:
+                    self.app.send_osc(
+                        message["address"],
+                        float(message["value"]),
+                        instrument_shortname,
+                    )
+                self.app.toggle_menu_mode()
+                self.selected_menu_item_index = 0
                 self.app.buttons_need_update = True
             except IndexError:
                 # Do nothing because the button has no assigned tone
