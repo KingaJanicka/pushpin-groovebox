@@ -119,6 +119,7 @@ class MenuMode(PyshaMode):
                         instrument_shortname,
                     )
                 self.app.toggle_menu_mode()
+                self.app.buttons_need_update = True
             except IndexError:
                 # Do nothing because the button has no assigned tone
                 pass
@@ -136,6 +137,7 @@ class MenuMode(PyshaMode):
                         instrument_shortname,
                     )
                 self.app.toggle_menu_mode()
+                self.app.buttons_need_update = True
             except IndexError:
                 # Do nothing because the button has no assigned tone
                 pass

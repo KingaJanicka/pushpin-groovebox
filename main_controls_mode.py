@@ -1,6 +1,7 @@
 import definitions
 import push2_python
 import time
+import push2_constants
 
 TOGGLE_DISPLAY_BUTTON = push2_python.constants.BUTTON_USER
 SETUP_BUTTON = push2_python.constants.BUTTON_SETUP
@@ -76,26 +77,12 @@ class MainControlsMode(definitions.PyshaMode):
                 )
             else:
                 self.push.buttons.set_button_color(
-                    ADD_DEVICE_BUTTON, definitions.OFF_BTN_COLOR
+                    ADD_DEVICE_BUTTON,
+                    definitions.OFF_BTN_COLOR,
+                    push2_constants.ANIMATION_STATIC,
                 )
         else:
             self.push.buttons.set_button_color(ADD_DEVICE_BUTTON, definitions.BLACK)
-
-        # # DDRM tone selector mode
-        # if self.app.ddrm_tone_selector_mode.should_be_enabled():
-        #     if self.app.is_mode_active(self.app.ddrm_tone_selector_mode):
-        #         self.push.buttons.set_button_color(ADD_DEVICE_BUTTON, definitions.BLACK)
-        #         self.push.buttons.set_button_color(
-        #             ADD_DEVICE_BUTTON,
-        #             definitions.WHITE,
-        #             animation=definitions.DEFAULT_ANIMATION,
-        #         )
-        #     else:
-        #         self.push.buttons.set_button_color(
-        #             ADD_DEVICE_BUTTON, definitions.OFF_BTN_COLOR
-        #         )
-        # else:
-        #     self.push.buttons.set_button_color(ADD_DEVICE_BUTTON, definitions.BLACK)
 
     def on_button_pressed(self, button_name):
         if button_name == NOTE_BUTTON:
