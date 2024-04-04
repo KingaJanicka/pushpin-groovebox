@@ -1,0 +1,38 @@
+{
+	"name": "No FX",
+	"slot": 7,
+	"init": [
+		{
+			"$type": "message",
+			"$comment": "set fx type",
+			"address": "/param/fx/global/1/type",
+			"value": 0
+		}
+	],
+	"controls": [
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		}
+	]
+}
