@@ -1,0 +1,91 @@
+{
+	"name": "Delay",
+	"slot": 6,
+	"init": [
+		{
+			"$type": "message",
+			"$comment": "unmute osc",
+			"address": "/param/fx/a/2/type",
+			"value": 16
+		}
+	],
+	"controls": [
+		{
+			"$type": "control-range",
+			"label": "Time L",
+			"address": "/param/fx/a/2/param1",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Time R",
+			"address": "/param/fx/a/2/param2",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Feedback",
+			"address": "/param/fx/a/2/param3",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Crossfeed",
+			"address": "/param/fx/a/2/param4",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Low Cut",
+			"address": "/param/fx/a/2/param5",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "High Cut",
+			"address": "/param/fx/a/2/param6",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Width",
+			"address": "/param/fx/a/2/param12",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Mix",
+			"address": "/param/fx/a/2/param11",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Input Mix",
+			"address": "/param/fx/a/2/param9",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Mod Rate",
+			"address": "/param/fx/a/2/param7",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Mod Depth",
+			"address": "/param/fx/a/2/param8",
+			"min": 0,
+			"max": 1
+		}
+	]
+}

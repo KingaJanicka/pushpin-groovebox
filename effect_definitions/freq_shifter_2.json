@@ -1,0 +1,49 @@
+{
+	"name": "Freq. Shift",
+	"slot": 6,
+	"init": [
+		{
+			"$type": "message",
+			"$comment": "unmute osc",
+			"address": "/param/fx/a/2/type",
+			"value": 7
+		}
+	],
+	"controls": [
+		{
+			"$type": "control-range",
+			"label": "Left Shift",
+			"address": "/param/fx/a/2/param1",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Right Shift",
+			"address": "/param/fx/a/2/param2",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Delay Time",
+			"address": "/param/fx/a/2/param3",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Delay Fdbk.",
+			"address": "/param/fx/a/2/param4",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Mix",
+			"address": "/param/fx/a/2/param2",
+			"min": 0,
+			"max": 1
+		}
+	]
+}

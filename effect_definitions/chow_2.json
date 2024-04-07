@@ -1,0 +1,60 @@
+{
+	"name": "Chow",
+	"slot": 6,
+	"init": [
+		{
+			"$type": "message",
+			"$comment": "unmute osc",
+			"address": "/param/fx/a/2/type",
+			"value": 18
+		}
+	],
+	"controls": [
+		{
+			"$type": "control-range",
+			"label": "Threshold",
+			"address": "/param/fx/a/2/param1",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Ratio",
+			"address": "/param/fx/a/2/param2",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-menu",
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "Flip Off",
+					"onselect": {
+						"$type": "message",
+						"$comment": "1",
+						"address": "/param/a/osc/1/param3",
+						"value": 0
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Flip On",
+					"onselect": {
+						"$type": "message",
+						"$comment": "2",
+						"address": "/param/a/osc/1/param3",
+						"value": 1
+					}
+				}
+			]
+		},
+		{
+			"$type": "control-range",
+			"label": "Mix",
+			"address": "/param/fx/a/2/param4",
+			"min": 0,
+			"max": 1
+		}
+	]
+}

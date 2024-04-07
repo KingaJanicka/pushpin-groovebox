@@ -1,0 +1,49 @@
+{
+	"name": "Exciter",
+	"slot": 5,
+	"init": [
+		{
+			"$type": "message",
+			"$comment": "unmute osc",
+			"address": "/param/fx/a/1/type",
+			"value": 19
+		}
+	],
+	"controls": [
+		{
+			"$type": "control-range",
+			"label": "Drive",
+			"address": "/param/fx/a/1/param1",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Tone",
+			"address": "/param/fx/a/1/param2",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Attack",
+			"address": "/param/fx/a/1/param3",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Release",
+			"address": "/param/fx/a/1/param4",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Mix",
+			"address": "/param/fx/a/1/param5",
+			"min": 0,
+			"max": 1
+		}
+	]
+}

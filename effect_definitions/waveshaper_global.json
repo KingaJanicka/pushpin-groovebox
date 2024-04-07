@@ -1,0 +1,622 @@
+{
+  "name": "Waveshaper",
+  "slot": 7,
+  "init": [
+    {
+      "$type": "message",
+      "$comment": "unmute osc",
+      "address": "/param/fx/global/1/type",
+      "value": 25
+    }
+  ],
+  "controls": [
+    {
+      "$type": "control-switch",
+      "label": "Band",
+      "groups": [
+        {
+          "$type": "group",
+          "label": "Pre Shaper",
+          "controls": [
+            {
+              "$type": "control-range",
+              "label": "Low Cut",
+              "address": "/param/fx/global/1/param1",
+              "min": 0,
+              "max": 1
+            },
+            {
+              "$type": "control-range",
+              "label": "High Cut",
+              "address": "/param/fx/global/1/param2",
+              "min": 0,
+              "max": 1
+            }
+          ]
+        },
+        {
+          "$type": "group",
+          "label": "Post Shaper",
+          "controls": [
+            {
+              "$type": "control-range",
+              "label": "Low Cut",
+              "address": "/param/fx/global/1/param6",
+              "min": 0,
+              "max": 1
+            },
+            {
+              "$type": "control-range",
+              "label": "High Cut",
+              "address": "/param/fx/global/1/param7",
+              "min": 0,
+              "max": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "$type": "control-switch",
+      "label": "Sh. Cat",
+      "groups": [
+        {
+          "$type": "group",
+          "label": "Off",
+          "controls": [
+            {
+              "$type": "control-menu",
+              "items": [
+                {
+                  "$type": "menu-item",
+                  "label": "Off",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "Off",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 0
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "$type": "group",
+          "label": "Saturator",
+          "controls": [
+            {
+              "$type": "control-menu",
+              "items": [
+                {
+                  "$type": "menu-item",
+                  "label": "Soft",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "Soft",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 1
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "Med",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "Med",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 40
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "Hard",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "Hard",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 2
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "Asymm.",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "Asymm.",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 3
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "OJD",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "OJD",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 41
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "$type": "group",
+          "label": "Effect",
+          "controls": [
+            {
+              "$type": "control-menu",
+              "items": [
+                {
+                  "$type": "menu-item",
+                  "label": "Sine",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "Sine",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 4
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "Digital",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "Digital",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 5
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "$type": "group",
+          "label": "Harmonic",
+          "controls": [
+            {
+              "$type": "control-menu",
+              "items": [
+                {
+                  "$type": "menu-item",
+                  "label": "Harm 2",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "Harm 2",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 6
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "Harm 3",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "Harm 3",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 7
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "Harm 4",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "Harm 4",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 8
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "Harm 5",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "Harm 5",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 9
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "Add 12",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "Add 12",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 17
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "Add 13",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "Add 13",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 18
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "Add 14",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "Add 14",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 19
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "Add 15",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "Add 15",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 20
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "Add 1-5",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "Add 1-5",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 21
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "Add Saw3",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "Add Saw3",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 22
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "Add Sq3",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "Add Sq3",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 23
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "Full Rect",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "Full Rect",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 10
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "$type": "group",
+          "label": "Rect.",
+          "controls": [
+            {
+              "$type": "control-menu",
+              "items": [
+                {
+                  "$type": "menu-item",
+                  "label": "Full Rect",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "Full Rect",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 10
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "Half Pos",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "Half Pos",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 11
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "Half Neg",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "Half Neg",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 12
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "Soft Rect",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "Soft Rect",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 13
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "$type": "group",
+          "label": "Folders",
+          "controls": [
+            {
+              "$type": "control-menu",
+              "items": [
+                {
+                  "$type": "menu-item",
+                  "label": "Soft Single",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "Soft Single",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 42
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "One",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "One",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 14
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "Two",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "Two",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 15
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "West Coast",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "West Coast",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 16
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "$type": "group",
+          "label": "Fuzz",
+          "controls": [
+            {
+              "$type": "control-menu",
+              "items": [
+                {
+                  "$type": "menu-item",
+                  "label": "Fuzz",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "Fuzz",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 24
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "Heavy",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "Heavy",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 26
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "Center",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "Center",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 27
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "Soft",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "Soft",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 25
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "Edge",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "Edge",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 28
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "$type": "group",
+          "label": "Trig.",
+          "controls": [
+            {
+              "$type": "control-menu",
+              "items": [
+                {
+                  "$type": "menu-item",
+                  "label": "Sin+x",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "Sin+x",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 29
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "Sin 2x+x",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "Sin 2x+x",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 30
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "Sin 3x+x",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "Sin 3x+x",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 31
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "Sin 7x+x",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "Sin 7x+x",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 32
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "Sin 10x+x",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "Sin 10x+x",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 33
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "2 Cycle",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "2 Cycle",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 34
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "7 Cycle",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "7 Cycle",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 35
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "10 Cycle",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "10 Cycle",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 36
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "2 Bound",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "2 Bound",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 37
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "7 Bound",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "7 Bound",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 38
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "10 Bound",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "10 Bound",
+                    "address": "/param/fx/global/1/param3",
+                    "value": 39
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "$type": "control-range",
+      "label": "Bias",
+      "address": "/param/fx/global/1/param4",
+      "min": 0,
+      "max": 1
+    },
+    {
+      "$type": "control-range",
+      "label": "Drive",
+      "address": "/param/fx/global/1/param5",
+      "min": 0,
+      "max": 1
+    },
+    {
+      "$type": "control-range",
+      "label": "Mix",
+      "address": "/param/fx/global/1/param9",
+      "min": 0,
+      "max": 1
+    },
+    {
+      "$type": "control-range",
+      "label": "Gain Out",
+      "address": "/param/fx/global/1/param8",
+      "min": 0,
+      "max": 1
+    }
+  ]
+}
