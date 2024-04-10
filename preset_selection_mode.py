@@ -4,8 +4,11 @@ import push2_python
 import time
 import os
 import json
-
+from glob import glob
 from display_utils import show_notification
+from display_utils import show_text
+from pathlib import Path
+import re
 
 
 class PresetSelectionMode(definitions.PyshaMode):
@@ -17,10 +20,53 @@ class PresetSelectionMode(definitions.PyshaMode):
     pad_pressing_states = {}
     pad_quick_press_time = 0.400
     current_page = 0
+    patches = {}
+    current_selection = {}
+    encoder_0 = 0
+    encoder_1 = 0
+    factory_dict = dict()
+    third_party_dict = dict()
+    user_dict = dict()
 
     def initialize(self, settings=None):
         if os.path.exists(self.favourite_presets_filename):
             self.favourite_presets = json.load(open(self.favourite_presets_filename))
+
+        self.patches["Factory"] = glob(
+            f"**/*.fxp",
+            recursive=True,
+            root_dir=definitions.FACTORY_PATCHES_FOLDER,
+        )
+        self.factory_dict = self.create_dict_from_paths(self.patches["Factory"])
+
+        self.patches["Third Party"] = glob(
+            f"**/*.fxp",
+            recursive=True,
+            root_dir=definitions.THIRD_PARTY_PATCHES_FOLDER,
+        )
+        self.third_party_dict = self.create_dict_from_paths(self.patches["Third Party"])
+
+        self.patches["User"] = glob(
+            f"**/*.fxp",
+            recursive=True,
+            root_dir=definitions.USER_PATCHES_FOLDER,
+        )
+        self.user_dict = self.create_dict_from_paths(self.patches["User"])
+
+        for (
+            instrument_short_name
+        ) in self.get_all_distinct_instrument_short_names_helper():
+            self.current_selection[instrument_short_name] = []
+
+    def create_dict_from_paths(self, arr):
+        d = dict()
+        for path in arr:
+            parent = d
+            for dir in path.split("/"):
+                if dir not in parent:
+                    parent[dir] = dict()
+                parent = parent[dir]
+        return d
 
     def activate(self):
         self.current_page = 0
@@ -31,6 +77,9 @@ class PresetSelectionMode(definitions.PyshaMode):
         self.current_page = 0
         self.app.pads_need_update = True
         self.app.buttons_need_update = True
+
+    def should_be_enabled(self):
+        return True
 
     def add_favourite_preset(self, preset_number, bank_number):
         instrument_short_name = (
@@ -44,6 +93,14 @@ class PresetSelectionMode(definitions.PyshaMode):
         json.dump(
             self.favourite_presets, open(self.favourite_presets_filename, "w")
         )  # Save to file
+
+    def get_all_distinct_instrument_short_names_helper(self):
+        return (
+            self.app.instrument_selection_mode.get_all_distinct_instrument_short_names()
+        )
+
+    def get_current_instrument_short_name_helper(self):
+        return self.app.instrument_selection_mode.get_current_instrument_short_name()
 
     def remove_favourite_preset(self, preset_number, bank_number):
         instrument_short_name = (
@@ -154,7 +211,7 @@ class PresetSelectionMode(definitions.PyshaMode):
         else:
             bank_name = bank_number
         self.app.add_display_notification(
-            "Preset selection: bank {0}, presets {1}".format(
+            "Preset FARTS: bank {0}, presets {1}".format(
                 bank_name, "1-64" if self.get_current_page() % 2 == 0 else "65-128"
             )
         )
@@ -171,6 +228,8 @@ class PresetSelectionMode(definitions.PyshaMode):
         self.push.buttons.set_button_color(
             push2_python.constants.BUTTON_RIGHT, definitions.BLACK
         )
+        self.app.buttons_need_update = True
+        self.app.pads_need_update = True
 
     def update_buttons(self):
         show_prev, show_next = self.has_prev_next_pages()
@@ -256,6 +315,54 @@ class PresetSelectionMode(definitions.PyshaMode):
         self.app.pads_need_update = True
         return True  # Prevent other modes to get this event
 
+    def update_display(self, ctx, w, h):
+        print(self.factory_dict)
+        current = self.current_selection[
+            self.get_current_instrument_short_name_helper()
+        ]
+        if len(current) == 0:
+            options = self.patches.keys()
+
+        for idx, item in enumerate(options):
+            background = None
+            if idx == int(self.encoder_0):
+                background = definitions.LIME
+            show_text(
+                ctx,
+                0,
+                20 * idx + 5,
+                item,
+                height=20,
+                font_color=definitions.WHITE,
+                background_color=background,
+                font_size_percentage=1,
+                center_vertically=True,
+                center_horizontally=True,
+                rectangle_padding=1,
+            )
+
+        if 0 <= self.encoder_0 <= 1:
+            for idx, item in enumerate(self.patches["Factory"]):
+                array1 = item.split("/")
+                label = array1[0]
+                background = definitions.LIME
+                if idx == int(self.encoder_1):
+                    background = definitions.LIME
+
+                show_text(
+                    ctx,
+                    1,
+                    20 * idx + 5,
+                    label,
+                    height=20,
+                    font_color=definitions.WHITE,
+                    background_color=background,
+                    font_size_percentage=1,
+                    center_vertically=True,
+                    center_horizontally=True,
+                    rectangle_padding=1,
+                )
+
     def on_button_pressed(self, button_name):
         if button_name in [
             push2_python.constants.BUTTON_LEFT,
@@ -267,3 +374,23 @@ class PresetSelectionMode(definitions.PyshaMode):
             elif button_name == push2_python.constants.BUTTON_RIGHT and show_next:
                 self.next_page()
             return True
+
+    def on_encoder_rotated(self, encoder_name, increment):
+        try:
+            encoder_idx = [
+                push2_python.constants.ENCODER_TRACK1_ENCODER,
+                push2_python.constants.ENCODER_TRACK2_ENCODER,
+                push2_python.constants.ENCODER_TRACK3_ENCODER,
+                push2_python.constants.ENCODER_TRACK4_ENCODER,
+                push2_python.constants.ENCODER_TRACK5_ENCODER,
+                push2_python.constants.ENCODER_TRACK6_ENCODER,
+                push2_python.constants.ENCODER_TRACK7_ENCODER,
+                push2_python.constants.ENCODER_TRACK8_ENCODER,
+            ].index(encoder_name)
+            if encoder_name == push2_python.constants.ENCODER_TRACK1_ENCODER:
+                self.encoder_0 += increment * 0.1
+
+            if encoder_name == push2_python.constants.ENCODER_TRACK2_ENCODER:
+                self.encoder_1 += increment * 0.1
+        except ValueError:
+            pass  # Encoder not in list

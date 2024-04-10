@@ -105,15 +105,10 @@ class MainControlsMode(definitions.PyshaMode):
             self.app.buttons_need_update = True
             return True
         elif button_name == BROWSE_BUTTON:
-            if self.app.is_mode_active(self.app.preset_selection_mode):
-                # If already active, deactivate and set pressing time to None
-                self.app.unset_preset_selection_mode()
-                self.preset_selection_button_pressing_time = None
-            else:
-                # Activate preset selection mode and store time button pressed
-                self.app.set_preset_selection_mode()
-                self.preset_selection_button_pressing_time = time.time()
-            self.app.buttons_need_update = True
+            if self.app.preset_selection_mode.should_be_enabled():
+                print("browse button")
+                self.app.toggle_preset_selection_mode()
+                self.app.buttons_need_update = True
             return True
         elif button_name == ADD_DEVICE_BUTTON:
             if self.app.menu_mode.should_be_enabled():

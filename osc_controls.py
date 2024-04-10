@@ -467,11 +467,9 @@ class OSCControlMenu(object):
         return idx
 
     def select(self):
-        print(self.label, "SELECTED")
         unique_addresses = list(
             set([*[item.address for item in self.items], self.address])
         )
-        print(unique_addresses, self.value)
         for address in unique_addresses:
             if address:
                 self.send_osc_func("/q" + address, None)
@@ -540,5 +538,4 @@ class OSCMenuItem(object):
         self.send_osc_func = send_osc_func
 
     def select(self):
-        print(self.message["address"], self.message["value"], "MENU ITEM DEBUG")
         self.send_osc_func(self.address, float(self.value))

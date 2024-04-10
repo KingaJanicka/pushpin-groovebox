@@ -1,5 +1,6 @@
 import push2_python
 import colorsys
+from os import path
 
 VERSION = "0.25"
 
@@ -108,6 +109,14 @@ INSTRUMENT_DEFINITION_FOLDER = "instrument_definitions"
 DEVICE_DEFINITION_FOLDER = "device_definitions"
 EFFECT_DEFINITION_FOLDER = "effect_definitions"
 INSTRUMENT_LISTING_PATH = "instrument_listing.json"
+SURGE_XT_ROOT = (
+    f"{path.expanduser('~')}/.local/share/surge-xt"
+    if path.isdir(f"{path.expanduser('~')}/.local/share/surge-xt")
+    else "/usr/share/surge-xt"
+)
+FACTORY_PATCHES_FOLDER = f"{SURGE_XT_ROOT}/patches_factory"
+THIRD_PARTY_PATCHES_FOLDER = f"{SURGE_XT_ROOT}/patches_3rdparty"
+USER_PATCHES_FOLDER = f"{path.expanduser('~')}/Documents/Surge XT/Patches"
 
 
 class PyshaMode(object):
