@@ -63,9 +63,16 @@ class PresetSelectionMode(definitions.PyshaMode):
         for path in arr:
             parent = d
             for dir in path.split("/"):
+                filename_arr = dir.split(".")
+                filename = filename_arr[0]
                 if dir not in parent:
-                    parent[dir] = dict()
-                parent = parent[dir]
+                    if dir.endswith(".fxp"):
+
+                        parent[filename] = path
+                    else:
+
+                        parent[filename] = dict()
+                parent = parent[filename]
         return d
 
     def activate(self):
