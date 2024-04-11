@@ -15,8 +15,8 @@ class PresetSelectionMode(definitions.PyshaMode):
 
     xor_group = "pads"
 
-    favourite_presets = {}
-    favourite_presets_filename = "favourite_presets.json"
+    presets = {}
+    presets_filename = "presets.json"
     pad_pressing_states = {}
     pad_quick_press_time = 0.400
     current_page = 0
@@ -24,39 +24,43 @@ class PresetSelectionMode(definitions.PyshaMode):
     current_selection = {}
     encoder_0 = 0
     encoder_1 = 0
+    encoder_2 = 0
+    encoder_3 = 0
+    encoder_4 = 0
+    encoder_5 = 0
+    encoder_6 = 0
+    encoder_7 = 0
     factory_dict = dict()
     third_party_dict = dict()
     user_dict = dict()
+    patches_dicts = []
 
     def initialize(self, settings=None):
-        if os.path.exists(self.favourite_presets_filename):
-            self.favourite_presets = json.load(open(self.favourite_presets_filename))
-
-        self.patches["Factory"] = glob(
-            f"**/*.fxp",
-            recursive=True,
-            root_dir=definitions.FACTORY_PATCHES_FOLDER,
-        )
-        self.factory_dict = self.create_dict_from_paths(self.patches["Factory"])
-
-        self.patches["Third Party"] = glob(
-            f"**/*.fxp",
-            recursive=True,
-            root_dir=definitions.THIRD_PARTY_PATCHES_FOLDER,
-        )
-        self.third_party_dict = self.create_dict_from_paths(self.patches["Third Party"])
-
-        self.patches["User"] = glob(
-            f"**/*.fxp",
-            recursive=True,
-            root_dir=definitions.USER_PATCHES_FOLDER,
-        )
-        self.user_dict = self.create_dict_from_paths(self.patches["User"])
-
         for (
             instrument_short_name
         ) in self.get_all_distinct_instrument_short_names_helper():
             self.current_selection[instrument_short_name] = []
+            self.presets[instrument_short_name] = [None * 8]
+        # self.load_config()
+
+        self.patches["Factory"] = self.create_dict_from_paths(glob(
+            f"**/*.fxp",
+            recursive=True,
+            root_dir=definitions.FACTORY_PATCHES_FOLDER,
+        ))
+
+        self.patches["Third Party"] = self.create_dict_from_paths(glob(
+            f"**/*.fxp",
+            recursive=True,
+            root_dir=definitions.THIRD_PARTY_PATCHES_FOLDER,
+        ))
+
+        self.patches["User"] = self.create_dict_from_paths( glob(
+            f"**/*.fxp",
+            recursive=True,
+            root_dir=definitions.USER_PATCHES_FOLDER,
+        ))
+
 
     def create_dict_from_paths(self, arr):
         d = dict()
@@ -75,6 +79,13 @@ class PresetSelectionMode(definitions.PyshaMode):
                 parent = parent[filename]
         return d
 
+    def load_config(self):
+        if os.path.exists(self.presets_filename):
+            self.presets = json.load(open(self.presets_filename))
+
+    def save_config(self, presets=None):
+        json.dump(presets or self.presets, self.presets_filename)
+
     def activate(self):
         self.current_page = 0
         self.update_buttons()
@@ -88,17 +99,17 @@ class PresetSelectionMode(definitions.PyshaMode):
     def should_be_enabled(self):
         return True
 
-    def add_favourite_preset(self, preset_number, bank_number):
+    def add_preset(self, preset_number, bank_number):
         instrument_short_name = (
             self.app.instrument_selection_mode.get_current_instrument_short_name()
         )
-        if instrument_short_name not in self.favourite_presets:
-            self.favourite_presets[instrument_short_name] = []
-        self.favourite_presets[instrument_short_name].append(
+        if instrument_short_name not in self.presets:
+            self.presets[instrument_short_name] = []
+        self.presets[instrument_short_name].append(
             (preset_number, bank_number)
         )
         json.dump(
-            self.favourite_presets, open(self.favourite_presets_filename, "w")
+            self.presets, open(self.presets_filename, "w")
         )  # Save to file
 
     def get_all_distinct_instrument_short_names_helper(self):
@@ -109,29 +120,29 @@ class PresetSelectionMode(definitions.PyshaMode):
     def get_current_instrument_short_name_helper(self):
         return self.app.instrument_selection_mode.get_current_instrument_short_name()
 
-    def remove_favourite_preset(self, preset_number, bank_number):
+    def remove_preset(self, preset_number, bank_number):
         instrument_short_name = (
             self.app.instrument_selection_mode.get_current_instrument_short_name()
         )
-        if instrument_short_name in self.favourite_presets:
-            self.favourite_presets[instrument_short_name] = [
+        if instrument_short_name in self.presets:
+            self.presets[instrument_short_name] = [
                 (fp_preset_number, fp_bank_number)
-                for fp_preset_number, fp_bank_number in self.favourite_presets[
+                for fp_preset_number, fp_bank_number in self.presets[
                     instrument_short_name
                 ]
                 if preset_number != fp_preset_number or bank_number != fp_bank_number
             ]
             json.dump(
-                self.favourite_presets, open(self.favourite_presets_filename, "w")
+                self.presets, open(self.presets_filename, "w")
             )  # Save to file
 
     def preset_num_in_favourites(self, preset_number, bank_number):
         instrument_short_name = (
             self.app.instrument_selection_mode.get_current_instrument_short_name()
         )
-        if instrument_short_name not in self.favourite_presets:
+        if instrument_short_name not in self.presets:
             return False
-        for fp_preset_number, fp_bank_number in self.favourite_presets[
+        for fp_preset_number, fp_bank_number in self.presets[
             instrument_short_name
         ]:
             if preset_number == fp_preset_number and bank_number == fp_bank_number:
@@ -270,7 +281,7 @@ class PresetSelectionMode(definitions.PyshaMode):
             for j in range(0, 8):
                 cell_color = instrument_color
                 preset_num, bank_num = self.pad_ij_to_bank_and_preset_num((i, j))
-                if not self.preset_num_in_favourites(preset_num, bank_num):
+                if not self.presets[instrument_short_name][preset_num]:
                     cell_color = f"{cell_color}_darker2"  # If preset not in favourites, use a darker version of the instrument color
                 row_colors.append(cell_color)
             color_matrix.append(row_colors)
@@ -300,9 +311,9 @@ class PresetSelectionMode(definitions.PyshaMode):
         if is_long_press:
             # Add/remove preset to favourites, don't send any MIDI
             if not self.preset_num_in_favourites(preset_num, bank_num):
-                self.add_favourite_preset(preset_num, bank_num)
+                self.add_preset(preset_num, bank_num)
             else:
-                self.remove_favourite_preset(preset_num, bank_num)
+                self.remove_preset(preset_num, bank_num)
         else:
             # Send midi message to select the bank and preset preset
             self.send_select_new_bank(bank_num)
@@ -347,28 +358,28 @@ class PresetSelectionMode(definitions.PyshaMode):
                 center_horizontally=True,
                 rectangle_padding=1,
             )
+        for idx, item in enumerate()
+            # if 0 <= self.encoder_0 <= 1:
+            # for idx, item in enumerate(self.patches["Factory"]):
+            #     array1 = item.split("/")
+            #     label = array1[0]
+            #     background = definitions.LIME
+            #     if idx == int(self.encoder_1):
+            #         background = definitions.LIME
 
-        if 0 <= self.encoder_0 <= 1:
-            for idx, item in enumerate(self.patches["Factory"]):
-                array1 = item.split("/")
-                label = array1[0]
-                background = definitions.LIME
-                if idx == int(self.encoder_1):
-                    background = definitions.LIME
-
-                show_text(
-                    ctx,
-                    1,
-                    20 * idx + 5,
-                    label,
-                    height=20,
-                    font_color=definitions.WHITE,
-                    background_color=background,
-                    font_size_percentage=1,
-                    center_vertically=True,
-                    center_horizontally=True,
-                    rectangle_padding=1,
-                )
+            #     show_text(
+            #         ctx,
+            #         1,
+            #         20 * idx + 5,
+            #         label,
+            #         height=20,
+            #         font_color=definitions.WHITE,
+            #         background_color=background,
+            #         font_size_percentage=1,
+            #         center_vertically=True,
+            #         center_horizontally=True,
+            #         rectangle_padding=1,
+            #     )
 
     def on_button_pressed(self, button_name):
         if button_name in [
@@ -395,8 +406,10 @@ class PresetSelectionMode(definitions.PyshaMode):
                 push2_python.constants.ENCODER_TRACK8_ENCODER,
             ].index(encoder_name)
             if encoder_name == push2_python.constants.ENCODER_TRACK1_ENCODER:
-                self.encoder_0 += increment * 0.1
-
+                if 0 <= self.encoder_0 + increment * 0.1 < len(self.patches):
+                    self.encoder_0 += increment * 0.1
+                else:
+                    pass
             if encoder_name == push2_python.constants.ENCODER_TRACK2_ENCODER:
                 self.encoder_1 += increment * 0.1
         except ValueError:
