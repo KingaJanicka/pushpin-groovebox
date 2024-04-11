@@ -327,6 +327,35 @@ class PresetSelectionMode(definitions.PyshaMode):
         self.app.pads_need_update = True
         return True  # Prevent other modes to get this event
 
+    def count_nested_idx(self, list, to_compare, index):
+        idx += 1
+        for idx, item in enumerate(list):
+            if item == to_compare:
+                return index
+        self.count_nested_idx(item, to_compare, index)
+
+    def nested_draw(self, ctx, folders):
+        for idx, item in enumerate(folders):
+
+            print(type(item))
+            if isinstance(item, str):
+                show_text(
+                    ctx,
+                    1,
+                    20 * idx + 5,
+                    item,
+                    height=20,
+                    font_color=definitions.WHITE,
+                    background_color=None,
+                    font_size_percentage=1,
+                    center_vertically=True,
+                    center_horizontally=True,
+                    rectangle_padding=1,
+                )
+            elif isinstance(item, dict) or isinstance(item, tuple):
+                print("DICT CONDITION")
+                self.nested_draw(ctx, item)
+
     def update_display(self, ctx, w, h):
         current = self.current_selection[
             self.get_current_instrument_short_name_helper()
@@ -358,56 +387,44 @@ class PresetSelectionMode(definitions.PyshaMode):
             chosen_folder = self.patches["Third Party"]
         elif 2 <= self.encoder_0 < 3:
             chosen_folder = self.patches["User"]
-        for idx1, nest1 in enumerate(chosen_folder.items()):
-            for idx2, nest2 in enumerate(nest1):
-                if isinstance(nest2, dict) and idx1 == 0:
-                    for idx3, nest3 in enumerate(nest2):
-                        if isinstance(nest3, dict):
-                            pass
-                        else:
-                            show_text(
-                                ctx,
-                                2,
-                                20 * idx3 + 5,
-                                nest3,
-                                height=20,
-                                font_color=definitions.WHITE,
-                                background_color=background,
-                                font_size_percentage=1,
-                                center_vertically=True,
-                                center_horizontally=True,
-                                rectangle_padding=1,
-                            )
-                elif isinstance(nest2, str):
-                    show_text(
-                        ctx,
-                        1,
-                        20 * idx1 + 5,
-                        nest2,
-                        height=20,
-                        font_color=definitions.WHITE,
-                        background_color=background,
-                        font_size_percentage=1,
-                        center_vertically=True,
-                        center_horizontally=True,
-                        rectangle_padding=1,
-                    )
-            # encoder_1 = 0
-            # if encoder_1 == idx:
-            #     for idx, nest2 in enumerate(chosen_folder[encoder_1]):
-            #         show_text(
-            #             ctx,
-            #             2,
-            #             20 * idx + 5,
-            #             nest2,
-            #             height=20,
-            #             font_color=definitions.WHITE,
-            #             background_color=background,
-            #             font_size_percentage=1,
-            #             center_vertically=True,
-            #             center_horizontally=True,
-            #             rectangle_padding=1,
-            #         )
+
+        self.nested_draw(ctx, chosen_folder.items())
+        # for idx1, nest1 in enumerate(chosen_folder.items()):
+        #     for idx2, nest2 in enumerate(nest1):
+        #         if (
+        #             isinstance(nest2, dict) and idx1 == 0
+        #         ):  # this idx1 needs to be replaced with encoder1 value cast as an int
+        #             for idx3, nest3 in enumerate(nest2):
+        #                 if isinstance(nest3, dict) and idx2 == 0:
+        #                     pass
+        #                 elif isinstance(nest3, str):
+        #                     show_text(
+        #                         ctx,
+        #                         2,
+        #                         20 * idx3 + 5,
+        #                         nest3,
+        #                         height=20,
+        #                         font_color=definitions.WHITE,
+        #                         background_color=background,
+        #                         font_size_percentage=1,
+        #                         center_vertically=True,
+        #                         center_horizontally=True,
+        #                         rectangle_padding=1,
+        #                     )
+        #         elif isinstance(nest2, str):
+        #             show_text(
+        #                 ctx,
+        #                 1,
+        #                 20 * idx1 + 5,
+        #                 nest2,
+        #                 height=20,
+        #                 font_color=definitions.WHITE,
+        #                 background_color=background,
+        #                 font_size_percentage=1,
+        #                 center_vertically=True,
+        #                 center_horizontally=True,
+        #                 rectangle_padding=1,
+        #             )
 
     def on_button_pressed(self, button_name):
         if button_name in [
