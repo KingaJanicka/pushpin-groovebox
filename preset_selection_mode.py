@@ -30,9 +30,6 @@ class PresetSelectionMode(definitions.PyshaMode):
     encoder_5 = 0
     encoder_6 = 0
     encoder_7 = 0
-    factory_dict = dict()
-    third_party_dict = dict()
-    user_dict = dict()
     patches_dicts = []
 
     def initialize(self, settings=None):
@@ -40,27 +37,32 @@ class PresetSelectionMode(definitions.PyshaMode):
             instrument_short_name
         ) in self.get_all_distinct_instrument_short_names_helper():
             self.current_selection[instrument_short_name] = []
-            self.presets[instrument_short_name] = [None * 8]
+            self.presets[instrument_short_name] = [None] * 8
         # self.load_config()
 
-        self.patches["Factory"] = self.create_dict_from_paths(glob(
-            f"**/*.fxp",
-            recursive=True,
-            root_dir=definitions.FACTORY_PATCHES_FOLDER,
-        ))
+        self.patches["Factory"] = self.create_dict_from_paths(
+            glob(
+                f"**/*.fxp",
+                recursive=True,
+                root_dir=definitions.FACTORY_PATCHES_FOLDER,
+            )
+        )
 
-        self.patches["Third Party"] = self.create_dict_from_paths(glob(
-            f"**/*.fxp",
-            recursive=True,
-            root_dir=definitions.THIRD_PARTY_PATCHES_FOLDER,
-        ))
+        self.patches["Third Party"] = self.create_dict_from_paths(
+            glob(
+                f"**/*.fxp",
+                recursive=True,
+                root_dir=definitions.THIRD_PARTY_PATCHES_FOLDER,
+            )
+        )
 
-        self.patches["User"] = self.create_dict_from_paths( glob(
-            f"**/*.fxp",
-            recursive=True,
-            root_dir=definitions.USER_PATCHES_FOLDER,
-        ))
-
+        self.patches["User"] = self.create_dict_from_paths(
+            glob(
+                f"**/*.fxp",
+                recursive=True,
+                root_dir=definitions.USER_PATCHES_FOLDER,
+            )
+        )
 
     def create_dict_from_paths(self, arr):
         d = dict()
@@ -105,12 +107,8 @@ class PresetSelectionMode(definitions.PyshaMode):
         )
         if instrument_short_name not in self.presets:
             self.presets[instrument_short_name] = []
-        self.presets[instrument_short_name].append(
-            (preset_number, bank_number)
-        )
-        json.dump(
-            self.presets, open(self.presets_filename, "w")
-        )  # Save to file
+        self.presets[instrument_short_name].append((preset_number, bank_number))
+        json.dump(self.presets, open(self.presets_filename, "w"))  # Save to file
 
     def get_all_distinct_instrument_short_names_helper(self):
         return (
@@ -132,9 +130,7 @@ class PresetSelectionMode(definitions.PyshaMode):
                 ]
                 if preset_number != fp_preset_number or bank_number != fp_bank_number
             ]
-            json.dump(
-                self.presets, open(self.presets_filename, "w")
-            )  # Save to file
+            json.dump(self.presets, open(self.presets_filename, "w"))  # Save to file
 
     def preset_num_in_favourites(self, preset_number, bank_number):
         instrument_short_name = (
@@ -142,9 +138,7 @@ class PresetSelectionMode(definitions.PyshaMode):
         )
         if instrument_short_name not in self.presets:
             return False
-        for fp_preset_number, fp_bank_number in self.presets[
-            instrument_short_name
-        ]:
+        for fp_preset_number, fp_bank_number in self.presets[instrument_short_name]:
             if preset_number == fp_preset_number and bank_number == fp_bank_number:
                 return True
         return False
@@ -334,14 +328,13 @@ class PresetSelectionMode(definitions.PyshaMode):
         return True  # Prevent other modes to get this event
 
     def update_display(self, ctx, w, h):
-        print(self.factory_dict)
         current = self.current_selection[
             self.get_current_instrument_short_name_helper()
         ]
         if len(current) == 0:
             options = self.patches.keys()
 
-        for idx, item in enumerate(options):
+        for idx, folder_name in enumerate(options):
             background = None
             if idx == int(self.encoder_0):
                 background = definitions.LIME
@@ -349,7 +342,7 @@ class PresetSelectionMode(definitions.PyshaMode):
                 ctx,
                 0,
                 20 * idx + 5,
-                item,
+                folder_name,
                 height=20,
                 font_color=definitions.WHITE,
                 background_color=background,
@@ -358,28 +351,63 @@ class PresetSelectionMode(definitions.PyshaMode):
                 center_horizontally=True,
                 rectangle_padding=1,
             )
-        for idx, item in enumerate()
-            # if 0 <= self.encoder_0 <= 1:
-            # for idx, item in enumerate(self.patches["Factory"]):
-            #     array1 = item.split("/")
-            #     label = array1[0]
-            #     background = definitions.LIME
-            #     if idx == int(self.encoder_1):
-            #         background = definitions.LIME
-
-            #     show_text(
-            #         ctx,
-            #         1,
-            #         20 * idx + 5,
-            #         label,
-            #         height=20,
-            #         font_color=definitions.WHITE,
-            #         background_color=background,
-            #         font_size_percentage=1,
-            #         center_vertically=True,
-            #         center_horizontally=True,
-            #         rectangle_padding=1,
-            #     )
+        chosen_folder = None
+        if 0 <= self.encoder_0 < 1:
+            chosen_folder = self.patches["Factory"]
+        elif 1 <= self.encoder_0 < 2:
+            chosen_folder = self.patches["Third Party"]
+        elif 2 <= self.encoder_0 < 3:
+            chosen_folder = self.patches["User"]
+        for idx1, nest1 in enumerate(chosen_folder.items()):
+            for idx2, nest2 in enumerate(nest1):
+                if isinstance(nest2, dict) and idx1 == 0:
+                    for idx3, nest3 in enumerate(nest2):
+                        if isinstance(nest3, dict):
+                            pass
+                        else:
+                            show_text(
+                                ctx,
+                                2,
+                                20 * idx3 + 5,
+                                nest3,
+                                height=20,
+                                font_color=definitions.WHITE,
+                                background_color=background,
+                                font_size_percentage=1,
+                                center_vertically=True,
+                                center_horizontally=True,
+                                rectangle_padding=1,
+                            )
+                elif isinstance(nest2, str):
+                    show_text(
+                        ctx,
+                        1,
+                        20 * idx1 + 5,
+                        nest2,
+                        height=20,
+                        font_color=definitions.WHITE,
+                        background_color=background,
+                        font_size_percentage=1,
+                        center_vertically=True,
+                        center_horizontally=True,
+                        rectangle_padding=1,
+                    )
+            # encoder_1 = 0
+            # if encoder_1 == idx:
+            #     for idx, nest2 in enumerate(chosen_folder[encoder_1]):
+            #         show_text(
+            #             ctx,
+            #             2,
+            #             20 * idx + 5,
+            #             nest2,
+            #             height=20,
+            #             font_color=definitions.WHITE,
+            #             background_color=background,
+            #             font_size_percentage=1,
+            #             center_vertically=True,
+            #             center_horizontally=True,
+            #             rectangle_padding=1,
+            #         )
 
     def on_button_pressed(self, button_name):
         if button_name in [
