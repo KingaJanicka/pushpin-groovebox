@@ -329,32 +329,37 @@ class PresetSelectionMode(definitions.PyshaMode):
 
     def count_nested_idx(self, list, to_compare, index):
         idx += 1
-        for idx, item in enumerate(list):
+        for idx, item in enumerate(list.items()):
             if item == to_compare:
                 return index
         self.count_nested_idx(item, to_compare, index)
 
-    def nested_draw(self, ctx, folders):
-        for idx, item in enumerate(folders):
+    def nested_draw(self, ctx, folders, level=1, y=0):
 
-            print(type(item))
+        for idx, item in enumerate(folders):
+            print(idx)
+            # this is buggered when nested functions are involvled
+            # if a function is nested this will draw even if a menu is not chosen
+            # need to find a way to do a check here against the knob value
             if isinstance(item, str):
                 show_text(
                     ctx,
-                    1,
-                    20 * idx + 5,
+                    level,
+                    20 * y + 5,
                     item,
                     height=20,
                     font_color=definitions.WHITE,
-                    background_color=None,
+                    background_color=definitions.BLACK,
                     font_size_percentage=1,
                     center_vertically=True,
                     center_horizontally=True,
                     rectangle_padding=1,
                 )
-            elif isinstance(item, dict) or isinstance(item, tuple):
-                print("DICT CONDITION")
-                self.nested_draw(ctx, item)
+            elif isinstance(item, tuple):
+                self.nested_draw(ctx, item, level=level + 1, y=y + idx)
+            elif isinstance(item, dict):
+                if idx == 1:
+                    self.nested_draw(ctx, item, level=level + 1, y=y)
 
     def update_display(self, ctx, w, h):
         current = self.current_selection[
@@ -388,7 +393,7 @@ class PresetSelectionMode(definitions.PyshaMode):
         elif 2 <= self.encoder_0 < 3:
             chosen_folder = self.patches["User"]
 
-        self.nested_draw(ctx, chosen_folder.items())
+        self.nested_draw(ctx, chosen_folder.items(), level=0, y=0)
         # for idx1, nest1 in enumerate(chosen_folder.items()):
         #     for idx2, nest2 in enumerate(nest1):
         #         if (
