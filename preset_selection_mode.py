@@ -21,22 +21,13 @@ class PresetSelectionMode(definitions.PyshaMode):
     pad_quick_press_time = 0.400
     current_page = 0
     patches = {}
-    current_selection = {}
-    encoder_0 = 0
-    encoder_1 = 0
-    encoder_2 = 0
-    encoder_3 = 0
-    encoder_4 = 0
-    encoder_5 = 0
-    encoder_6 = 0
-    encoder_7 = 0
+    state = [0] * 8
     patches_dicts = []
 
     def initialize(self, settings=None):
         for (
             instrument_short_name
         ) in self.get_all_distinct_instrument_short_names_helper():
-            self.current_selection[instrument_short_name] = []
             self.presets[instrument_short_name] = [None] * 8
         # self.load_config()
 
@@ -73,12 +64,11 @@ class PresetSelectionMode(definitions.PyshaMode):
                 filename = filename_arr[0]
                 if dir not in parent:
                     if dir.endswith(".fxp"):
-
                         parent[filename] = path
                     else:
-
                         parent[filename] = dict()
                 parent = parent[filename]
+
         return d
 
     def load_config(self):
@@ -327,73 +317,97 @@ class PresetSelectionMode(definitions.PyshaMode):
         self.app.pads_need_update = True
         return True  # Prevent other modes to get this event
 
-    def count_nested_idx(self, list, to_compare, index):
-        idx += 1
-        for idx, item in enumerate(list.items()):
-            if item == to_compare:
-                return index
-        self.count_nested_idx(item, to_compare, index)
-
-    def nested_draw(self, ctx, folders, level=1, y=0):
-
-        for idx, item in enumerate(folders):
-            print(idx)
-            # this is buggered when nested functions are involvled
-            # if a function is nested this will draw even if a menu is not chosen
-            # need to find a way to do a check here against the knob value, idx won't work
-            if isinstance(item, str):
-                show_text(
-                    ctx,
-                    level,
-                    20 * y + 5,
-                    item,
-                    height=20,
-                    font_color=definitions.WHITE,
-                    background_color=definitions.BLACK,
-                    font_size_percentage=1,
-                    center_vertically=True,
-                    center_horizontally=True,
-                    rectangle_padding=1,
-                )
-            elif isinstance(item, tuple):
-                if y == 0:
-                    self.nested_draw(ctx, item, level=level + 1, y=y + idx)
-            elif isinstance(item, dict):
-                self.nested_draw(ctx, item.items(), level=level + 1, y=y)
+    def nested_draw(
+        self,
+        ctx,
+        current,
+        level,
+        max_height,
+        item_height=20,
+        padding_top=5,
+        instrument_selector_height=20,
+    ):
+        for idx, entry in enumerate(current.items()):
+            key, val = entry
+            bg_color = (
+                definitions.YELLOW
+                if int(self.state[level]) == idx
+                else definitions.BLACK
+            )
+            text_color = (
+                definitions.BLACK
+                if int(self.state[level]) == idx
+                else definitions.WHITE
+            )
+            if isinstance(val, str):
+                if (
+                    item_height * idx + padding_top
+                    < max_height - instrument_selector_height
+                ):
+                    show_text(
+                        ctx,
+                        level,
+                        item_height * idx + padding_top,
+                        Path(val).stem,
+                        height=item_height,
+                        font_color=text_color,
+                        background_color=bg_color,
+                        font_size_percentage=1,
+                        center_vertically=True,
+                        center_horizontally=True,
+                        rectangle_padding=1,
+                    )
+            elif isinstance(val, dict):
+                if (
+                    item_height * idx + padding_top
+                    < max_height - instrument_selector_height
+                ):
+                    show_text(
+                        ctx,
+                        level,
+                        item_height * idx + padding_top,
+                        key,
+                        height=item_height,
+                        font_color=text_color,
+                        background_color=bg_color,
+                        font_size_percentage=1,
+                        center_vertically=True,
+                        center_horizontally=True,
+                        rectangle_padding=1,
+                    )
+                if int(self.state[level]) == idx:
+                    self.nested_draw(ctx, val, level=level + 1, max_height=max_height)
 
     def update_display(self, ctx, w, h):
-        current = self.current_selection[
-            self.get_current_instrument_short_name_helper()
-        ]
-        if len(current) == 0:
-            options = self.patches.keys()
+        self.nested_draw(ctx, self.patches, level=0, max_height=h)
+        # if len(current) == 0:
+        #     options = self.patches.keys()
+        # for idx, folder_name in enumerate(options):
+        #     background = None
+        #     if idx == int(self.encoder_0):
+        #         background = definitions.LIME
+        #     show_text(
+        #         ctx,
+        #         0,
+        #         20 * idx + 5,
+        #         folder_name,
+        #         height=20,
+        #         font_color=definitions.WHITE,
+        #         background_color=background,
+        #         font_size_percentage=1,
+        #         center_vertically=True,
+        #         center_horizontally=True,
+        #         rectangle_padding=1,
+        #     )
+        # chosen_folder = None
+        # if 0 <= self.encoder_0 < 1:
+        #     chosen_folder = self.patches["Factory"]
+        # elif 1 <= self.encoder_0 < 2:
+        #     chosen_folder = self.patches["Third Party"]
+        # elif 2 <= self.encoder_0 < 3:
+        #     chosen_folder = self.patches["User"]
 
-        for idx, folder_name in enumerate(options):
-            background = None
-            if idx == int(self.encoder_0):
-                background = definitions.LIME
-            show_text(
-                ctx,
-                0,
-                20 * idx + 5,
-                folder_name,
-                height=20,
-                font_color=definitions.WHITE,
-                background_color=background,
-                font_size_percentage=1,
-                center_vertically=True,
-                center_horizontally=True,
-                rectangle_padding=1,
-            )
-        chosen_folder = None
-        if 0 <= self.encoder_0 < 1:
-            chosen_folder = self.patches["Factory"]
-        elif 1 <= self.encoder_0 < 2:
-            chosen_folder = self.patches["Third Party"]
-        elif 2 <= self.encoder_0 < 3:
-            chosen_folder = self.patches["User"]
-
-        self.nested_draw(ctx, chosen_folder.items(), level=0, y=0)
+        # self.nested_draw(ctx, chosen_folder.items(), level=0)
         # for idx1, nest1 in enumerate(chosen_folder.items()):
         #     for idx2, nest2 in enumerate(nest1):
         #         if (
@@ -455,12 +469,26 @@ class PresetSelectionMode(definitions.PyshaMode):
                 push2_python.constants.ENCODER_TRACK7_ENCODER,
                 push2_python.constants.ENCODER_TRACK8_ENCODER,
             ].index(encoder_name)
-            if encoder_name == push2_python.constants.ENCODER_TRACK1_ENCODER:
-                if 0 <= self.encoder_0 + increment * 0.1 < len(self.patches):
-                    self.encoder_0 += increment * 0.1
-                else:
-                    pass
-            if encoder_name == push2_python.constants.ENCODER_TRACK2_ENCODER:
-                self.encoder_1 += increment * 0.1
+
+            current_dict = self.patches
+            for level in range(encoder_idx):
+                for idx, entry in enumerate(current_dict.values()):
+                    if int(self.state[level]) == idx:
+                        if isinstance(entry, dict):
+                            current_dict = entry
+
+            if (
+                0
+                <= self.state[encoder_idx] + increment * 0.1
+                < len(current_dict.keys())
+            ):
+                if int(self.state[encoder_idx] + increment * 0.1) != int(
+                    self.state[encoder_idx]
+                ):
+                    for idx in range(encoder_idx + 1, 8 - encoder_idx):
+                        self.state[idx] = 0
+
+                self.state[encoder_idx] += increment * 0.1
+
         except ValueError:
             pass  # Encoder not in list
