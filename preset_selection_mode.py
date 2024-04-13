@@ -340,7 +340,7 @@ class PresetSelectionMode(definitions.PyshaMode):
             print(idx)
             # this is buggered when nested functions are involvled
             # if a function is nested this will draw even if a menu is not chosen
-            # need to find a way to do a check here against the knob value
+            # need to find a way to do a check here against the knob value, idx won't work
             if isinstance(item, str):
                 show_text(
                     ctx,
@@ -356,10 +356,10 @@ class PresetSelectionMode(definitions.PyshaMode):
                     rectangle_padding=1,
                 )
             elif isinstance(item, tuple):
-                self.nested_draw(ctx, item, level=level + 1, y=y + idx)
+                if y == 0:
+                    self.nested_draw(ctx, item, level=level + 1, y=y + idx)
             elif isinstance(item, dict):
-                if idx == 1:
-                    self.nested_draw(ctx, item, level=level + 1, y=y)
+                self.nested_draw(ctx, item.items(), level=level + 1, y=y)
 
     def update_display(self, ctx, w, h):
         current = self.current_selection[
