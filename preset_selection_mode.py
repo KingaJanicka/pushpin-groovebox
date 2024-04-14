@@ -332,31 +332,27 @@ class PresetSelectionMode(definitions.PyshaMode):
             bg_color = (
                 definitions.YELLOW
                 if int(self.state[level]) == idx
-                else definitions.BLACK
+                else definitions.GREEN
             )
             text_color = (
                 definitions.BLACK
                 if int(self.state[level]) == idx
                 else definitions.WHITE
             )
-            if isinstance(val, str):
-                if (
-                    item_height * idx + padding_top
-                    < max_height - instrument_selector_height
-                ):
-                    show_text(
-                        ctx,
-                        level,
-                        item_height * idx + padding_top,
-                        Path(val).stem,
-                        height=item_height,
-                        font_color=text_color,
-                        background_color=bg_color,
-                        font_size_percentage=1,
-                        center_vertically=True,
-                        center_horizontally=True,
-                        rectangle_padding=1,
-                    )
+            if isinstance(val, str) and idx - 2 <= self.state[level] <= idx + 3:
+                show_text(
+                    ctx,
+                    level,
+                    item_height * (idx - int(self.state[level])) + padding_top + 60,
+                    Path(val).stem,
+                    height=item_height,
+                    font_color=text_color,
+                    background_color=bg_color,
+                    font_size_percentage=1,
+                    center_vertically=True,
+                    center_horizontally=True,
+                    rectangle_padding=1,
+                )
             elif isinstance(val, dict):
                 if (
                     item_height * idx + padding_top
