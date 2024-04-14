@@ -353,24 +353,20 @@ class PresetSelectionMode(definitions.PyshaMode):
                     center_horizontally=True,
                     rectangle_padding=1,
                 )
-            elif isinstance(val, dict):
-                if (
-                    item_height * idx + padding_top
-                    < max_height - instrument_selector_height
-                ):
-                    show_text(
-                        ctx,
-                        level,
-                        item_height * idx + padding_top,
-                        key,
-                        height=item_height,
-                        font_color=text_color,
-                        background_color=bg_color,
-                        font_size_percentage=1,
-                        center_vertically=True,
-                        center_horizontally=True,
-                        rectangle_padding=1,
-                    )
+            elif isinstance(val, dict) and idx - 2 <= self.state[level] <= idx + 3:
+                show_text(
+                    ctx,
+                    level,
+                    item_height * (idx - int(self.state[level])) + padding_top + 60,
+                    key,
+                    height=item_height,
+                    font_color=text_color,
+                    background_color=bg_color,
+                    font_size_percentage=1,
+                    center_vertically=True,
+                    center_horizontally=True,
+                    rectangle_padding=1,
+                )
                 if int(self.state[level]) == idx:
                     self.nested_draw(ctx, val, level=level + 1, max_height=max_height)
 
