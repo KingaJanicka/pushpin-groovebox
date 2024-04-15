@@ -8,7 +8,6 @@ from glob import glob
 from display_utils import show_notification
 from display_utils import show_text
 from pathlib import Path
-import re
 
 
 class PresetSelectionMode(definitions.PyshaMode):
@@ -23,8 +22,17 @@ class PresetSelectionMode(definitions.PyshaMode):
     patches = {}
     state = [0] * 8
     patches_dicts = []
+    current_address = None
+
+    def send_osc(self, *args):
+        instrument = self.app.osc_mode.instruments.get(
+            self.app.osc_mode.get_current_instrument_short_name_helper(), None
+        )
+        if instrument:
+            return instrument.send_message(*args)
 
     def initialize(self, settings=None):
+
         for (
             instrument_short_name
         ) in self.get_all_distinct_instrument_short_names_helper():
@@ -339,7 +347,12 @@ class PresetSelectionMode(definitions.PyshaMode):
                 if int(self.state[level]) == idx
                 else definitions.WHITE
             )
+
             if isinstance(val, str) and idx - 2 <= self.state[level] <= idx + 3:
+                if idx == int(self.state[level]):
+                    self.current_address = os.path.splitext(self.get_preset_path(val))[
+                        0
+                    ]
                 show_text(
                     ctx,
                     level,
@@ -370,72 +383,18 @@ class PresetSelectionMode(definitions.PyshaMode):
                 if int(self.state[level]) == idx:
                     self.nested_draw(ctx, val, level=level + 1, max_height=max_height)
 
+    def get_preset_path(self, preset):
+        chosen_folder = None
+        if 0 <= self.state[0] < 1:
+            chosen_folder = definitions.FACTORY_PATCHES_FOLDER
+        elif 1 <= self.state[0] < 2:
+            chosen_folder = definitions.THIRD_PARTY_PATCHES_FOLDER
+        elif 2 <= self.state[0] < 3:
+            chosen_folder = definitions.USER_PATCHES_FOLDER
+        return chosen_folder + "/" + preset
+
     def update_display(self, ctx, w, h):
         self.nested_draw(ctx, self.patches, level=0, max_height=h)
-        # if len(current) == 0:
-        #     options = self.patches.keys()
-        # for idx, folder_name in enumerate(options):
-        #     background = None
-        #     if idx == int(self.encoder_0):
-        #         background = definitions.LIME
-        #     show_text(
-        #         ctx,
-        #         0,
-        #         20 * idx + 5,
-        #         folder_name,
-        #         height=20,
-        #         font_color=definitions.WHITE,
-        #         background_color=background,
-        #         font_size_percentage=1,
-        #         center_vertically=True,
-        #         center_horizontally=True,
-        #         rectangle_padding=1,
-        #     )
-        # chosen_folder = None
-        # if 0 <= self.encoder_0 < 1:
-        #     chosen_folder = self.patches["Factory"]
-        # elif 1 <= self.encoder_0 < 2:
-        #     chosen_folder = self.patches["Third Party"]
-        # elif 2 <= self.encoder_0 < 3:
-        #     chosen_folder = self.patches["User"]
-
-        # self.nested_draw(ctx, chosen_folder.items(), level=0)
-        # for idx1, nest1 in enumerate(chosen_folder.items()):
-        #     for idx2, nest2 in enumerate(nest1):
-        #         if (
-        #             isinstance(nest2, dict) and idx1 == 0
-        #         ):  # this idx1 needs to be replaced with encoder1 value cast as an int
-        #             for idx3, nest3 in enumerate(nest2):
-        #                 if isinstance(nest3, dict) and idx2 == 0:
-        #                     pass
-        #                 elif isinstance(nest3, str):
-        #                     show_text(
-        #                         ctx,
-        #                         2,
-        #                         20 * idx3 + 5,
-        #                         nest3,
-        #                         height=20,
-        #                         font_color=definitions.WHITE,
-        #                         background_color=background,
-        #                         font_size_percentage=1,
-        #                         center_vertically=True,
-        #                         center_horizontally=True,
-        #                         rectangle_padding=1,
-        #                     )
-        #         elif isinstance(nest2, str):
-        #             show_text(
-        #                 ctx,
-        #                 1,
-        #                 20 * idx1 + 5,
-        #                 nest2,
-        #                 height=20,
-        #                 font_color=definitions.WHITE,
-        #                 background_color=background,
-        #                 font_size_percentage=1,
-        #                 center_vertically=True,
-        #                 center_horizontally=True,
-        #                 rectangle_padding=1,
-        #             )
 
     def on_button_pressed(self, button_name):
         if button_name in [
@@ -448,6 +407,12 @@ class PresetSelectionMode(definitions.PyshaMode):
             elif button_name == push2_python.constants.BUTTON_RIGHT and show_next:
                 self.next_page()
             return True
+        elif button_name in push2_python.constants.BUTTON_CLIP:
+            print(self.current_address)
+            # self.send_osc_func("/patch/load", self.current_address)
+            self.send_osc("/patch/random", None)
+            # client = self.osc["client"]
+            # client.send_message("/patch/random", None)
 
     def on_encoder_rotated(self, encoder_name, increment):
         try:

@@ -537,7 +537,11 @@ class PyshaApp(object):
             self.midi_out.send(msg)
 
     def send_osc(self, address, value, instrument_short_name=None):
-        # print(instrument_short_name, self.instrument_selection_mode.get_current_instrument_short_name(), "SEND OSC")
+        # print(
+        #     instrument_short_name,
+        #     self.instrument_selection_mode.get_current_instrument_short_name(),
+        #     "SEND OSC",
+        # )
         if instrument_short_name is not None:
             # This is for the sequencer
             client = self.osc_mode.instruments[instrument_short_name].osc.get(

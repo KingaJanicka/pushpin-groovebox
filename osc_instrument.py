@@ -130,3 +130,8 @@ class OSCInstrument(object):
         # for transport in self.transports:
         #     transport.close()
         pass
+
+    def send_message(self, *args):
+        client = self.osc["client"]
+        if client:
+            return client.send_message(*args)
