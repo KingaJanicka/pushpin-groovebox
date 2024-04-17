@@ -273,19 +273,15 @@ class PresetSelectionMode(definitions.PyshaMode):
         self.push.pads.set_pads_color(color_matrix)
 
     def on_pad_pressed(self, pad_n, pad_ij, velocity):
+
+        self.set_knob_postions()
         self.last_pad_pressed = pad_ij
         self.pad_pressing_states[pad_n] = (
             time.time()
         )  # Store time at which pad_n was pressed
         self.push.pads.set_pad_color(pad_ij, color=definitions.GREEN)
-        print("pad nr", pad_n, " ", pad_ij, " pressed")
+        level = 0
 
-        instrument_short_name = (
-            self.app.instrument_selection_mode.get_current_instrument_short_name()
-        )
-        preset_number = pad_ij[0]
-        print(self.presets[instrument_short_name[preset_number]])
-        self.send_osc("/patch/load", self.presets[instrument_short_name[preset_number]])
         return True  # Prevent other modes to get this event
 
     def on_pad_released(self, pad_n, pad_ij, velocity):
@@ -397,6 +393,28 @@ class PresetSelectionMode(definitions.PyshaMode):
 
     def update_display(self, ctx, w, h):
         self.nested_draw(ctx, self.patches, level=0, max_height=h)
+
+    def set_knob_postions(self):
+        instrument_short_name = (
+            self.app.instrument_selection_mode.get_current_instrument_short_name()
+        )
+        preset_number = self.last_pad_pressed[0]
+        preset_address = self.presets[instrument_short_name][preset_number]
+        address_array = preset_address.split("/")
+        address_array[-1] = address_array[-1] + ".fxp"
+        print(address_array)
+        level = 0
+        self.set_knob_pos_loop(self.patches, address_array=address_array, level=level)
+
+    def set_knob_pos_loop(self, patches, address_array, level=0):
+        for idx, elem in enumerate(patches):
+            if isinstance(str) and address_array[6 + level] == elem:
+                self.state[level] = idx
+            else:
+                level += 1
+                self.set_knob_pos_loop(
+                    patches, address_array=address_array, level=level
+                )
 
     def on_button_pressed(self, button_name):
         if button_name in [
