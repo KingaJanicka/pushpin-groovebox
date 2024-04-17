@@ -17,19 +17,13 @@ class PresetSelectionMode(definitions.PyshaMode):
     presets = {}
     presets_filename = "presets.json"
     pad_pressing_states = {}
+    last_pad_pressed = (0, 0)
     pad_quick_press_time = 0.400
     current_page = 0
     patches = {}
     state = [0] * 8
     patches_dicts = []
     current_address = None
-
-    def send_osc(self, *args):
-        instrument = self.app.osc_mode.instruments.get(
-            self.app.osc_mode.get_current_instrument_short_name_helper(), None
-        )
-        if instrument:
-            return instrument.send_message(*args)
 
     def initialize(self, settings=None):
 
@@ -264,26 +258,34 @@ class PresetSelectionMode(definitions.PyshaMode):
         instrument_short_name = (
             self.app.instrument_selection_mode.get_current_instrument_short_name()
         )
-        instrument_color = (
-            self.app.instrument_selection_mode.get_current_instrument_color()
-        )
         color_matrix = []
         for i in range(0, 8):
             row_colors = []
             for j in range(0, 8):
-                cell_color = instrument_color
-                preset_num, bank_num = self.pad_ij_to_bank_and_preset_num((i, j))
-                if not self.presets[instrument_short_name][preset_num]:
-                    cell_color = f"{cell_color}_darker2"  # If preset not in favourites, use a darker version of the instrument color
+                instrument_info = self.app.instrument_selection_mode.instruments_info[j]
+                instrument_short_name = instrument_info["instrument_short_name"]
+                cell_color = instrument_info["color"]
+
+                if not self.presets[instrument_short_name][j]:
+                    cell_color = f"{cell_color}_darker1"  # If preset not in favourites, use a darker version of the instrument color
                 row_colors.append(cell_color)
             color_matrix.append(row_colors)
         self.push.pads.set_pads_color(color_matrix)
 
     def on_pad_pressed(self, pad_n, pad_ij, velocity):
+        self.last_pad_pressed = pad_ij
         self.pad_pressing_states[pad_n] = (
             time.time()
         )  # Store time at which pad_n was pressed
         self.push.pads.set_pad_color(pad_ij, color=definitions.GREEN)
+        print("pad nr", pad_n, " ", pad_ij, " pressed")
+
+        instrument_short_name = (
+            self.app.instrument_selection_mode.get_current_instrument_short_name()
+        )
+        preset_number = pad_ij[0]
+        print(self.presets[instrument_short_name[preset_number]])
+        self.send_osc("/patch/load", self.presets[instrument_short_name[preset_number]])
         return True  # Prevent other modes to get this event
 
     def on_pad_released(self, pad_n, pad_ij, velocity):
@@ -407,12 +409,20 @@ class PresetSelectionMode(definitions.PyshaMode):
             elif button_name == push2_python.constants.BUTTON_RIGHT and show_next:
                 self.next_page()
             return True
-        elif button_name in push2_python.constants.BUTTON_CLIP:
-            print(self.current_address)
-            # self.send_osc_func("/patch/load", self.current_address)
-            self.send_osc("/patch/random", None)
-            # client = self.osc["client"]
-            # client.send_message("/patch/random", None)
+        elif button_name in push2_python.constants.BUTTON_UPPER_ROW_7:
+            instrument_short_name = (
+                self.app.instrument_selection_mode.get_current_instrument_short_name()
+            )
+            preset_number = self.last_pad_pressed[0]
+            self.presets[instrument_short_name][preset_number] = self.current_address
+        elif button_name in push2_python.constants.BUTTON_UPPER_ROW_8:
+            instrument_short_name = (
+                self.app.instrument_selection_mode.get_current_instrument_short_name()
+            )
+            preset_number = self.last_pad_pressed[0]
+            self.send_osc(
+                "/patch/load", self.presets[instrument_short_name][preset_number]
+            )
 
     def on_encoder_rotated(self, encoder_name, increment):
         try:
@@ -449,3 +459,10 @@ class PresetSelectionMode(definitions.PyshaMode):
 
         except ValueError:
             pass  # Encoder not in list
+
+    def send_osc(self, *args):
+        instrument = self.app.osc_mode.instruments.get(
+            self.app.osc_mode.get_current_instrument_short_name_helper(), None
+        )
+        if instrument:
+            return instrument.send_message(*args)
