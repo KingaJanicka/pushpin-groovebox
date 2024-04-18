@@ -26,13 +26,13 @@ class PresetSelectionMode(definitions.PyshaMode):
     current_address = None
 
     def initialize(self, settings=None):
-
         for (
             instrument_short_name
         ) in self.get_all_distinct_instrument_short_names_helper():
-            self.presets[instrument_short_name] = [None] * 8
+            self.presets[instrument_short_name] = [
+                f"{definitions.FACTORY_PATCHES_FOLDER}/Templates/Init Saw"
+            ] * 8
         # self.load_config()
-
         self.patches["Factory"] = self.create_dict_from_paths(
             glob(
                 f"**/*.fxp",
@@ -223,6 +223,7 @@ class PresetSelectionMode(definitions.PyshaMode):
     def activate(self):
         self.update_pads()
         self.notify_status_in_display()
+        self.set_knob_postions()
 
     def deactivate(self):
         self.app.push.pads.set_all_pads_to_color(color=definitions.BLACK)
@@ -268,12 +269,18 @@ class PresetSelectionMode(definitions.PyshaMode):
 
                 if not self.presets[instrument_short_name][j]:
                     cell_color = f"{cell_color}_darker1"  # If preset not in favourites, use a darker version of the instrument color
+                elif i == self.last_pad_pressed[0] and j == self.last_pad_pressed[1]:
+                    cell_color = definitions.WHITE
                 row_colors.append(cell_color)
             color_matrix.append(row_colors)
         self.push.pads.set_pads_color(color_matrix)
 
     def on_pad_pressed(self, pad_n, pad_ij, velocity):
-
+        instrument_short_name = (
+            self.app.instrument_selection_mode.get_current_instrument_short_name()
+        )
+        preset_number = self.last_pad_pressed[0]
+        self.send_osc("/patch/load", self.presets[instrument_short_name][preset_number])
         self.set_knob_postions()
         self.last_pad_pressed = pad_ij
         self.pad_pressing_states[pad_n] = (
@@ -285,6 +292,7 @@ class PresetSelectionMode(definitions.PyshaMode):
         return True  # Prevent other modes to get this event
 
     def on_pad_released(self, pad_n, pad_ij, velocity):
+        self.set_knob_postions()
         pressing_time = self.pad_pressing_states.get(pad_n, None)
         is_long_press = False
         if pressing_time is None:
@@ -400,21 +408,37 @@ class PresetSelectionMode(definitions.PyshaMode):
         )
         preset_number = self.last_pad_pressed[0]
         preset_address = self.presets[instrument_short_name][preset_number]
-        address_array = preset_address.split("/")
-        address_array[-1] = address_array[-1] + ".fxp"
-        print(address_array)
-        level = 0
-        self.set_knob_pos_loop(self.patches, address_array=address_array, level=level)
 
-    def set_knob_pos_loop(self, patches, address_array, level=0):
-        for idx, elem in enumerate(patches):
-            if isinstance(str) and address_array[6 + level] == elem:
-                self.state[level] = idx
-            else:
-                level += 1
-                self.set_knob_pos_loop(
-                    patches, address_array=address_array, level=level
-                )
+        address_array = (
+            preset_address.replace(definitions.FACTORY_PATCHES_FOLDER, "")
+            .replace(definitions.THIRD_PARTY_PATCHES_FOLDER, "")
+            .replace(definitions.USER_PATCHES_FOLDER, "")[1:]
+            .split("/")
+        )
+        # address_array[-1] = address_array[-1] + ".fxp"
+        level = None
+        print(
+            "init patch",
+            str(f"{definitions.USER_PATCHES_FOLDER}/Templates/Init Saw.fxp"),
+        )
+        try:
+            if definitions.FACTORY_PATCHES_FOLDER in preset_address:
+                self.state[0] = 0
+                level = self.patches["Factory"]
+                for idx, piece in enumerate(address_array):
+                    self.state[idx + 1] = list(level).index(piece)
+                    level = level[piece]
+            elif definitions.THIRD_PARTY_PATCHES_FOLDER in preset_address:
+                self.state[0] = 1
+                for idx, piece in enumerate(address_array):
+                    self.state[idx + 1] = self.patches["Third Party"].index(piece)
+            elif definitions.USER_PATCHES_FOLDER in preset_address:
+                self.state[0] = 2
+                for idx, piece in enumerate(address_array):
+                    self.state[idx + 1] = self.patches["User"].index(piece)
+        except Exception as e:
+
+            print(e, "ERROR")
 
     def on_button_pressed(self, button_name):
         if button_name in [
