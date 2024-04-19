@@ -32,6 +32,7 @@ class PresetSelectionMode(definitions.PyshaMode):
             self.presets[instrument_short_name] = [
                 f"{definitions.FACTORY_PATCHES_FOLDER}/Templates/Init Saw"
             ] * 8
+
         # self.load_config()
         self.patches["Factory"] = self.create_dict_from_paths(
             glob(
@@ -276,6 +277,7 @@ class PresetSelectionMode(definitions.PyshaMode):
         self.push.pads.set_pads_color(color_matrix)
 
     def on_pad_pressed(self, pad_n, pad_ij, velocity):
+        self.app.instrument_selection_mode.select_instrument(pad_ij[1])
         instrument_short_name = (
             self.app.instrument_selection_mode.get_current_instrument_short_name()
         )
