@@ -17,7 +17,7 @@ class PresetSelectionMode(definitions.PyshaMode):
     presets = {}
     presets_filename = "presets.json"
     pad_pressing_states = {}
-    last_pad_pressed = (0, 0)
+    last_pad_in_column_pressed = {}
     pad_quick_press_time = 0.400
     current_page = 0
     patches = {}
@@ -26,13 +26,13 @@ class PresetSelectionMode(definitions.PyshaMode):
     current_address = None
 
     def initialize(self, settings=None):
-        for (
-            instrument_short_name
-        ) in self.get_all_distinct_instrument_short_names_helper():
+        for idx, instrument_short_name in enumerate(
+            self.get_all_distinct_instrument_short_names_helper()
+        ):
             self.presets[instrument_short_name] = [
                 f"{definitions.FACTORY_PATCHES_FOLDER}/Templates/Init Saw"
             ] * 8
-
+            self.last_pad_in_column_pressed[instrument_short_name] = (0, idx)
         # self.load_config()
         self.patches["Factory"] = self.create_dict_from_paths(
             glob(
@@ -270,7 +270,10 @@ class PresetSelectionMode(definitions.PyshaMode):
 
                 if not self.presets[instrument_short_name][j]:
                     cell_color = f"{cell_color}_darker1"  # If preset not in favourites, use a darker version of the instrument color
-                elif i == self.last_pad_pressed[0] and j == self.last_pad_pressed[1]:
+                elif (
+                    i == self.last_pad_in_column_pressed[instrument_short_name][0]
+                    and j == self.last_pad_in_column_pressed[instrument_short_name][1]
+                ):
                     cell_color = definitions.WHITE
                 row_colors.append(cell_color)
             color_matrix.append(row_colors)
@@ -281,56 +284,14 @@ class PresetSelectionMode(definitions.PyshaMode):
         instrument_short_name = (
             self.app.instrument_selection_mode.get_current_instrument_short_name()
         )
-        preset_number = self.last_pad_pressed[0]
-        self.send_osc("/patch/load", self.presets[instrument_short_name][preset_number])
+        self.last_pad_in_column_pressed[instrument_short_name] = pad_ij
         self.set_knob_postions()
-        self.last_pad_pressed = pad_ij
-        self.pad_pressing_states[pad_n] = (
-            time.time()
-        )  # Store time at which pad_n was pressed
-        self.push.pads.set_pad_color(pad_ij, color=definitions.GREEN)
-        level = 0
-
+        self.send_osc("/patch/load", self.presets[instrument_short_name][pad_ij[0]])
+        self.update_pads()
         return True  # Prevent other modes to get this event
 
     def on_pad_released(self, pad_n, pad_ij, velocity):
-        self.set_knob_postions()
-        pressing_time = self.pad_pressing_states.get(pad_n, None)
-        is_long_press = False
-        if pressing_time is None:
-            # Consider quick press (this should not happen as self.pad_pressing_states[pad_n] should have been set before)
-            pass
-        else:
-            if time.time() - pressing_time > self.pad_quick_press_time:
-                # Consider this is a long press
-                is_long_press = True
-            self.pad_pressing_states[pad_n] = None  # Reset pressing time to none
-
-        preset_num, bank_num = self.pad_ij_to_bank_and_preset_num(pad_ij)
-
-        if is_long_press:
-            # Add/remove preset to favourites, don't send any MIDI
-            if not self.preset_num_in_favourites(preset_num, bank_num):
-                self.add_preset(preset_num, bank_num)
-            else:
-                self.remove_preset(preset_num, bank_num)
-        else:
-            # Send midi message to select the bank and preset preset
-            self.send_select_new_bank(bank_num)
-            self.send_select_new_preset(preset_num)
-            bank_names = self.get_bank_names()
-            if bank_names is not None:
-                bank_name = bank_names[bank_num]
-            else:
-                bank_name = bank_num + 1
-            self.app.add_display_notification(
-                "Selected bank {0}, preset {1}".format(
-                    bank_name,  # Show 1-indexed value
-                    preset_num + 1,  # Show 1-indexed value
-                )
-            )
-
-        self.app.pads_need_update = True
+        self.update_pads()
         return True  # Prevent other modes to get this event
 
     def nested_draw(
@@ -408,7 +369,7 @@ class PresetSelectionMode(definitions.PyshaMode):
         instrument_short_name = (
             self.app.instrument_selection_mode.get_current_instrument_short_name()
         )
-        preset_number = self.last_pad_pressed[0]
+        preset_number = self.last_pad_in_column_pressed[instrument_short_name][0]
         preset_address = self.presets[instrument_short_name][preset_number]
 
         address_array = (
@@ -419,10 +380,7 @@ class PresetSelectionMode(definitions.PyshaMode):
         )
         # address_array[-1] = address_array[-1] + ".fxp"
         level = None
-        print(
-            "init patch",
-            str(f"{definitions.USER_PATCHES_FOLDER}/Templates/Init Saw.fxp"),
-        )
+
         try:
             if definitions.FACTORY_PATCHES_FOLDER in preset_address:
                 self.state[0] = 0
@@ -457,16 +415,8 @@ class PresetSelectionMode(definitions.PyshaMode):
             instrument_short_name = (
                 self.app.instrument_selection_mode.get_current_instrument_short_name()
             )
-            preset_number = self.last_pad_pressed[0]
+            preset_number = self.last_pad_in_column_pressed[instrument_short_name][0]
             self.presets[instrument_short_name][preset_number] = self.current_address
-        elif button_name in push2_python.constants.BUTTON_UPPER_ROW_8:
-            instrument_short_name = (
-                self.app.instrument_selection_mode.get_current_instrument_short_name()
-            )
-            preset_number = self.last_pad_pressed[0]
-            self.send_osc(
-                "/patch/load", self.presets[instrument_short_name][preset_number]
-            )
 
     def on_encoder_rotated(self, encoder_name, increment):
         try:
