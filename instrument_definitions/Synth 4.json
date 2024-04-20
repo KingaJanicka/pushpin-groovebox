@@ -3,8 +3,8 @@
     "instrument_short_name": "Synth 4",
     "illuminate_local_notes": true,
     "n_banks": 1,
-    "midi_channel": 5,
-    "osc_in_port" : 1034,
+    "midi_channel": 4,
+    "osc_in_port": 1034,
     "osc_out_port": 1044,
     "default_layout": "lseq"
 }

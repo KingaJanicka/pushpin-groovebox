@@ -2,9 +2,9 @@
   "instrument_name": "Synth 1",
   "instrument_short_name": "Synth 1",
   "illuminate_local_notes": true,
-  "midi_channel": 2,
-  "osc_in_port" : 1031,
-  "osc_out_port" : 1041,
+  "midi_channel": 1,
+  "osc_in_port": 1031,
+  "osc_out_port": 1041,
   "n_banks": 2,
   "default_layout": "lseq"
 }

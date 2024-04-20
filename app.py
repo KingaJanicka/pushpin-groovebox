@@ -5,11 +5,14 @@ import time
 import traceback
 import cairo
 import definitions
+import subprocess
 import mido
 import numpy
 import push2_python
 import logging
 import asyncio
+import jack
+import binascii
 
 from melodic_mode import MelodicMode
 from instrument_selection_mode import InstrumentSelectionMode
@@ -77,6 +80,9 @@ class PyshaApp(object):
 
     # client = SimpleUDPClient("127.0.0.1", 1032)
 
+    # surge
+    surge = {}
+
     def __init__(self):
         if os.path.exists("settings.json"):
             settings = json.load(open("settings.json"))
@@ -96,8 +102,9 @@ class PyshaApp(object):
             device_name=settings.get("default_notes_midi_in_device_name", None)
         )
         self.init_push()
-
         self.init_modes(settings)
+
+        self.init_surge()
 
     def init_modes(self, settings):
         self.main_controls_mode = MainControlsMode(self, settings=settings)
@@ -390,7 +397,26 @@ class PyshaApp(object):
             and "RtMidi" not in name
             and "Through" not in name
         ]
-        self.available_midi_out_device_names += ["Virtual"]
+        self.available_midi_out_device_names += [
+            "Synth 0",
+            "Synth 1",
+            "Synth 2",
+            "Synth 3",
+            "Synth 4",
+            "Synth 5",
+            "Synth 6",
+            "Synth 7",
+        ]
+        virtual_device_names = [
+            "Synth 0",
+            "Synth 1",
+            "Synth 2",
+            "Synth 3",
+            "Synth 4",
+            "Synth 5",
+            "Synth 6",
+            "Synth 7",
+        ]
 
         if device_name is not None:
             try:
@@ -403,7 +429,7 @@ class PyshaApp(object):
                 full_name = None
             if full_name is not None:
                 try:
-                    if full_name == "Virtual":
+                    if full_name in virtual_device_names:
                         self.midi_out = mido.open_output(full_name, virtual=True)
                     else:
                         self.midi_out = mido.open_output(full_name)
@@ -565,31 +591,43 @@ class PyshaApp(object):
             self.send_osc(address, val, instrument_short_name)
 
     def midi_in_handler(self, msg):
-        if hasattr(
-            msg, "channel"
-        ):  # This will rule out sysex and other "strange" messages that don't have channel info
-            if (
-                self.midi_in_channel == -1 or msg.channel == self.midi_in_channel
-            ):  # If midi input channel is set to -1 (all) or a specific channel
+        if hasattr(msg, "channel"):
+            instrument = next(
+                (
+                    item
+                    for item in self.instrument_selection_mode.instruments_info
+                    if item["midi_channel"] == msg.channel
+                ),
+                None,
+            )
+            if instrument:
+                instance = self.surge.get(instrument["instrument_short_name"], None)
+                if instance["port"]:
+                    port = instance["port"]
+                    port.send(msg)
+            # This will rule out sysex and other "strange" messages that don't have channel info
+            # if (
+            #     self.midi_in_channel == -1 or msg.channel == self.midi_in_channel
+            # ):  # If midi input channel is set to -1 (all) or a specific channel
 
-                skip_message = False
-                if msg.type == "aftertouch":
-                    now = time.time()
-                    if (abs(self.last_cp_value_recevied - msg.value) > 10) and (
-                        now - self.last_cp_value_recevied_time < 0.5
-                    ):
-                        skip_message = True
-                    else:
-                        self.last_cp_value_recevied = msg.value
-                    self.last_cp_value_recevied_time = time.time()
+            #     skip_message = False
+            #     if msg.type == "aftertouch":
+            #         now = time.time()
+            #         if (abs(self.last_cp_value_recevied - msg.value) > 10) and (
+            #             now - self.last_cp_value_recevied_time < 0.5
+            #         ):
+            #             skip_message = True
+            #         else:
+            #             self.last_cp_value_recevied = msg.value
+            #         self.last_cp_value_recevied_time = time.time()
 
-                if not skip_message:
-                    # Forward message to the main MIDI out
-                    self.send_midi(msg)
+            #     if not skip_message:
+            #         # Forward message to the main MIDI out
+            #         self.send_midi(msg)
 
-                    # Forward the midi message to the active modes
-                    for mode in self.active_modes:
-                        mode.on_midi_in(msg, source=self.midi_in.name)
+            #         # Forward the midi message to the active modes
+            #         for mode in self.active_modes:
+            #             mode.on_midi_in(msg, source=self.midi_in.name)
 
     def notes_midi_in_handler(self, msg):
         # Check if message is note on or off and check if the MIDI channel is the one assigned to the currently selected instrument
@@ -614,6 +652,48 @@ class PyshaApp(object):
     def add_display_notification(self, text):
         self.notification_text = text
         self.notification_time = time.time()
+
+    def init_surge(self):
+        sample_rate = 48000
+        buffer_size = 512
+        for idx, instrument in enumerate(
+            self.instrument_selection_mode.instruments_info
+        ):
+
+            out_port = mido.open_output(
+                instrument["instrument_short_name"],
+                client_name=instrument["instrument_short_name"],
+            )
+
+            # @client.set_process_callback
+            # def process(frames):
+            #     for offset, data in port.incoming_midi_events():
+            #         print(
+            #             "{}: 0x{}".format(
+            #                 client.last_frame_time + offset,
+            #                 binascii.hexlify(data).decode(),
+            #             )
+            #         )
+            device_idx = [els.split(":")[0] for els in mido.get_input_names()].index(
+                instrument["instrument_short_name"]
+            )
+            print(device_idx)
+            ps = subprocess.Popen(
+                [
+                    "surge-xt-cli",
+                    "--audio-interface=0.1",
+                    f"--midi-input={device_idx}",
+                    f"--sample-rate={sample_rate}",
+                    f"--buffer-size={buffer_size}",
+                    f"--osc-in-port=103{idx}",
+                    f"--osc-out-port=104{idx}",
+                ]
+            )
+
+            self.surge[instrument["instrument_short_name"]] = {
+                "process": ps,
+                "port": out_port,
+            }
 
     def init_push(self):
         print("Configuring Push...")

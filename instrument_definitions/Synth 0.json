@@ -2,8 +2,8 @@
   "instrument_name": "Synth 0",
   "instrument_short_name": "Synth 0",
   "illuminate_local_notes": true,
-  "midi_channel": 1,
-  "osc_in_port" : 1030,
+  "midi_channel": 0,
+  "osc_in_port": 1030,
   "osc_out_port": 1040,
   "default_layout": "lseq"
 }

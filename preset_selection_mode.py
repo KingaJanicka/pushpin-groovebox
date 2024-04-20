@@ -33,7 +33,7 @@ class PresetSelectionMode(definitions.PyshaMode):
                 f"{definitions.FACTORY_PATCHES_FOLDER}/Templates/Init Saw"
             ] * 8
             self.last_pad_in_column_pressed[instrument_short_name] = (0, idx)
-        # self.load_config()
+
         self.patches["Factory"] = self.create_dict_from_paths(
             glob(
                 f"**/*.fxp",
@@ -58,6 +58,11 @@ class PresetSelectionMode(definitions.PyshaMode):
             )
         )
 
+        try:
+            self.load_presets()
+        except:
+            self.save_presets()
+
     def create_dict_from_paths(self, arr):
         d = dict()
         for path in arr:
@@ -74,12 +79,12 @@ class PresetSelectionMode(definitions.PyshaMode):
 
         return d
 
-    def load_config(self):
+    def load_presets(self):
         if os.path.exists(self.presets_filename):
             self.presets = json.load(open(self.presets_filename))
 
-    def save_config(self, presets=None):
-        json.dump(presets or self.presets, self.presets_filename)
+    def save_presets(self):
+        json.dump(self.presets, open(self.presets_filename, "w"))  # Save to file
 
     def activate(self):
         self.current_page = 0
@@ -101,7 +106,7 @@ class PresetSelectionMode(definitions.PyshaMode):
         if instrument_short_name not in self.presets:
             self.presets[instrument_short_name] = []
         self.presets[instrument_short_name].append((preset_number, bank_number))
-        json.dump(self.presets, open(self.presets_filename, "w"))  # Save to file
+        self.save_presets()
 
     def get_all_distinct_instrument_short_names_helper(self):
         return (
@@ -123,7 +128,7 @@ class PresetSelectionMode(definitions.PyshaMode):
                 ]
                 if preset_number != fp_preset_number or bank_number != fp_bank_number
             ]
-            json.dump(self.presets, open(self.presets_filename, "w"))  # Save to file
+            self.save_presets()
 
     def preset_num_in_favourites(self, preset_number, bank_number):
         instrument_short_name = (
@@ -194,19 +199,19 @@ class PresetSelectionMode(definitions.PyshaMode):
         bank_num = self.get_current_page() // 2
         return (preset_num, bank_num)
 
-    def send_select_new_preset(self, preset_num):
-        msg = mido.Message(
-            "program_change", program=preset_num
-        )  # Should this be 1-indexed?
-        self.app.send_midi(msg)
+    # def send_select_new_preset(self, preset_num):
+    #     msg = mido.Message(
+    #         "program_change", program=preset_num
+    #     )  # Should this be 1-indexed?
+    #     self.app.send_midi(msg)
 
-    def send_select_new_bank(self, bank_num):
-        # If synth only has 1 bank, don't send bank change messages
-        if self.get_num_banks() > 1:
-            msg = mido.Message(
-                "control_change", control=0, value=bank_num
-            )  # Should this be 1-indexed?
-            self.app.send_midi(msg)
+    # def send_select_new_bank(self, bank_num):
+    #     # If synth only has 1 bank, don't send bank change messages
+    #     if self.get_num_banks() > 1:
+    #         msg = mido.Message(
+    #             "control_change", control=0, value=bank_num
+    #         )  # Should this be 1-indexed?
+    #         self.app.send_midi(msg)
 
     def notify_status_in_display(self):
         bank_number = self.get_current_page() // 2 + 1
@@ -216,7 +221,7 @@ class PresetSelectionMode(definitions.PyshaMode):
         else:
             bank_name = bank_number
         self.app.add_display_notification(
-            "Preset FARTS: bank {0}, presets {1}".format(
+            "Preset: bank {0}, presets {1}".format(
                 bank_name, "1-64" if self.get_current_page() % 2 == 0 else "65-128"
             )
         )
@@ -281,7 +286,9 @@ class PresetSelectionMode(definitions.PyshaMode):
 
     def on_pad_pressed(self, pad_n, pad_ij, velocity):
         # TODO: fix the blinking bug and pad preset swaping on differnet instruments
-        # self.app.instrument_selection_mode.select_instrument(pad_ij[1])
+        if pad_ij[1] != self.app.instrument_selection_mode.selected_instrument:
+            self.app.instrument_selection_mode.select_instrument(pad_ij[1])
+
         instrument_short_name = (
             self.app.instrument_selection_mode.get_current_instrument_short_name()
         )
@@ -398,7 +405,6 @@ class PresetSelectionMode(definitions.PyshaMode):
                 for idx, piece in enumerate(address_array):
                     self.state[idx + 1] = self.patches["User"].index(piece)
         except Exception as e:
-
             print(e, "ERROR")
 
     def on_button_pressed(self, button_name):
@@ -418,6 +424,7 @@ class PresetSelectionMode(definitions.PyshaMode):
             )
             preset_number = self.last_pad_in_column_pressed[instrument_short_name][0]
             self.presets[instrument_short_name][preset_number] = self.current_address
+            self.save_presets()
 
     def on_encoder_rotated(self, encoder_name, increment):
         try:

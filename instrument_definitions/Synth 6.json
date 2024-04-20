@@ -2,9 +2,9 @@
     "instrument_name": "Synth 6",
     "instrument_short_name": "Synth 6",
     "illuminate_local_notes": true,
-    "midi_channel": 7,
-    "osc_in_port" : 1036,
-    "osc_out_port" : 1046,
+    "midi_channel": 5,
+    "osc_in_port": 1036,
+    "osc_out_port": 1046,
     "default_layout": "lseq",
     "n_banks": 1
 }
