@@ -92,8 +92,6 @@ class SequencerMode(MelodicMode):
         pass
 
     def sequencer_on_tick(self, instrument_name, length):
-        # print(self.get_current_instrument_osc_port())
-
         self.update_pads()
         if self.get_current_instrument_short_name_helper() == instrument_name:
             self.playhead = (self.playhead + 1) % length
@@ -108,7 +106,7 @@ class SequencerMode(MelodicMode):
 
     def get_current_instrument_osc_port(self):
         return self.app.instrument_selection_mode.get_current_instrument_info()[
-            "osc_port"
+            "osc_out_port"
         ]
 
     def new_instrument_selected(self):
@@ -119,7 +117,7 @@ class SequencerMode(MelodicMode):
         )
 
         self.selected_instrument = TRACK_NAMES[0]
-        print(self.selected_instrument)
+        # print(self.selected_instrument)
         # print(self.app.osc_mode.get_current_instrument_osc_address_sections())
 
     def update_pads(self):

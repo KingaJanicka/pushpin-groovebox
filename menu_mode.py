@@ -183,6 +183,7 @@ class MenuMode(PyshaMode):
                         float(message["value"]),
                         instrument_shortname,
                     )
+                    # TODO: might need removing
                 self.app.toggle_menu_mode()
                 self.selected_menu_item_index = 0
                 self.app.buttons_need_update = True

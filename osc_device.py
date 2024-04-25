@@ -131,7 +131,7 @@ class OSCDevice(object):
 
     def select(self):
         self.query_visible_controls()
-
+        print("device init______________")
         for cmd in self.init:
             self.send_message(cmd["address"], float(cmd["value"]))
 

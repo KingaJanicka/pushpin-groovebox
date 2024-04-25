@@ -28,7 +28,7 @@ from ddrm_tone_selector_mode import DDRMToneSelectorMode
 from menu_mode import MenuMode
 from display_utils import show_notification
 
-logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
 # logging.getLogger().setLevel(level=logging.DEBUG)
 
 
@@ -104,8 +104,6 @@ class PyshaApp(object):
         self.init_push()
         self.init_modes(settings)
 
-        self.init_surge()
-
     def init_modes(self, settings):
         self.main_controls_mode = MainControlsMode(self, settings=settings)
         self.active_modes.append(self.main_controls_mode)
@@ -120,6 +118,11 @@ class PyshaApp(object):
         self.instrument_selection_mode = InstrumentSelectionMode(
             self, settings=settings
         )
+
+        # Initialise Surge and wait for it to load
+        self.init_surge()
+        # time.sleep(5)  # TODO find better way to wait on Surge load
+
         self.preset_selection_mode = PresetSelectionMode(self, settings=settings)
         self.midi_cc_mode = MIDICCMode(
             self, settings=settings
@@ -208,7 +211,7 @@ class PyshaApp(object):
             self.menu_mode.deactivate()
             self.osc_mode.deactivate()
             self.preset_selection_mode.activate()
-            print(self.active_modes, "active modes")
+            # print(self.active_modes, "active modes")
 
     def toggle_ddrm_tone_selector_mode(self):
         if self.is_mode_active(self.ddrm_tone_selector_mode):
@@ -677,7 +680,7 @@ class PyshaApp(object):
             device_idx = [els.split(":")[0] for els in mido.get_input_names()].index(
                 instrument["instrument_short_name"]
             )
-            print(device_idx)
+
             ps = subprocess.Popen(
                 [
                     "surge-xt-cli",
@@ -685,13 +688,13 @@ class PyshaApp(object):
                     f"--midi-input={device_idx}",
                     f"--sample-rate={sample_rate}",
                     f"--buffer-size={buffer_size}",
-                    f"--osc-in-port=103{idx}",
-                    f"--osc-out-port=104{idx}",
+                    f"--osc-in-port={instrument['osc_in_port']}",
+                    f"--osc-out-port={instrument['osc_out_port']}",
                 ]
             )
 
             self.surge[instrument["instrument_short_name"]] = {
-                "process": ps,
+                # "process": ps,
                 "port": out_port,
             }
 

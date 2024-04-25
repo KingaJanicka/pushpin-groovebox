@@ -67,7 +67,8 @@ class InstrumentSelectionMode(definitions.PyshaMode):
                         "instrument_name": instrument_data.get("instrument_name", "-"),
                         "instrument_short_name": instrument_short_name,
                         "midi_channel": instrument_data.get("midi_channel", -1),
-                        "osc_port": instrument_data.get("osc_port", 0),
+                        "osc_in_port": instrument_data.get("osc_in_port", 0),
+                        "osc_out_port": instrument_data.get("osc_out_port", 0),
                         "color": color,
                         "n_banks": instrument_data.get("n_banks", 1),
                         "bank_names": instrument_data.get("bank_names", None),
@@ -102,8 +103,11 @@ class InstrumentSelectionMode(definitions.PyshaMode):
     def get_current_instrument_info(self):
         return self.instruments_info[self.selected_instrument]
 
-    def get_current_instrument_osc_port(self):
-        return self.get_current_instrument_info()["osc_port"]
+    def get_current_instrument_osc_out_port(self):
+        return self.get_current_instrument_info()["osc_out_port"]
+
+    def get_current_instrument_osc_in_port(self):
+        return self.get_current_instrument_info()["osc_in_port"]
 
     def get_current_instrument_short_name(self):
         return self.get_current_instrument_info()["instrument_short_name"]

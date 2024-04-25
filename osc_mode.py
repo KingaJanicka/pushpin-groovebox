@@ -139,6 +139,7 @@ class OSCMode(PyshaMode):
         return devices
 
     def query_devices(self):
+        self.instruments[self.get_current_instrument_short_name_helper()].query_slots()
         devices = self.get_current_instrument_devices()
         for device in devices:
             device.query_visible_controls()
@@ -188,13 +189,11 @@ class OSCMode(PyshaMode):
         self.current_device_index_and_page = result
         new_current_device = self.get_current_instrument_device()
         self.query_devices()
-        print("new page", new_page)
         new_current_device.set_page(new_page)
         self.app.buttons_need_update = True
 
     def new_instrument_selected(self):
         self.query_devices()
-        # print("NEW INSTRUMENT", new_instrument)
         # if new_instrument:
         #     for device in new_instrument.devices:
         #         print(device)

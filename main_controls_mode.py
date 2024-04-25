@@ -106,7 +106,6 @@ class MainControlsMode(definitions.PyshaMode):
             return True
         elif button_name == BROWSE_BUTTON:
             if self.app.preset_selection_mode.should_be_enabled():
-                print("browse button")
                 self.app.toggle_preset_selection_mode()
                 self.app.buttons_need_update = True
             return True
