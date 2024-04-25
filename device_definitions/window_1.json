@@ -1,0 +1,44 @@
+{
+	"name": "Wavetable",
+	"slot": 0,
+	"init": [
+		{
+			"$type": "message",
+			"$comment": "unmute osc",
+			"address": "/param/a/mixer/osc1/mute",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"$comment": "set osc type",
+			"address": "/param/a/osc/1/type",
+			"value": 7
+		}
+	],
+	"controls": [
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		}
+	]
+}
