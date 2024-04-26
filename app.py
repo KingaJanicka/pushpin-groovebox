@@ -111,7 +111,7 @@ class PyshaApp(object):
         self.melodic_mode = MelodicMode(
             self, settings=settings, send_osc_func=self.send_osc
         )
-        self.rhyhtmic_mode = RhythmicMode(self, settings=settings)
+        self.rhythmic_mode = RhythmicMode(self, settings=settings)
         self.slice_notes_mode = SliceNotesMode(self, settings=settings)
         self.set_melodic_mode()
 
@@ -120,7 +120,7 @@ class PyshaApp(object):
         )
 
         # Initialise Surge and wait for it to load
-        self.init_surge()
+        # self.init_surge()
         # time.sleep(5)  # TODO find better way to wait on Surge load
 
         self.preset_selection_mode = PresetSelectionMode(self, settings=settings)
@@ -295,7 +295,7 @@ class PyshaApp(object):
     def toggle_melodic_rhythmic_slice_modes(self):
         if self.is_mode_active(self.sequencer_mode):
             self.set_rhythmic_mode()
-        elif self.is_mode_active(self.rhyhtmic_mode):
+        elif self.is_mode_active(self.rhythmic_mode):
             self.set_slice_notes_mode()
         elif self.is_mode_active(self.slice_notes_mode):
             self.set_melodic_mode()
@@ -309,7 +309,7 @@ class PyshaApp(object):
         self.set_mode_for_xor_group(self.melodic_mode)
 
     def set_rhythmic_mode(self):
-        self.set_mode_for_xor_group(self.rhyhtmic_mode)
+        self.set_mode_for_xor_group(self.rhythmic_mode)
 
     def set_slice_notes_mode(self):
         self.set_mode_for_xor_group(self.slice_notes_mode)
@@ -643,7 +643,7 @@ class PyshaApp(object):
             )
             if msg.channel == instrument_midi_channel - 1:  # msg.channel is 0-indexed
                 for mode in self.active_modes:
-                    if mode == self.melodic_mode or mode == self.rhyhtmic_mode:
+                    if mode == self.melodic_mode or mode == self.rhythmic_mode:
                         mode.on_midi_in(msg, source=self.notes_midi_in.name)
                         if mode.lumi_midi_out is not None:
                             mode.lumi_midi_out.send(msg)

@@ -11,7 +11,7 @@ import push2_python
 import logging
 
 logger = logging.getLogger("osc_device")
-# logger.setLevel(level=logging.DEBUG)
+logger.setLevel(level=logging.DEBUG)
 
 
 class OSCDevice(object):
@@ -63,7 +63,7 @@ class OSCDevice(object):
         self.slot = config.get("slot", None)
         self.log_in = logger.getChild(f"in-{kwargs['osc_in_port']}")
         self.log_out = logger.getChild(f"out-{kwargs['osc_out_port']}")
-        # self.dispatcher.map("*", lambda *message: self.log_in.debug(message))
+        self.dispatcher.map("*", lambda *message: self.log_in.debug(message))
         self.init = config.get("init", [])
         get_color = kwargs.get("get_color")
         control_definitions = config.get("controls", [])

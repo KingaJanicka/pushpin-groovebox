@@ -47,7 +47,7 @@ class OSCControl(object):
 
         if send_osc_func:
             self.send_osc_func = send_osc_func
-            # self.send_osc_func(f"/q{self.address}", None)
+            self.send_osc_func(f"/q{self.address}", None)
 
     def send_osc_func(self, address, payload):
         pass

@@ -299,6 +299,10 @@ class PresetSelectionMode(definitions.PyshaMode):
         return True  # Prevent other modes to get this event
 
     def on_pad_released(self, pad_n, pad_ij, velocity):
+        devices = self.app.osc_mode.get_current_instrument_devices()
+        for device in devices:
+            device.query_visible_controls()
+
         self.update_pads()
         return True  # Prevent other modes to get this event
 
