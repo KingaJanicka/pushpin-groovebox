@@ -10,7 +10,7 @@ from pathlib import Path
 from osc_instrument import OSCInstrument
 import asyncio
 
-logger = logging.getLogger("osc_device")
+logger = logging.getLogger("osc_mode")
 
 
 class OSCMode(PyshaMode):
@@ -139,10 +139,10 @@ class OSCMode(PyshaMode):
         return devices
 
     def query_devices(self):
-        self.instruments[self.get_current_instrument_short_name_helper()].query_slots()
+        # self.instruments[self.get_current_instrument_short_name_helper()].query_slots()
         devices = self.get_current_instrument_devices()
-        for device in devices:
-            device.query_visible_controls()
+        # for device in devices:
+        #     device.query_visible_controls()
 
     def get_current_instrument_device(self):
         device, __ = self.get_current_instrument_device_and_page()
@@ -188,19 +188,20 @@ class OSCMode(PyshaMode):
 
         self.current_device_index_and_page = result
         new_current_device = self.get_current_instrument_device()
-        self.query_devices()
+        # self.query_devices()
         new_current_device.set_page(new_page)
         self.app.buttons_need_update = True
 
     def new_instrument_selected(self):
-        self.query_devices()
+        pass
+        # self.query_devices()
         # if new_instrument:
         #     for device in new_instrument.devices:
         #         print(device)
         #         device.query_visible_controls()
 
     def activate(self):
-        self.query_devices()
+        # self.query_devices()
         self.update_buttons()
 
     def deactivate(self):

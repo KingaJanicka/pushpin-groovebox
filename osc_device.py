@@ -122,7 +122,7 @@ class OSCDevice(object):
                     )
 
         # Call /q endpoints for each control currently displayed
-        self.query_visible_controls()
+        # self.query_visible_controls()
 
         # Select if it has a select attribute
         for control in self.get_visible_controls():
@@ -130,7 +130,7 @@ class OSCDevice(object):
                 control.select()
 
     def select(self):
-        self.query_visible_controls()
+        # self.query_visible_controls()
         print("device init______________")
         for cmd in self.init:
             self.send_message(cmd["address"], float(cmd["value"]))
@@ -161,7 +161,7 @@ class OSCDevice(object):
 
     def set_page(self, page):
         self.page = page
-        self.query_visible_controls()
+        # self.query_visible_controls()
         # print("PAGE: ", self.page)
         # print(*self.pages[self.page], sep="\n")
 
@@ -169,7 +169,8 @@ class OSCDevice(object):
         visible_controls = self.get_visible_controls()
         for control in visible_controls:
             if hasattr(control, "address") and control.address is not None:
-                self.send_message("/q" + control.address, None)
+                pass
+                # self.send_message("/q" + control.address, None)
 
     def get_visible_controls(self):
         return self.pages[self.page]

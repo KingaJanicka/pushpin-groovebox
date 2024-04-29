@@ -6,7 +6,7 @@ import asyncio
 import time
 from osc_device import OSCDevice
 
-logger = logging.getLogger("osc_device")
+logger = logging.getLogger("osc_instrument")
 # logger.setLevel(level=logging.DEBUG)
 
 
@@ -116,15 +116,17 @@ class OSCInstrument(object):
     def query_all_params(self):
         client = self.osc["client"]
         if client:
+            pass
             # print(f"Querying all_params on {self.name}")
-            client.send_message("/q/all_params", None)
+            # client.send_message("/q/all_params", None)
 
     def query_slots(self):
         client = self.osc["client"]
         if client:
             for slot in self.slots:
                 if slot:
-                    client.send_message(f'/q{slot["address"]}', None)
+                    pass
+                    # client.send_message(f'/q{slot["address"]}', None)
 
     """
     Close transports on ctrl+c

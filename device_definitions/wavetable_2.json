@@ -1,6 +1,6 @@
 {
 	"name": "Wavetable",
-	"slot": 0,
+	"slot": 1,
 	"init": [
 		{
 			"$type": "message",

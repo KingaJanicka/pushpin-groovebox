@@ -47,7 +47,7 @@ class OSCControl(object):
 
         if send_osc_func:
             self.send_osc_func = send_osc_func
-            self.send_osc_func(f"/q{self.address}", None)
+            # self.send_osc_func(f"/q{self.address}", None)
 
     def send_osc_func(self, address, payload):
         pass
@@ -393,7 +393,8 @@ class OSCGroup(object):
 
     def select(self):
         if self.message:
-            self.send_osc_func(self.message["address"], float(self.message["value"]))
+            pass
+            # self.send_osc_func(self.message["address"], float(self.message["value"]))
 
 
 class OSCControlMenu(object):
@@ -428,11 +429,11 @@ class OSCControlMenu(object):
         if self.value is None and len(self.items) > 0:
             self.value = 0
         if self.address is None and len(self.items) > 0:
-            self.address = self.items[0].address
+            self.address = self.items[0].address  # assumes all items have same address
 
-        active_item = self.get_active_menu_item()
-        if active_item:
-            active_item.select()
+        # active_item = self.get_active_menu_item()
+        # if active_item:
+        #     active_item.select()
 
     def set_state(self, address, value, *args):
         self.value = self.get_closest_idx(self.value)
@@ -472,7 +473,8 @@ class OSCControlMenu(object):
         )
         for address in unique_addresses:
             if address:
-                self.send_osc_func("/q" + address, None)
+                pass
+                # self.send_osc_func("/q" + address, None)
 
     def draw(self, ctx, offset):
         margin_top = 50
