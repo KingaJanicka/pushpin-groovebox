@@ -144,6 +144,11 @@ class OSCMode(PyshaMode):
         # for device in devices:
         #     device.query_visible_controls()
 
+    def get_current_instrument(self):
+        instrument = self.instruments[self.get_current_instrument_short_name_helper()]
+        if instrument:
+            return instrument
+
     def get_current_instrument_device(self):
         device, __ = self.get_current_instrument_device_and_page()
         return device

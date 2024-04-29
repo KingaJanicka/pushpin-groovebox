@@ -50,7 +50,6 @@ class OSCInstrument(object):
         for slot_idx, slot in enumerate(self.slots):
             if slot:
                 dispatcher.map(slot["address"], self.set_slot_state)
-
         for x in range(8):
             self.devices.append([])
 
@@ -72,6 +71,9 @@ class OSCInstrument(object):
                 self.name,
             )
         )
+        # Check what's mapped
+        # print(dispatcher._map.keys())
+        # self.query_all_params()
 
     def set_slot_state(self, *resp):
         address, value, *rest = resp
@@ -112,13 +114,13 @@ class OSCInstrument(object):
 
             self.transports.append(transport)
             self.log_out.debug(f"Receiving OSC on port {self.osc_out_port}")
+            self.query_all_params()
 
     def query_all_params(self):
         client = self.osc["client"]
         if client:
-            pass
-            # print(f"Querying all_params on {self.name}")
-            # client.send_message("/q/all_params", None)
+            print(f"Querying all_params on {self.name}")
+            client.send_message("/q/all_params", None)
 
     def query_slots(self):
         client = self.osc["client"]

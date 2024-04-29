@@ -420,11 +420,7 @@ class OSCControlMenu(object):
         self.size = 0
 
         for item in config.get("items", []):
-            self.items.append(
-                OSCMenuItem(
-                    item, send_osc_func=send_osc_func, get_color_func=get_color_func
-                )
-            )
+            self.items.append(OSCMenuItem(item))
 
         if self.value is None and len(self.items) > 0:
             self.value = 0
@@ -468,13 +464,8 @@ class OSCControlMenu(object):
         return idx
 
     def select(self):
-        unique_addresses = list(
-            set([*[item.address for item in self.items], self.address])
-        )
-        for address in unique_addresses:
-            if address:
-                pass
-                # self.send_osc_func("/q" + address, None)
+        active = self.get_active_menu_item()
+        self.send_osc_func(active.address, float(active.value))
 
     def draw(self, ctx, offset):
         margin_top = 50
@@ -528,7 +519,7 @@ class OSCControlMenu(object):
 class OSCMenuItem(object):
     name = "Menu Item"
 
-    def __init__(self, config, get_color_func=None, send_osc_func=None):
+    def __init__(self, config, get_color_func=None):
         if config.get("$type", None) != "menu-item":
             raise Exception("Invalid config passed to new OSCMenuItem")
 
@@ -536,8 +527,3 @@ class OSCMenuItem(object):
         self.message = config.get("onselect", None)
         self.address = self.message["address"] if self.message else None
         self.value = self.message["value"] if self.message else None
-        self.get_color_func = get_color_func
-        self.send_osc_func = send_osc_func
-
-    def select(self):
-        self.send_osc_func(self.address, float(self.value))

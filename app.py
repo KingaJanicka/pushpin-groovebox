@@ -105,6 +105,13 @@ class PyshaApp(object):
         self.init_modes(settings)
 
     def init_modes(self, settings):
+        self.instrument_selection_mode = InstrumentSelectionMode(
+            self, settings=settings
+        )
+
+        # Initialise Surge and wait for it to load
+        self.init_surge()
+        time.sleep(5)
         self.main_controls_mode = MainControlsMode(self, settings=settings)
         self.active_modes.append(self.main_controls_mode)
 
@@ -114,14 +121,6 @@ class PyshaApp(object):
         self.rhythmic_mode = RhythmicMode(self, settings=settings)
         self.slice_notes_mode = SliceNotesMode(self, settings=settings)
         self.set_melodic_mode()
-
-        self.instrument_selection_mode = InstrumentSelectionMode(
-            self, settings=settings
-        )
-
-        # Initialise Surge and wait for it to load
-        # self.init_surge()
-        # time.sleep(5)  # TODO find better way to wait on Surge load
 
         self.preset_selection_mode = PresetSelectionMode(self, settings=settings)
         self.midi_cc_mode = MIDICCMode(

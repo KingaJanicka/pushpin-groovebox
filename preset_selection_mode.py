@@ -302,7 +302,8 @@ class PresetSelectionMode(definitions.PyshaMode):
         devices = self.app.osc_mode.get_current_instrument_devices()
         # for device in devices:
         # device.query_visible_controls()
-
+        instrument = self.app.osc_mode.get_current_instrument()
+        instrument.query_all_params()
         self.update_pads()
         return True  # Prevent other modes to get this event
 
