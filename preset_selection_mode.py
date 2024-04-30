@@ -8,6 +8,11 @@ from glob import glob
 from display_utils import show_notification
 from display_utils import show_text
 from pathlib import Path
+import logging
+
+log = logging.getLogger("preset_selection_mode")
+
+log.setLevel(level=logging.DEBUG)
 
 
 class PresetSelectionMode(definitions.PyshaMode):
@@ -294,16 +299,17 @@ class PresetSelectionMode(definitions.PyshaMode):
         )
         self.last_pad_in_column_pressed[instrument_short_name] = pad_ij
         self.set_knob_postions()
+        log.debug(f"Loading {self.presets[instrument_short_name][pad_ij[0]]}")
         self.send_osc("/patch/load", self.presets[instrument_short_name][pad_ij[0]])
         self.update_pads()
         return True  # Prevent other modes to get this event
 
     def on_pad_released(self, pad_n, pad_ij, velocity):
         devices = self.app.osc_mode.get_current_instrument_devices()
-        # for device in devices:
-        # device.query_visible_controls()
+        for device in devices:
+            device.query_visible_controls()
         instrument = self.app.osc_mode.get_current_instrument()
-        instrument.query_all_params()
+        instrument.query_slots()
         self.update_pads()
         return True  # Prevent other modes to get this event
 

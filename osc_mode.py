@@ -139,10 +139,10 @@ class OSCMode(PyshaMode):
         return devices
 
     def query_devices(self):
-        # self.instruments[self.get_current_instrument_short_name_helper()].query_slots()
-        devices = self.get_current_instrument_devices()
+        self.instruments[self.get_current_instrument_short_name_helper()].query_slots()
+        # devices = self.get_current_instrument_devices()
         # for device in devices:
-        #     device.query_visible_controls()
+        #     device.query()
 
     def get_current_instrument(self):
         instrument = self.instruments[self.get_current_instrument_short_name_helper()]

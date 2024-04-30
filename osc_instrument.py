@@ -114,21 +114,23 @@ class OSCInstrument(object):
 
             self.transports.append(transport)
             self.log_out.debug(f"Receiving OSC on port {self.osc_out_port}")
-            self.query_all_params()
+            self.query_slots()
 
     def query_all_params(self):
-        client = self.osc["client"]
-        if client:
-            print(f"Querying all_params on {self.name}")
-            client.send_message("/q/all_params", None)
+        for device in self.devices:
+            device.query_all()
+        # client = self.osc["client"]
+        # if client:
+        #     print(f"Querying all_params on {self.name}")
+        #     client.send_message("/q/all_params", None)
 
     def query_slots(self):
         client = self.osc["client"]
         if client:
             for slot in self.slots:
                 if slot:
-                    pass
-                    # client.send_message(f'/q{slot["address"]}', None)
+                    print(f'/q{slot["address"]}')
+                    client.send_message(f'/q{slot["address"]}', None)
 
     """
     Close transports on ctrl+c

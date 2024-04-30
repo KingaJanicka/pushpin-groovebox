@@ -63,6 +63,7 @@ class OSCDevice(object):
         self.slot = config.get("slot", None)
         self.log_in = logger.getChild(f"in-{kwargs['osc_in_port']}")
         self.log_out = logger.getChild(f"out-{kwargs['osc_out_port']}")
+        # IMPORTANT: if using query_all_params do not uncomment the following:
         # self.dispatcher.map("*", lambda *message: self.log_in.debug(message))
         self.init = config.get("init", [])
         get_color = kwargs.get("get_color")
@@ -85,22 +86,10 @@ class OSCDevice(object):
                     self.controls.append(control)
                 case "control-switch":
                     control = OSCControlSwitch(
-                        control_def,
-                        get_color,
-                        self.send_message,
+                        control_def, get_color, self.send_message, self.dispatcher
                     )
                     if control.address:
-                        # self.dispatcher.map(control.address, control.set_state)
-                        pass  # Switches don't have oninit stanzas
-                    for group in control.groups:
-                        for group_control in group.controls:
-                            if group_control.address:
-                                self.dispatcher.map(
-                                    group_control.address, control.set_state
-                                )
-                                self.dispatcher.map(
-                                    group_control.address, group_control.set_state
-                                )
+                        self.dispatcher.map(control.address, control.set_state)
 
                     self.controls.append(control)
 
@@ -109,11 +98,11 @@ class OSCDevice(object):
                     if control.address:
                         self.dispatcher.map(control.address, control.set_state)
 
-                    for item in control.items:
-                        if item.address:
-                            self.dispatcher.map(item.address, control.set_state)
-                        else:
-                            raise Exception(f"{item} has no message.address property")
+                    # for item in control.items:
+                    #     if item.address:
+                    #         self.dispatcher.map(item.address, control.set_state)
+                    #     else:
+                    #         raise Exception(f"{item} has no message.address property")
 
                     self.controls.append(control)
                 case _:
@@ -138,6 +127,14 @@ class OSCDevice(object):
     def send_message(self, *args):
         self.log_out.debug(args)
         return self.osc["client"].send_message(*args)
+
+    def query(self):
+        for control in self.get_visible_controls():
+            control.query()
+
+    def query_all(self):
+        for control in self.controls:
+            control.query()
 
     def draw(self, ctx):
         visible_controls = self.get_visible_controls()
@@ -169,8 +166,8 @@ class OSCDevice(object):
         visible_controls = self.get_visible_controls()
         for control in visible_controls:
             if hasattr(control, "address") and control.address is not None:
-                pass
-                # self.send_message("/q" + control.address, None)
+
+                self.send_message("/q" + control.address, None)
 
     def get_visible_controls(self):
         return self.pages[self.page]

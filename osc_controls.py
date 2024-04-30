@@ -2,6 +2,10 @@ import definitions
 import math
 import push2_python
 from display_utils import show_text
+import logging
+
+logger = logging.getLogger("osc_controls")
+logger.setLevel(level=logging.DEBUG)
 
 
 SCALING_FACTOR = 127  # MIDI-style responsiveness for knobs
@@ -44,10 +48,14 @@ class OSCControl(object):
         self.get_color_func = get_color_func
         self.min = config["min"]
         self.max = config["max"]
+        self.log = logger.getChild(f"{self.label}:Range")
 
         if send_osc_func:
             self.send_osc_func = send_osc_func
             # self.send_osc_func(f"/q{self.address}", None)
+
+    def query(self):
+        self.send_osc_func("/q" + self.address, None)
 
     def send_osc_func(self, address, payload):
         pass
@@ -121,6 +129,7 @@ class OSCControl(object):
 
     def set_state(self, address, *args):
         value, *rest = args
+        self.log.debug((address, value))
         self.value = value
 
     def update_value(self, increment, **kwargs):
@@ -180,6 +189,7 @@ class OSCControlMacro(object):
         self.params = config["params"]
         self.get_color_func = get_color_func
         self.send_osc_func = send_osc_func
+        self.log = logger.getChild("Macro")
 
     def update_value(self, increment, **kwargs):
         scaled = scale_value(increment, self.min, self.max)
@@ -197,8 +207,12 @@ class OSCControlMacro(object):
         for param in self.params:
             self.send_osc_func(param["address"], float(self.value))
 
+    def query(self):
+        self.send_osc_func("/q" + self.address, None)
+
     def set_state(self, address, *args):
         value, *rest = args
+        self.log.debug((address, value))
 
         self.value = scale_value(value)
         ###TODO: Find by index
@@ -224,23 +238,34 @@ class OSCControlSwitch(object):
 
         return None
 
-    def __init__(self, config, get_color_func=None, send_osc_func=None):
+    def __init__(
+        self, config, get_color_func=None, send_osc_func=None, dispatcher=None
+    ):
         if config["$type"] != "control-switch":
             raise Exception("Invalid config passed to new OSCControlSwitch")
+
+        if dispatcher == None:
+            raise Exception("Switch not given dispatcher")
+
         self.groups = []
         self.value = 0.0
         self.get_color_func = get_color_func
         self.send_osc_func = send_osc_func
+        self.log = logger.getChild(f"{self.label}:Switch")
         groups = config.get("groups", [])
 
         for item in groups:
-            self.groups.append(
-                OSCGroup(
-                    item,
-                    get_color_func=get_color_func,
-                    send_osc_func=send_osc_func,
-                )
+            group_control = OSCGroup(
+                item,
+                get_color_func=get_color_func,
+                send_osc_func=send_osc_func,
+                dispatcher=dispatcher,
             )
+
+            self.groups.append(group_control)
+
+            if group_control.address:
+                self.dispatcher.map(group_control.address, group_control.set_state)
 
         if (
             len(self.groups) > 0
@@ -248,6 +273,13 @@ class OSCControlSwitch(object):
             and hasattr(self.groups[int(self.value)], "select")
         ):
             self.groups[int(self.value)].select()
+
+    def query(self):
+        if self.address:
+            self.send_osc_func("/q" + self.address, None)
+
+        active_group = self.get_active_group()
+        active_group.query()
 
     def update_value(self, increment, **kwargs):
         if not self.value:
@@ -267,6 +299,9 @@ class OSCControlSwitch(object):
             return self.groups[int(self.value)]  # nasty but enables less-twitchy knobs
 
     def set_state(self, address, *args):
+        self.log.debug((address, args))
+
+        # TODO do we need the following?
         for idx, group in enumerate(self.groups):
             for control in group.controls:
                 if isinstance(control, OSCControl) and control.address == address:
@@ -335,9 +370,16 @@ class OSCGroup(object):
     def size(self):
         return sum([control.size for control in self.controls])
 
-    def __init__(self, config, get_color_func=None, send_osc_func=None):
+    def __init__(
+        self, config, get_color_func=None, send_osc_func=None, dispatcher=None
+    ):
         if config["$type"] != "group":
             raise Exception("Invalid type passed to new OSCGroup")
+
+        if dispatcher == None:
+            raise Exception("No dispatcher provided to OSCGroup")
+
+        self.dispatcher = dispatcher
         self.message = None
         self.label = ""
         self.controls = []
@@ -345,43 +387,59 @@ class OSCGroup(object):
         self.label = config.get("label", "Group")
         self.send_osc_func = send_osc_func
         self.get_color_func = get_color_func
+        self.log = logger.getChild(f"{self.label}:Group")
 
         for item in config["controls"]:
             match item["$type"]:
                 case "group":
-                    self.controls.append(
-                        OSCGroup(
-                            item,
-                            get_color_func=get_color_func,
-                            send_osc_func=send_osc_func,
-                        )
+                    control = OSCGroup(
+                        item,
+                        get_color_func=get_color_func,
+                        send_osc_func=send_osc_func,
+                        dispatcher=dispatcher,
                     )
+
+                    # This might be wrong
+                    # if control.address:
+                    #     self.dispatcher.map(control.address, control.set_state)
+
+                    self.controls.append(control)
                 case "control-range":
-                    self.controls.append(
-                        OSCControl(
-                            item,
-                            get_color_func=get_color_func,
-                            send_osc_func=send_osc_func,
-                        )
+                    control = OSCControl(
+                        item,
+                        get_color_func=get_color_func,
+                        send_osc_func=send_osc_func,
                     )
+
+                    if control.address:
+                        self.dispatcher.map(control.address, control.set_state)
+
+                    self.controls.append(control)
+
                 case "control-menu":
-                    self.controls.append(
-                        OSCControlMenu(
-                            item,
-                            get_color_func=get_color_func,
-                            send_osc_func=send_osc_func,
-                        )
+                    control = OSCControlMenu(
+                        item,
+                        get_color_func=get_color_func,
+                        send_osc_func=send_osc_func,
                     )
+
+                    if control.address:
+                        self.dispatcher.map(control.address, control.set_state)
+
+                    self.controls.append(control)
                 case "control-spacer":
                     self.controls.append(ControlSpacer())
                 case "control-macro":
-                    self.controls.append(
-                        OSCControlMacro(
-                            item,
-                            get_color_func=get_color_func,
-                            send_osc_func=send_osc_func,
-                        )
+                    control = OSCControlMacro(
+                        item,
+                        get_color_func=get_color_func,
+                        send_osc_func=send_osc_func,
                     )
+
+                    if control.address:
+                        self.dispatcher.map(control.address, control.set_state)
+
+                    self.controls.append(control)
 
     def get_control(self, id):
         if isinstance(id, int) and id < len(self.controls):
@@ -391,10 +449,19 @@ class OSCGroup(object):
             if el:
                 return el
 
+    def query(self):
+        if self.address:
+            self.send_osc_func("/q" + self.address, None)
+
+        for control in self.controls:
+            if hasattr(control, "query"):
+                control.query()
+
     def select(self):
-        if self.message:
-            pass
-            # self.send_osc_func(self.message["address"], float(self.message["value"]))
+        unique_addresses = list(set([control.address for control in self.controls]))
+        self.log.debug((unique_addresses, "!!!"))
+        for address in unique_addresses:
+            self.send_osc_func("/q" + address, None)
 
 
 class OSCControlMenu(object):
@@ -418,6 +485,7 @@ class OSCControlMenu(object):
         self.address = self.message["address"] if self.message else None
         self.value = self.message["value"] if self.message else None
         self.size = 0
+        self.log = logger.getChild(f"{self.label}:Menu")
 
         for item in config.get("items", []):
             self.items.append(OSCMenuItem(item))
@@ -432,7 +500,11 @@ class OSCControlMenu(object):
         #     active_item.select()
 
     def set_state(self, address, value, *args):
+        self.log.debug((address, value))
         self.value = self.get_closest_idx(self.value)
+
+    def query(self):
+        self.send_osc_func("/q" + self.address, None)
 
     def update_value(self, increment, **kwargs):
         if not self.value:
@@ -454,7 +526,8 @@ class OSCControlMenu(object):
             active_item.select()
 
     def get_active_menu_item(self):
-        return self.items[math.floor(self.value)]
+        if self.value != None and math.floor(self.value) < len(self.items):
+            return self.items[math.floor(self.value)]
 
     def get_closest_idx(self, value):
         closest_value = closest([item.value for item in self.items], value)
@@ -465,6 +538,7 @@ class OSCControlMenu(object):
 
     def select(self):
         active = self.get_active_menu_item()
+        self.log.debug((self.value, active.address, active.value))
         self.send_osc_func(active.address, float(active.value))
 
     def draw(self, ctx, offset):
