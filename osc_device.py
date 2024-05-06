@@ -2,6 +2,7 @@ from osc_controls import (
     OSCControl,
     OSCControlMacro,
     ControlSpacer,
+    OSCSpacerAddress,
     OSCControlSwitch,
     OSCControlMenu,
     OSCGroup,
@@ -82,6 +83,10 @@ class OSCDevice(object):
                         self.dispatcher.map(param.address, control.set_state)
                 case "control-range":
                     control = OSCControl(control_def, get_color, self.send_message)
+                    self.dispatcher.map(control.address, control.set_state)
+                    self.controls.append(control)
+                case "control-spacer-address":
+                    control = OSCSpacerAddress(control_def, self.send_message)
                     self.dispatcher.map(control.address, control.set_state)
                     self.controls.append(control)
                 case "control-switch":

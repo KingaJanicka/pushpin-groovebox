@@ -11,28 +11,52 @@
 	],
 	"controls": [
 		{
-			"$type": "control-spacer"
+			"$type": "control-spacer-address",
+			"address": "/param/fx/a/1/param1"
 		},
 		{
-			"$type": "control-spacer"
+			"$type": "control-spacer-address",
+			"address": "/param/fx/a/1/param2"
 		},
 		{
-			"$type": "control-spacer"
+			"$type": "control-spacer-address",
+			"address": "/param/fx/a/1/param3"
 		},
 		{
-			"$type": "control-spacer"
+			"$type": "control-spacer-address",
+			"address": "/param/fx/a/1/param4"
 		},
 		{
-			"$type": "control-spacer"
+			"$type": "control-spacer-address",
+			"address": "/param/fx/a/1/param5"
 		},
 		{
-			"$type": "control-spacer"
+			"$type": "control-spacer-address",
+			"address": "/param/fx/a/1/param6"
 		},
 		{
-			"$type": "control-spacer"
+			"$type": "control-spacer-address",
+			"address": "/param/fx/a/1/param7"
 		},
 		{
-			"$type": "control-spacer"
+			"$type": "control-spacer-address",
+			"address": "/param/fx/a/1/param8"
+		},
+		{
+			"$type": "control-spacer-address",
+			"address": "/param/fx/a/1/param9"
+		},
+		{
+			"$type": "control-spacer-address",
+			"address": "/param/fx/a/1/param10"
+		},
+		{
+			"$type": "control-spacer-address",
+			"address": "/param/fx/a/1/param11"
+		},
+		{
+			"$type": "control-spacer-address",
+			"address": "/param/fx/a/1/param12"
 		}
 	]
 }

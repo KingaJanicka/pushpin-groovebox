@@ -147,6 +147,36 @@ class OSCControl(object):
         self.send_osc_func(self.address, float(self.value))
 
 
+class OSCSpacerAddress(object):
+    name = "SpacerAddress"
+    size = 1
+
+    def __init__(self, config, send_osc_func=None):
+        if config["$type"] != "control-spacer-address":
+            raise Exception("Invalid config passed to new OSCControl")
+        self.label = None
+        self.address = config["address"]
+        self.log = logger.getChild(f"{self.label}:Range")
+
+        if send_osc_func:
+            self.send_osc_func = send_osc_func
+            # self.send_osc_func(f"/q{self.address}", None)
+
+    def draw(self, *args, **kwargs):
+        pass
+
+    def update_value(self, *args, **kwargs):
+        pass
+
+    def query(self):
+        self.send_osc_func("/q" + self.address, None)
+
+    def set_state(self, address, *args):
+        value, *rest = args
+        self.log.debug((address, value))
+        self.value = value
+
+
 class ControlSpacer(object):
     name = "Spacer"
 
