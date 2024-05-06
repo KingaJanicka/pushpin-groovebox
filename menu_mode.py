@@ -54,6 +54,12 @@ class MenuMode(PyshaMode):
         return show_prev, show_next
 
     def activate(self):
+        device = self.app.osc_mode.get_current_instrument_device()
+        devices_in_current_slot = self.app.osc_mode.get_current_slot_devices()
+        for idx, item in enumerate(devices_in_current_slot):
+            if item == device:
+                self.selected_menu_item_index = idx
+
         self.update_buttons()
 
     def deactivate(self):
@@ -112,41 +118,7 @@ class MenuMode(PyshaMode):
             self.app.osc_mode.get_current_instrument_short_name_helper()
         )
 
-        if button_name in self.upper_row_button_names:
-            button_idx = self.upper_row_button_names.index(button_name)
-            selected_device = devices_in_current_slot[button_idx]
-            try:
-                for message in selected_device.init:
-                    self.app.send_osc(
-                        message["address"],
-                        float(message["value"]),
-                        instrument_shortname,
-                    )
-                self.app.toggle_menu_mode()
-                self.app.buttons_need_update = True
-            except IndexError:
-                # Do nothing because the button has no assigned tone
-                pass
-            return True
-
-        elif button_name in self.lower_row_button_names:
-            button_idx = self.lower_row_button_names.index(button_name)
-            selected_device = devices_in_current_slot[button_idx + 8]
-            try:
-                for message in selected_device.init:
-                    self.app.send_osc(
-                        message["address"],
-                        float(message["value"]),
-                        instrument_shortname,
-                    )
-                self.app.toggle_menu_mode()
-                self.app.buttons_need_update = True
-            except IndexError:
-                # Do nothing because the button has no assigned tone
-                pass
-            return True
-
-        elif button_name is push2_constants.BUTTON_LEFT:
+        if button_name is push2_constants.BUTTON_LEFT:
             if self.selected_menu_item_index - 1 >= 0:
                 self.selected_menu_item_index -= 1
         elif button_name is push2_constants.BUTTON_RIGHT:
@@ -184,6 +156,13 @@ class MenuMode(PyshaMode):
                         instrument_shortname,
                     )
                     # TODO: might need removing
+                # TODO: need to figure out why FX take two button clicks to swap while osc take one
+                devices = self.app.osc_mode.get_current_instrument_devices()
+                for device in devices:
+                    if device.label == selected_device.label:
+                        device.query_visible_controls()
+                instrument = self.app.osc_mode.get_current_instrument()
+                instrument.query_slots()
                 self.app.toggle_menu_mode()
                 self.selected_menu_item_index = 0
                 self.app.buttons_need_update = True

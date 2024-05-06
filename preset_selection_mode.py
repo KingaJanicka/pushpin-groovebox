@@ -12,7 +12,7 @@ import logging
 
 log = logging.getLogger("preset_selection_mode")
 
-log.setLevel(level=logging.DEBUG)
+# log.setLevel(level=logging.DEBUG)
 
 
 class PresetSelectionMode(definitions.PyshaMode):
@@ -67,6 +67,16 @@ class PresetSelectionMode(definitions.PyshaMode):
             self.load_presets()
         except:
             self.save_presets()
+
+    def load_init_presets(self):
+        for item in self.presets:
+            print(self.presets[item][0], "preset printed")
+            print(item, " item printed")
+            self.send_osc(
+                "/patch/load",
+                self.presets[item][0],
+                instrument=item,
+            )
 
     def create_dict_from_paths(self, arr):
         d = dict()
@@ -305,11 +315,11 @@ class PresetSelectionMode(definitions.PyshaMode):
         return True  # Prevent other modes to get this event
 
     def on_pad_released(self, pad_n, pad_ij, velocity):
+        instrument = self.app.osc_mode.get_current_instrument()
+        instrument.query_slots()
         devices = self.app.osc_mode.get_current_instrument_devices()
         for device in devices:
             device.query_visible_controls()
-        instrument = self.app.osc_mode.get_current_instrument()
-        instrument.query_slots()
         self.update_pads()
         return True  # Prevent other modes to get this event
 

@@ -115,6 +115,7 @@ class OSCInstrument(object):
             self.transports.append(transport)
             self.log_out.debug(f"Receiving OSC on port {self.osc_out_port}")
             self.query_slots()
+            self.query_devices()
 
     def query_all_params(self):
         for device in self.devices:
@@ -129,7 +130,6 @@ class OSCInstrument(object):
         if client:
             for slot in self.slots:
                 if slot:
-                    print(f'/q{slot["address"]}')
                     client.send_message(f'/q{slot["address"]}', None)
 
     """

@@ -5,7 +5,7 @@ from display_utils import show_text
 import logging
 
 logger = logging.getLogger("osc_controls")
-logger.setLevel(level=logging.DEBUG)
+# logger.setLevel(level=logging.DEBUG)
 
 
 SCALING_FACTOR = 127  # MIDI-style responsiveness for knobs

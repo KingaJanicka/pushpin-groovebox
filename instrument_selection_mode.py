@@ -158,6 +158,7 @@ class InstrumentSelectionMode(definitions.PyshaMode):
         self.selected_instrument = instrument_idx
         self.load_current_default_layout()
         self.clean_currently_notes_being_played()
+
         try:
             # self.app.midi_cc_mode.new_instrument_selected()
             self.app.osc_mode.new_instrument_selected()
