@@ -112,6 +112,7 @@ class PyshaApp(object):
         # Initialise Surge and wait for it to load
         self.init_surge()
         time.sleep(2.5)
+
         self.main_controls_mode = MainControlsMode(self, settings=settings)
         self.active_modes.append(self.main_controls_mode)
 
