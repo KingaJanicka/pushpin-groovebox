@@ -300,7 +300,6 @@ class PresetSelectionMode(definitions.PyshaMode):
         self.push.pads.set_pads_color(color_matrix)
 
     def on_pad_pressed(self, pad_n, pad_ij, velocity):
-        # TODO: fix the blinking bug and pad preset swaping on differnet instruments
         if pad_ij[1] != self.app.instrument_selection_mode.selected_instrument:
             self.app.instrument_selection_mode.select_instrument(pad_ij[1])
 
