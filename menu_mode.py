@@ -63,6 +63,12 @@ class MenuMode(PyshaMode):
         self.update_buttons()
 
     def deactivate(self):
+        instrument = self.app.osc_mode.get_current_instrument()
+        # print("called q slots")
+        # TODO: I have no clue why the fricity frick this sleep needs to be here
+        # TODO: But it does and the FX switching will lag behind one selection if not
+        time.sleep(0.1)
+        instrument.query_slots()
         for button_name in (
             self.upper_row_button_names
             + self.lower_row_button_names
@@ -136,6 +142,20 @@ class MenuMode(PyshaMode):
                     center_horizontally=True,
                     rectangle_padding=1,
                 )
+            elif idx < 40:
+                show_text(
+                    ctx,
+                    idx - 24,
+                    110,
+                    device.label,
+                    height=25,
+                    font_color=definitions.BLACK,
+                    background_color=background_color,
+                    font_size_percentage=0.8,
+                    center_vertically=True,
+                    center_horizontally=True,
+                    rectangle_padding=1,
+                )
 
     def update_buttons(self):
         pass
@@ -183,16 +203,14 @@ class MenuMode(PyshaMode):
                         float(message["value"]),
                         instrument_shortname,
                     )
+                    print("sending stuffs")
                     # TODO: might need removing
                 # TODO: need to figure out why FX take two button clicks to swap while osc take one
                 devices = self.app.osc_mode.get_current_instrument_devices()
                 for device in devices:
                     if device.label == selected_device.label:
                         device.query_visible_controls()
-                instrument = self.app.osc_mode.get_current_instrument()
-                instrument.query_slots()
                 self.app.toggle_menu_mode()
-                self.selected_menu_item_index = 0
                 self.app.buttons_need_update = True
             except IndexError:
                 # Do nothing because the button has no assigned tone

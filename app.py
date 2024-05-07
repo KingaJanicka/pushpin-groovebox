@@ -165,6 +165,8 @@ class PyshaApp(object):
             self.settings_mode.activate()
 
     def toggle_menu_mode(self):
+        # instrument = self.osc_mode.get_current_instrument()
+        # instrument.query_slots()
         if self.is_mode_active(self.menu_mode):
             # Deactivate (replace ddrm tone selector mode by midi cc and instrument selection mode)
             new_active_modes = []

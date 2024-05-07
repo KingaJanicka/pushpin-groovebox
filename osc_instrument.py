@@ -49,6 +49,7 @@ class OSCInstrument(object):
         # populate slot values
         for slot_idx, slot in enumerate(self.slots):
             if slot:
+                # print(f'making a dispatcher for slot {slot["address"]}')
                 dispatcher.map(slot["address"], self.set_slot_state)
         for x in range(8):
             self.devices.append([])
@@ -77,8 +78,7 @@ class OSCInstrument(object):
 
     def set_slot_state(self, *resp):
         address, value, *rest = resp
-        # print("__SET_SLOT_STATE__", address, value)
-
+        # print(f"Setting state of slot {address} to {value}")
         for slot in self.slots:
             if slot and slot["address"] == address:
                 if float(slot["value"]) != float(value):
@@ -130,6 +130,7 @@ class OSCInstrument(object):
         if client:
             for slot in self.slots:
                 if slot:
+                    # print(f'querrying slot /q{slot["address"]}')
                     client.send_message(f'/q{slot["address"]}', None)
 
     """
