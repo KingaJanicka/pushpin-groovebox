@@ -75,7 +75,7 @@ class OSCControl(object):
         )
 
         # Param value
-        val_height = 30
+        val_height = 20
         color = self.get_color_func()
         show_text(
             ctx,
@@ -84,14 +84,18 @@ class OSCControl(object):
             str(round(self.value, 2)),
             height=val_height,
             font_color=color,
+            margin_left=int(self.value / self.max * 80 + 10),
         )
 
         # Knob
         ctx.save()
 
         circle_break_degrees = 80
-        height = 55
+        height = 30
+        length = 70
         radius = height / 2
+        triangle_padding = 3
+        triangle_size = 6
 
         display_w = push2_python.constants.DISPLAY_LINE_PIXELS
         x = (display_w // 8) * x_part
@@ -113,18 +117,35 @@ class OSCControl(object):
         ctx.move_to(xc, yc)
         ctx.stroke()
 
-        # Inner circle
-        ctx.arc(xc, yc, radius, start_rad, end_rad)
+        # Inner line
+        ctx.move_to(xc, yc)
+        ctx.line_to(xc + length, yc)
+
         ctx.set_source_rgb(*definitions.get_color_rgb_float(definitions.GRAY_LIGHT))
         ctx.set_line_width(1)
         ctx.stroke()
 
-        # Outer circle
-        ctx.arc(xc, yc, radius, start_rad, get_rad_for_value(self.value))
+        # Outer line
+        ctx.move_to(xc, yc)
+        ctx.line_to(xc + length * self.value / self.max, yc)
         ctx.set_source_rgb(*definitions.get_color_rgb_float(color))
         ctx.set_line_width(3)
         ctx.stroke()
 
+        # Triangle indicator
+        ctx.move_to(xc + length * self.value / self.max, yc - triangle_padding)
+        ctx.line_to(
+            xc + length * self.value / self.max - triangle_size,
+            yc - triangle_padding - 2 * triangle_size,
+        )
+        ctx.line_to(
+            xc + length * self.value / self.max + triangle_size,
+            yc - triangle_padding - 2 * triangle_size,
+        )
+        ctx.move_to(xc + length * self.value, yc - triangle_padding)
+        ctx.close_path()
+        ctx.set_source_rgb(*definitions.get_color_rgb_float(color))
+        ctx.fill_preserve()
         ctx.restore()
 
     def set_state(self, address, *args):
