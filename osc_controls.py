@@ -72,6 +72,7 @@ class OSCControl(object):
             self.label,
             height=name_height,
             font_color=definitions.WHITE,
+            center_horizontally=True,
         )
 
         # Param value
@@ -92,7 +93,7 @@ class OSCControl(object):
 
         circle_break_degrees = 80
         height = 30
-        length = 70
+        length = 80
         radius = height / 2
         triangle_padding = 3
         triangle_size = 6
