@@ -83,7 +83,8 @@ class OSCControl(object):
             ctx,
             x_part,
             margin_top + name_height,
-            str(self.string),
+            str(round(self.value, 2)),
+            # str(self.string),
             height=val_height,
             font_color=color,
             # margin_left=int(self.value / self.max * 80 + 10),
@@ -141,6 +142,37 @@ class OSCControl(object):
         ctx.fill_preserve()
         ctx.restore()
 
+    def draw_submenu(self, ctx, x_part):
+        margin_top = 95
+
+        # Param name
+        name_height = 15
+        show_text(
+            ctx,
+            x_part,
+            margin_top,
+            self.label,
+            height=name_height,
+            font_color=definitions.WHITE,
+            center_horizontally=True,
+        )
+
+        # Param value
+        val_height = 15
+        color = self.get_color_func()
+        show_text(
+            ctx,
+            x_part,
+            margin_top + name_height,
+            str(round(self.value, 2)),
+            height=val_height,
+            font_color=color,
+            # margin_left=int(self.value / self.max * 80 + 10),
+        )
+
+        # Knob
+        ctx.save()
+
     def set_state(self, address, *args):
         value, string, *rest = args
         self.log.debug((address, value))
@@ -181,6 +213,9 @@ class OSCSpacerAddress(object):
     def draw(self, *args, **kwargs):
         pass
 
+    def draw_submenu(self, *args, **kwargs):
+        pass
+
     def update_value(self, *args, **kwargs):
         pass
 
@@ -208,6 +243,9 @@ class ControlSpacer(object):
         pass
 
     def draw(self, *args, **kwargs):
+        pass
+
+    def draw_submenu(self, *args, **kwargs):
         pass
 
     def update_value(self, *args, **kwargs):
@@ -407,6 +445,21 @@ class OSCControlSwitch(object):
             next_label,
             height=next_prev_height,
             font_color=definitions.WHITE,
+        )
+
+    def draw_submenu(self, ctx, offset):
+        margin_top = 95
+        val_height = 15
+
+        # Param value
+        color = self.get_color_func()
+        show_text(
+            ctx,
+            offset,
+            margin_top,
+            str(self.label),
+            height=val_height,
+            font_color=color,
         )
 
 
@@ -633,6 +686,20 @@ class OSCControlMenu(object):
                 font_color=definitions.WHITE,
             )
 
+    def draw_submenu(self, ctx, offset):
+        margin_top = 95
+        val_height = 15
+        # Current param value
+        color = self.get_color_func()
+        show_text(
+            ctx,
+            offset,
+            margin_top,
+            str(self.label),
+            height=val_height,
+            font_color=color,
+        )
+
 
 class OSCMenuItem(object):
     name = "Menu Item"
@@ -648,5 +715,4 @@ class OSCMenuItem(object):
         self.send_osc_func = send_osc_func
 
     def select(self):
-        print("menu item select")
         self.send_osc_func(self.address, float(self.value))

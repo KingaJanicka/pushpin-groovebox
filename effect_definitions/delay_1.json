@@ -6,7 +6,7 @@
 			"$type": "message",
 			"$comment": "unmute osc",
 			"address": "/param/fx/a/1/type",
-			"value": 16
+			"value": 1
 		}
 	],
 	"controls": [
