@@ -91,7 +91,6 @@ class OSCControl(object):
         # Knob
         ctx.save()
 
-        circle_break_degrees = 80
         height = 30
         length = 80
         radius = height / 2
@@ -102,16 +101,8 @@ class OSCControl(object):
         x = (display_w // 8) * x_part
         y = margin_top + name_height + val_height + radius + 5
 
-        start_rad = (90 + circle_break_degrees // 2) * (math.pi / 180)
-        end_rad = (90 - circle_break_degrees // 2) * (math.pi / 180)
         xc = x + radius + 3
         yc = y
-
-        def get_rad_for_value(value):
-            total_degrees = 360 - circle_break_degrees
-            return start_rad + total_degrees * (
-                (value - self.min) / (self.max - self.min)
-            ) * (math.pi / 180)
 
         # This is needed to prevent showing line from previous position
         ctx.set_source_rgb(0, 0, 0)
@@ -369,9 +360,9 @@ class OSCControlSwitch(object):
                     self.value = float(idx)
 
     def draw(self, ctx, offset):
-        margin_top = 50
-        next_prev_height = 20
-        val_height = 30
+        margin_top = 30
+        next_prev_height = 15
+        val_height = 25
         next_label = ""
         prev_label = ""
         idx = int(self.value)
@@ -594,9 +585,9 @@ class OSCControlMenu(object):
         self.send_osc_func(active.address, float(active.value))
 
     def draw(self, ctx, offset):
-        margin_top = 50
-        next_prev_height = 20
-        val_height = 30
+        margin_top = 30
+        next_prev_height = 15
+        val_height = 25
         next_label = ""
         prev_label = ""
 
