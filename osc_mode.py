@@ -344,8 +344,9 @@ class OSCMode(PyshaMode):
         try:
             current_device = self.get_current_instrument_device()
             current_device.on_encoder_rotated(encoder_name, increment)
-        except Exception:
+        except Exception as err:
             print("encoder not in list")
+            print(err)
             pass  # Encoder not in list
 
         return True  # Always return True because encoder should not be used in any other mode if this is first active

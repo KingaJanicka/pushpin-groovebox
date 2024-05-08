@@ -42,6 +42,7 @@ class OSCControl(object):
         self.min = 0.0
         self.max = 1.0
         self.value = 0.0
+        self.string = ""
         self.get_color_func = None
         self.label = config["label"]
         self.address = config["address"]
@@ -82,10 +83,10 @@ class OSCControl(object):
             ctx,
             x_part,
             margin_top + name_height,
-            str(round(self.value, 2)),
+            str(self.string),
             height=val_height,
             font_color=color,
-            margin_left=int(self.value / self.max * 80 + 10),
+            # margin_left=int(self.value / self.max * 80 + 10),
         )
 
         # Knob
@@ -141,9 +142,11 @@ class OSCControl(object):
         ctx.restore()
 
     def set_state(self, address, *args):
-        value, *rest = args
+        value, string, *rest = args
         self.log.debug((address, value))
         self.value = value
+        # TODO: this human readable string doesn't change with knob movements, querry fixes it but makes it glitchy
+        self.string = string
 
     def update_value(self, increment, **kwargs):
         scaled = scale_value(increment, self.min, self.max)
@@ -339,7 +342,9 @@ class OSCControlSwitch(object):
 
     def get_active_group(self):
         if int(self.value) <= len(self.groups) - 1:
-            return self.groups[int(self.value)]  # nasty but enables less-twitchy knobs
+            return self.groups[
+                int(self.value)
+            ]  # TODO: nasty but enables less-twitchy knobs, prob needs fixing
 
     def set_state(self, address, *args):
         self.log.debug((address, args))
@@ -531,16 +536,12 @@ class OSCControlMenu(object):
         self.log = logger.getChild(f"{self.label}:Menu")
 
         for item in config.get("items", []):
-            self.items.append(OSCMenuItem(item))
+            self.items.append(OSCMenuItem(item, send_osc_func=send_osc_func))
 
         if self.value is None and len(self.items) > 0:
             self.value = 0
         if self.address is None and len(self.items) > 0:
             self.address = self.items[0].address  # assumes all items have same address
-
-        # active_item = self.get_active_menu_item()
-        # if active_item:
-        #     active_item.select()
 
     def set_state(self, address, value, *args):
         self.log.debug((address, value))
@@ -636,7 +637,7 @@ class OSCControlMenu(object):
 class OSCMenuItem(object):
     name = "Menu Item"
 
-    def __init__(self, config, get_color_func=None):
+    def __init__(self, config, get_color_func=None, send_osc_func=None):
         if config.get("$type", None) != "menu-item":
             raise Exception("Invalid config passed to new OSCMenuItem")
 
@@ -644,3 +645,8 @@ class OSCMenuItem(object):
         self.message = config.get("onselect", None)
         self.address = self.message["address"] if self.message else None
         self.value = self.message["value"] if self.message else None
+        self.send_osc_func = send_osc_func
+
+    def select(self):
+        print("menu item select")
+        self.send_osc_func(self.address, float(self.value))
