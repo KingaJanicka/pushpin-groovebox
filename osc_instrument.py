@@ -72,7 +72,6 @@ class OSCInstrument(object):
             )
 
             slot_idx = device_definitions[device_name]["slot"]
-            print(slot_idx)
             self.devices[slot_idx].append(device)
 
         print(
