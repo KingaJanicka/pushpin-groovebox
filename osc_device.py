@@ -150,10 +150,14 @@ class OSCDevice(object):
                 control.draw(ctx, offset)
                 offset += 1
         offset = 0
-        for control in all_controls[(self.page + 1) % 2]:
-            if offset + 1 <= 8:
-                control.draw_submenu(ctx, offset)
-                offset += 1
+        page = (self.page + 1) % 2
+        try:
+            for control in all_controls[page]:
+                if offset + 1 <= 8:
+                    control.draw_submenu(ctx, offset)
+                    offset += 1
+        except:
+            pass
 
     def get_next_prev_pages(self):
         show_prev = False

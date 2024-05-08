@@ -87,7 +87,7 @@ class OSCControl(object):
             # str(self.string),
             height=val_height,
             font_color=color,
-            # margin_left=int(self.value / self.max * 80 + 10),
+            margin_left=int(self.value / self.max * 80 + 10),
         )
 
         # Knob
@@ -144,7 +144,8 @@ class OSCControl(object):
 
     def draw_submenu(self, ctx, x_part):
         margin_top = 95
-
+        line_padding = 4
+        line_width = 80
         # Param name
         name_height = 15
         show_text(
@@ -167,8 +168,31 @@ class OSCControl(object):
             str(round(self.value, 2)),
             height=val_height,
             font_color=color,
-            # margin_left=int(self.value / self.max * 80 + 10),
+            margin_left=int(self.value / self.max * line_width * 0.75 + 10),
         )
+
+        radius = name_height / 2
+        display_w = push2_python.constants.DISPLAY_LINE_PIXELS
+        x = (display_w // 8) * x_part
+        y = margin_top + val_height + 6
+        xc = x + radius + 3
+        yc = y
+
+        # Left line
+        ctx.move_to(xc - line_padding, yc - 5)
+        ctx.line_to(xc - line_padding, yc + 5)
+
+        ctx.set_source_rgb(*definitions.get_color_rgb_float(definitions.GRAY_LIGHT))
+        ctx.set_line_width(1)
+        ctx.stroke()
+
+        # Right line
+        ctx.move_to(xc + line_padding + line_width, yc - 5)
+        ctx.line_to(xc + line_padding + line_width, yc + 5)
+
+        ctx.set_source_rgb(*definitions.get_color_rgb_float(definitions.GRAY_LIGHT))
+        ctx.set_line_width(1)
+        ctx.stroke()
 
         # Knob
         ctx.save()
