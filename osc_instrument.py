@@ -29,6 +29,14 @@ class OSCInstrument(object):
             {"address": "/param/fx/a/1/type", "value": 0.0},
             {"address": "/param/fx/a/2/type", "value": 0.0},
             {"address": "/param/fx/global/1/type", "value": 0.0},
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
         ]
 
         self.name = instrument_short_name
@@ -51,7 +59,7 @@ class OSCInstrument(object):
             if slot:
                 # print(f'making a dispatcher for slot {slot["address"]}')
                 dispatcher.map(slot["address"], self.set_slot_state)
-        for x in range(8):
+        for x in range(16):
             self.devices.append([])
 
         for device_name in device_definitions:
@@ -62,8 +70,9 @@ class OSCInstrument(object):
                 osc_in_port=self.osc_in_port,
                 osc_out_port=self.osc_out_port,
             )
-            slot_idx = device_definitions[device_name]["slot"]
 
+            slot_idx = device_definitions[device_name]["slot"]
+            print(slot_idx)
             self.devices[slot_idx].append(device)
 
         print(

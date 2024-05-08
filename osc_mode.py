@@ -52,6 +52,11 @@ class OSCMode(PyshaMode):
             for effect_file in glob("./effect_definitions/*.json")
         ]
 
+        modulation_names = [
+            Path(effect_file).stem
+            for effect_file in glob("./modulation_definitions/*.json")
+        ]
+
         for device_name in device_names:
             try:
                 device_definitions[device_name] = json.load(
@@ -77,6 +82,19 @@ class OSCMode(PyshaMode):
                 )
             except FileNotFoundError:
                 device_definitions[effect_name] = {}
+
+        for modulation_name in modulation_names:
+            try:
+                device_definitions[modulation_name] = json.load(
+                    open(
+                        os.path.join(
+                            definitions.MODULATION_DEFINITIONS_FOLDER,
+                            "{}.json".format(modulation_name),
+                        )
+                    )
+                )
+            except FileNotFoundError:
+                device_definitions[modulation_name] = {}
 
         for (
             instrument_short_name

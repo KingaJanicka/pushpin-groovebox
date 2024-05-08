@@ -203,9 +203,7 @@ class MenuMode(PyshaMode):
                         float(message["value"]),
                         instrument_shortname,
                     )
-                    print("sending stuffs")
                     # TODO: might need removing
-                # TODO: need to figure out why FX take two button clicks to swap while osc take one
                 devices = self.app.osc_mode.get_current_instrument_devices()
                 for device in devices:
                     if device.label == selected_device.label:
