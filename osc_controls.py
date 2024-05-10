@@ -49,6 +49,7 @@ class OSCControl(object):
         self.get_color_func = get_color_func
         self.min = config["min"]
         self.max = config["max"]
+        self.bipolar = True
         self.log = logger.getChild(f"{self.label}:Range")
 
         if send_osc_func:
@@ -62,85 +63,167 @@ class OSCControl(object):
         pass
 
     def draw(self, ctx, x_part):
-        margin_top = 25
+        if self.bipolar == True:
+            margin_top = 25
+            # Param name
+            name_height = 20
+            show_text(
+                ctx,
+                x_part,
+                margin_top,
+                self.label,
+                height=name_height,
+                font_color=definitions.WHITE,
+                center_horizontally=True,
+            )
 
-        # Param name
-        name_height = 20
-        show_text(
-            ctx,
-            x_part,
-            margin_top,
-            self.label,
-            height=name_height,
-            font_color=definitions.WHITE,
-            center_horizontally=True,
-        )
+            # Param value
+            val_height = 20
+            color = self.get_color_func()
+            show_text(
+                ctx,
+                x_part,
+                margin_top + name_height,
+                str(round(self.value, 2)),
+                # str(self.string),
+                height=val_height,
+                font_color=color,
+                margin_left=int(self.value / self.max * 80 + 10),
+            )
 
-        # Param value
-        val_height = 20
-        color = self.get_color_func()
-        show_text(
-            ctx,
-            x_part,
-            margin_top + name_height,
-            str(round(self.value, 2)),
-            # str(self.string),
-            height=val_height,
-            font_color=color,
-            margin_left=int(self.value / self.max * 80 + 10),
-        )
+            # Knob
+            ctx.save()
 
-        # Knob
-        ctx.save()
+            height = 30
+            length = 80
+            radius = height / 2
+            triangle_padding = 3
+            triangle_size = 6
 
-        height = 30
-        length = 80
-        radius = height / 2
-        triangle_padding = 3
-        triangle_size = 6
+            display_w = push2_python.constants.DISPLAY_LINE_PIXELS
+            x = (display_w // 8) * x_part
+            y = margin_top + name_height + val_height + radius + 5
 
-        display_w = push2_python.constants.DISPLAY_LINE_PIXELS
-        x = (display_w // 8) * x_part
-        y = margin_top + name_height + val_height + radius + 5
+            xc = x + radius + 3
+            yc = y
 
-        xc = x + radius + 3
-        yc = y
+            # This is needed to prevent showing line from previous position
+            ctx.set_source_rgb(0, 0, 0)
+            ctx.move_to(xc, yc)
+            ctx.stroke()
 
-        # This is needed to prevent showing line from previous position
-        ctx.set_source_rgb(0, 0, 0)
-        ctx.move_to(xc, yc)
-        ctx.stroke()
+            # Inner line
+            bipolar_value = self.value / self.max - 0.5 * self.max
+            ctx.move_to(xc, yc)
+            ctx.line_to(xc + length, yc)
+            print(bipolar_value)
+            ctx.set_source_rgb(*definitions.get_color_rgb_float(definitions.GRAY_LIGHT))
+            ctx.set_line_width(1)
+            ctx.stroke()
 
-        # Inner line
-        ctx.move_to(xc, yc)
-        ctx.line_to(xc + length, yc)
+            # Outer line
+            ctx.move_to(xc + 0.5 * length, yc)
+            ctx.line_to(xc + 0.5 * length + bipolar_value * length, yc)
+            ctx.set_source_rgb(*definitions.get_color_rgb_float(color))
+            ctx.set_line_width(3)
+            ctx.stroke()
 
-        ctx.set_source_rgb(*definitions.get_color_rgb_float(definitions.GRAY_LIGHT))
-        ctx.set_line_width(1)
-        ctx.stroke()
+            # Triangle indicator
+            ctx.move_to(xc + length * self.value / self.max, yc - triangle_padding)
+            ctx.line_to(
+                xc + length * self.value / self.max - triangle_size,
+                yc - triangle_padding - 2 * triangle_size,
+            )
+            ctx.line_to(
+                xc + length * self.value / self.max + triangle_size,
+                yc - triangle_padding - 2 * triangle_size,
+            )
+            ctx.move_to(xc + length * self.value, yc - triangle_padding)
+            ctx.close_path()
+            ctx.set_source_rgb(*definitions.get_color_rgb_float(color))
+            ctx.fill_preserve()
+            ctx.restore()
 
-        # Outer line
-        ctx.move_to(xc, yc)
-        ctx.line_to(xc + length * self.value / self.max, yc)
-        ctx.set_source_rgb(*definitions.get_color_rgb_float(color))
-        ctx.set_line_width(3)
-        ctx.stroke()
+        if self.bipolar == False:
+            margin_top = 25
 
-        # Triangle indicator
-        ctx.move_to(xc + length * self.value / self.max, yc - triangle_padding)
-        ctx.line_to(
-            xc + length * self.value / self.max - triangle_size,
-            yc - triangle_padding - 2 * triangle_size,
-        )
-        ctx.line_to(
-            xc + length * self.value / self.max + triangle_size,
-            yc - triangle_padding - 2 * triangle_size,
-        )
-        ctx.move_to(xc + length * self.value, yc - triangle_padding)
-        ctx.close_path()
-        ctx.set_source_rgb(*definitions.get_color_rgb_float(color))
-        ctx.fill_preserve()
-        ctx.restore()
+            # Param name
+            name_height = 20
+            show_text(
+                ctx,
+                x_part,
+                margin_top,
+                self.label,
+                height=name_height,
+                font_color=definitions.WHITE,
+                center_horizontally=True,
+            )
+
+            # Param value
+            val_height = 20
+            color = self.get_color_func()
+            show_text(
+                ctx,
+                x_part,
+                margin_top + name_height,
+                str(round(self.value, 2)),
+                # str(self.string),
+                height=val_height,
+                font_color=color,
+                margin_left=int(self.value / self.max * 80 + 10),
+            )
+
+            # Knob
+            ctx.save()
+
+            height = 30
+            length = 80
+            radius = height / 2
+            triangle_padding = 3
+            triangle_size = 6
+
+            display_w = push2_python.constants.DISPLAY_LINE_PIXELS
+            x = (display_w // 8) * x_part
+            y = margin_top + name_height + val_height + radius + 5
+
+            xc = x + radius + 3
+            yc = y
+
+            # This is needed to prevent showing line from previous position
+            ctx.set_source_rgb(0, 0, 0)
+            ctx.move_to(xc, yc)
+            ctx.stroke()
+
+            # Inner line
+            ctx.move_to(xc, yc)
+            ctx.line_to(xc + length, yc)
+
+            ctx.set_source_rgb(*definitions.get_color_rgb_float(definitions.GRAY_LIGHT))
+            ctx.set_line_width(1)
+            ctx.stroke()
+
+            # Outer line
+            ctx.move_to(xc, yc)
+            ctx.line_to(xc + length * self.value / self.max, yc)
+            ctx.set_source_rgb(*definitions.get_color_rgb_float(color))
+            ctx.set_line_width(3)
+            ctx.stroke()
+
+            # Triangle indicator
+            ctx.move_to(xc + length * self.value / self.max, yc - triangle_padding)
+            ctx.line_to(
+                xc + length * self.value / self.max - triangle_size,
+                yc - triangle_padding - 2 * triangle_size,
+            )
+            ctx.line_to(
+                xc + length * self.value / self.max + triangle_size,
+                yc - triangle_padding - 2 * triangle_size,
+            )
+            ctx.move_to(xc + length * self.value, yc - triangle_padding)
+            ctx.close_path()
+            ctx.set_source_rgb(*definitions.get_color_rgb_float(color))
+            ctx.fill_preserve()
+            ctx.restore()
 
     def draw_submenu(self, ctx, x_part):
         margin_top = 95

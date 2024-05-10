@@ -150,9 +150,9 @@ class OSCDevice(object):
                 control.draw(ctx, offset)
                 offset += 1
         offset = 0
-        page = (self.page + 1) % 2
+        other_page = (self.page + 1) % 2
         try:
-            for control in all_controls[page]:
+            for control in all_controls[other_page]:
                 if offset + 1 <= 8:
                     control.draw_submenu(ctx, offset)
                     offset += 1
