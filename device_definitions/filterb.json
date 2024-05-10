@@ -5,38 +5,39 @@
   "controls": [
     {
       "$type": "control-range",
-      "label": "A",
+      "label": "Attack",
       "address": "/param/a/feg/attack",
       "min": 0,
       "max": 1
     },
     {
       "$type": "control-range",
-      "label": "D",
+      "label": "Decay",
       "address": "/param/a/feg/decay",
       "min": 0,
       "max": 1
     },
     {
       "$type": "control-range",
-      "label": "S",
+      "label": "Sustain",
       "address": "/param/a/feg/sustain",
       "min": 0,
       "max": 1
     },
     {
       "$type": "control-range",
-      "label": "R",
+      "label": "Release",
       "address": "/param/a/feg/release",
       "min": 0,
       "max": 1
     },
     {
       "$type": "control-range",
-      "label": "Feedb.",
+      "label": "Feedback",
       "address": "/param/a/filter/feedback",
       "min": 0,
-      "max": 1
+      "max": 1,
+      "bipolar": 1
     },
     {
       "$type": "control-range",
@@ -54,10 +55,11 @@
     },
     {
       "$type": "control-range",
-      "label": "Filt Bal",
+      "label": "Filt Balance",
       "address": "/param/a/filter/balance",
       "min": 0,
-      "max": 1
+      "max": 1,
+      "bipolar": 1
     },
     {
       "$type": "control-range",
@@ -96,7 +98,7 @@
       "groups": [
         {
           "$type": "group",
-		  "label" : "Off",
+          "label": "Off",
           "controls": [
             {
               "$type": "control-menu",
@@ -117,7 +119,7 @@
         },
         {
           "$type": "group",
-		  "label" : "Saturator",
+          "label": "Saturator",
           "controls": [
             {
               "$type": "control-menu",
@@ -178,7 +180,7 @@
         },
         {
           "$type": "group",
-		  "label" : "Effect",
+          "label": "Effect",
           "controls": [
             {
               "$type": "control-menu",
@@ -209,7 +211,7 @@
         },
         {
           "$type": "group",
-		  "label" : "Harmonic",
+          "label": "Harmonic",
           "controls": [
             {
               "$type": "control-menu",
@@ -340,7 +342,7 @@
         },
         {
           "$type": "group",
-		  "label" : "Rect.",
+          "label": "Rect.",
           "controls": [
             {
               "$type": "control-menu",
@@ -391,7 +393,7 @@
         },
         {
           "$type": "group",
-		  "label" : "Folders",
+          "label": "Folders",
           "controls": [
             {
               "$type": "control-menu",
@@ -442,7 +444,7 @@
         },
         {
           "$type": "group",
-		  "label": "Fuzz",
+          "label": "Fuzz",
           "controls": [
             {
               "$type": "control-menu",
@@ -503,7 +505,7 @@
         },
         {
           "$type": "group",
-		  "label" : "Trig.",
+          "label": "Trig.",
           "controls": [
             {
               "$type": "control-menu",

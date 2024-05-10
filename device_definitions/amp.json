@@ -1,116 +1,332 @@
 {
-	"name": "AMP",
+	"name": "Amplifier",
 	"slot": 4,
 	"init": [],
 	"controls": [
 		{
 			"$type": "control-range",
-			"label": "ATTACK",
+			"label": "Attack",
 			"address": "/param/a/aeg/attack",
 			"min": 0,
 			"max": 1
 		},
 		{
 			"$type": "control-range",
-			"label": "DECAY",
+			"label": "Decay",
 			"address": "/param/a/aeg/decay",
 			"min": 0,
 			"max": 1
 		},
 		{
 			"$type": "control-range",
-			"label": "SUSTAIN",
+			"label": "Sustain",
 			"address": "/param/a/aeg/sustain",
 			"min": 0,
 			"max": 1
 		},
 		{
 			"$type": "control-range",
-			"label": "RELEASE",
+			"label": "Release",
 			"address": "/param/a/aeg/release",
 			"min": 0,
 			"max": 1
 		},
 		{
 			"$type": "control-range",
-			"label": "OSC1 LVL",
+			"label": "Osc1 Level",
 			"address": "/param/a/mixer/osc1/volume",
 			"min": 0,
 			"max": 1
 		},
 		{
 			"$type": "control-range",
-			"label": "OSC2 LVL",
+			"label": "Osc2 Level",
 			"address": "/param/a/mixer/osc2/volume",
 			"min": 0,
 			"max": 1
 		},
 		{
 			"$type": "control-range",
-			"label": "PRE-FILT GAIN",
+			"label": "Pre-filter Gain",
 			"address": "/param/a/mixer/prefilter_gain",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
 		},
 		{
 			"$type": "control-range",
-			"label": "VCA GAIN",
+			"label": "VCA Gain",
 			"address": "/param/a/amp/gain",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
+		},
+		{
+			"$type": "control-switch",
+			"label": "AEG Type",
+			"groups": [
+				{
+					"$type": "group",
+					"label": "Digital",
+					"onselect": {
+						"$type": "message",
+						"$comment": "",
+						"address": "/param/a/aeg/mode",
+						"value": 1
+					},
+					"controls": [
+						{
+							"$type": "control-menu",
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "Convex Att.",
+									"onselect": {
+										"$type": "message",
+										"$comment": "RingMod",
+										"address": "/param/a/aeg/attack_shape",
+										"value": 0
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Linear Att.",
+									"onselect": {
+										"$type": "message",
+										"$comment": "RingMod",
+										"address": "/param/a/aeg/attack_shape",
+										"value": 1
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Concave Att.",
+									"onselect": {
+										"$type": "message",
+										"$comment": "RingMod",
+										"address": "/param/a/aeg/attack_shape",
+										"value": 2
+									}
+								}
+							]
+						},
+						{
+							"$type": "control-menu",
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "Convex Dec.",
+									"onselect": {
+										"$type": "message",
+										"$comment": "RingMod",
+										"address": "/param/a/aeg/decay_shape",
+										"value": 0
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Linear Dec.",
+									"onselect": {
+										"$type": "message",
+										"$comment": "RingMod",
+										"address": "/param/a/aeg/decay_shape",
+										"value": 1
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Concave Dec.",
+									"onselect": {
+										"$type": "message",
+										"$comment": "RingMod",
+										"address": "/param/a/aeg/decay_shape",
+										"value": 2
+									}
+								}
+							]
+						},
+						{
+							"$type": "control-menu",
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "Convex Rel.",
+									"onselect": {
+										"$type": "message",
+										"$comment": "RingMod",
+										"address": "/param/a/aeg/release_shape",
+										"value": 0
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Linear Rel.",
+									"onselect": {
+										"$type": "message",
+										"$comment": "RingMod",
+										"address": "/param/a/aeg/release_shape",
+										"value": 1
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Concave Rel.",
+									"onselect": {
+										"$type": "message",
+										"$comment": "RingMod",
+										"address": "/param/a/aeg/release_shape",
+										"value": 2
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "Analog",
+					"onselect": {
+						"$type": "message",
+						"$comment": "",
+						"address": "/param/a/aeg/mode",
+						"value": 1
+					},
+					"controls": [
+						{
+							"$type": "control-spacer"
+						},
+						{
+							"$type": "control-spacer"
+						},
+						{
+							"$type": "control-spacer"
+						}
+					]
+				}
+			]
 		},
 		{
 			"$type": "control-range",
-			"label": "SHAPE A",
-			"address": "/param/a/aeg/attack_shape",
-			"min": 0,
-			"max": 2
-		},
-		{
-			"$type": "control-range",
-			"label": "SHAPE D",
-			"address": "/param/a/aeg/decay_shape",
-			"min": 0,
-			"max": 2
-		},
-		{
-			"$type": "control-range",
-			"label": "AMP EG MODE",
-			"address": "/param/a/aeg/mode",
-			"min": 0,
-			"max": 1
-		},
-		{
-			"$type": "control-range",
-			"label": "SHAPE R",
-			"address": "/param/a/aeg/release_shape",
-			"min": 0,
-			"max": 1
-		},
-		{
-			"$type": "control-range",
-			"label": "RING LVL",
+			"label": "Ringmod Level",
 			"address": "/param/a/mixer/rm1x2/volume",
 			"min": 0,
 			"max": 1
 		},
 		{
-			"$type": "control-range",
-			"label": "osc 1 type",
-			"address": "/param/a/osc/1/type",
-			"min": 0,
-			"max": 10
+			"$type": "control-menu",
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "RingMod",
+					"onselect": {
+						"$type": "message",
+						"$comment": "RingMod",
+						"address": "/param/a/mixer/rm1x2/volume/deform+",
+						"value": 0
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Cont. XOR",
+					"onselect": {
+						"$type": "message",
+						"$comment": "RingMod",
+						"address": "/param/a/mixer/rm1x2/volume/deform+",
+						"value": 1
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Type 1 SILM",
+					"onselect": {
+						"$type": "message",
+						"$comment": "RingMod",
+						"address": "/param/a/mixer/rm1x2/volume/deform+",
+						"value": 2
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Type 2 SILM",
+					"onselect": {
+						"$type": "message",
+						"$comment": "RingMod",
+						"address": "/param/a/mixer/rm1x2/volume/deform+",
+						"value": 3
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Type 3 SILM",
+					"onselect": {
+						"$type": "message",
+						"$comment": "RingMod",
+						"address": "/param/a/mixer/rm1x2/volume/deform+",
+						"value": 4
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Type 4 SILM",
+					"onselect": {
+						"$type": "message",
+						"$comment": "RingMod",
+						"address": "/param/a/mixer/rm1x2/volume/deform+",
+						"value": 5
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Type 6 SILM",
+					"onselect": {
+						"$type": "message",
+						"$comment": "RingMod",
+						"address": "/param/a/mixer/rm1x2/volume/deform+",
+						"value": 7
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Type 7 SILM",
+					"onselect": {
+						"$type": "message",
+						"$comment": "RingMod",
+						"address": "/param/a/mixer/rm1x2/volume/deform+",
+						"value": 8
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Type 8 SILM",
+					"onselect": {
+						"$type": "message",
+						"$comment": "RingMod",
+						"address": "/param/a/mixer/rm1x2/volume/deform+",
+						"value": 9
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Type 9 SILM",
+					"onselect": {
+						"$type": "message",
+						"$comment": "RingMod",
+						"address": "/param/a/mixer/rm1x2/volume/deform+",
+						"value": 10
+					}
+				}
+			]
 		},
 		{
 			"$type": "control-range",
-			"label": "SEND 1 LVL",
+			"label": "Send 1 Level",
 			"address": "/param/a/send/1/level",
 			"min": 0,
 			"max": 1
 		},
 		{
 			"$type": "control-range",
-			"label": "SEND 2 LVL",
+			"label": "Send 2 Level",
 			"address": "/param/a/send/2/level",
 			"min": 0,
 			"max": 1

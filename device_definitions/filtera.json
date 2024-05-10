@@ -22,7 +22,8 @@
 			"label": "Depth",
 			"address": "/param/a/filter/1/feg_amount",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
 		},
 		{
 			"$type": "control-range",
@@ -50,7 +51,8 @@
 			"label": "Depth",
 			"address": "/param/a/filter/2/feg_amount",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
 		},
 		{
 			"$type": "control-range",
@@ -1148,7 +1150,8 @@
 			"label": "WIDTH",
 			"address": "/param/a/amp/width",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
 		},
 		{
 			"$type": "control-switch",

@@ -49,8 +49,12 @@ class OSCControl(object):
         self.get_color_func = get_color_func
         self.min = config["min"]
         self.max = config["max"]
-        self.bipolar = True
         self.log = logger.getChild(f"{self.label}:Range")
+        self.bipolar = None
+        if "bipolar" in config:
+            self.bipolar = config["bipolar"]
+        else:
+            self.bipolar = False
 
         if send_osc_func:
             self.send_osc_func = send_osc_func
@@ -116,7 +120,6 @@ class OSCControl(object):
             bipolar_value = self.value / self.max - 0.5 * self.max
             ctx.move_to(xc, yc)
             ctx.line_to(xc + length, yc)
-            print(bipolar_value)
             ctx.set_source_rgb(*definitions.get_color_rgb_float(definitions.GRAY_LIGHT))
             ctx.set_line_width(1)
             ctx.stroke()
