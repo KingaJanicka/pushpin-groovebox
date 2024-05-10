@@ -62,32 +62,148 @@
       "bipolar": 1
     },
     {
-      "$type": "control-range",
-      "label": "Shape A",
-      "address": "/param/a/feg/attack_shape",
-      "min": 0,
-      "max": 2
-    },
-    {
-      "$type": "control-range",
-      "label": "Shape D",
-      "address": "/param/a/feg/decay_shape",
-      "min": 0,
-      "max": 2
-    },
-    {
-      "$type": "control-range",
-      "label": "Eg Mode",
-      "address": "/param/a/feg/mode",
-      "min": 0,
-      "max": 1
-    },
-    {
-      "$type": "control-range",
-      "label": "Shape R",
-      "address": "/param/a/feg/release_shape",
-      "min": 0,
-      "max": 2
+      "$type": "control-switch",
+      "label": "feg Type",
+      "groups": [
+        {
+          "$type": "group",
+          "label": "Digital",
+          "onselect": {
+            "$type": "message",
+            "$comment": "",
+            "address": "/param/a/feg/mode",
+            "value": 1
+          },
+          "controls": [
+            {
+              "$type": "control-menu",
+              "items": [
+                {
+                  "$type": "menu-item",
+                  "label": "Convex Att.",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "RingMod",
+                    "address": "/param/a/feg/attack_shape",
+                    "value": 0
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "Linear Att.",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "RingMod",
+                    "address": "/param/a/feg/attack_shape",
+                    "value": 1
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "Concave Att.",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "RingMod",
+                    "address": "/param/a/feg/attack_shape",
+                    "value": 2
+                  }
+                }
+              ]
+            },
+            {
+              "$type": "control-menu",
+              "items": [
+                {
+                  "$type": "menu-item",
+                  "label": "Convex Dec.",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "RingMod",
+                    "address": "/param/a/feg/decay_shape",
+                    "value": 0
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "Linear Dec.",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "RingMod",
+                    "address": "/param/a/feg/decay_shape",
+                    "value": 1
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "Concave Dec.",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "RingMod",
+                    "address": "/param/a/feg/decay_shape",
+                    "value": 2
+                  }
+                }
+              ]
+            },
+            {
+              "$type": "control-menu",
+              "items": [
+                {
+                  "$type": "menu-item",
+                  "label": "Convex Rel.",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "RingMod",
+                    "address": "/param/a/feg/release_shape",
+                    "value": 0
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "Linear Rel.",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "RingMod",
+                    "address": "/param/a/feg/release_shape",
+                    "value": 1
+                  }
+                },
+                {
+                  "$type": "menu-item",
+                  "label": "Concave Rel.",
+                  "onselect": {
+                    "$type": "message",
+                    "$comment": "RingMod",
+                    "address": "/param/a/feg/release_shape",
+                    "value": 2
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "$type": "group",
+          "label": "Analog",
+          "onselect": {
+            "$type": "message",
+            "$comment": "",
+            "address": "/param/a/feg/mode",
+            "value": 1
+          },
+          "controls": [
+            {
+              "$type": "control-spacer"
+            },
+            {
+              "$type": "control-spacer"
+            },
+            {
+              "$type": "control-spacer"
+            }
+          ]
+        }
+      ]
     },
     {
       "$type": "control-spacer"
