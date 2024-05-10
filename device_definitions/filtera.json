@@ -1,5 +1,5 @@
 {
-	"name": "FIL A",
+	"name": "Filter A",
 	"slot": 2,
 	"init": [],
 	"controls": [
@@ -1139,11 +1139,89 @@
 			]
 		},
 		{
-			"$type": "control-range",
-			"label": "CONFIG",
-			"address": "/param/a/filter/config",
-			"min": 0,
-			"max": 7
+			"$type": "control-menu",
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "Serial 1",
+					"onselect": {
+						"$type": "message",
+						"$comment": "RingMod",
+						"address": "/param/a/filter/config",
+						"value": 0
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Serial 2",
+					"onselect": {
+						"$type": "message",
+						"$comment": "RingMod",
+						"address": "/param/a/filter/config",
+						"value": 1
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Serial 3",
+					"onselect": {
+						"$type": "message",
+						"$comment": "RingMod",
+						"address": "/param/a/filter/config",
+						"value": 2
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Dual 1",
+					"onselect": {
+						"$type": "message",
+						"$comment": "RingMod",
+						"address": "/param/a/filter/config",
+						"value": 3
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Dual 2",
+					"onselect": {
+						"$type": "message",
+						"$comment": "RingMod",
+						"address": "/param/a/filter/config",
+						"value": 4
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Stereo",
+					"onselect": {
+						"$type": "message",
+						"$comment": "RingMod",
+						"address": "/param/a/filter/config",
+						"value": 5
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Ring",
+					"onselect": {
+						"$type": "message",
+						"$comment": "RingMod",
+						"address": "/param/a/filter/config",
+						"value": 6
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Wide",
+					"onselect": {
+						"$type": "message",
+						"$comment": "RingMod",
+						"address": "/param/a/filter/config",
+						"value": 7
+					}
+				}
+			]
 		},
 		{
 			"$type": "control-range",
