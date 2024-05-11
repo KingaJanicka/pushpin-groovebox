@@ -1,5 +1,5 @@
 {
-	"name": "SH NOISE",
+	"name": "SH Noise",
 	"slot": 1,
 	"init": [
 		{
@@ -13,105 +13,198 @@
 			"$comment": "set osc type",
 			"address": "/param/a/osc/2/type",
 			"value": 3
+		},
+		{
+			"$type": "message",
+			"$comment": "unmute LP",
+			"address": "/param/a/osc/2/param3/enable+",
+			"value": 1
+		},
+		{
+			"$type": "message",
+			"$comment": "unmute HP",
+			"address": "/param/a/osc/2/param4/enable+",
+			"value": 1
+		},
+		{
+			"$type": "message",
+			"$comment": "Set OCT to zero",
+			"address": "/param/a/osc/2/octave",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"$comment": "unmute osc",
+			"address": "/param/a/osc/2/pitch/extend+",
+			"value": 1
 		}
 	],
 	"controls": [
 		{
 			"$type": "control-range",
-			"label": "PITCH",
+			"label": "Pitch",
 			"address": "/param/a/osc/2/pitch",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
 		},
 		{
 			"$type": "control-range",
-			"label": "CORR.",
+			"label": "Correlation",
 			"address": "/param/a/osc/2/param1",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
 		},
 		{
 			"$type": "control-range",
-			"label": "WIDTH",
+			"label": "Width",
 			"address": "/param/a/osc/2/param2",
 			"min": 0,
 			"max": 1
 		},
 		{
 			"$type": "control-range",
-			"label": "LOW CUT",
+			"label": "Low Cut",
 			"address": "/param/a/osc/2/param3",
 			"min": 0,
 			"max": 1
 		},
 		{
 			"$type": "control-range",
-			"label": "HIGH CUT",
+			"label": "High Cut",
 			"address": "/param/a/osc/2/param4",
 			"min": 0,
 			"max": 1
 		},
 		{
 			"$type": "control-range",
-			"label": "SYNC",
+			"label": "Osc Sync",
 			"address": "/param/a/osc/2/param5",
 			"min": 0,
 			"max": 1
 		},
 		{
 			"$type": "control-range",
-			"label": "UNI. DET",
+			"label": "Unison Detune",
 			"address": "/param/a/osc/2/param6",
 			"min": 0,
 			"max": 1
 		},
 		{
 			"$type": "control-range",
-			"label": "UNI. VOICES",
+			"label": "Unison Voices",
 			"address": "/param/a/osc/2/param7",
 			"min": 0,
 			"max": 16
 		},
 		{
-			"$type": "control-spacer"
+			"$type": "control-spacer-address",
+			"address": "/wavetable/a/osc/2/id"
 		},
 		{
-			"$type": "control-spacer"
+			"$type": "control-spacer-address",
+			"address": "/wavetable/a/osc/2/id"
+		},
+		{
+			"$type": "control-spacer-address",
+			"address": "/wavetable/a/osc/2/id"
+		},
+		{
+			"$type": "control-menu",
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "Keytrack On",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Keytrack On",
+						"address": "/param/a/osc/2/keytrack",
+						"value": 1
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Keytrack Off",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Keytrack Off",
+						"address": "/param/a/osc/2/keytrack",
+						"value": 0
+					}
+				}
+			]
+		},
+		{
+			"$type": "control-menu",
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "Retrigger On",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Retrigger On",
+						"address": "/param/a/osc/2/retrigger",
+						"value": 1
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Retrigger Off",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Retrigger Off",
+						"address": "/param/a/osc/2/retrigger",
+						"value": 0
+					}
+				}
+			]
+		},
+		{
+			"$type": "control-menu",
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "To Filter 1",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Filter 1",
+						"address": "/param/a/mixer/osc2/route",
+						"value": 0
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Both Filters",
+					"onselect": {
+						"$type": "message",
+						"$comment": "To Both Filters",
+						"address": "/param/a/osc/2/retrigger",
+						"value": 1
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "To Filter 2",
+					"onselect": {
+						"$type": "message",
+						"$comment": "To Filter 2",
+						"address": "/param/a/osc/2/retrigger",
+						"value": 2
+					}
+				}
+			]
 		},
 		{
 			"$type": "control-range",
-			"label": "KEYTRACK",
-			"address": "/param/a/osc/2/keytrack",
-			"min": 0,
-			"max": 1
-		},
-		{
-			"$type": "control-range",
-			"label": "RETRIG",
-			"address": "/param/a/osc/2/retrigger",
-			"min": 0,
-			"max": 1
-		},
-		{
-			"$type": "control-range",
-			"label": "FIL ROUTE",
-			"address": "/param/a/mixer/osc2/route",
-			"min": 0,
-			"max": 2
-		},
-		{
-			"$type": "control-spacer"
-		},
-		{
-			"$type": "control-range",
-			"label": "FM DEPTH",
+			"label": "FM Depth",
 			"address": "/param/a/osc/fm_depth",
 			"min": 0,
 			"max": 1
 		},
 		{
 			"$type": "control-range",
-			"label": "FM ROUTING",
+			"label": "FM Routing",
 			"address": "/param/a/osc/fm_routing",
 			"min": 0,
 			"max": 3

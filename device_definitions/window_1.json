@@ -13,6 +13,18 @@
 			"$comment": "set osc type",
 			"address": "/param/a/osc/1/type",
 			"value": 7
+		},
+		{
+			"$type": "message",
+			"$comment": "Set OCT to zero",
+			"address": "/param/a/osc/1/octave",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"$comment": "unmute osc",
+			"address": "/param/a/osc/1/pitch/extend+",
+			"value": 1
 		}
 	],
 	"controls": [

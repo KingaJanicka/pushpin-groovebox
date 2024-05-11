@@ -1,7 +1,14 @@
 {
 	"name": "Amplifier",
 	"slot": 4,
-	"init": [],
+	"init": [
+		{
+			"$type": "message",
+			"$comment": "enable ringmod",
+			"address": "/param/a/mixer/rm1x2/mute",
+			"value": 0
+		}
+	],
 	"controls": [
 		{
 			"$type": "control-range",

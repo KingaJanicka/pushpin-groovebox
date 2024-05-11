@@ -1,7 +1,14 @@
 {
   "name": "Filter B",
   "slot": 3,
-  "init": [],
+  "init": [
+    {
+      "$type": "message",
+      "$comment": "enable HP",
+      "address": "/param/a/highpass/enable+",
+      "value": 1
+    }
+  ],
   "controls": [
     {
       "$type": "control-range",
@@ -48,18 +55,18 @@
     },
     {
       "$type": "control-range",
-      "label": "HP",
-      "address": "/param/a/highpass",
-      "min": 0,
-      "max": 1
-    },
-    {
-      "$type": "control-range",
       "label": "Filt Balance",
       "address": "/param/a/filter/balance",
       "min": 0,
       "max": 1,
       "bipolar": 1
+    },
+    {
+      "$type": "control-range",
+      "label": "HP",
+      "address": "/param/a/highpass",
+      "min": 0,
+      "max": 1
     },
     {
       "$type": "control-switch",
@@ -743,7 +750,49 @@
       ]
     },
     {
-      "$type": "control-spacer"
+      "$type": "control-menu",
+      "items": [
+        {
+          "$type": "menu-item",
+          "label": "HP 12db",
+          "onselect": {
+            "$type": "message",
+            "$comment": "Sine",
+            "address": "/param/a/highpass/deform+",
+            "value": 0
+          }
+        },
+        {
+          "$type": "menu-item",
+          "label": "HP 24db",
+          "onselect": {
+            "$type": "message",
+            "$comment": "Sine",
+            "address": "/param/a/highpass/deform+",
+            "value": 1
+          }
+        },
+        {
+          "$type": "menu-item",
+          "label": "HP 36db",
+          "onselect": {
+            "$type": "message",
+            "$comment": "Sine",
+            "address": "/param/a/highpass/deform+",
+            "value": 2
+          }
+        },
+        {
+          "$type": "menu-item",
+          "label": "HP 48db",
+          "onselect": {
+            "$type": "message",
+            "$comment": "Sine",
+            "address": "/param/a/highpass/deform+",
+            "value": 3
+          }
+        }
+      ]
     }
   ]
 }
