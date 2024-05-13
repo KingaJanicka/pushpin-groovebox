@@ -22,6 +22,18 @@
 		},
 		{
 			"$type": "message",
+			"$comment": "unmute LP",
+			"address": "/param/a/osc/1/param4/enable+",
+			"value": 1
+		},
+		{
+			"$type": "message",
+			"$comment": "unmute HP",
+			"address": "/param/a/osc/1/param5/enable+",
+			"value": 1
+		},
+		{
+			"$type": "message",
 			"$comment": "unmute osc",
 			"address": "/param/a/osc/1/pitch/extend+",
 			"value": 1
@@ -29,28 +41,260 @@
 	],
 	"controls": [
 		{
-			"$type": "control-spacer"
+			"$type": "control-range",
+			"label": "Pitch",
+			"address": "/param/a/osc/1/pitch",
+			"min": 0,
+			"max": 1,
+			"bipolar": 1
 		},
 		{
-			"$type": "control-spacer"
+			"$type": "control-range",
+			"label": "Morph",
+			"address": "/param/a/osc/1/param1",
+			"min": 0,
+			"max": 1
 		},
 		{
-			"$type": "control-spacer"
+			"$type": "control-range",
+			"label": "Formant",
+			"address": "/param/a/osc/1/param2",
+			"min": 0,
+			"max": 1
 		},
 		{
-			"$type": "control-spacer"
+			"$type": "control-menu",
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "Triangle",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Trianngle",
+						"address": "/param/a/osc/1/param3",
+						"value": 0
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Cosine",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Trianngle",
+						"address": "/param/a/osc/1/param3",
+						"value": 1
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Blend 1",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Trianngle",
+						"address": "/param/a/osc/1/param3",
+						"value": 2
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Blend 2",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Trianngle",
+						"address": "/param/a/osc/1/param3",
+						"value": 3
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Blend 3",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Trianngle",
+						"address": "/param/a/osc/1/param3",
+						"value": 4
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Sawtooth",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Trianngle",
+						"address": "/param/a/osc/1/param3",
+						"value": 5
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Sine",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Trianngle",
+						"address": "/param/a/osc/1/param3",
+						"value": 6
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Square",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Trianngle",
+						"address": "/param/a/osc/1/param3",
+						"value": 7
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Rectangle",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Trianngle",
+						"address": "/param/a/osc/1/param3",
+						"value": 8
+					}
+				}
+			]
 		},
 		{
-			"$type": "control-spacer"
+			"$type": "control-range",
+			"label": "Low Cut",
+			"address": "/param/a/osc/1/param4",
+			"min": 0,
+			"max": 1
 		},
 		{
-			"$type": "control-spacer"
+			"$type": "control-range",
+			"label": "High Cut",
+			"address": "/param/a/osc/1/param5",
+			"min": 0,
+			"max": 1
 		},
 		{
-			"$type": "control-spacer"
+			"$type": "control-range",
+			"label": "Unison Detune",
+			"address": "/param/a/osc/1/param6",
+			"min": 0,
+			"max": 1
 		},
 		{
-			"$type": "control-spacer"
+			"$type": "control-range",
+			"label": "Unison Voices",
+			"address": "/param/a/osc/1/param7",
+			"min": 0,
+			"max": 16
+		},
+		{
+			"$type": "control-spacer-address",
+			"address": "/wavetable/a/osc/1/id"
+		},
+		{
+			"$type": "control-spacer-address",
+			"address": "/wavetable/a/osc/1/id"
+		},
+		{
+			"$type": "control-spacer-address",
+			"address": "/wavetable/a/osc/1/id"
+		},
+		{
+			"$type": "control-menu",
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "Keytrack On",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Keytrack On",
+						"address": "/param/a/osc/1/keytrack",
+						"value": 1
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Keytrack Off",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Keytrack Off",
+						"address": "/param/a/osc/1/keytrack",
+						"value": 0
+					}
+				}
+			]
+		},
+		{
+			"$type": "control-menu",
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "Retrigger On",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Retrigger On",
+						"address": "/param/a/osc/1/retrigger",
+						"value": 1
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Retrigger Off",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Retrigger Off",
+						"address": "/param/a/osc/1/retrigger",
+						"value": 0
+					}
+				}
+			]
+		},
+		{
+			"$type": "control-menu",
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "To Filter 1",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Filter 1",
+						"address": "/param/a/mixer/osc1/route",
+						"value": 0
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Both Filters",
+					"onselect": {
+						"$type": "message",
+						"$comment": "To Both Filters",
+						"address": "/param/a/osc/1/retrigger",
+						"value": 1
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "To Filter 2",
+					"onselect": {
+						"$type": "message",
+						"$comment": "To Filter 2",
+						"address": "/param/a/osc/1/retrigger",
+						"value": 2
+					}
+				}
+			]
+		},
+		{
+			"$type": "control-range",
+			"label": "FM Depth",
+			"address": "/param/a/osc/fm_depth",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "FM Routing",
+			"address": "/param/a/osc/fm_routing",
+			"min": 0,
+			"max": 3
 		}
 	]
 }

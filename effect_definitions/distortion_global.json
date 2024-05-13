@@ -11,78 +11,32 @@
 	],
 	"controls": [
 		{
-			"$type": "control-switch",
-			"label": "EQ",
-			"groups": [
-				{
-					"$type": "group",
-					"label": "Pre-EQ",
-					"controls": [
-						{
-							"$type": "control-range",
-							"label": "Gain",
-							"address": "/param/fx/global/1/param1",
-							"min": 0,
-							"max": 1
-						},
-						{
-							"$type": "control-range",
-							"label": "Freq",
-							"address": "/param/fx/global/1/param2",
-							"min": 0,
-							"max": 1
-						},
-						{
-							"$type": "control-range",
-							"label": "Bandwidth",
-							"address": "/param/fx/global/1/param3",
-							"min": 0,
-							"max": 1
-						},
-						{
-							"$type": "control-range",
-							"label": "High Cut",
-							"address": "/param/fx/global/1/param4",
-							"min": 0,
-							"max": 1
-						}
-					]
-				},
-				{
-					"$type": "group",
-					"label": "Post-EQ",
-					"controls": [
-						{
-							"$type": "control-range",
-							"label": "Gain",
-							"address": "/param/fx/global/1/param7",
-							"min": 0,
-							"max": 1
-						},
-						{
-							"$type": "control-range",
-							"label": "Freq",
-							"address": "/param/fx/global/1/param8",
-							"min": 0,
-							"max": 1
-						},
-						{
-							"$type": "control-range",
-							"label": "Bandwidth",
-							"address": "/param/fx/global/1/param9",
-							"min": 0,
-							"max": 1
-						},
-						{
-							"$type": "control-range",
-							"label": "High Cut",
-							"address": "/param/fx/global/1/param10",
-							"min": 0,
-							"max": 1
-						}
-					]
-				}
-			]
+			"$type": "control-range",
+			"label": "PreEQ Gain",
+			"address": "/param/fx/global/1/param1",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "PreEQ Freq",
+			"address": "/param/fx/global/1/param2",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "PreEQ Bandsize",
+			"address": "/param/fx/global/1/param3",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "PreEQ High Cut",
+			"address": "/param/fx/global/1/param4",
+			"min": 0,
+			"max": 1
 		},
 		{
 			"$type": "control-menu",
@@ -171,17 +125,57 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "Drive",
+			"label": "Dist Drive",
 			"address": "/param/fx/global/1/param5",
 			"min": 0,
 			"max": 1
 		},
 		{
 			"$type": "control-range",
-			"label": "Feedback",
+			"label": "Dist Feedback",
 			"address": "/param/fx/global/1/param6",
 			"min": 0,
 			"max": 1
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-range",
+			"label": "PostEQ Gain",
+			"address": "/param/fx/global/1/param7",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "PostEQ Freq",
+			"address": "/param/fx/global/1/param8",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "PostEQ Bandsize",
+			"address": "/param/fx/global/1/param9",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "PostEQ High Cut",
+			"address": "/param/fx/global/1/param10",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
 		},
 		{
 			"$type": "control-range",

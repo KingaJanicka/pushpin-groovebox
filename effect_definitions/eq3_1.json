@@ -11,103 +11,98 @@
 	],
 	"controls": [
 		{
-			"$type": "control-switch",
-			"label": "Band",
-			"groups": [
-				{
-					"$type": "group",
-					"label": "Band 1",
-					"controls": [
-						{
-							"$type": "control-range",
-							"label": "Gain 1",
-							"address": "/param/fx/a/1/param1",
-							"min": 0,
-							"max": 1
-						},
-						{
-							"$type": "control-range",
-							"label": "Freq 1",
-							"address": "/param/fx/a/1/param2",
-							"min": 0,
-							"max": 1
-						},
-						{
-							"$type": "control-range",
-							"label": "Bandwidth 1",
-							"address": "/param/fx/a/1/param3",
-							"min": 0,
-							"max": 1
-						}
-					]
-				},
-				{
-					"$type": "group",
-					"label": "Band 2",
-					"controls": [
-						{
-							"$type": "control-range",
-							"label": "Gain 2",
-							"address": "/param/fx/a/1/param4",
-							"min": 0,
-							"max": 1
-						},
-						{
-							"$type": "control-range",
-							"label": "Freq 2",
-							"address": "/param/fx/a/1/param5",
-							"min": 0,
-							"max": 1
-						},
-						{
-							"$type": "control-range",
-							"label": "Bandwidth 2",
-							"address": "/param/fx/a/1/param6",
-							"min": 0,
-							"max": 1
-						}
-					]
-				},
-				{
-					"$type": "group",
-					"label": "Band 3",
-					"controls": [
-						{
-							"$type": "control-range",
-							"label": "Gain 3",
-							"address": "/param/fx/a/1/param7",
-							"min": 0,
-							"max": 1
-						},
-						{
-							"$type": "control-range",
-							"label": "Freq 3",
-							"address": "/param/fx/a/1/param8",
-							"min": 0,
-							"max": 1
-						},
-						{
-							"$type": "control-range",
-							"label": "Bandwidth 3",
-							"address": "/param/fx/a/1/param9",
-							"min": 0,
-							"max": 1
-						}
-					]
-				}
-			]
+			"$type": "control-range",
+			"label": "Gain 1",
+			"address": "/param/fx/a/1/param1",
+			"min": 0,
+			"max": 1,
+			"bipolar": 1
 		},
 		{
 			"$type": "control-range",
-			"label": "Gain Out",
-			"address": "/param/fx/a/1/param10",
+			"label": "Freq 1",
+			"address": "/param/fx/a/1/param2",
 			"min": 0,
 			"max": 1
 		},
 		{
 			"$type": "control-range",
+			"label": "Bandwidth 1",
+			"address": "/param/fx/a/1/param3",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Gain 2",
+			"address": "/param/fx/a/1/param4",
+			"min": 0,
+			"max": 1,
+			"bipolar": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Freq 2",
+			"address": "/param/fx/a/1/param5",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Bandwidth 2",
+			"address": "/param/fx/a/1/param6",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-spacer-address",
+			"address": "/param/fx/a/1/param12"
+		},
+		{
+			"$type": "control-range",
 			"label": "Mix",
 			"address": "/param/fx/a/1/param11",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Gain 3",
+			"address": "/param/fx/a/1/param7",
+			"min": 0,
+			"max": 1,
+			"bipolar": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Freq 3",
+			"address": "/param/fx/a/1/param8",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Bandwidth 3",
+			"address": "/param/fx/a/1/param9",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-range",
+			"label": "Gain Out",
+			"address": "/param/fx/a/1/param10",
 			"min": 0,
 			"max": 1
 		}
