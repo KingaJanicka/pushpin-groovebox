@@ -15,7 +15,7 @@
 			"items": [
 				{
 					"$type": "menu-item",
-					"label": "1",
+					"label": "Wave 1",
 					"onselect": {
 						"$type": "message",
 						"$comment": "1",
@@ -25,7 +25,7 @@
 				},
 				{
 					"$type": "menu-item",
-					"label": "2",
+					"label": "Wave 2",
 					"onselect": {
 						"$type": "message",
 						"$comment": "2",
@@ -35,7 +35,7 @@
 				},
 				{
 					"$type": "menu-item",
-					"label": "3",
+					"label": "Wave 3",
 					"onselect": {
 						"$type": "message",
 						"$comment": "3",
@@ -45,7 +45,7 @@
 				},
 				{
 					"$type": "menu-item",
-					"label": "4",
+					"label": "Wave 4",
 					"onselect": {
 						"$type": "message",
 						"$comment": "4",
@@ -55,7 +55,7 @@
 				},
 				{
 					"$type": "menu-item",
-					"label": "5",
+					"label": "Wave 5",
 					"onselect": {
 						"$type": "message",
 						"$comment": "5",
@@ -65,7 +65,7 @@
 				},
 				{
 					"$type": "menu-item",
-					"label": "6",
+					"label": "Wave 6",
 					"onselect": {
 						"$type": "message",
 						"$comment": "6",
@@ -75,7 +75,7 @@
 				},
 				{
 					"$type": "menu-item",
-					"label": "7",
+					"label": "Wave 7",
 					"onselect": {
 						"$type": "message",
 						"$comment": "7",
@@ -85,7 +85,7 @@
 				},
 				{
 					"$type": "menu-item",
-					"label": "8",
+					"label": "Wave 8",
 					"onselect": {
 						"$type": "message",
 						"$comment": "8",
@@ -95,7 +95,7 @@
 				},
 				{
 					"$type": "menu-item",
-					"label": "9",
+					"label": "Wave 9",
 					"onselect": {
 						"$type": "message",
 						"$comment": "9",
@@ -105,7 +105,7 @@
 				},
 				{
 					"$type": "menu-item",
-					"label": "10",
+					"label": "Wave 10",
 					"onselect": {
 						"$type": "message",
 						"$comment": "10",
@@ -115,7 +115,7 @@
 				},
 				{
 					"$type": "menu-item",
-					"label": "11",
+					"label": "Wave 11",
 					"onselect": {
 						"$type": "message",
 						"$comment": "11",
@@ -125,7 +125,7 @@
 				},
 				{
 					"$type": "menu-item",
-					"label": "12",
+					"label": "Wave 12",
 					"onselect": {
 						"$type": "message",
 						"$comment": "12",
@@ -135,7 +135,7 @@
 				},
 				{
 					"$type": "menu-item",
-					"label": "13",
+					"label": "Wave 13",
 					"onselect": {
 						"$type": "message",
 						"$comment": "13",
@@ -145,7 +145,7 @@
 				},
 				{
 					"$type": "menu-item",
-					"label": "14",
+					"label": "Wave 14",
 					"onselect": {
 						"$type": "message",
 						"$comment": "14",
@@ -155,7 +155,7 @@
 				},
 				{
 					"$type": "menu-item",
-					"label": "15",
+					"label": "Wave 15",
 					"onselect": {
 						"$type": "message",
 						"$comment": "15",
@@ -165,7 +165,7 @@
 				},
 				{
 					"$type": "menu-item",
-					"label": "16",
+					"label": "Wave 16",
 					"onselect": {
 						"$type": "message",
 						"$comment": "16",
@@ -175,7 +175,7 @@
 				},
 				{
 					"$type": "menu-item",
-					"label": "17",
+					"label": "Wave 17",
 					"onselect": {
 						"$type": "message",
 						"$comment": "17",
@@ -185,7 +185,7 @@
 				},
 				{
 					"$type": "menu-item",
-					"label": "18",
+					"label": "Wave 18",
 					"onselect": {
 						"$type": "message",
 						"$comment": "18",
@@ -195,7 +195,7 @@
 				},
 				{
 					"$type": "menu-item",
-					"label": "19",
+					"label": "Wave 19",
 					"onselect": {
 						"$type": "message",
 						"$comment": "19",
@@ -205,7 +205,7 @@
 				},
 				{
 					"$type": "menu-item",
-					"label": "20",
+					"label": "Wave 20",
 					"onselect": {
 						"$type": "message",
 						"$comment": "20",
@@ -215,7 +215,7 @@
 				},
 				{
 					"$type": "menu-item",
-					"label": "21",
+					"label": "Wave 21",
 					"onselect": {
 						"$type": "message",
 						"$comment": "21",
@@ -225,7 +225,7 @@
 				},
 				{
 					"$type": "menu-item",
-					"label": "22",
+					"label": "Wave 22",
 					"onselect": {
 						"$type": "message",
 						"$comment": "22",
@@ -235,7 +235,7 @@
 				},
 				{
 					"$type": "menu-item",
-					"label": "23",
+					"label": "Wave 23",
 					"onselect": {
 						"$type": "message",
 						"$comment": "23",
@@ -245,7 +245,7 @@
 				},
 				{
 					"$type": "menu-item",
-					"label": "24",
+					"label": "Wave 24",
 					"onselect": {
 						"$type": "message",
 						"$comment": "24",
@@ -255,7 +255,7 @@
 				},
 				{
 					"$type": "menu-item",
-					"label": "25",
+					"label": "Wave 25",
 					"onselect": {
 						"$type": "message",
 						"$comment": "25",
@@ -265,7 +265,7 @@
 				},
 				{
 					"$type": "menu-item",
-					"label": "26",
+					"label": "Wave 26",
 					"onselect": {
 						"$type": "message",
 						"$comment": "26",
@@ -275,7 +275,7 @@
 				},
 				{
 					"$type": "menu-item",
-					"label": "27",
+					"label": "Wave 27",
 					"onselect": {
 						"$type": "message",
 						"$comment": "27",
@@ -285,7 +285,7 @@
 				},
 				{
 					"$type": "menu-item",
-					"label": "28",
+					"label": "Wave 28",
 					"onselect": {
 						"$type": "message",
 						"$comment": "28",
@@ -331,18 +331,7 @@
 			"max": 1
 		},
 		{
-			"$type": "control-range",
-			"label": "Low Cut",
-			"address": "/param/fx/a/1/param7",
-			"min": 0,
-			"max": 1
-		},
-		{
-			"$type": "control-range",
-			"label": "High Cut",
-			"address": "/param/fx/a/1/param8",
-			"min": 0,
-			"max": 1
+			"$type": "control-spacer"
 		},
 		{
 			"$type": "control-range",
@@ -350,6 +339,32 @@
 			"address": "/param/fx/a/1/param9",
 			"min": 0,
 			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Post Low Cut",
+			"address": "/param/fx/a/1/param7",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Post High Cut",
+			"address": "/param/fx/a/1/param8",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-spacer-address",
+			"address": "/param/fx/a/1/param10"
+		},
+		{
+			"$type": "control-spacer-address",
+			"address": "/param/fx/a/1/param11"
+		},
+		{
+			"$type": "control-spacer-address",
+			"address": "/param/fx/a/1/param12"
 		}
 	]
 }

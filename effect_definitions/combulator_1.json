@@ -36,7 +36,8 @@
 			"label": "Feedback",
 			"address": "/param/fx/a/1/param5",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
 		},
 		{
 			"$type": "control-range",
@@ -44,6 +45,48 @@
 			"address": "/param/fx/a/1/param6",
 			"min": 0,
 			"max": 1
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-range",
+			"label": "Mix",
+			"address": "/param/fx/a/1/param12",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Input Noise",
+			"address": "/param/fx/a/1/param1",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Pan 2",
+			"address": "/param/fx/a/1/param10",
+			"min": 0,
+			"max": 1,
+			"bipolar": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Pan 3",
+			"address": "/param/fx/a/1/param11",
+			"min": 0,
+			"max": 1,
+			"bipolar": 1
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
 		},
 		{
 			"$type": "control-range",
@@ -63,34 +106,6 @@
 			"$type": "control-range",
 			"label": "Comb 3 Mix",
 			"address": "/param/fx/a/1/param9",
-			"min": 0,
-			"max": 1
-		},
-		{
-			"$type": "control-range",
-			"label": "Input Noise",
-			"address": "/param/fx/a/1/param1",
-			"min": 0,
-			"max": 1
-		},
-		{
-			"$type": "control-range",
-			"label": "Pan 2",
-			"address": "/param/fx/a/1/param10",
-			"min": 0,
-			"max": 1
-		},
-		{
-			"$type": "control-range",
-			"label": "Pan 3",
-			"address": "/param/fx/a/1/param11",
-			"min": 0,
-			"max": 1
-		},
-		{
-			"$type": "control-range",
-			"label": "Mix",
-			"address": "/param/fx/a/1/param12",
 			"min": 0,
 			"max": 1
 		}

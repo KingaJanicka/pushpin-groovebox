@@ -1,5 +1,5 @@
 {
-	"name": "Freq. Shift",
+	"name": "Freq. Shifter",
 	"slot": 5,
 	"init": [
 		{
@@ -39,11 +39,48 @@
 			"max": 1
 		},
 		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
 			"$type": "control-range",
 			"label": "Mix",
-			"address": "/param/fx/a/1/param2",
+			"address": "/param/fx/a/1/param5",
 			"min": 0,
 			"max": 1
+		},
+		{
+			"$type": "control-spacer-address",
+			"address": "/param/fx/a/1/param6"
+		},
+		{
+			"$type": "control-spacer-address",
+			"address": "/param/fx/a/1/param7"
+		},
+		{
+			"$type": "control-spacer-address",
+			"address": "/param/fx/a/1/param8"
+		},
+		{
+			"$type": "control-spacer-address",
+			"address": "/param/fx/a/1/param9"
+		},
+		{
+			"$type": "control-spacer-address",
+			"address": "/param/fx/a/1/param10"
+		},
+		{
+			"$type": "control-spacer-address",
+			"address": "/param/fx/a/1/param11"
+		},
+		{
+			"$type": "control-spacer-address",
+			"address": "/param/fx/a/1/param12"
 		}
 	]
 }

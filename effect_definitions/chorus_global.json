@@ -12,42 +12,42 @@
 	"controls": [
 		{
 			"$type": "control-range",
-			"label": "Rate",
+			"label": "Mod Rate",
 			"address": "/param/fx/global/1/param1",
 			"min": 0,
 			"max": 1
 		},
 		{
 			"$type": "control-range",
-			"label": "Depth",
+			"label": "Mod Depth",
 			"address": "/param/fx/global/1/param2",
 			"min": 0,
 			"max": 1
 		},
 		{
 			"$type": "control-range",
-			"label": "Time",
+			"label": "Chorus Time",
 			"address": "/param/fx/global/1/param3",
 			"min": 0,
 			"max": 1
 		},
 		{
 			"$type": "control-range",
-			"label": "Feedback",
+			"label": "Chorus Feedback",
 			"address": "/param/fx/global/1/param4",
 			"min": 0,
 			"max": 1
 		},
 		{
 			"$type": "control-range",
-			"label": "Low Cut",
+			"label": "EQ Low Cut",
 			"address": "/param/fx/global/1/param5",
 			"min": 0,
 			"max": 1
 		},
 		{
 			"$type": "control-range",
-			"label": "High Cut",
+			"label": "EQ High Cut",
 			"address": "/param/fx/global/1/param6",
 			"min": 0,
 			"max": 1
@@ -57,14 +57,36 @@
 			"label": "Width",
 			"address": "/param/fx/global/1/param7",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
 		},
 		{
 			"$type": "control-range",
 			"label": "Mix",
 			"address": "/param/fx/global/1/param8",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
+		},
+		{
+			"$type": "control-spacer-address",
+			"address": "/param/fx/global/1/param8"
+		},
+		{
+			"$type": "control-spacer-address",
+			"address": "/param/fx/global/1/param9"
+		},
+		{
+			"$type": "control-spacer-address",
+			"address": "/param/fx/global/1/param10"
+		},
+		{
+			"$type": "control-spacer-address",
+			"address": "/param/fx/global/1/param11"
+		},
+		{
+			"$type": "control-spacer-address",
+			"address": "/param/fx/global/1/param12"
 		}
 	]
 }

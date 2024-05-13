@@ -7,27 +7,43 @@
 			"$comment": "unmute osc",
 			"address": "/param/fx/a/1/type",
 			"value": 8
+		},
+		{
+			"$type": "message",
+			"$comment": "enable side HP",
+			"address": "/param/fx/a/1/param9/enable+",
+			"value": 1
 		}
 	],
 	"controls": [
 		{
 			"$type": "control-range",
-			"label": "Bass",
+			"label": "EQ Bass",
 			"address": "/param/fx/a/1/param1",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
 		},
 		{
 			"$type": "control-range",
-			"label": "Treble",
+			"label": "EQ Treble",
 			"address": "/param/fx/a/1/param2",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
 		},
 		{
 			"$type": "control-range",
 			"label": "St. Width",
 			"address": "/param/fx/a/1/param3",
+			"min": 0,
+			"max": 1,
+			"bipolar": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Side Low Cut",
+			"address": "/param/fx/a/1/param9",
 			"min": 0,
 			"max": 1
 		},
@@ -40,36 +56,55 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "Threshold",
+			"label": "Limiter Thresh.",
 			"address": "/param/fx/a/1/param5",
 			"min": 0,
 			"max": 1
 		},
 		{
 			"$type": "control-range",
-			"label": "Attack",
+			"label": "Limiter Att.",
 			"address": "/param/fx/a/1/param6",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
 		},
 		{
 			"$type": "control-range",
-			"label": "Release",
+			"label": "Limiter Rel.",
 			"address": "/param/fx/a/1/param7",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
+		},
+		{
+			"$type": "control-spacer-address",
+			"address": "/param/fx/a/2/param10"
+		},
+		{
+			"$type": "control-spacer-address",
+			"address": "/param/fx/a/2/param11"
+		},
+		{
+			"$type": "control-spacer-address",
+			"address": "/param/fx/a/2/param12"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
 		},
 		{
 			"$type": "control-range",
 			"label": "Gain",
 			"address": "/param/fx/a/1/param8",
-			"min": 0,
-			"max": 1
-		},
-		{
-			"$type": "control-range",
-			"label": "Side Low Cut",
-			"address": "/param/fx/a/1/param9",
 			"min": 0,
 			"max": 1
 		}
