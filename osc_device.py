@@ -180,11 +180,21 @@ class OSCDevice(object):
         visible_controls = self.get_visible_controls()
         for control in visible_controls:
             if hasattr(control, "address") and control.address is not None:
+                self.send_message("/q" + control.address, None)
 
+    def query_all_controls(self):
+        all_controls = self.get_all_controls()
+        for control in all_controls:
+            if hasattr(control, "address") and control.address is not None:
+                print(control.address)
                 self.send_message("/q" + control.address, None)
 
     def get_visible_controls(self):
         return self.pages[self.page]
+
+    def get_all_controls(self):
+        all_controls = self.pages[0] + self.pages[1]
+        return all_controls
 
     def on_encoder_rotated(self, encoder_name, increment):
         try:

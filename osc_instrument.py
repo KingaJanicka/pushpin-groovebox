@@ -106,6 +106,19 @@ class OSCInstrument(object):
                         ) == float(slot["value"]):
                             device.query_visible_controls()
 
+    def query_all_controls(self):
+        for slot_idx, slot_devices in enumerate(self.devices):
+            for device in slot_devices:
+                if slot_idx == 2 or slot_idx == 3 or slot_idx == 4:
+                    device.query_all_controls()
+                else:
+                    slot = self.slots[slot_idx]
+                    for init in device.init:
+                        if init["address"] == slot["address"] and int(
+                            init["value"]
+                        ) == float(slot["value"]):
+                            device.query_all_controls()
+
     """
     Initialise OSC servers and add to transport array so they can be gracefully closed
     """

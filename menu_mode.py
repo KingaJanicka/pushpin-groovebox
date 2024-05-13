@@ -71,7 +71,8 @@ class MenuMode(PyshaMode):
         instrument.query_slots()
         time.sleep(0.1)
         # TODO: make this faster, ATM this is pretty slow
-        instrument.query_devices()
+        current_device = self.app.osc_mode.get_current_instrument_device()
+        current_device.query_all_controls()
         for button_name in (
             self.upper_row_button_names
             + self.lower_row_button_names
