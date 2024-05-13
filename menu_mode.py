@@ -69,6 +69,9 @@ class MenuMode(PyshaMode):
         # TODO: But it does and the FX switching will lag behind one selection if not
         time.sleep(0.1)
         instrument.query_slots()
+        time.sleep(0.1)
+        # TODO: make this faster, ATM this is pretty slow
+        instrument.query_devices()
         for button_name in (
             self.upper_row_button_names
             + self.lower_row_button_names
