@@ -77,14 +77,14 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "Rate",
+			"label": "Mod Rate",
 			"address": "/param/fx/a/2/param2",
 			"min": 0,
 			"max": 1
 		},
 		{
 			"$type": "control-range",
-			"label": "Depth",
+			"label": "Mod Depth",
 			"address": "/param/fx/a/2/param3",
 			"min": 0,
 			"max": 1
@@ -98,14 +98,14 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "Pitch",
+			"label": "Comb Pitch",
 			"address": "/param/fx/a/2/param5",
 			"min": 0,
 			"max": 1
 		},
 		{
 			"$type": "control-range",
-			"label": "Spacing",
+			"label": "Comb Spacing",
 			"address": "/param/fx/a/2/param6",
 			"min": 0,
 			"max": 1
@@ -122,7 +122,21 @@
 			"label": "Mix",
 			"address": "/param/fx/a/2/param11",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
+		},
+		{
+			"$type": "control-spacer-address",
+			"address": "/param/fx/a/2/param12"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
 		},
 		{
 			"$type": "control-range",
@@ -181,7 +195,8 @@
 			"label": "Width",
 			"address": "/param/fx/a/2/param10",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
 		}
 	]
 }

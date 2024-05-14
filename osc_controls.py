@@ -640,6 +640,16 @@ class OSCGroup(object):
                     self.controls.append(control)
                 case "control-spacer":
                     self.controls.append(ControlSpacer())
+                case "control-spacer-address":
+                    control = OSCSpacerAddress(
+                        item,
+                        send_osc_func=send_osc_func,
+                    )
+
+                    if control.address:
+                        self.dispatcher.map(control.address, control.set_state)
+
+                    self.controls.append(control)
                 case "control-macro":
                     control = OSCControlMacro(
                         item,

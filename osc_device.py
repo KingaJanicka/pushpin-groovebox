@@ -186,7 +186,6 @@ class OSCDevice(object):
         all_controls = self.get_all_controls()
         for control in all_controls:
             if hasattr(control, "address") and control.address is not None:
-                print(control.address)
                 self.send_message("/q" + control.address, None)
 
     def get_visible_controls(self):

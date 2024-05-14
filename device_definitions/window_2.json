@@ -35,12 +35,6 @@
 		{
 			"$type": "message",
 			"$comment": "unmute osc",
-			"address": "/param/a/osc/2/pitch/extend+",
-			"value": 1
-		},
-		{
-			"$type": "message",
-			"$comment": "unmute osc",
 			"address": "/param/a/osc/2/param1/extend+",
 			"value": 1
 		}

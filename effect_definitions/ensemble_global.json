@@ -12,157 +12,119 @@
 	"controls": [
 		{
 			"$type": "control-range",
-			"label": "Input Filter",
+			"label": "AA Input Filter",
 			"address": "/param/fx/global/1/param1",
 			"min": 0,
 			"max": 1
 		},
 		{
-			"$type": "control-switch",
-			"label": "Band",
-			"groups": [
+			"$type": "control-menu",
+			"items": [
 				{
-					"$type": "group",
-					"label": "Modulation",
-					"controls": [
-						{
-							"$type": "control-range",
-							"label": "Freq 1",
-							"address": "/param/fx/global/1/param2",
-							"min": 0,
-							"max": 1
-						},
-						{
-							"$type": "control-range",
-							"label": "Depth 1",
-							"address": "/param/fx/global/1/param3",
-							"min": 0,
-							"max": 1
-						},
-						{
-							"$type": "control-range",
-							"label": "Freq 2",
-							"address": "/param/fx/global/1/param4",
-							"min": 0,
-							"max": 1
-						},
-						{
-							"$type": "control-range",
-							"label": "Depth 2",
-							"address": "/param/fx/global/1/param5",
-							"min": 0,
-							"max": 1
-						}
-					]
+					"$type": "menu-item",
+					"label": "Digital",
+					"onselect": {
+						"$type": "message",
+						"$comment": "1",
+						"address": "/param/a/osc/1/param6",
+						"value": 0
+					}
 				},
 				{
-					"$type": "group",
-					"label": "Delay",
-					"controls": [
-						{
-							"$type": "control-menu",
-							"items": [
-								{
-									"$type": "menu-item",
-									"label": "Digital",
-									"onselect": {
-										"$type": "message",
-										"$comment": "1",
-										"address": "/param/a/osc/1/param6",
-										"value": 0
-									}
-								},
-								{
-									"$type": "menu-item",
-									"label": "128 Stage",
-									"onselect": {
-										"$type": "message",
-										"$comment": "2",
-										"address": "/param/a/osc/1/param6",
-										"value": 1
-									}
-								},
-								{
-									"$type": "menu-item",
-									"label": "256 Stage",
-									"onselect": {
-										"$type": "message",
-										"$comment": "3",
-										"address": "/param/a/osc/1/param6",
-										"value": 2
-									}
-								},
-								{
-									"$type": "menu-item",
-									"label": "512 Stage",
-									"onselect": {
-										"$type": "message",
-										"$comment": "4",
-										"address": "/param/a/osc/1/param6",
-										"value": 3
-									}
-								},
-								{
-									"$type": "menu-item",
-									"label": "1024 Stage",
-									"onselect": {
-										"$type": "message",
-										"$comment": "4",
-										"address": "/param/a/osc/1/param6",
-										"value": 4
-									}
-								},
-								{
-									"$type": "menu-item",
-									"label": "2024 Stage",
-									"onselect": {
-										"$type": "message",
-										"$comment": "4",
-										"address": "/param/a/osc/1/param6",
-										"value": 5
-									}
-								},
-								{
-									"$type": "menu-item",
-									"label": "4048 Stage",
-									"onselect": {
-										"$type": "message",
-										"$comment": "4",
-										"address": "/param/a/osc/1/param6",
-										"value": 6
-									}
-								}
-							]
-						},
-						{
-							"$type": "control-range",
-							"label": "Clock Rate",
-							"address": "/param/fx/global/1/param7",
-							"min": 0,
-							"max": 1
-						},
-						{
-							"$type": "control-range",
-							"label": "Saturation",
-							"address": "/param/fx/global/1/param8",
-							"min": 0,
-							"max": 1
-						},
-						{
-							"$type": "control-range",
-							"label": "Feedback",
-							"address": "/param/fx/global/1/param9",
-							"min": 0,
-							"max": 1
-						}
-					]
+					"$type": "menu-item",
+					"label": "128 Stage",
+					"onselect": {
+						"$type": "message",
+						"$comment": "2",
+						"address": "/param/a/osc/1/param6",
+						"value": 1
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "256 Stage",
+					"onselect": {
+						"$type": "message",
+						"$comment": "3",
+						"address": "/param/a/osc/1/param6",
+						"value": 2
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "512 Stage",
+					"onselect": {
+						"$type": "message",
+						"$comment": "4",
+						"address": "/param/a/osc/1/param6",
+						"value": 3
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "1024 Stage",
+					"onselect": {
+						"$type": "message",
+						"$comment": "4",
+						"address": "/param/a/osc/1/param6",
+						"value": 4
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "2024 Stage",
+					"onselect": {
+						"$type": "message",
+						"$comment": "4",
+						"address": "/param/a/osc/1/param6",
+						"value": 5
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "4048 Stage",
+					"onselect": {
+						"$type": "message",
+						"$comment": "4",
+						"address": "/param/a/osc/1/param6",
+						"value": 6
+					}
 				}
 			]
 		},
 		{
 			"$type": "control-range",
+			"label": "Clock Rate",
+			"address": "/param/fx/global/1/param7",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Saturation",
+			"address": "/param/fx/global/1/param8",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Feedback",
+			"address": "/param/fx/global/1/param9",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
 			"label": "Width",
 			"address": "/param/fx/global/1/param10",
+			"min": 0,
+			"max": 1,
+			"bipolar": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Reconstruction Filter",
+			"address": "/param/fx/global/1/param12",
 			"min": 0,
 			"max": 1
 		},
@@ -170,6 +132,34 @@
 			"$type": "control-range",
 			"label": "Mix",
 			"address": "/param/fx/global/1/param11",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Mod Freq 1",
+			"address": "/param/fx/global/1/param2",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Mod Depth 1",
+			"address": "/param/fx/global/1/param3",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Mod Freq 2",
+			"address": "/param/fx/global/1/param4",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Mod Depth 2",
+			"address": "/param/fx/global/1/param5",
 			"min": 0,
 			"max": 1
 		}

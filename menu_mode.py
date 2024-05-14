@@ -69,8 +69,8 @@ class MenuMode(PyshaMode):
         # TODO: But it does and the FX switching will lag behind one selection if not
         time.sleep(0.1)
         instrument.query_slots()
+
         time.sleep(0.1)
-        # TODO: make this faster, ATM this is pretty slow
         current_device = self.app.osc_mode.get_current_instrument_device()
         current_device.query_all_controls()
         for button_name in (
