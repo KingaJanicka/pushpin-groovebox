@@ -1,4 +1,5 @@
-<html>
-<h1>Pushpin docs coming soon!</h1>
+layout: page
+title: "Pushpin-groovebox"
+permalink: /
 
-</html>
+Pushpin groovebox here
