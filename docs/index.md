@@ -1,7 +1,7 @@
 ---
 title: "Pushpin: Open Source Groovebox, by Kinga Janicka"
 permalink: /
-layout: default
+layout: home
 ---
 
 # About Pushpin
