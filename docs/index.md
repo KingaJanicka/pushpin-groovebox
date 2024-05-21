@@ -40,7 +40,7 @@ that's optimised for live performance.
 - Extensive modulation matrix
 - Ability to process external audio or use tracks as sends
 
-[kinga]: https://www.kinga.dev
+[kinga]: https://soundcloud.com/kingajanicka
 [surge]: https://surge-synthesizer.github.io/
 [ffont]: http://www.github.com/ffont
 [pysha]: https://github.com/ffont/pysha
