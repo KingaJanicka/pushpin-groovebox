@@ -61,6 +61,7 @@ protobuf==3.12.4
 psutil==5.9.6
 ptyprocess==0.7.0
 push2-python @ git+https://github.com/ffont/push2-python@ae91501788469f2c54aa95ed12f37f83505d73f8
+surgepy @ file:///home/pushpin/pushpin-groovebox/surge/src/surge-python
 pyalsaaudio==0.10.0
 pybind11-stubgen==2.4.2
 pycairo==1.20.1
