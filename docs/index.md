@@ -1,5 +1,5 @@
 ---
-title: "Pushpin-groovebox"
+title: "Pushpin Groovebox"
 permalink: /
 ---
 
