@@ -284,11 +284,11 @@ class OSCControl(object):
         ctx.save()
 
     def set_state(self, address, *args):
-        value, string, *rest = args
+        value, *rest = args
         self.log.debug((address, value))
         self.value = value
         # TODO: this human readable string doesn't change with knob movements, querry fixes it but makes it glitchy
-        self.string = string
+        # self.string = string
 
     def update_value(self, increment, **kwargs):
         scaled = scale_value(increment, self.min, self.max)
