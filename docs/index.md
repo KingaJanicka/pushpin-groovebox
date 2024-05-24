@@ -11,7 +11,7 @@ layout: home
 Building upon Kinga's experience in the field performing live techno, Pushpin seeks to marry the power of the
 award-winning open-source [Surge XT][surge] soft-synth with the form-factor of the Ableton Push 2.
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/ibr5AQ0NQH8?si=CztI3rN82s1jOuJb" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<iframe width="100%" src="https://www.youtube.com/embed/ibr5AQ0NQH8?si=CztI3rN82s1jOuJb" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
 # Features
 
