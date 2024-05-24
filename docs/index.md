@@ -4,8 +4,6 @@ permalink: /
 layout: home
 ---
 
-# About Pushpin
-
 > Pushpin is an open-source groovebox project by improvisational electronic musician [Kinga Janicka][kinga].
 
 Building upon Kinga's experience in the field performing live techno, Pushpin seeks to marry the power of the
