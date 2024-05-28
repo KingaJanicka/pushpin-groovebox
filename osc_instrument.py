@@ -80,6 +80,7 @@ class OSCInstrument(object):
                 self.name,
             )
         )
+
         # Check what's mapped
         # print(dispatcher._map.keys())
         # self.query_all_params()

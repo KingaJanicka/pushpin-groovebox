@@ -38,6 +38,7 @@ class OSCMode(PyshaMode):
 
     instruments = {}
     current_device_index_and_page = [0, 0]
+    instrument_page = 0
     transports = []
 
     def initialize(self, settings=None):
@@ -141,11 +142,14 @@ class OSCMode(PyshaMode):
         instrument = self.instruments.get(instrument_shortname, None)
 
         devices = []
+        devices_modulation = []
 
         for slot_idx, slot_devices in enumerate(instrument.devices):
             for device in slot_devices:
                 if slot_idx == 2 or slot_idx == 3 or slot_idx == 4:
                     devices.append(device)
+                elif 8 <= slot_idx <= 15:
+                    devices_modulation.append(device)
                 else:
                     slot = instrument.slots[slot_idx]
                     for init in device.init:
@@ -154,7 +158,10 @@ class OSCMode(PyshaMode):
                         ) == float(slot["value"]):
                             devices.append(device)
 
-        return devices
+        if self.instrument_page == 0:
+            return devices
+        else:
+            return devices_modulation
 
     def query_devices(self):
         self.instruments[self.get_current_instrument_short_name_helper()].query_slots()
@@ -214,6 +221,14 @@ class OSCMode(PyshaMode):
         # self.query_devices()
         new_current_device.set_page(new_page)
         self.app.buttons_need_update = True
+
+    def update_current_instrument_page(self, new_device=None, new_page=None):
+        # TODO: Make this page switching work with more instrument pages
+        # if for some reason someone wants more than 16 devices
+        if 0 <= self.instrument_page + new_page <= 1:
+            self.instrument_page += new_page
+
+        print(self.instrument_page)
 
     def new_instrument_selected(self):
         pass
@@ -338,6 +353,16 @@ class OSCMode(PyshaMode):
                 self.update_current_device_page(new_page=current_page - 1)
             elif button_name == push2_python.constants.BUTTON_PAGE_RIGHT and show_next:
                 self.update_current_device_page(new_page=current_page + 1)
+            return True
+
+        elif button_name in [
+            push2_python.constants.BUTTON_LEFT,
+            push2_python.constants.BUTTON_RIGHT,
+        ]:
+            if button_name == push2_python.constants.BUTTON_LEFT:
+                self.update_current_instrument_page(new_page=current_page - 1)
+            elif button_name == push2_python.constants.BUTTON_RIGHT:
+                self.update_current_instrument_page(new_page=current_page + 1)
             return True
 
     def on_encoder_rotated(self, encoder_name, increment):
