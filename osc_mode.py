@@ -258,7 +258,7 @@ class OSCMode(PyshaMode):
     def query_all_instrument_page_params(self):
         current_instrument_devices = self.get_current_instrument_page_devices()
         for device in current_instrument_devices:
-            device.query_visible_controls()
+            device.query_all_controls()
 
     def new_instrument_selected(self):
         pass
