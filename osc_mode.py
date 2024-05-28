@@ -142,6 +142,28 @@ class OSCMode(PyshaMode):
         instrument = self.instruments.get(instrument_shortname, None)
 
         devices = []
+
+        for slot_idx, slot_devices in enumerate(instrument.devices):
+            for device in slot_devices:
+                if slot_idx == 2 or slot_idx == 3 or slot_idx == 4:
+                    devices.append(device)
+                elif 8 <= slot_idx <= 15:
+                    devices.append(device)
+                else:
+                    slot = instrument.slots[slot_idx]
+                    for init in device.init:
+                        if init["address"] == slot["address"] and int(
+                            init["value"]
+                        ) == float(slot["value"]):
+                            devices.append(device)
+
+        return devices
+
+    def get_current_instrument_page_devices(self):
+        instrument_shortname = self.get_current_instrument_short_name_helper()
+        instrument = self.instruments.get(instrument_shortname, None)
+
+        devices = []
         devices_modulation = []
 
         for slot_idx, slot_devices in enumerate(instrument.devices):
@@ -180,7 +202,7 @@ class OSCMode(PyshaMode):
 
     def get_current_instrument_device_and_page(self):
         device_idx, page = self.current_device_index_and_page
-        current_device = self.get_current_instrument_devices()[device_idx]
+        current_device = self.get_current_instrument_page_devices()[device_idx]
         return (current_device, page)
 
     def get_current_slot_devices(self):
@@ -225,10 +247,18 @@ class OSCMode(PyshaMode):
     def update_current_instrument_page(self, new_device=None, new_page=None):
         # TODO: Make this page switching work with more instrument pages
         # if for some reason someone wants more than 16 devices
+
+        # TODO: Not sure how I feel about the query here
+
         if 0 <= self.instrument_page + new_page <= 1:
             self.instrument_page += new_page
+        self.query_all_instrument_page_params()
 
-        print(self.instrument_page)
+    def query_all_instrument_page_params(self):
+        current_instrument_devices = self.get_current_instrument_page_devices()
+        for device in current_instrument_devices:
+            print(device.label)
+            device.query_visible_controls()
 
     def new_instrument_selected(self):
         pass
@@ -282,7 +312,7 @@ class OSCMode(PyshaMode):
         """
         if not self.app.is_mode_active(self.app.settings_mode):
             # Draw OSCDevice names
-            devices = self.get_current_instrument_devices()
+            devices = self.get_current_instrument_page_devices()
             if devices:
                 height = 20
                 for i, device in enumerate(devices):
@@ -323,7 +353,7 @@ class OSCMode(PyshaMode):
         _, current_page = self.get_current_instrument_device_and_page()
 
         if button_name in self.upper_row_button_names:
-            current_instrument_devices = self.get_current_instrument_devices()
+            current_instrument_devices = self.get_current_instrument_page_devices()
             _, current_page = self.get_current_instrument_device_and_page()
 
             idx = self.upper_row_button_names.index(button_name)
