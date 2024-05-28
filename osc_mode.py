@@ -253,11 +253,11 @@ class OSCMode(PyshaMode):
         if 0 <= self.instrument_page + new_page <= 1:
             self.instrument_page += new_page
         self.query_all_instrument_page_params()
+        self.app.buttons_need_update = True
 
     def query_all_instrument_page_params(self):
         current_instrument_devices = self.get_current_instrument_page_devices()
         for device in current_instrument_devices:
-            print(device.label)
             device.query_visible_controls()
 
     def new_instrument_selected(self):
@@ -303,6 +303,23 @@ class OSCMode(PyshaMode):
         else:
             self.push.buttons.set_button_color(
                 push2_python.constants.BUTTON_PAGE_RIGHT, definitions.BLACK
+            )
+
+        if self.instrument_page == 1:
+            self.push.buttons.set_button_color(
+                push2_python.constants.BUTTON_LEFT, definitions.WHITE
+            )
+        else:
+            self.push.buttons.set_button_color(
+                push2_python.constants.BUTTON_LEFT, definitions.BLACK
+            )
+        if self.instrument_page == 0:
+            self.push.buttons.set_button_color(
+                push2_python.constants.BUTTON_RIGHT, definitions.WHITE
+            )
+        else:
+            self.push.buttons.set_button_color(
+                push2_python.constants.BUTTON_RIGHT, definitions.BLACK
             )
 
     def update_display(self, ctx, w, h):
