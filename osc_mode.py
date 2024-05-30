@@ -244,16 +244,15 @@ class OSCMode(PyshaMode):
         new_current_device.set_page(new_page)
         self.app.buttons_need_update = True
 
-    def update_current_instrument_page(self, new_device=None, new_page=None):
+    def update_current_instrument_page(self, new_device=None, new_instrument_page=None):
         # TODO: Make this page switching work with more instrument pages
         # if for some reason someone wants more than 16 devices
-
         # TODO: Not sure how I feel about the query here
-
-        if 0 <= self.instrument_page + new_page <= 1:
-            self.instrument_page += new_page
-        self.query_all_instrument_page_params()
+        print(self.instrument_page, "ist page")
+        print(self.instrument_page + new_instrument_page, "new page")
+        self.instrument_page = new_instrument_page
         self.app.buttons_need_update = True
+        self.query_all_instrument_page_params()
 
     def query_all_instrument_page_params(self):
         current_instrument_devices = self.get_current_instrument_page_devices()
@@ -407,9 +406,9 @@ class OSCMode(PyshaMode):
             push2_python.constants.BUTTON_RIGHT,
         ]:
             if button_name == push2_python.constants.BUTTON_LEFT:
-                self.update_current_instrument_page(new_page=current_page - 1)
+                self.update_current_instrument_page(new_instrument_page=0)
             elif button_name == push2_python.constants.BUTTON_RIGHT:
-                self.update_current_instrument_page(new_page=current_page + 1)
+                self.update_current_instrument_page(new_instrument_page=1)
             return True
 
     def on_encoder_rotated(self, encoder_name, increment):
