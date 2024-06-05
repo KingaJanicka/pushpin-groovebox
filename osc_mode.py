@@ -248,11 +248,15 @@ class OSCMode(PyshaMode):
         # TODO: Make this page switching work with more instrument pages
         # if for some reason someone wants more than 16 devices
         # TODO: Not sure how I feel about the query here
+        print(self.app.is_mode_active(self.app.menu_mode))
         print(self.instrument_page, "ist page")
         print(self.instrument_page + new_instrument_page, "new page")
-        self.instrument_page = new_instrument_page
-        self.app.buttons_need_update = True
-        self.query_all_instrument_page_params()
+
+        # Only pages when you're not trying to pick a new device
+        if self.app.is_mode_active(self.app.menu_mode) == False:
+            self.instrument_page = new_instrument_page
+            self.app.buttons_need_update = True
+            self.query_all_instrument_page_params()
 
     def query_all_instrument_page_params(self):
         current_instrument_devices = self.get_current_instrument_page_devices()

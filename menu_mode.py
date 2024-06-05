@@ -40,6 +40,7 @@ class MenuMode(PyshaMode):
     upper_row_selected = ""
     lower_row_selected = ""
     inter_message_message_min_time_ms = 4  # ms wait time after each message to DDRM
+    is_active = False
 
     def __init__(self, app, settings=None, send_osc_func=None):
         super().__init__(app, settings=settings)
