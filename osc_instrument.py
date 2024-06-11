@@ -2,21 +2,22 @@ import logging
 from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.osc_server import AsyncIOOSCUDPServer
 from pythonosc.dispatcher import Dispatcher
-import asyncio
-import time
 from osc_device import OSCDevice
+from mod_matrix_device import ModMatrixDevice
+from definitions import PyshaMode
 
 logger = logging.getLogger("osc_instrument")
 # logger.setLevel(level=logging.DEBUG)
 
 
-class OSCInstrument(object):
+class OSCInstrument(PyshaMode):
     def __init__(
         self,
         instrument_short_name,
         instrument_definition,
         device_definitions,
         get_current_instrument_color_helper,
+        app,
     ):
         self.transports = []
         self.devices = []
@@ -38,7 +39,6 @@ class OSCInstrument(object):
             None,
             None,
         ]
-
         self.name = instrument_short_name
         self.osc_in_port = instrument_definition.get("osc_in_port", None)
         self.osc_out_port = instrument_definition.get("osc_out_port", None)
@@ -63,13 +63,23 @@ class OSCInstrument(object):
             self.devices.append([])
 
         for device_name in device_definitions:
-            device = OSCDevice(
-                device_definitions[device_name],
-                self.osc,
-                get_color=get_current_instrument_color_helper,
-                osc_in_port=self.osc_in_port,
-                osc_out_port=self.osc_out_port,
-            )
+            if device_name == "mod_matrix":
+                device = ModMatrixDevice(
+                    self.osc,
+                    get_color=get_current_instrument_color_helper,
+                    osc_in_port=self.osc_in_port,
+                    osc_out_port=self.osc_out_port,
+                    app=app,
+                )
+            else:
+                # TODO: There needs to be a better way than just drilling this right?
+                device = OSCDevice(
+                    device_definitions[device_name],
+                    self.osc,
+                    get_color=get_current_instrument_color_helper,
+                    osc_in_port=self.osc_in_port,
+                    osc_out_port=self.osc_out_port,
+                )
 
             slot_idx = device_definitions[device_name]["slot"]
             self.devices[slot_idx].append(device)
@@ -80,7 +90,6 @@ class OSCInstrument(object):
                 self.name,
             )
         )
-
         # Check what's mapped
         # print(dispatcher._map.keys())
         # self.query_all_params()
@@ -106,6 +115,19 @@ class OSCInstrument(object):
                             init["value"]
                         ) == float(slot["value"]):
                             device.query_visible_controls()
+
+    def get_device_in_slot(self, idx):
+        for slot_idx, slot_devices in enumerate(self.devices):
+            for device in slot_devices:
+                if idx == 2 or idx == 3 or idx == 4:
+                    return device
+                else:
+                    slot = self.slots[idx]
+                    for init in device.init:
+                        if init["address"] == slot["address"] and int(
+                            init["value"]
+                        ) == float(slot["value"]):
+                            return device
 
     def query_all_controls(self):
         for slot_idx, slot_devices in enumerate(self.devices):

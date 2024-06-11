@@ -10,12 +10,13 @@ from osc_controls import (
 
 import push2_python
 import logging
+from definitions import PyshaMode
 
 logger = logging.getLogger("osc_device")
 # logger.setLevel(level=logging.DEBUG)
 
 
-class OSCDevice(object):
+class OSCDevice(PyshaMode):
     @property
     def size(self):
         i = 0
@@ -207,7 +208,6 @@ class OSCDevice(object):
                 push2_python.constants.ENCODER_TRACK7_ENCODER,
                 push2_python.constants.ENCODER_TRACK8_ENCODER,
             ].index(encoder_name)
-
             visible_controls = self.get_visible_controls()
             control = visible_controls[encoder_idx]
             control.update_value(increment)

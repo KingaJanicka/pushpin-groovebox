@@ -120,6 +120,7 @@ class OSCMode(PyshaMode):
                 instrument_definition,
                 device_definitions,
                 get_current_instrument_color_helper=self.get_current_instrument_color_helper,
+                app=self.app,
             )
 
     def close_transports(self):
