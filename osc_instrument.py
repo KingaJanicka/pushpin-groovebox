@@ -116,19 +116,6 @@ class OSCInstrument(PyshaMode):
                         ) == float(slot["value"]):
                             device.query_visible_controls()
 
-    def get_device_in_slot(self, idx):
-        for slot_idx, slot_devices in enumerate(self.devices):
-            for device in slot_devices:
-                if idx == 2 or idx == 3 or idx == 4:
-                    return device
-                else:
-                    slot = self.slots[idx]
-                    for init in device.init:
-                        if init["address"] == slot["address"] and int(
-                            init["value"]
-                        ) == float(slot["value"]):
-                            return device
-
     def query_all_controls(self):
         for slot_idx, slot_devices in enumerate(self.devices):
             for device in slot_devices:

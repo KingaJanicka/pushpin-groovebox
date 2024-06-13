@@ -35,6 +35,7 @@ class ModMatrixDevice(definitions.PyshaMode):
         self.log_out = logger.getChild(f"out-{kwargs['osc_out_port']}")
         self.init = []
         self.is_active = False
+        self.all_active_devices = []
         get_color = kwargs.get("get_color")
         # # Configure controls
         # for i in range(9):
@@ -59,23 +60,100 @@ class ModMatrixDevice(definitions.PyshaMode):
     def query_all(self):
         self.send_message("/q/all_mods")
 
+    def get_all_active_devices(self):
+        instrument = self.app.osc_mode.get_current_instrument()
+        devices = self.app.osc_mode.get_current_instrument_devices()
+        return devices
+
+    def get_device_in_slot(self, slot):
+        instrument = self.app.osc_mode.get_current_instrument()
+        devices = self.app.osc_mode.get_current_instrument_devices()
+        for device in devices:
+            if device.slot == slot:
+                return device
+
+    def get_controls_for_device_in_slot(self, slot):
+        instrument = self.app.osc_mode.get_current_instrument()
+        devices = self.app.osc_mode.get_current_instrument_devices()
+        for device in devices:
+            if device.slot == slot:
+                controls = device.get_all_controls()
+                return controls
+
+    def get_color_helper(self):
+        return self.app.osc_mode.get_current_instrument_color_helper()
+
     def draw(self, ctx):
-        if self.is_active:
-            show_text(
-                ctx,
-                0,
-                20,
-                "MOD MATRIX",
-                height=25,
-                font_color=definitions.BLACK,
-                background_color=definitions.YELLOW,
-                font_size_percentage=0.8,
-                center_vertically=True,
-                center_horizontally=True,
-                rectangle_padding=1,
-            )
-            instrument = self.app.osc_mode.get_current_instrument()
-            device = instrument.get_device_in_slot(1)
+
+        self.draw_device_column(ctx)
+
+    def draw_device_column(self, ctx):
+
+        # Draw Device Names
+        offset = 3
+        margin_top = 30
+        next_prev_height = 15
+        val_height = 25
+        next_label = ""
+        prev_label = ""
+        idx = 5
+        devices = self.get_all_active_devices()
+        prev_prev_label = devices[idx - 2].label
+        prev_label = devices[idx - 1].label
+        sel_label = devices[idx].label
+        next_label = devices[idx + 1].label
+        next_next_label = devices[idx + 2].label
+
+        # Prev Prev device
+        show_text(
+            ctx,
+            offset,
+            margin_top,
+            prev_prev_label,
+            height=next_prev_height,
+            font_color=definitions.WHITE,
+        )
+
+        # Prev device
+        show_text(
+            ctx,
+            offset,
+            margin_top + next_prev_height,
+            prev_label,
+            height=next_prev_height,
+            font_color=definitions.WHITE,
+        )
+
+        # Cur sel value
+        color = self.get_color_helper()
+        show_text(
+            ctx,
+            offset,
+            margin_top + 2 * next_prev_height,
+            sel_label,
+            height=val_height,
+            font_color=color,
+        )
+
+        # Next name
+        show_text(
+            ctx,
+            offset,
+            margin_top + 2 * next_prev_height + val_height,
+            next_label,
+            height=next_prev_height,
+            font_color=definitions.WHITE,
+        )
+
+        # Next Next name
+        show_text(
+            ctx,
+            offset,
+            margin_top + 3 * next_prev_height + val_height,
+            next_next_label,
+            height=next_prev_height,
+            font_color=definitions.WHITE,
+        )
 
     def get_next_prev_pages(self):
         return False, False
