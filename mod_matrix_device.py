@@ -84,13 +84,17 @@ class ModMatrixDevice(definitions.PyshaMode):
         return self.app.osc_mode.get_current_instrument_color_helper()
 
     def draw(self, ctx):
+        # TODO: we keep accessing out of range I think
 
+        device_comumn = 3
+        control_column = 4
         devices = self.get_all_active_devices()
-        selected_device = int(self.controls[3])
+        selected_device = int(self.controls[device_comumn])
         controls = self.get_controls_for_device_in_slot(selected_device)
-        selected_control = int(self.controls[4])
-        self.draw_column(ctx, 3, devices, selected_device)
-        self.draw_column(ctx, 4, controls, selected_control)
+        selected_control = int(self.controls[control_column])
+        print(selected_control)
+        self.draw_column(ctx, device_comumn, devices, selected_device)
+        self.draw_column(ctx, control_column, controls, selected_control)
 
     def draw_column(self, ctx, offset, list, selected_idx):
 
@@ -101,29 +105,30 @@ class ModMatrixDevice(definitions.PyshaMode):
         next_label = ""
         prev_label = ""
 
-        try:
+        # Makes sure we always have some value to display
+        if type(list[selected_idx - 2].label) == str:
             prev_prev_label = list[selected_idx - 2].label
-        except:
+        else:
             prev_prev_label = ""
 
-        try:
+        if type(list[selected_idx - 1].label) == str:
             prev_label = list[selected_idx - 1].label
-        except:
+        else:
             prev_label = ""
 
-        try:
+        if type(list[selected_idx].label) == str:
             sel_label = list[selected_idx].label
-        except:
+        else:
             sel_label = ""
 
-        try:
+        if type(list[selected_idx + 1].label) == str:
             next_label = list[selected_idx + 1].label
-        except:
-            sel_label = ""
+        else:
+            next_label = ""
 
-        try:
+        if type(list[selected_idx + 2].label) == str:
             next_next_label = list[selected_idx + 2].label
-        except:
+        else:
             next_next_label = ""
 
         # Prev Prev device
@@ -208,8 +213,10 @@ class ModMatrixDevice(definitions.PyshaMode):
                 push2_python.constants.ENCODER_TRACK8_ENCODER,
             ].index(encoder_name)
             visible_controls = self.get_visible_controls()
-            visible_controls[encoder_idx] += increment * 0.1
+            new_value = visible_controls[encoder_idx] + increment * 0.1
 
-            print(self.controls)
+            # TODO: This will need to be more complex later but works for testing
+            if 0 < new_value <= 16:
+                visible_controls[encoder_idx] = new_value
         except ValueError:
             pass  # Encoder not in list
