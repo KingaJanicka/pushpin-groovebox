@@ -88,7 +88,7 @@ class ModMatrixDevice(definitions.PyshaMode):
         devices = self.get_all_active_devices()
         selected_device = 3
         controls = self.get_controls_for_device_in_slot(selected_device)
-        selected_control = 5
+        selected_control = 14
         self.draw_column(ctx, 3, devices, selected_device)
         self.draw_column(ctx, 4, controls, selected_control)
 
@@ -100,13 +100,31 @@ class ModMatrixDevice(definitions.PyshaMode):
         val_height = 25
         next_label = ""
         prev_label = ""
-        idx = 3
 
-        prev_prev_label = list[selected_idx - 2].label
-        prev_label = list[selected_idx - 1].label
-        sel_label = list[selected_idx].label
-        next_label = list[selected_idx + 1].label
-        next_next_label = list[selected_idx + 2].label
+        try:
+            prev_prev_label = list[selected_idx - 2].label
+        except:
+            prev_prev_label = ""
+
+        try:
+            prev_label = list[selected_idx - 1].label
+        except:
+            prev_label = ""
+
+        try:
+            sel_label = list[selected_idx].label
+        except:
+            sel_label = ""
+
+        try:
+            next_label = list[selected_idx + 1].label
+        except:
+            sel_label = ""
+
+        try:
+            next_next_label = list[selected_idx + 2].label
+        except:
+            next_next_label = ""
 
         # Prev Prev device
         show_text(
