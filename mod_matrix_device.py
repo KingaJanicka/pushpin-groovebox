@@ -24,7 +24,7 @@ class ModMatrixDevice(definitions.PyshaMode):
         self.app = kwargs["app"]
         self.label = ""
         self.definition = {}
-        self.controls = []
+        self.controls = [0] * 8
         self.page = 0
         self.slot = None
         self.osc = osc
@@ -86,9 +86,9 @@ class ModMatrixDevice(definitions.PyshaMode):
     def draw(self, ctx):
 
         devices = self.get_all_active_devices()
-        selected_device = 3
+        selected_device = int(self.controls[3])
         controls = self.get_controls_for_device_in_slot(selected_device)
-        selected_control = 14
+        selected_control = int(self.controls[4])
         self.draw_column(ctx, 3, devices, selected_device)
         self.draw_column(ctx, 4, controls, selected_control)
 
@@ -207,9 +207,9 @@ class ModMatrixDevice(definitions.PyshaMode):
                 push2_python.constants.ENCODER_TRACK7_ENCODER,
                 push2_python.constants.ENCODER_TRACK8_ENCODER,
             ].index(encoder_name)
-
             visible_controls = self.get_visible_controls()
-            control = visible_controls[encoder_idx]
-            control.update_value(increment)
+            visible_controls[encoder_idx] += increment * 0.1
+
+            print(self.controls)
         except ValueError:
             pass  # Encoder not in list
