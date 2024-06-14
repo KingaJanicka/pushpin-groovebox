@@ -1,6 +1,7 @@
 {
 	"name": "No FX",
 	"slot": 5,
+	"modmatrix": false,
 	"init": [
 		{
 			"$type": "message",

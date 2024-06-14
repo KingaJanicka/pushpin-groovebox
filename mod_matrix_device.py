@@ -71,8 +71,7 @@ class ModMatrixDevice(definitions.PyshaMode):
     def get_all_mod_matrix_devices(self):
         instrument = self.app.osc_mode.get_current_instrument()
         devices = self.app.osc_mode.get_current_instrument_devices()
-        for device in devices:
-
+        for device in devices.copy():
             if device.modmatrix == False:
                 devices.remove(device)
         return devices
