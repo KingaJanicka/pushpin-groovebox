@@ -59,6 +59,7 @@ class OSCDevice(PyshaMode):
         self.page = 0
         self.slot = None
         self.definition = config
+        self.modmatrix = config.get("modmatrix", True)
         self.osc = osc
         self.label = config.get("name", "Device")
         self.dispatcher = osc.get("dispatcher", None)
@@ -193,7 +194,10 @@ class OSCDevice(PyshaMode):
         return self.pages[self.page]
 
     def get_all_controls(self):
-        all_controls = self.pages[0] + self.pages[1]
+        try:
+            all_controls = self.pages[0] + self.pages[1]
+        except:
+            all_controls = self.pages[0]
         return all_controls
 
     def on_encoder_rotated(self, encoder_name, increment):

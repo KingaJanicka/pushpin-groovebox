@@ -24,7 +24,10 @@ class ModMatrixDevice(definitions.PyshaMode):
         self.app = kwargs["app"]
         self.label = ""
         self.definition = {}
+        self.modmatrix = False
         self.controls = [0] * 8
+        self.device_column = 3
+        self.control_column = 4
         self.page = 0
         self.slot = None
         self.osc = osc
@@ -65,6 +68,15 @@ class ModMatrixDevice(definitions.PyshaMode):
         devices = self.app.osc_mode.get_current_instrument_devices()
         return devices
 
+    def get_all_mod_matrix_devices(self):
+        instrument = self.app.osc_mode.get_current_instrument()
+        devices = self.app.osc_mode.get_current_instrument_devices()
+        for device in devices:
+
+            if device.modmatrix == False:
+                devices.remove(device)
+        return devices
+
     def get_device_in_slot(self, slot):
         instrument = self.app.osc_mode.get_current_instrument()
         devices = self.app.osc_mode.get_current_instrument_devices()
@@ -86,18 +98,14 @@ class ModMatrixDevice(definitions.PyshaMode):
     def draw(self, ctx):
         # TODO: we keep accessing out of range I think
 
-        device_comumn = 3
-        control_column = 4
-        devices = self.get_all_active_devices()
-        selected_device = int(self.controls[device_comumn])
+        devices = self.get_all_mod_matrix_devices()
+        selected_device = int(self.controls[self.device_column])
         controls = self.get_controls_for_device_in_slot(selected_device)
-        selected_control = int(self.controls[control_column])
-        print(selected_control)
-        self.draw_column(ctx, device_comumn, devices, selected_device)
-        self.draw_column(ctx, control_column, controls, selected_control)
+        selected_control = int(self.controls[self.control_column])
+        self.draw_column(ctx, self.device_column, devices, selected_device)
+        self.draw_column(ctx, self.control_column, controls, selected_control)
 
     def draw_column(self, ctx, offset, list, selected_idx):
-
         # Draw Device Names
         margin_top = 30
         next_prev_height = 15
@@ -105,31 +113,32 @@ class ModMatrixDevice(definitions.PyshaMode):
         next_label = ""
         prev_label = ""
 
-        # Makes sure we always have some value to display
-        if type(list[selected_idx - 2].label) == str:
+        # TODO: is this busted?
+
+        if 0 > selected_idx - 2:
+            prev_prev_label = " "
+        else:
             prev_prev_label = list[selected_idx - 2].label
-        else:
-            prev_prev_label = ""
 
-        if type(list[selected_idx - 1].label) == str:
+        if 0 > selected_idx - 1:
+            prev_label = " "
+        else:
             prev_label = list[selected_idx - 1].label
-        else:
-            prev_label = ""
 
-        if type(list[selected_idx].label) == str:
+        try:
             sel_label = list[selected_idx].label
-        else:
-            sel_label = ""
+        except:
+            sel_label = " "
 
-        if type(list[selected_idx + 1].label) == str:
+        try:
             next_label = list[selected_idx + 1].label
-        else:
-            next_label = ""
+        except:
+            next_label = " "
 
-        if type(list[selected_idx + 2].label) == str:
+        try:
             next_next_label = list[selected_idx + 2].label
-        else:
-            next_next_label = ""
+        except:
+            next_next_label = " "
 
         # Prev Prev device
         show_text(
@@ -214,9 +223,19 @@ class ModMatrixDevice(definitions.PyshaMode):
             ].index(encoder_name)
             visible_controls = self.get_visible_controls()
             new_value = visible_controls[encoder_idx] + increment * 0.1
-
             # TODO: This will need to be more complex later but works for testing
-            if 0 < new_value <= 16:
+
+            devices = self.get_all_mod_matrix_devices()
+            selected_device = int(self.controls[self.device_column])
+            controls = self.get_controls_for_device_in_slot(selected_device)
+            selected_control = int(self.controls[self.control_column])
+
+            if encoder_idx == self.device_column and 0 < new_value <= len(devices):
                 visible_controls[encoder_idx] = new_value
-        except ValueError:
-            pass  # Encoder not in list
+                visible_controls[self.control_column] = 0
+            if encoder_idx == self.control_column and 0 < new_value <= len(controls):
+                visible_controls[encoder_idx] = new_value
+
+        except ValueError as e:
+            print(e)
+            print("ValueError as e in ModMatrix")

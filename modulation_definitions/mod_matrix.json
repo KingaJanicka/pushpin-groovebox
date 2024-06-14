@@ -2,5 +2,11 @@
 	"name": "Mod Matrix",
 	"slot": 15,
 	"init": [],
-	"controls": []
+	"modmatrix": false,
+	"controls": [
+		{
+			"$type": "control-spacer-address",
+			"address": "/param/fx/a/1/param1"
+		}
+	]
 }

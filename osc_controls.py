@@ -312,7 +312,7 @@ class OSCSpacerAddress(object):
     def __init__(self, config, send_osc_func=None):
         if config["$type"] != "control-spacer-address":
             raise Exception("Invalid config passed to new OSCControl")
-        self.label = None
+        self.label = ""
         self.address = config["address"]
         self.log = logger.getChild(f"{self.label}:Range")
 
