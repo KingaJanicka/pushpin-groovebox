@@ -91,6 +91,17 @@ class ModMatrixDevice(definitions.PyshaMode):
                 controls = device.get_all_controls()
                 return controls
 
+    def get_all_mod_matrix_controls_for_device_in_slot(self, slot):
+        instrument = self.app.osc_mode.get_current_instrument()
+        devices = self.app.osc_mode.get_current_instrument_devices()
+        for device in devices:
+            if device.slot == slot:
+                controls = device.get_all_controls()
+                for control in controls.copy():
+                    if control.modmatrix == False:
+                        controls.remove(control)
+                return controls
+
     def get_color_helper(self):
         return self.app.osc_mode.get_current_instrument_color_helper()
 
@@ -99,7 +110,7 @@ class ModMatrixDevice(definitions.PyshaMode):
 
         devices = self.get_all_mod_matrix_devices()
         selected_device = int(self.controls[self.device_column])
-        controls = self.get_controls_for_device_in_slot(selected_device)
+        controls = self.get_all_mod_matrix_controls_for_device_in_slot(selected_device)
         selected_control = int(self.controls[self.control_column])
         self.draw_column(ctx, self.device_column, devices, selected_device)
         self.draw_column(ctx, self.control_column, controls, selected_control)
@@ -226,7 +237,9 @@ class ModMatrixDevice(definitions.PyshaMode):
 
             devices = self.get_all_mod_matrix_devices()
             selected_device = int(self.controls[self.device_column])
-            controls = self.get_controls_for_device_in_slot(selected_device)
+            controls = self.get_all_mod_matrix_controls_for_device_in_slot(
+                selected_device
+            )
             selected_control = int(self.controls[self.control_column])
 
             if encoder_idx == self.device_column and 0 < new_value <= len(devices):

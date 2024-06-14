@@ -42,6 +42,7 @@ class OSCControl(object):
         self.min = 0.0
         self.max = 1.0
         self.value = 0.0
+        self.modmatrix = config.get("modmatrix", True)
         self.string = ""
         self.get_color_func = None
         self.label = config["label"]
@@ -315,6 +316,7 @@ class OSCSpacerAddress(object):
         self.label = ""
         self.address = config["address"]
         self.log = logger.getChild(f"{self.label}:Range")
+        self.modmatrix = False
 
         if send_osc_func:
             self.send_osc_func = send_osc_func
@@ -342,12 +344,13 @@ class ControlSpacer(object):
     name = "Spacer"
 
     address = None
-    label = None
+    label = ""
     size = 1
     color = definitions.GRAY_LIGHT
     color_rgb = None
     label = ""
     get_color_func = None
+    modmatrix = False
 
     def __init__(self):
         pass
@@ -377,6 +380,7 @@ class OSCControlMacro(object):
         self.min = 0.0
         self.max = 1.0
         self.value = 0.0
+        self.modmatrix = config.get("modmatrix", True)
         self.get_color_func = None
         self.label = config["label"]
         self.get_color_func = get_color_func
@@ -445,6 +449,7 @@ class OSCControlSwitch(object):
         self.value = 0.0
         self.get_color_func = get_color_func
         self.send_osc_func = send_osc_func
+        self.modmatrix = config.get("modmatrix", True)
         self.log = logger.getChild(f"{self.label}:Switch")
         groups = config.get("groups", [])
 
@@ -598,6 +603,7 @@ class OSCGroup(object):
         self.label = config.get("label", "Group")
         self.send_osc_func = send_osc_func
         self.get_color_func = get_color_func
+        self.modmatrix = config.get("modmatrix", True)
         self.log = logger.getChild(f"{self.label}:Group")
 
         for item in config["controls"]:
@@ -702,6 +708,7 @@ class OSCControlMenu(object):
         self.items = []
         self.get_color_func = get_color_func
         self.send_osc_func = send_osc_func
+        self.modmatrix = config.get("modmatrix", True)
         self.message = config.get("onselect", None)
         self.address = self.message["address"] if self.message else None
         self.value = self.message["value"] if self.message else None
@@ -830,6 +837,7 @@ class OSCMenuItem(object):
 
         self.label = config.get("label", "")
         self.message = config.get("onselect", None)
+        self.modmatrix = config.get("modmatrix", True)
         self.address = self.message["address"] if self.message else None
         self.value = self.message["value"] if self.message else None
         self.send_osc_func = send_osc_func

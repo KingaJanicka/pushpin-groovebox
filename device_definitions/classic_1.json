@@ -94,6 +94,7 @@
 		},
 		{
 			"$type": "control-menu",
+			"modmatrix": false,
 			"items": [
 				{
 					"$type": "menu-item",
