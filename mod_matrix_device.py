@@ -47,10 +47,16 @@ class ModMatrixDevice(definitions.PyshaMode):
         #     )
         #     self.controls.append(control)
 
-        # TODO query values
+        # TODO Dispatchers need to be mapped to /mod/ addresses so we can recieve the modmatrix data from surge
+        self.dispatcher.map("/mod/mw", self.set_state)
+
+    def set_state(self, address, *args):
+        value, depth, *rest = args
+        print(address, value, depth)
+        # self.log.debug((address, value))
+        # self.value = value
 
     def select(self):
-        print("mod matrix is active")
         self.is_active = True
 
     def send_message(self, *args):
