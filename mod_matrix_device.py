@@ -420,7 +420,9 @@ class ModMatrixDevice(definitions.PyshaMode):
             if encoder_idx == self.src_cat_column and 0 < new_value <= len(
                 self.all_mod_src
             ):
-                if int(visible_controls[encoder_idx]) - int(new_value) != 0:
+                if int(visible_controls[encoder_idx] + new_value) != int(
+                    visible_controls[encoder_idx]
+                ):
                     visible_controls[self.src_type_column] = 0
                 visible_controls[encoder_idx] = new_value
             if encoder_idx == self.src_type_column and 0 < new_value <= len(
@@ -429,8 +431,10 @@ class ModMatrixDevice(definitions.PyshaMode):
                 visible_controls[encoder_idx] = new_value
 
             if encoder_idx == self.device_column and 0 < new_value <= len(devices):
-                if int(visible_controls[encoder_idx]) - int(new_value) != 0:
-                    visible_controls[self.src_type_column] = 0
+                if int(visible_controls[encoder_idx] + new_value) != int(
+                    visible_controls[encoder_idx]
+                ):
+                    visible_controls[self.control_column] = 0
                 visible_controls[encoder_idx] = new_value
             if encoder_idx == self.control_column and 0 < new_value <= len(controls):
                 visible_controls[encoder_idx] = new_value
