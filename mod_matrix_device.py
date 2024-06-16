@@ -113,7 +113,6 @@ class ModMatrixDevice(definitions.PyshaMode):
 
         # TODO: make those actually work
         self.map_dispatchers()
-        print(self.mod_sources_macros[0]["address"])
 
     def map_dispatchers(self):
         for source in self.mod_sources_macros:
