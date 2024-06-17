@@ -30,6 +30,9 @@ class ModMatrixDevice(definitions.PyshaMode):
         self.src_type_column = 1
         self.device_column = 2
         self.control_column = 3
+        self.depth_control_column = 4
+        self.set_mapping_column = 5
+        self.delete_mapping_column = 6
         self.page = 0
         self.slot = None
         self.osc = osc
@@ -215,6 +218,23 @@ class ModMatrixDevice(definitions.PyshaMode):
         )
         self.draw_dest_column(ctx, self.device_column, devices, selected_device)
         self.draw_dest_column(ctx, self.control_column, controls, selected_control)
+        self.draw_depth_slider(ctx, 4)
+        show_text(
+            ctx,
+            self.set_mapping_column,
+            30,
+            "Set Mapping",
+            height=25,
+            font_color=definitions.WHITE,
+        )
+        show_text(
+            ctx,
+            self.delete_mapping_column,
+            30,
+            "Delete Mapping",
+            height=25,
+            font_color=definitions.WHITE,
+        )
 
     def draw_src_column(self, ctx, offset, list, selected_idx):
         # Draw Device Names
@@ -387,6 +407,88 @@ class ModMatrixDevice(definitions.PyshaMode):
             font_color=definitions.WHITE,
         )
 
+    def draw_depth_slider(self, ctx, x_part):
+
+        margin_top = 25
+        # Param name
+        name_height = 20
+        show_text(
+            ctx,
+            x_part,
+            margin_top,
+            "Mod Depth",
+            height=name_height,
+            font_color=definitions.WHITE,
+            center_horizontally=True,
+        )
+        visible_controls = self.get_visible_controls()
+        value = visible_controls[self.depth_control_column]
+        # Param value
+        val_height = 20
+        color = self.get_color_helper()
+        show_text(
+            ctx,
+            x_part,
+            margin_top + name_height,
+            str(round(value, 2)),
+            # str(self.string),
+            height=val_height,
+            font_color=color,
+            margin_left=int(value / 1 * 80 + 10),
+        )
+
+        # Knob
+        ctx.save()
+
+        height = 30
+        length = 80
+        radius = height / 2
+        triangle_padding = 3
+        triangle_size = 6
+
+        display_w = push2_python.constants.DISPLAY_LINE_PIXELS
+        x = (display_w // 8) * x_part
+        y = margin_top + name_height + val_height + radius + 5
+
+        xc = x + radius + 3
+        yc = y
+
+        # This is needed to prevent showing line from previous position
+        ctx.set_source_rgb(0, 0, 0)
+        ctx.move_to(xc, yc)
+        ctx.stroke()
+
+        # Inner line
+        bipolar_value = value / 1 - 0.5 * 1
+        ctx.move_to(xc, yc)
+        ctx.line_to(xc + length, yc)
+        ctx.set_source_rgb(*definitions.get_color_rgb_float(definitions.GRAY_LIGHT))
+        ctx.set_line_width(1)
+        ctx.stroke()
+
+        # Outer line
+        ctx.move_to(xc + 0.5 * length, yc)
+        ctx.line_to(xc + 0.5 * length + bipolar_value * length, yc)
+        ctx.set_source_rgb(*definitions.get_color_rgb_float(color))
+        ctx.set_line_width(3)
+        ctx.stroke()
+
+        # Triangle indicator
+        ctx.move_to(xc + length * value / 1, yc - triangle_padding)
+        ctx.line_to(
+            xc + length * value / 1 - triangle_size,
+            yc - triangle_padding - 2 * triangle_size,
+        )
+        ctx.line_to(
+            xc + length * value / 1 + triangle_size,
+            yc - triangle_padding - 2 * triangle_size,
+        )
+        ctx.move_to(xc + length * value, yc - triangle_padding)
+        ctx.close_path()
+        ctx.set_source_rgb(*definitions.get_color_rgb_float(color))
+        ctx.fill_preserve()
+        ctx.restore()
+
     def get_next_prev_pages(self):
         return False, False
 
@@ -448,6 +550,57 @@ class ModMatrixDevice(definitions.PyshaMode):
             if encoder_idx == self.control_column and 0 < new_value <= len(controls):
                 visible_controls[encoder_idx] = new_value
 
+            if (
+                encoder_idx == self.depth_control_column
+                and 0 <= visible_controls[encoder_idx] + (increment * 0.01) < 1.01
+            ):
+                visible_controls[encoder_idx] = (
+                    visible_controls[encoder_idx] + increment * 0.01
+                )
+
+            if encoder_idx == self.set_mapping_column:
+                mod_mapping = self.all_mod_src[int(self.controls[self.src_cat_column])][
+                    "values"
+                ][int(self.controls[self.src_type_column])]
+                print(mod_mapping["address"])
+
+                devices = self.get_all_mod_matrix_devices()
+                selected_device = int(self.controls[int(self.device_column)])
+                control = self.get_all_mod_matrix_controls_for_device_in_slot(
+                    selected_device
+                )
+
+                selected_control = self.controls[self.control_column]
+                print("src ", f'{mod_mapping["address"]}')
+                print("dest ", control[int(selected_control)].address)
+                depth_scaled = (visible_controls[self.depth_control_column] - 0.5) * 2
+                self.send_message(
+                    f'{mod_mapping["address"]}',
+                    [
+                        str(control[int(selected_control)].address),
+                        float(depth_scaled),
+                    ],
+                )
+            else:
+                pass
+
         except ValueError as e:
             print(e)
             print("ValueError as e in ModMatrix")
+
+    # def on_encoder_touched(self, encoder_name):
+    #     print("ENCODER TOUCHED")
+    #     try:
+    #         encoder_idx = [
+    #             push2_python.constants.ENCODER_TRACK1_ENCODER,
+    #             push2_python.constants.ENCODER_TRACK2_ENCODER,
+    #             push2_python.constants.ENCODER_TRACK3_ENCODER,
+    #             push2_python.constants.ENCODER_TRACK4_ENCODER,
+    #             push2_python.constants.ENCODER_TRACK5_ENCODER,
+    #             push2_python.constants.ENCODER_TRACK6_ENCODER,
+    #             push2_python.constants.ENCODER_TRACK7_ENCODER,
+    #             push2_python.constants.ENCODER_TRACK8_ENCODER,
+    #         ].index(encoder_name)
+    #     except ValueError as e:
+    #         print(e)
+    #         print("ValueError as e in ModMatrix")

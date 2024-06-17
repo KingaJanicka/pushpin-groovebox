@@ -933,6 +933,18 @@ def on_encoder_rotated(_, encoder_name, increment):
         traceback.print_exc()
 
 
+@push2_python.on_encoder_touched()
+def on_encoder_touched(_, encoder_name):
+    try:
+        for mode in app.active_modes[::-1]:
+            action_performed = mode.on_encoder_touched(encoder_name)
+            if action_performed:
+                break  # If mode took action, stop event propagation
+    except NameError as e:
+        print("Error:  {}".format(str(e)))
+        traceback.print_exc()
+
+
 @push2_python.on_pad_pressed()
 def on_pad_pressed(_, pad_n, pad_ij, velocity):
     try:

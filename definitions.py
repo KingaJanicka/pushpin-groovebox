@@ -173,6 +173,9 @@ class PyshaMode(object):
     def on_encoder_rotated(self, encoder_name, increment):
         pass
 
+    def on_encoder_touched(self, encoder_name):
+        pass
+
     def on_button_pressed(self, button_name):
         pass
 
