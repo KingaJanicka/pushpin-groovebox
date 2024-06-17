@@ -102,7 +102,10 @@ class ModMatrixDevice(definitions.PyshaMode):
             {"values": self.mod_sources_internal, "label": "Internal"},
             {"values": self.mod_sources_lfos, "label": "LFOs"},
         ]
-
+        # self.mod_matrix_mappings = (
+        #     self.mod_sources_macros + self.mod_sources_internal + self.mod_sources_lfos
+        # )
+        self.mod_matrix_mappings = []
         get_color = kwargs.get("get_color")
         # # Configure controls
         # for i in range(9):
@@ -124,11 +127,18 @@ class ModMatrixDevice(definitions.PyshaMode):
         for source in self.mod_sources_lfos:
             self.dispatcher.map(source["address"], self.set_state)
 
-    def set_state(self, address, *args):
-        print("set state")
-        value, depth, *rest = args
-        # self.log.debug((address, value))
-        # self.value = value
+    def set_state(self, source, *args):
+        dest, depth, *rest = args
+        new_mapping = [source, dest, depth]
+        for current_mapping in self.mod_matrix_mappings:
+            if (
+                current_mapping[0] == new_mapping[0]
+                and current_mapping[1] == new_mapping[1]
+            ):
+                current_mapping = new_mapping
+                return
+
+        self.mod_matrix_mappings.append(new_mapping)
 
     def select(self):
         self.is_active = True

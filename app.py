@@ -114,7 +114,7 @@ class PyshaApp(object):
         # Init jack server and passthrus
 
         # Initialise Surge and wait for it to load
-        self.init_surge()
+        # self.init_surge()
         time.sleep(2.5)
 
         # Init passthru clients for controling volume when tracks are used as sends
