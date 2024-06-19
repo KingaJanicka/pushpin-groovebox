@@ -257,7 +257,7 @@ class ModMatrixDevice(definitions.PyshaMode):
             30,
             "Set Mapping",
             height=15,
-            font_color=definitions.WHITE,
+            font_color=self.get_color_helper(),
         )
         show_text(
             ctx,
@@ -265,18 +265,25 @@ class ModMatrixDevice(definitions.PyshaMode):
             30,
             "Delete Mapping",
             height=15,
-            font_color=definitions.WHITE,
+            font_color=self.get_color_helper(),
         )
 
+        visible_controls = self.get_visible_controls()
+        first_item = 0 + int(visible_controls[7])
+        last_item = 5 + int(visible_controls[7])
         # Draw all mod mappings
-        for idx, mapping in enumerate(self.mod_matrix_mappings):
+        for idx, mapping in enumerate(self.mod_matrix_mappings[first_item:last_item]):
+            if idx == 2:
+                font_color = self.get_color_helper()
+            else:
+                font_color = definitions.WHITE
             show_text(
                 ctx,
                 5,
                 45 + idx * 15,
                 str(self.get_mod_src_label(mapping[0])),
                 height=15,
-                font_color=definitions.WHITE,
+                font_color=font_color,
             )
             show_text(
                 ctx,
@@ -284,7 +291,7 @@ class ModMatrixDevice(definitions.PyshaMode):
                 45 + idx * 15,
                 str(self.get_mod_dest_label(mapping[1])),
                 height=15,
-                font_color=definitions.WHITE,
+                font_color=font_color,
             )
             show_text(
                 ctx,
@@ -292,7 +299,7 @@ class ModMatrixDevice(definitions.PyshaMode):
                 45 + idx * 15,
                 str(round(mapping[2], 2)),
                 height=15,
-                font_color=definitions.WHITE,
+                font_color=font_color,
             )
 
     def draw_src_column(self, ctx, offset, list, selected_idx):
@@ -639,6 +646,11 @@ class ModMatrixDevice(definitions.PyshaMode):
                         str(control[int(selected_control)].address),
                         float(depth_scaled),
                     ],
+                )
+            if encoder_idx == 7 and 0 <= new_value < len(self.mod_matrix_mappings):
+
+                visible_controls[encoder_idx] = (
+                    visible_controls[encoder_idx] + increment * 0.1
                 )
             else:
                 pass
