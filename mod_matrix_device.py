@@ -135,6 +135,8 @@ class ModMatrixDevice(definitions.PyshaMode):
         dest, depth, *rest = args
         new_mapping = [source, dest, depth]
         for current_mapping in self.mod_matrix_mappings:
+            if depth == 0:
+                return
             if (
                 current_mapping[0] == new_mapping[0]
                 and current_mapping[1] == new_mapping[1]
@@ -917,6 +919,7 @@ class ModMatrixDevice(definitions.PyshaMode):
                     control[int(selected_control)].address
                 ):
                     self.mod_matrix_mappings[int(visible_controls[7])][2] = depth_scaled
+
             # Delete Mapping
             if encoder_idx == self.delete_mapping_column:
                 mod_mapping = self.all_mod_src[int(self.controls[self.src_cat_column])][
@@ -935,6 +938,17 @@ class ModMatrixDevice(definitions.PyshaMode):
                     f'{mod_mapping["address"]}',
                     [str(control[int(selected_control)].address), float(0.0)],
                 )
+                visible_controls = self.get_visible_controls()
+                # TODO: Add a check that if the knob would index OOB after deleting, set it to last instead
+                for idx, mapping in enumerate(self.mod_matrix_mappings.copy()):
+                    if mapping[0] == mod_mapping["address"] and mapping[1] == str(
+                        control[int(selected_control)].address
+                    ):
+                        self.mod_matrix_mappings.pop(idx)
+                        if visible_controls[7] > len(self.mod_matrix_mappings):
+                            visible_controls[7] = len(self.mod_matrix_mappings) - 1
+                self.snap_knobs_to_mod_matrix()
+
             # Scroll through mappings and snap knobs
             if encoder_idx == 7 and 0 <= new_value < len(self.mod_matrix_mappings):
 
