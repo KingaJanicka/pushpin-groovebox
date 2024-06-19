@@ -30,6 +30,7 @@ class ModMatrixDevice(definitions.PyshaMode):
         self.src_type_column = 1
         self.device_column = 2
         self.control_column = 3
+        self.mod_src_column = 5
         self.depth_control_column = 4
         self.set_mapping_column = 5
         self.delete_mapping_column = 6
@@ -133,7 +134,6 @@ class ModMatrixDevice(definitions.PyshaMode):
     def set_state(self, source, *args):
         dest, depth, *rest = args
         new_mapping = [source, dest, depth]
-        print(new_mapping)
         for current_mapping in self.mod_matrix_mappings:
             if (
                 current_mapping[0] == new_mapping[0]
@@ -146,7 +146,6 @@ class ModMatrixDevice(definitions.PyshaMode):
 
     def select(self):
         self.send_message("/q/all_mods", None)
-        print(self.mod_matrix_mappings)
         self.is_active = True
 
     def send_message(self, *args):
@@ -269,38 +268,17 @@ class ModMatrixDevice(definitions.PyshaMode):
         )
 
         visible_controls = self.get_visible_controls()
-        first_item = 0 + int(visible_controls[7])
-        last_item = 5 + int(visible_controls[7])
-        # Draw all mod mappings
-        for idx, mapping in enumerate(self.mod_matrix_mappings[first_item:last_item]):
-            if idx == 2:
-                font_color = self.get_color_helper()
-            else:
-                font_color = definitions.WHITE
-            show_text(
-                ctx,
-                5,
-                45 + idx * 15,
-                str(self.get_mod_src_label(mapping[0])),
-                height=15,
-                font_color=font_color,
-            )
-            show_text(
-                ctx,
-                6,
-                45 + idx * 15,
-                str(self.get_mod_dest_label(mapping[1])),
-                height=15,
-                font_color=font_color,
-            )
-            show_text(
-                ctx,
-                7,
-                45 + idx * 15,
-                str(round(mapping[2], 2)),
-                height=15,
-                font_color=font_color,
-            )
+        mod_control = visible_controls[7]
+        # TODO: make that draw func work
+        self.draw_mod_src(
+            ctx, self.mod_src_column, self.mod_matrix_mappings, int(mod_control)
+        )
+        self.draw_mod_dest(
+            ctx, self.mod_src_column + 1, self.mod_matrix_mappings, int(mod_control)
+        )
+        self.draw_mod_depth(
+            ctx, self.mod_src_column + 2, self.mod_matrix_mappings, int(mod_control)
+        )
 
     def draw_src_column(self, ctx, offset, list, selected_idx):
         # Draw Device Names
@@ -554,6 +532,264 @@ class ModMatrixDevice(definitions.PyshaMode):
         ctx.set_source_rgb(*definitions.get_color_rgb_float(color))
         ctx.fill_preserve()
         ctx.restore()
+
+    def draw_mod_src(self, ctx, offset, list, selected_idx):
+        # Draw Device Names
+        margin_top = 50
+        next_prev_height = 15
+        val_height = 18
+        next_label = ""
+        prev_label = ""
+
+        # TODO: this function needs to be expanded
+
+        if 0 > selected_idx - 2:
+            prev_prev_label = " "
+        else:
+            prev_prev_label = self.get_mod_src_label(list[selected_idx - 2][0])
+
+        if 0 > selected_idx - 1:
+            prev_label = " "
+        else:
+            prev_label = self.get_mod_src_label(list[selected_idx - 1][0])
+
+        try:
+            sel_label = self.get_mod_src_label(list[selected_idx][0])
+        except:
+            sel_label = " "
+
+        try:
+            next_label = self.get_mod_src_label(list[selected_idx + 1][0])
+        except:
+            next_label = " "
+
+        try:
+            next_next_label = self.get_mod_src_label(list[selected_idx + 2][0])
+        except:
+            next_next_label = " "
+
+        # Prev Prev device
+        show_text(
+            ctx,
+            offset,
+            margin_top,
+            prev_prev_label,
+            height=next_prev_height,
+            font_color=definitions.WHITE,
+        )
+
+        # Prev device
+        show_text(
+            ctx,
+            offset,
+            margin_top + next_prev_height,
+            prev_label,
+            height=next_prev_height,
+            font_color=definitions.WHITE,
+        )
+
+        # Cur sel value
+        color = self.get_color_helper()
+        show_text(
+            ctx,
+            offset,
+            margin_top + 2 * next_prev_height,
+            sel_label,
+            height=val_height,
+            font_color=color,
+        )
+
+        # Next name
+        show_text(
+            ctx,
+            offset,
+            margin_top + 2 * next_prev_height + val_height,
+            next_label,
+            height=next_prev_height,
+            font_color=definitions.WHITE,
+        )
+
+        # Next Next name
+        show_text(
+            ctx,
+            offset,
+            margin_top + 3 * next_prev_height + val_height,
+            next_next_label,
+            height=next_prev_height,
+            font_color=definitions.WHITE,
+        )
+
+    def draw_mod_dest(self, ctx, offset, list, selected_idx):
+        # Draw Device Names
+        margin_top = 50
+        next_prev_height = 15
+        val_height = 18
+        next_label = ""
+        prev_label = ""
+
+        # TODO: this function needs to be expanded
+
+        if 0 > selected_idx - 2:
+            prev_prev_label = " "
+        else:
+            prev_prev_label = self.get_mod_dest_label(list[selected_idx - 2][1])
+
+        if 0 > selected_idx - 1:
+            prev_label = " "
+        else:
+            prev_label = self.get_mod_dest_label(list[selected_idx - 1][1])
+
+        try:
+            sel_label = self.get_mod_dest_label(list[selected_idx][1])
+        except:
+            sel_label = " "
+
+        try:
+            next_label = self.get_mod_dest_label(list[selected_idx + 1][1])
+        except:
+            next_label = " "
+
+        try:
+            next_next_label = self.get_mod_dest_label(list[selected_idx + 2][1])
+        except:
+            next_next_label = " "
+
+        # Prev Prev device
+        show_text(
+            ctx,
+            offset,
+            margin_top,
+            prev_prev_label,
+            height=next_prev_height,
+            font_color=definitions.WHITE,
+        )
+
+        # Prev device
+        show_text(
+            ctx,
+            offset,
+            margin_top + next_prev_height,
+            prev_label,
+            height=next_prev_height,
+            font_color=definitions.WHITE,
+        )
+
+        # Cur sel value
+        color = self.get_color_helper()
+        show_text(
+            ctx,
+            offset,
+            margin_top + 2 * next_prev_height,
+            sel_label,
+            height=val_height,
+            font_color=color,
+        )
+
+        # Next name
+        show_text(
+            ctx,
+            offset,
+            margin_top + 2 * next_prev_height + val_height,
+            next_label,
+            height=next_prev_height,
+            font_color=definitions.WHITE,
+        )
+
+        # Next Next name
+        show_text(
+            ctx,
+            offset,
+            margin_top + 3 * next_prev_height + val_height,
+            next_next_label,
+            height=next_prev_height,
+            font_color=definitions.WHITE,
+        )
+
+    def draw_mod_depth(self, ctx, offset, list, selected_idx):
+        # Draw Device Names
+        margin_top = 50
+        next_prev_height = 15
+        val_height = 18
+        next_label = ""
+        prev_label = ""
+
+        # TODO: this function needs to be expanded
+
+        if 0 > selected_idx - 2:
+            prev_prev_label = " "
+        else:
+            prev_prev_label = str(round(list[selected_idx - 2][2], 2))
+
+        if 0 > selected_idx - 1:
+            prev_label = " "
+        else:
+            prev_label = str(round(list[selected_idx - 1][2], 2))
+
+        try:
+            sel_label = str(round(list[selected_idx][2], 2))
+        except:
+            sel_label = " "
+
+        try:
+            next_label = str(round(list[selected_idx + 1][2], 2))
+        except:
+            next_label = " "
+
+        try:
+            next_next_label = str(round(list[selected_idx + 2][2], 2))
+        except:
+            next_next_label = " "
+
+        # Prev Prev device
+        show_text(
+            ctx,
+            offset,
+            margin_top,
+            prev_prev_label,
+            height=next_prev_height,
+            font_color=definitions.WHITE,
+        )
+
+        # Prev device
+        show_text(
+            ctx,
+            offset,
+            margin_top + next_prev_height,
+            prev_label,
+            height=next_prev_height,
+            font_color=definitions.WHITE,
+        )
+
+        # Cur sel value
+        color = self.get_color_helper()
+        show_text(
+            ctx,
+            offset,
+            margin_top + 2 * next_prev_height,
+            sel_label,
+            height=val_height,
+            font_color=color,
+        )
+
+        # Next name
+        show_text(
+            ctx,
+            offset,
+            margin_top + 2 * next_prev_height + val_height,
+            next_label,
+            height=next_prev_height,
+            font_color=definitions.WHITE,
+        )
+
+        # Next Next name
+        show_text(
+            ctx,
+            offset,
+            margin_top + 3 * next_prev_height + val_height,
+            next_next_label,
+            height=next_prev_height,
+            font_color=definitions.WHITE,
+        )
 
     def get_next_prev_pages(self):
         return False, False
