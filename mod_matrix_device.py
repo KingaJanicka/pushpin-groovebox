@@ -839,7 +839,6 @@ class ModMatrixDevice(definitions.PyshaMode):
                     visible_controls[self.control_column] = idx_control
 
         # Sets Mod Depth Knob
-        mod_depth = selected_entry[2]
         mod_depth_scaled = (selected_entry[2] + 1) / 2
         visible_controls[self.depth_control_column] = mod_depth_scaled
 
@@ -894,11 +893,11 @@ class ModMatrixDevice(definitions.PyshaMode):
                     visible_controls[encoder_idx] + increment * 0.01
                 )
 
+            # Set/modify mod mapping
             if encoder_idx == self.set_mapping_column:
                 mod_mapping = self.all_mod_src[int(self.controls[self.src_cat_column])][
                     "values"
                 ][int(self.controls[self.src_type_column])]
-                print(mod_mapping["address"])
 
                 devices = self.get_all_mod_matrix_devices()
                 selected_device = int(self.controls[int(self.device_column)])
@@ -907,16 +906,36 @@ class ModMatrixDevice(definitions.PyshaMode):
                 )
 
                 selected_control = self.controls[self.control_column]
-                print("src ", f'{mod_mapping["address"]}')
-                print("dest ", control[int(selected_control)].address)
                 depth_scaled = (visible_controls[self.depth_control_column] - 0.5) * 2
                 self.send_message(
                     f'{mod_mapping["address"]}',
-                    [
-                        str(control[int(selected_control)].address),
-                        float(depth_scaled),
-                    ],
+                    [str(control[int(selected_control)].address), float(depth_scaled)],
                 )
+                if self.mod_matrix_mappings[int(visible_controls[7])][0] == mod_mapping[
+                    "address"
+                ] and self.mod_matrix_mappings[int(visible_controls[7])][1] == str(
+                    control[int(selected_control)].address
+                ):
+                    self.mod_matrix_mappings[int(visible_controls[7])][2] = depth_scaled
+            # Delete Mapping
+            if encoder_idx == self.delete_mapping_column:
+                mod_mapping = self.all_mod_src[int(self.controls[self.src_cat_column])][
+                    "values"
+                ][int(self.controls[self.src_type_column])]
+
+                devices = self.get_all_mod_matrix_devices()
+                selected_device = int(self.controls[int(self.device_column)])
+                control = self.get_all_mod_matrix_controls_for_device_in_slot(
+                    selected_device
+                )
+
+                selected_control = self.controls[self.control_column]
+
+                self.send_message(
+                    f'{mod_mapping["address"]}',
+                    [str(control[int(selected_control)].address), float(0.0)],
+                )
+            # Scroll through mappings and snap knobs
             if encoder_idx == 7 and 0 <= new_value < len(self.mod_matrix_mappings):
 
                 visible_controls[encoder_idx] = (
