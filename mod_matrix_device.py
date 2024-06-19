@@ -172,6 +172,33 @@ class ModMatrixDevice(definitions.PyshaMode):
                 devices.remove(device)
         return devices
 
+    def get_mod_src_label(self, search):
+        for src in self.mod_sources_internal:
+            if src["address"] == search:
+                return src["label"]
+            else:
+                pass
+        for src in self.mod_sources_lfos:
+            if src["address"] == search:
+                return src["label"]
+            else:
+                pass
+        for src in self.mod_sources_macros:
+            if src["address"] == search:
+                return src["label"]
+            else:
+                pass
+
+    def get_mod_dest_label(self, search):
+        devices = self.app.osc_mode.get_current_instrument_devices()
+        for device in devices:
+            for control in device.controls:
+                try:
+                    if control.address == search:
+                        return control.label
+                except:
+                    pass
+
     def get_device_in_slot(self, slot):
         instrument = self.app.osc_mode.get_current_instrument()
         devices = self.app.osc_mode.get_current_instrument_devices()
@@ -210,7 +237,8 @@ class ModMatrixDevice(definitions.PyshaMode):
         selected_device = int(self.controls[self.device_column])
         controls = self.get_all_mod_matrix_controls_for_device_in_slot(selected_device)
         selected_control = int(self.controls[self.control_column])
-        # TODO: those src draws are borked, it's my shitty data structure at work
+
+        # This draws the controls for selecting and setting mod mappings
         self.draw_src_column(
             ctx, self.src_cat_column, self.all_mod_src, selected_src_cat
         )
@@ -239,12 +267,14 @@ class ModMatrixDevice(definitions.PyshaMode):
             height=15,
             font_color=definitions.WHITE,
         )
+
+        # Draw all mod mappings
         for idx, mapping in enumerate(self.mod_matrix_mappings):
             show_text(
                 ctx,
                 5,
                 45 + idx * 15,
-                str(mapping[0]),
+                str(self.get_mod_src_label(mapping[0])),
                 height=15,
                 font_color=definitions.WHITE,
             )
@@ -252,7 +282,7 @@ class ModMatrixDevice(definitions.PyshaMode):
                 ctx,
                 6,
                 45 + idx * 15,
-                str(mapping[1]),
+                str(self.get_mod_dest_label(mapping[1])),
                 height=15,
                 font_color=definitions.WHITE,
             )
@@ -260,7 +290,7 @@ class ModMatrixDevice(definitions.PyshaMode):
                 ctx,
                 7,
                 45 + idx * 15,
-                str(mapping[2]),
+                str(round(mapping[2], 2)),
                 height=15,
                 font_color=definitions.WHITE,
             )
