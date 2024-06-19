@@ -145,7 +145,7 @@ class ModMatrixDevice(definitions.PyshaMode):
         self.mod_matrix_mappings.append(new_mapping)
 
     def select(self):
-        self.send_message("/q/all_mods", None)
+        self.query_all()
         self.is_active = True
 
     def send_message(self, *args):
@@ -157,6 +157,7 @@ class ModMatrixDevice(definitions.PyshaMode):
 
     def query_all(self):
         self.send_message("/q/all_mods", 0.0)
+        self.snap_knobs_to_mod_matrix()
 
     def get_all_active_devices(self):
         instrument = self.app.osc_mode.get_current_instrument()
@@ -263,6 +264,15 @@ class ModMatrixDevice(definitions.PyshaMode):
             self.delete_mapping_column,
             30,
             "Delete Mapping",
+            height=15,
+            font_color=self.get_color_helper(),
+        )
+
+        show_text(
+            ctx,
+            7,
+            30,
+            "Scroll Mappings",
             height=15,
             font_color=self.get_color_helper(),
         )
@@ -809,6 +819,30 @@ class ModMatrixDevice(definitions.PyshaMode):
     def get_all_controls(self):
         return self.controls
 
+    def snap_knobs_to_mod_matrix(self):
+        visible_controls = self.get_visible_controls()
+        selected_entry = self.mod_matrix_mappings[int(visible_controls[7])]
+        devices = self.get_all_mod_matrix_devices()
+        # Sets Mod source knobs
+        for idx_cat, category in enumerate(self.all_mod_src):
+            for idx_type, type in enumerate(category["values"]):
+                if type["address"] == selected_entry[0]:
+
+                    visible_controls[self.src_cat_column] = idx_cat
+                    visible_controls[self.src_type_column] = idx_type
+
+        # Sets Mod Dest Knobs
+        for idx_device, device in enumerate(devices):
+            for idx_control, control in enumerate(device.controls):
+                if control.address == selected_entry[1]:
+                    visible_controls[self.device_column] = idx_device
+                    visible_controls[self.control_column] = idx_control
+
+        # Sets Mod Depth Knob
+        mod_depth = selected_entry[2]
+        mod_depth_scaled = (selected_entry[2] + 1) / 2
+        visible_controls[self.depth_control_column] = mod_depth_scaled
+
     def on_encoder_rotated(self, encoder_name, increment):
         try:
             encoder_idx = [
@@ -888,6 +922,7 @@ class ModMatrixDevice(definitions.PyshaMode):
                 visible_controls[encoder_idx] = (
                     visible_controls[encoder_idx] + increment * 0.1
                 )
+                self.snap_knobs_to_mod_matrix()
             else:
                 pass
 
