@@ -133,6 +133,7 @@ class ModMatrixDevice(definitions.PyshaMode):
     def set_state(self, source, *args):
         dest, depth, *rest = args
         new_mapping = [source, dest, depth]
+        print(new_mapping)
         for current_mapping in self.mod_matrix_mappings:
             if (
                 current_mapping[0] == new_mapping[0]
@@ -144,6 +145,8 @@ class ModMatrixDevice(definitions.PyshaMode):
         self.mod_matrix_mappings.append(new_mapping)
 
     def select(self):
+        self.send_message("/q/all_mods", None)
+        print(self.mod_matrix_mappings)
         self.is_active = True
 
     def send_message(self, *args):
@@ -154,7 +157,7 @@ class ModMatrixDevice(definitions.PyshaMode):
         pass
 
     def query_all(self):
-        self.send_message("/q/all_mods")
+        self.send_message("/q/all_mods", 0.0)
 
     def get_all_active_devices(self):
         instrument = self.app.osc_mode.get_current_instrument()
@@ -199,6 +202,7 @@ class ModMatrixDevice(definitions.PyshaMode):
         return self.app.osc_mode.get_current_instrument_color_helper()
 
     def draw(self, ctx):
+
         # TODO: we keep accessing out of range I think
         selected_src_cat = int(self.controls[self.src_cat_column])
         selected_src_type = int(self.controls[self.src_type_column])
@@ -224,7 +228,7 @@ class ModMatrixDevice(definitions.PyshaMode):
             self.set_mapping_column,
             30,
             "Set Mapping",
-            height=25,
+            height=15,
             font_color=definitions.WHITE,
         )
         show_text(
@@ -232,9 +236,34 @@ class ModMatrixDevice(definitions.PyshaMode):
             self.delete_mapping_column,
             30,
             "Delete Mapping",
-            height=25,
+            height=15,
             font_color=definitions.WHITE,
         )
+        for idx, mapping in enumerate(self.mod_matrix_mappings):
+            show_text(
+                ctx,
+                5,
+                45 + idx * 15,
+                str(mapping[0]),
+                height=15,
+                font_color=definitions.WHITE,
+            )
+            show_text(
+                ctx,
+                6,
+                45 + idx * 15,
+                str(mapping[1]),
+                height=15,
+                font_color=definitions.WHITE,
+            )
+            show_text(
+                ctx,
+                7,
+                45 + idx * 15,
+                str(mapping[2]),
+                height=15,
+                font_color=definitions.WHITE,
+            )
 
     def draw_src_column(self, ctx, offset, list, selected_idx):
         # Draw Device Names

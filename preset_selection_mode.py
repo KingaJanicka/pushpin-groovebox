@@ -392,6 +392,14 @@ class PresetSelectionMode(definitions.PyshaMode):
 
     def update_display(self, ctx, w, h):
         self.nested_draw(ctx, self.patches, level=0, max_height=h)
+        show_text(
+            ctx,
+            6,
+            15,
+            "Set Preset",
+            height=15,
+            font_color=definitions.WHITE,
+        )
 
     def set_knob_postions(self):
         instrument_short_name = (
