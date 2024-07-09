@@ -10,6 +10,8 @@ import definitions
 logger = logging.getLogger("mod_matrix_device")
 # logger.setLevel(level=logging.DEBUG)
 
+EMPTY_STRING = " "
+
 
 class ModMatrixDevice(definitions.PyshaMode):
     @property
@@ -194,6 +196,8 @@ class ModMatrixDevice(definitions.PyshaMode):
             else:
                 pass
 
+        return EMPTY_STRING
+
     def get_mod_dest_label(self, search):
         devices = self.app.osc_mode.get_current_instrument_devices()
         for device in devices:
@@ -203,6 +207,8 @@ class ModMatrixDevice(definitions.PyshaMode):
                         return control.label
                 except:
                     pass
+
+        return EMPTY_STRING
 
     def get_device_in_slot(self, slot):
         instrument = self.app.osc_mode.get_current_instrument()
@@ -299,34 +305,39 @@ class ModMatrixDevice(definitions.PyshaMode):
         margin_top = 30
         next_prev_height = 15
         val_height = 25
-        next_label = ""
-        prev_label = ""
+        next_label = EMPTY_STRING
+        next_next_label = EMPTY_STRING
+        prev_label = EMPTY_STRING
+        prev_prev_label = EMPTY_STRING
+        sel_label = EMPTY_STRING
 
         # TODO: is this busted?
-        if 0 > selected_idx - 2:
-            prev_prev_label = " "
-        else:
+        if selected_idx - 2 >= 0:
             prev_prev_label = list[selected_idx - 2]["label"]
 
-        if 0 > selected_idx - 1:
-            prev_label = " "
-        else:
+        if selected_idx - 1 >= 0:
             prev_label = list[selected_idx - 1]["label"]
 
         try:
             sel_label = list[selected_idx]["label"]
-        except:
-            sel_label = " "
+        except IndexError:
+            pass
+        except Exception as e:
+            print(e)
 
         try:
-            next_label = list[selected_idx + 1]["label"]
-        except:
-            next_label = " "
+            next_label = list[selected_idx + 1]["label"] or EMPTY_STRING
+        except IndexError:
+            pass
+        except Exception as e:
+            print(e)
 
         try:
-            next_next_label = list[selected_idx + 2]["label"]
-        except:
-            next_next_label = " "
+            next_next_label = list[selected_idx + 2]["label"] or EMPTY_STRING
+        except IndexError:
+            pass
+        except Exception as e:
+            print(e)
 
         # Prev Prev device
         show_text(
@@ -384,35 +395,39 @@ class ModMatrixDevice(definitions.PyshaMode):
         margin_top = 30
         next_prev_height = 15
         val_height = 25
-        next_label = ""
-        prev_label = ""
-
+        next_next_label = EMPTY_STRING
+        next_label = EMPTY_STRING
+        prev_label = EMPTY_STRING
+        prev_prev_label = EMPTY_STRING
+        sel_label = EMPTY_STRING
         # TODO: is this busted?
 
-        if 0 > selected_idx - 2:
-            prev_prev_label = " "
-        else:
-            prev_prev_label = list[selected_idx - 2].label
+        if selected_idx - 2 >= 0:
+            prev_prev_label = list[selected_idx - 2].label or EMPTY_STRING
 
-        if 0 > selected_idx - 1:
-            prev_label = " "
-        else:
-            prev_label = list[selected_idx - 1].label
+        if selected_idx - 1 >= 0:
+            prev_label = list[selected_idx - 1].label or EMPTY_STRING
 
         try:
-            sel_label = list[selected_idx].label
-        except:
-            sel_label = " "
+            sel_label = list[selected_idx].label or EMPTY_STRING
+        except IndexError:
+            pass
+        except Exception as e:
+            print(e)
 
         try:
-            next_label = list[selected_idx + 1].label
-        except:
-            next_label = " "
+            next_label = list[selected_idx + 1].label or EMPTY_STRING
+        except IndexError:
+            pass
+        except Exception as e:
+            print(e)
 
         try:
-            next_next_label = list[selected_idx + 2].label
-        except:
-            next_next_label = " "
+            next_next_label = list[selected_idx + 2].label or EMPTY_STRING
+        except IndexError:
+            pass
+        except Exception as e:
+            print(e)
 
         # Prev Prev device
         show_text(
@@ -552,35 +567,50 @@ class ModMatrixDevice(definitions.PyshaMode):
         margin_top = 50
         next_prev_height = 15
         val_height = 18
-        next_label = ""
-        prev_label = ""
+        next_label = EMPTY_STRING
+        next_next_label = EMPTY_STRING
+        prev_label = EMPTY_STRING
+        prev_prev_label = EMPTY_STRING
+        sel_label = EMPTY_STRING
 
         # TODO: this function needs to be expanded
+        if selected_idx - 2 >= 0:
+            try:
+                prev_prev_label = (
+                    self.get_mod_src_label(list[selected_idx - 2][0]) or EMPTY_STRING
+                )
+            except IndexError:
+                pass
+            except Exception as e:
+                print(e)
 
-        if 0 > selected_idx - 2:
-            prev_prev_label = " "
-        else:
-            prev_prev_label = self.get_mod_src_label(list[selected_idx - 2][0])
-
-        if 0 > selected_idx - 1:
-            prev_label = " "
-        else:
-            prev_label = self.get_mod_src_label(list[selected_idx - 1][0])
-
+        if selected_idx - 1 >= 0:
+            try:
+                prev_label = self.get_mod_src_label(list[selected_idx - 1][0])
+            except IndexError:
+                pass
+            except Exception as e:
+                print(e)
         try:
             sel_label = self.get_mod_src_label(list[selected_idx][0])
-        except:
-            sel_label = " "
+        except IndexError:
+            pass
+        except Exception as e:
+            print(e)
 
         try:
             next_label = self.get_mod_src_label(list[selected_idx + 1][0])
-        except:
-            next_label = " "
+        except IndexError:
+            pass
+        except Exception as e:
+            print(e)
 
         try:
             next_next_label = self.get_mod_src_label(list[selected_idx + 2][0])
-        except:
-            next_next_label = " "
+        except IndexError:
+            pass
+        except Exception as e:
+            print(e)
 
         # Prev Prev device
         show_text(
@@ -638,35 +668,38 @@ class ModMatrixDevice(definitions.PyshaMode):
         margin_top = 50
         next_prev_height = 15
         val_height = 18
-        next_label = ""
-        prev_label = ""
-
+        next_label = EMPTY_STRING
+        next_next_label = EMPTY_STRING
+        prev_label = EMPTY_STRING
+        prev_prev_label = EMPTY_STRING
+        sel_label = EMPTY_STRING
         # TODO: this function needs to be expanded
-
-        if 0 > selected_idx - 2:
-            prev_prev_label = " "
-        else:
-            prev_prev_label = self.get_mod_dest_label(list[selected_idx - 2][1])
-
-        if 0 > selected_idx - 1:
-            prev_label = " "
-        else:
+        if selected_idx - 2 >= 0:
+            try:
+                print(list[selected_idx - 2])
+                prev_prev_label = self.get_mod_dest_label(list[selected_idx - 2][1])
+            except:
+                print(list)
+                print(selected_idx)
+        if selected_idx - 1 >= 0:
             prev_label = self.get_mod_dest_label(list[selected_idx - 1][1])
 
         try:
             sel_label = self.get_mod_dest_label(list[selected_idx][1])
-        except:
-            sel_label = " "
+        except IndexError:
+            pass
 
         try:
             next_label = self.get_mod_dest_label(list[selected_idx + 1][1])
-        except:
-            next_label = " "
+        except IndexError:
+            pass
 
         try:
             next_next_label = self.get_mod_dest_label(list[selected_idx + 2][1])
-        except:
-            next_next_label = " "
+        except IndexError:
+            pass
+        except Exception as e:
+            print(e)
 
         # Prev Prev device
         show_text(
@@ -724,35 +757,39 @@ class ModMatrixDevice(definitions.PyshaMode):
         margin_top = 50
         next_prev_height = 15
         val_height = 18
-        next_label = ""
-        prev_label = ""
+        next_label = EMPTY_STRING
+        next_next_label = EMPTY_STRING
+        prev_label = EMPTY_STRING
+        prev_prev_label = EMPTY_STRING
+        sel_label = EMPTY_STRING
 
         # TODO: this function needs to be expanded
-
-        if 0 > selected_idx - 2:
-            prev_prev_label = " "
-        else:
+        if selected_idx - 2 >= 0:
             prev_prev_label = str(round(list[selected_idx - 2][2], 2))
 
-        if 0 > selected_idx - 1:
-            prev_label = " "
-        else:
+        if selected_idx - 1 >= 0:
             prev_label = str(round(list[selected_idx - 1][2], 2))
 
         try:
             sel_label = str(round(list[selected_idx][2], 2))
-        except:
-            sel_label = " "
+        except IndexError:
+            pass
+        except Exception as e:
+            print(e)
 
         try:
             next_label = str(round(list[selected_idx + 1][2], 2))
-        except:
-            next_label = " "
+        except IndexError:
+            pass
+        except Exception as e:
+            print(e)
 
         try:
             next_next_label = str(round(list[selected_idx + 2][2], 2))
-        except:
-            next_next_label = " "
+        except IndexError:
+            pass
+        except Exception as e:
+            print(e)
 
         # Prev Prev device
         show_text(
