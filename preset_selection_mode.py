@@ -424,19 +424,21 @@ class PresetSelectionMode(definitions.PyshaMode):
             if definitions.FACTORY_PATCHES_FOLDER in preset_address:
                 self.state[0] = 0
                 level = self.patches["Factory"]
-                for idx, piece in enumerate(address_array):
-                    self.state[idx + 1] = list(level).index(piece)
-                    level = level[piece]
             elif definitions.THIRD_PARTY_PATCHES_FOLDER in preset_address:
                 self.state[0] = 1
-                for idx, piece in enumerate(address_array):
-                    self.state[idx + 1] = self.patches["Third Party"].index(piece)
+                level = self.patches["Third Party"]
             elif definitions.USER_PATCHES_FOLDER in preset_address:
                 self.state[0] = 2
-                for idx, piece in enumerate(address_array):
-                    self.state[idx + 1] = self.patches["User"].index(piece)
+                level = self.patches["User"]
+
+            for idx, piece in enumerate(address_array):
+                self.state[idx + 1] = list(level).index(piece)
+                level = level[piece]  # who knows what this line does? But it works!
         except Exception as e:
-            print(e, "ERROR")
+            print(
+                f"ERROR in preset_selection_mode set_knob_positions() at {preset_address}"
+            )
+            print(e)
 
     def on_button_pressed(self, button_name):
         if button_name in [
