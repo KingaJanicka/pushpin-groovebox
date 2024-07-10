@@ -9,6 +9,7 @@ from glob import glob
 from pathlib import Path
 from osc_instrument import OSCInstrument
 import asyncio
+import traceback
 
 logger = logging.getLogger("osc_mode")
 
@@ -416,15 +417,10 @@ class OSCMode(PyshaMode):
     def on_encoder_rotated(self, encoder_name, increment):
         try:
             current_device = self.get_current_instrument_device()
-            if current_device.label == "Mod Matrix":
-                # TODO: something is bugged when this func gets called, only with encoder 7 (one for deleting)
-                current_device.on_encoder_rotated(encoder_name, increment)
-            else:
-                current_device.on_encoder_rotated(encoder_name, increment)
+            current_device.on_encoder_rotated(encoder_name, increment)
         except Exception as err:
-            print("Exception as err in OscMode - encoder not in list ")
-            print(err)
-            pass  # Encoder not in list
+            print("Exception as err in OscMode")
+            print(traceback.format_exc())
 
         return True  # Always return True because encoder should not be used in any other mode if this is first active
 

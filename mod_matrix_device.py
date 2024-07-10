@@ -13,6 +13,10 @@ logger = logging.getLogger("mod_matrix_device")
 EMPTY_STRING = " "
 
 
+def is_in_bounds(list, new_value):
+    return 0 <= new_value < len(list)
+
+
 class ModMatrixDevice(definitions.PyshaMode):
     @property
     def size(self):
@@ -36,6 +40,7 @@ class ModMatrixDevice(definitions.PyshaMode):
         self.depth_control_column = 4
         self.set_mapping_column = 5
         self.delete_mapping_column = 6
+        self.scroll_column = 7
         self.page = 0
         self.slot = None
         self.osc = osc
@@ -48,7 +53,6 @@ class ModMatrixDevice(definitions.PyshaMode):
         self.is_active = False
         self.all_active_devices = []
 
-        # TODO: Move those to JSON or sth, super ugly and unruly here
         self.mod_sources_macros = [
             {"address": "/mod/macro_1", "label": "Macro 1"},
             {"address": "/mod/macro_2", "label": "Macro 2"},
@@ -135,13 +139,17 @@ class ModMatrixDevice(definitions.PyshaMode):
     def set_state(self, source, *args):
         dest, depth, *rest = args
         new_mapping = [source, dest, depth]
+        print(new_mapping, "n")
 
+        ## TODO LEFT at 2024-08-10T17:05 trying to fix set_mapping crashing app
         for current_mapping in self.mod_matrix_mappings.copy():
             if current_mapping[0] == new_mapping[0]:
                 # Remove a mapping when surge sends 0 depth
-                if depth == float(0) or depth == float(0.0):
+                if float(depth) == float(0):
                     self.mod_matrix_mappings.remove(current_mapping)
+                    self.delete_mapping(new_mapping)
                     return
+
                 # Update existing mapping
                 elif current_mapping[1] == new_mapping[1]:
                     current_mapping = new_mapping
@@ -149,9 +157,11 @@ class ModMatrixDevice(definitions.PyshaMode):
 
         # Add new mapping if none of the earlier loop iterations returned early
         self.mod_matrix_mappings.append(new_mapping)
+        print(self.mod_matrix_mappings)
 
     def select(self):
-        self.query_all()
+        self.snap_knobs_to_mod_matrix()
+        self.query_all_mods()
         self.is_active = True
 
     def send_message(self, *args):
@@ -241,7 +251,6 @@ class ModMatrixDevice(definitions.PyshaMode):
 
     def draw(self, ctx):
 
-        # TODO: we keep accessing out of range I think
         selected_src_cat = int(self.controls[self.src_cat_column])
         selected_src_type = int(self.controls[self.src_type_column])
         devices = self.get_all_mod_matrix_devices()
@@ -289,7 +298,6 @@ class ModMatrixDevice(definitions.PyshaMode):
 
         visible_controls = self.get_visible_controls()
         mod_control = visible_controls[7]
-        # TODO: make that draw func work
         self.draw_mod_src(
             ctx, self.mod_src_column, self.mod_matrix_mappings, int(mod_control)
         )
@@ -311,7 +319,6 @@ class ModMatrixDevice(definitions.PyshaMode):
         prev_prev_label = EMPTY_STRING
         sel_label = EMPTY_STRING
 
-        # TODO: is this busted?
         if selected_idx - 2 >= 0:
             prev_prev_label = list[selected_idx - 2]["label"]
 
@@ -400,7 +407,6 @@ class ModMatrixDevice(definitions.PyshaMode):
         prev_label = EMPTY_STRING
         prev_prev_label = EMPTY_STRING
         sel_label = EMPTY_STRING
-        # TODO: is this busted?
 
         if selected_idx - 2 >= 0:
             prev_prev_label = list[selected_idx - 2].label or EMPTY_STRING
@@ -573,7 +579,6 @@ class ModMatrixDevice(definitions.PyshaMode):
         prev_prev_label = EMPTY_STRING
         sel_label = EMPTY_STRING
 
-        # TODO: this function needs to be expanded
         if selected_idx - 2 >= 0:
             try:
                 prev_prev_label = (
@@ -673,27 +678,35 @@ class ModMatrixDevice(definitions.PyshaMode):
         prev_label = EMPTY_STRING
         prev_prev_label = EMPTY_STRING
         sel_label = EMPTY_STRING
-        # TODO: this function needs to be expanded
+
         if selected_idx - 2 >= 0:
             try:
-                print(list[selected_idx - 2])
                 prev_prev_label = self.get_mod_dest_label(list[selected_idx - 2][1])
-            except:
-                print(list)
-                print(selected_idx)
+            except IndexError:
+                pass
+            except Exception as e:
+                print(e)
+
         if selected_idx - 1 >= 0:
-            prev_label = self.get_mod_dest_label(list[selected_idx - 1][1])
+            try:
+                prev_label = self.get_mod_dest_label(list[selected_idx - 1][1])
+            except IndexError:
+                pass
+            except Exception as e:
+                print(e)
 
         try:
             sel_label = self.get_mod_dest_label(list[selected_idx][1])
         except IndexError:
             pass
-
+        except Exception as e:
+            print(e)
         try:
             next_label = self.get_mod_dest_label(list[selected_idx + 1][1])
         except IndexError:
             pass
-
+        except Exception as e:
+            print(e)
         try:
             next_next_label = self.get_mod_dest_label(list[selected_idx + 2][1])
         except IndexError:
@@ -763,12 +776,17 @@ class ModMatrixDevice(definitions.PyshaMode):
         prev_prev_label = EMPTY_STRING
         sel_label = EMPTY_STRING
 
-        # TODO: this function needs to be expanded
         if selected_idx - 2 >= 0:
-            prev_prev_label = str(round(list[selected_idx - 2][2], 2))
+            try:
+                prev_prev_label = str(round(list[selected_idx - 2][2], 2))
+            except IndexError:
+                pass
 
         if selected_idx - 1 >= 0:
-            prev_label = str(round(list[selected_idx - 1][2], 2))
+            try:
+                prev_label = str(round(list[selected_idx - 1][2], 2))
+            except IndexError:
+                pass
 
         try:
             sel_label = str(round(list[selected_idx][2], 2))
@@ -863,9 +881,38 @@ class ModMatrixDevice(definitions.PyshaMode):
     def get_all_controls(self):
         return self.controls
 
+    def delete_mapping(self, mod_mapping):
+        visible_controls = self.get_visible_controls()
+        selected_device = int(self.controls[int(self.device_column)])
+        control = self.get_all_mod_matrix_controls_for_device_in_slot(selected_device)
+        selected_control = self.controls[self.control_column]
+
+        # TODO: Add a check that if the knob would index OOB after deleting, set it to last instead
+        for idx, mapping in enumerate(self.mod_matrix_mappings.copy()):
+            if mapping[0] == mod_mapping[0] and mapping[1] == str(
+                control[int(selected_control)].address
+            ):
+                self.mod_matrix_mappings.pop(idx)
+
+                # Snap knobs if last item deleted
+                if (
+                    int(visible_controls[7]) >= len(self.mod_matrix_mappings)
+                    and len(self.mod_matrix_mappings) - 1 > 0
+                ):
+                    visible_controls[7] = len(self.mod_matrix_mappings) - 1
+
+        self.snap_knobs_to_mod_matrix()
+
     def snap_knobs_to_mod_matrix(self):
         visible_controls = self.get_visible_controls()
-        selected_entry = self.mod_matrix_mappings[int(visible_controls[7])]
+        selected_entry = False
+        try:
+            selected_entry = self.mod_matrix_mappings[int(visible_controls[7])]
+        except:
+            pass
+        if not selected_entry:
+            return
+
         devices = self.get_all_mod_matrix_devices()
         # Sets Mod source knobs
         for idx_cat, category in enumerate(self.all_mod_src):
@@ -898,88 +945,111 @@ class ModMatrixDevice(definitions.PyshaMode):
                 push2_python.constants.ENCODER_TRACK7_ENCODER,
                 push2_python.constants.ENCODER_TRACK8_ENCODER,
             ].index(encoder_name)
-            visible_controls = self.get_visible_controls()
-            new_value = visible_controls[encoder_idx] + increment * 0.1
-            # TODO: This will need to be more complex later but works for testing
-            devices = self.get_all_mod_matrix_devices()
-            selected_device = int(self.controls[self.device_column])
-            controls = self.get_all_mod_matrix_controls_for_device_in_slot(
-                selected_device
-            )
+        except ValueError as e:
+            return
 
-            if encoder_idx == self.src_cat_column and 0 < new_value <= len(
-                self.all_mod_src
-            ):
-                if int(visible_controls[encoder_idx] + new_value) != int(
-                    visible_controls[encoder_idx]
+        visible_controls = self.get_visible_controls()
+        new_value = visible_controls[encoder_idx] + increment * 0.1
+        devices = self.get_all_mod_matrix_devices()
+        selected_device = int(self.controls[self.device_column])
+        controls = self.get_all_mod_matrix_controls_for_device_in_slot(selected_device)
+
+        match encoder_idx:
+            # First encoder
+            case self.src_cat_column:
+                # Check new value is in range
+                if is_in_bounds(self.all_mod_src, new_value):
+                    if int(visible_controls[encoder_idx] + new_value) != int(
+                        visible_controls[encoder_idx]
+                    ):
+                        visible_controls[self.src_type_column] = 0
+
+                    visible_controls[encoder_idx] = new_value
+
+            # Second encoder
+            case self.src_type_column:
+                if is_in_bounds(
+                    self.all_mod_src[int(visible_controls[0])]["values"], new_value
                 ):
-                    visible_controls[self.src_type_column] = 0
-                visible_controls[encoder_idx] = new_value
-            if encoder_idx == self.src_type_column and 0 < new_value <= len(
-                self.all_mod_src[int(visible_controls[0])]["values"]
-            ):
-                visible_controls[encoder_idx] = new_value
+                    visible_controls[encoder_idx] = new_value
 
-            if encoder_idx == self.device_column and 0 < new_value <= len(devices):
-                if int(visible_controls[encoder_idx] + new_value) != int(
-                    visible_controls[encoder_idx]
-                ):
-                    visible_controls[self.control_column] = 0
-                visible_controls[encoder_idx] = new_value
-            if encoder_idx == self.control_column and 0 < new_value <= len(controls):
-                visible_controls[encoder_idx] = new_value
+            # Third encoder
+            case self.device_column:
+                if is_in_bounds(devices, new_value):
+                    if int(visible_controls[encoder_idx] + new_value) != int(
+                        visible_controls[encoder_idx]
+                    ):
+                        visible_controls[self.control_column] = 0
+                    visible_controls[encoder_idx] = new_value
 
-            if (
-                encoder_idx == self.depth_control_column
-                and 0 <= visible_controls[encoder_idx] + (increment * 0.01) < 1.01
-            ):
-                visible_controls[encoder_idx] = (
-                    visible_controls[encoder_idx] + increment * 0.01
-                )
+            # Fourth encoder
+            case self.control_column:
+                if is_in_bounds(controls, new_value):
+                    visible_controls[encoder_idx] = new_value
 
-            # Set/modify mod mapping
-            if encoder_idx == self.set_mapping_column:
-                mod_mapping = self.all_mod_src[int(self.controls[self.src_cat_column])][
-                    "values"
-                ][int(self.controls[self.src_type_column])]
+            # Fifth encoder
+            case self.depth_control_column:
+                if 0 <= visible_controls[encoder_idx] + (increment * 0.01) <= 1:
+                    visible_controls[encoder_idx] = (
+                        visible_controls[encoder_idx] + increment * 0.01
+                    )
+
+            # Sixth encoder
+            case self.set_mapping_column:
+                src_cat_idx = int(self.controls[self.src_cat_column])
+                src_type_idx = int(self.controls[self.src_type_column])
+                mod_mapping = self.all_mod_src[src_cat_idx]["values"][src_type_idx]
 
                 devices = self.get_all_mod_matrix_devices()
-                selected_device = int(self.controls[int(self.device_column)])
-                control = self.get_all_mod_matrix_controls_for_device_in_slot(
-                    selected_device
+                selected_device_slot = int(self.controls[int(self.device_column)])
+                device_controls = self.get_all_mod_matrix_controls_for_device_in_slot(
+                    selected_device_slot
                 )
 
                 selected_control = self.controls[self.control_column]
+
                 depth_scaled = (visible_controls[self.depth_control_column] - 0.5) * 2
+
                 self.send_message(
                     f'{mod_mapping["address"]}',
-                    [str(control[int(selected_control)].address), float(depth_scaled)],
+                    [
+                        str(device_controls[int(selected_control)].address),
+                        float(depth_scaled),
+                    ],
                 )
-                if self.mod_matrix_mappings[int(visible_controls[7])][0] == mod_mapping[
-                    "address"
-                ] and self.mod_matrix_mappings[int(visible_controls[7])][1] == str(
-                    control[int(selected_control)].address
+
+                ## THIS COMMENTED BLOCK NEEDS TO BE REVISED AND POSSIBLY MOVED TO SET_STATE TODO
+
+                # current_knob_value = int(visible_controls[7]) or 0
+                # print(current_knob_value, self.mod_matrix_mappings)
+                # mapping_address = self.mod_matrix_mappings[current_knob_value][0]
+
+                # mapping_dest = self.mod_matrix_mappings[current_knob_value][1]
+
+                # selected_control_address = str(
+                #     device_controls[int(selected_control)].address
+                # )
+
+                # if (
+                #     mapping_address == mod_mapping["address"]
+                #     and mapping_dest == selected_control_address
+                # ):
+                #     self.mod_matrix_mappings[current_knob_value][2] = depth_scaled
+
+            # Seventh encoder
+            case self.scroll_column:
+                # Scroll through mappings and snap knobs
+                if is_in_bounds(
+                    self.mod_matrix_mappings,
+                    visible_controls[encoder_idx] + increment * 0.1,
                 ):
-                    self.mod_matrix_mappings[int(visible_controls[7])][2] = depth_scaled
+                    visible_controls[encoder_idx] = (
+                        visible_controls[encoder_idx] + increment * 0.1
+                    )
 
-            # Scroll through mappings and snap knobs
-            if encoder_idx == 7 and 0 <= new_value < len(self.mod_matrix_mappings):
-
-                visible_controls[encoder_idx] = (
-                    visible_controls[encoder_idx] + increment * 0.1
-                )
-                self.snap_knobs_to_mod_matrix()
-            else:
-                pass
-
-        except ValueError as e:
-            print(e)
-            print("ValueError as e in ModMatrix")
-
-    # TODO: Instrument switching does not work
+        self.snap_knobs_to_mod_matrix()
 
     def on_encoder_touched(self, encoder_name):
-        # TODO: This entire delete routine is fucked
         try:
             encoder_idx = [
                 push2_python.constants.ENCODER_TRACK1_ENCODER,
@@ -991,34 +1061,22 @@ class ModMatrixDevice(definitions.PyshaMode):
                 push2_python.constants.ENCODER_TRACK7_ENCODER,
                 push2_python.constants.ENCODER_TRACK8_ENCODER,
             ].index(encoder_name)
-            # Delete Mapping
-            if encoder_idx == self.delete_mapping_column:
-                mod_mapping = self.all_mod_src[int(self.controls[self.src_cat_column])][
-                    "values"
-                ][int(self.controls[self.src_type_column])]
 
-                visible_controls = self.get_visible_controls()
-                devices = self.get_all_mod_matrix_devices()
-                selected_device = int(self.controls[int(self.device_column)])
-                control = self.get_all_mod_matrix_controls_for_device_in_slot(
-                    selected_device
-                )
+        except ValueError:
+            return
 
-                selected_control = self.controls[self.control_column]
-                self.send_message(
-                    f'{mod_mapping["address"]}',
-                    [str(control[int(selected_control)].address), float(0.0)],
-                )
-                if int(visible_controls[7]) > len(self.mod_matrix_mappings):
-                    visible_controls[7] = len(self.mod_matrix_mappings) - 1
-                    self.snap_knobs_to_mod_matrix()
-                # TODO: Add a check that if the knob would index OOB after deleting, set it to last instead
-                for idx, mapping in enumerate(self.mod_matrix_mappings.copy()):
-                    if mapping[0] == mod_mapping["address"] and mapping[1] == str(
-                        control[int(selected_control)].address
-                    ):
-                        self.mod_matrix_mappings.pop(idx)
-                self.query_all_mods()
-        except ValueError as e:
-            print(e)
-            print("ValueError as e in ModMatrix")
+        if encoder_idx == self.delete_mapping_column:
+            mod_mapping = self.all_mod_src[int(self.controls[self.src_cat_column])][
+                "values"
+            ][int(self.controls[self.src_type_column])]
+            selected_device = int(self.controls[int(self.device_column)])
+            control = self.get_all_mod_matrix_controls_for_device_in_slot(
+                selected_device
+            )
+
+            # Send delete mapping message to Surge
+            selected_control = self.controls[self.control_column]
+            self.send_message(
+                f'{mod_mapping["address"]}',
+                [str(control[int(selected_control)].address), float(0.0)],
+            )
