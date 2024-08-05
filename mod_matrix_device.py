@@ -139,19 +139,21 @@ class ModMatrixDevice(definitions.PyshaMode):
     def set_state(self, source, *args):
         dest, depth, *rest = args
         new_mapping = [source, dest, depth]
-        # print(new_mapping, "n")
-
-        ## TODO LEFT at 2024-08-10T17:05 trying to fix set_mapping crashing app
         for current_mapping in self.mod_matrix_mappings.copy():
-            if current_mapping[0] == new_mapping[0]:
+            if (
+                current_mapping[0] == new_mapping[0]
+                and current_mapping[1] == new_mapping[1]
+            ):
+                # TODO Still a bit wonky, puts 0.0 mappings on the bottom
                 # Remove a mapping when surge sends 0 depth
-                if float(depth) == float(0):
+                if float(depth) == float(0.0):
+                    print("zero true")
                     self.mod_matrix_mappings.remove(current_mapping)
-                    self.delete_mapping(new_mapping)
                     return
 
                 # Update existing mapping
-                elif current_mapping[1] == new_mapping[1]:
+                elif current_mapping[2] == new_mapping[2]:
+                    print("elif true")
                     current_mapping = new_mapping
                     return
 
@@ -881,7 +883,10 @@ class ModMatrixDevice(definitions.PyshaMode):
     def get_all_controls(self):
         return self.controls
 
-    def delete_mapping(self, mod_mapping):
+    def send_delete_message(self):
+        mod_mapping = self.all_mod_src[int(self.controls[self.src_cat_column])][
+            "values"
+        ][int(self.controls[self.src_type_column])]
 
         selected_device = int(self.controls[int(self.device_column)])
         control = self.get_all_mod_matrix_controls_for_device_in_slot(selected_device)
@@ -1064,7 +1069,5 @@ class ModMatrixDevice(definitions.PyshaMode):
             return
 
         if encoder_idx == self.delete_mapping_column:
-            mod_mapping = self.all_mod_src[int(self.controls[self.src_cat_column])][
-                "values"
-            ][int(self.controls[self.src_type_column])]
-            self.delete_mapping(mod_mapping=mod_mapping)
+
+            self.send_delete_message()
