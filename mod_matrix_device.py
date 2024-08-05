@@ -882,28 +882,23 @@ class ModMatrixDevice(definitions.PyshaMode):
         return self.controls
 
     def delete_mapping(self, mod_mapping):
-        visible_controls = self.get_visible_controls()
+
         selected_device = int(self.controls[int(self.device_column)])
         control = self.get_all_mod_matrix_controls_for_device_in_slot(selected_device)
-        selected_control = self.controls[self.control_column]
-        # TODO: Add a check that if the knob would index OOB after deleting, set it to last instead
-        for idx, mapping in enumerate(self.mod_matrix_mappings.copy()):
-            # print(
-            #     f"{mapping[0]} == {mod_mapping[0]} and {mapping[1]} == {str(control[int(selected_control)].address)}"
-            # )
 
-            # if mapping[0] == mod_mapping[0] and mapping[1] == str(
-            #     control[int(selected_control)].address
-            # ):
-            #     self.mod_matrix_mappings.pop(idx)
-            #     print("fartitty fart")
-            #     # Snap knobs if last item deleted
-            #     if (
-            #         int(visible_controls[7]) >= len(self.mod_matrix_mappings)
-            #         and len(self.mod_matrix_mappings) - 1 > 0
-            #     ):
-            #         visible_controls[7] = len(self.mod_matrix_mappings) - 2
-            pass
+        # Send delete mapping message to Surge
+        selected_control = self.controls[self.control_column]
+        self.send_message(
+            f'{mod_mapping["address"]}',
+            [str(control[int(selected_control)].address), float(0.0)],
+        )
+
+        visible_controls = self.get_visible_controls()
+        if (
+            int(visible_controls[7] + 0.1) >= len(self.mod_matrix_mappings)
+            and len(self.mod_matrix_mappings) - 1 > 0
+        ):
+            visible_controls[7] = visible_controls[7] - 1
         self.snap_knobs_to_mod_matrix()
 
     def snap_knobs_to_mod_matrix(self):
@@ -1072,22 +1067,4 @@ class ModMatrixDevice(definitions.PyshaMode):
             mod_mapping = self.all_mod_src[int(self.controls[self.src_cat_column])][
                 "values"
             ][int(self.controls[self.src_type_column])]
-            selected_device = int(self.controls[int(self.device_column)])
-            control = self.get_all_mod_matrix_controls_for_device_in_slot(
-                selected_device
-            )
-
-            # Send delete mapping message to Surge
-            selected_control = self.controls[self.control_column]
-            self.send_message(
-                f'{mod_mapping["address"]}',
-                [str(control[int(selected_control)].address), float(0.0)],
-            )
-
-            visible_controls = self.get_visible_controls()
-            if (
-                int(visible_controls[7] + 0.1) >= len(self.mod_matrix_mappings)
-                and len(self.mod_matrix_mappings) - 1 > 0
-            ):
-                visible_controls[7] = visible_controls[7] - 1
-                self.snap_knobs_to_mod_matrix()
+            self.delete_mapping(mod_mapping=mod_mapping)
