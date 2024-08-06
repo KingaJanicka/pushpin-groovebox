@@ -144,19 +144,19 @@ class ModMatrixDevice(definitions.PyshaMode):
                 current_mapping[0] == new_mapping[0]
                 and current_mapping[1] == new_mapping[1]
             ):
-                # TODO Still a bit wonky, puts 0.0 mappings on the bottom
+                # TODO Still a bit wonky, puts 0.0 mappings on the bottom sometimes
                 # Remove a mapping when surge sends 0 depth
                 if float(depth) == float(0.0):
-                    print("zero true")
-                    self.mod_matrix_mappings.remove(current_mapping)
+                    try:
+                        self.mod_matrix_mappings.remove(current_mapping)
+                    except:
+                        pass
                     return
 
                 # Update existing mapping
                 elif current_mapping[2] == new_mapping[2]:
-                    print("elif true")
                     current_mapping = new_mapping
                     return
-
         # Add new mapping if none of the earlier loop iterations returned early
         self.mod_matrix_mappings.append(new_mapping)
         # print(self.mod_matrix_mappings)
@@ -895,13 +895,13 @@ class ModMatrixDevice(definitions.PyshaMode):
         selected_control = self.controls[self.control_column]
         self.send_message(
             f'{mod_mapping["address"]}',
-            [str(control[int(selected_control)].address), float(0.0)],
+            [str(control[int(selected_control)].address), float(0)],
         )
 
         visible_controls = self.get_visible_controls()
         if (
-            int(visible_controls[7] + 0.1) >= len(self.mod_matrix_mappings)
-            and len(self.mod_matrix_mappings) - 1 > 0
+            int(visible_controls[7] + 0.2) >= len(self.mod_matrix_mappings)
+            and len(self.mod_matrix_mappings) - 1 >= 0
         ):
             visible_controls[7] = visible_controls[7] - 1
         self.snap_knobs_to_mod_matrix()
@@ -999,6 +999,7 @@ class ModMatrixDevice(definitions.PyshaMode):
 
             # Sixth encoder
             case self.set_mapping_column:
+                print("value sent")
                 src_cat_idx = int(self.controls[self.src_cat_column])
                 src_type_idx = int(self.controls[self.src_type_column])
                 mod_mapping = self.all_mod_src[src_cat_idx]["values"][src_type_idx]
@@ -1049,8 +1050,7 @@ class ModMatrixDevice(definitions.PyshaMode):
                     visible_controls[encoder_idx] = (
                         visible_controls[encoder_idx] + increment * 0.1
                     )
-
-        self.snap_knobs_to_mod_matrix()
+                    self.snap_knobs_to_mod_matrix()
 
     def on_encoder_touched(self, encoder_name):
         try:
