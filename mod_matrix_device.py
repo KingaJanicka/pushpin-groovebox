@@ -145,6 +145,8 @@ class ModMatrixDevice(definitions.PyshaMode):
                 and current_mapping[1] == new_mapping[1]
             ):
                 # TODO Still a bit wonky, puts 0.0 mappings on the bottom sometimes
+                # This happens when a mapping has a dest that's not in the list
+
                 # Remove a mapping when surge sends 0 depth
                 if float(depth) == float(0.0):
                     try:
@@ -999,7 +1001,6 @@ class ModMatrixDevice(definitions.PyshaMode):
 
             # Sixth encoder
             case self.set_mapping_column:
-                print("value sent")
                 src_cat_idx = int(self.controls[self.src_cat_column])
                 src_type_idx = int(self.controls[self.src_type_column])
                 mod_mapping = self.all_mod_src[src_cat_idx]["values"][src_type_idx]
@@ -1021,7 +1022,7 @@ class ModMatrixDevice(definitions.PyshaMode):
                         float(depth_scaled),
                     ],
                 )
-
+                self.controls[7] = len(self.mod_matrix_mappings) - 1
                 ## THIS COMMENTED BLOCK NEEDS TO BE REVISED AND POSSIBLY MOVED TO SET_STATE TODO
 
                 # current_knob_value = int(visible_controls[7]) or 0
@@ -1069,5 +1070,5 @@ class ModMatrixDevice(definitions.PyshaMode):
             return
 
         if encoder_idx == self.delete_mapping_column:
-
+            self.snap_knobs_to_mod_matrix()
             self.send_delete_message()
