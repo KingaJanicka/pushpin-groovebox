@@ -311,6 +311,15 @@ class PresetSelectionMode(definitions.PyshaMode):
         log.debug(f"Loading {self.presets[instrument_short_name][pad_ij[0]]}")
         self.send_osc("/patch/load", self.presets[instrument_short_name][pad_ij[0]])
         self.update_pads()
+
+        # Resets the last knob position on the mod matrix
+        # to avoid indexing OOB when switching presets
+        instrument = self.app.osc_mode.get_current_instrument()
+        devices = self.app.osc_mode.get_current_instrument_devices()
+        for device in devices:
+            if device.label == "Mod Matrix":
+                device.controls[7] = 0
+
         return True  # Prevent other modes to get this event
 
     def on_pad_released(self, pad_n, pad_ij, velocity):
