@@ -1,16 +1,19 @@
 import logging
+import engine
+import mido
 from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.osc_server import AsyncIOOSCUDPServer
 from pythonosc.dispatcher import Dispatcher
 from osc_device import OSCDevice
 from mod_matrix_device import ModMatrixDevice
 from definitions import PyshaMode
-
 logger = logging.getLogger("osc_instrument")
 # logger.setLevel(level=logging.DEBUG)
 
 
 class OSCInstrument(PyshaMode):
+    engine = None
+    
     def __init__(
         self,
         instrument_short_name,
@@ -18,6 +21,7 @@ class OSCInstrument(PyshaMode):
         device_definitions,
         get_current_instrument_color_helper,
         app,
+        **kwargs
     ):
         self.transports = []
         self.devices = []
@@ -45,6 +49,17 @@ class OSCInstrument(PyshaMode):
         self.log_in = logger.getChild(f"in-{self.osc_in_port}")
         self.log_out = logger.getChild(f"out-{self.osc_out_port}")
 
+        self.midi_port = mido.open_output(
+            instrument_definition["instrument_short_name"],
+            client_name=instrument_definition["instrument_short_name"],
+        )
+        midi_device_idx = [els.split(":")[0] for els in mido.get_input_names()].index(
+            instrument_definition["instrument_short_name"]
+        )
+        if kwargs.get("engine", "surge-xt-cli") == "surge-xt-cli":
+            self.engine = engine.SurgeXTEngine(midi_device_idx=midi_device_idx)
+            self.engine.start(instrument_definition)
+            
         client = None
         server = None
         dispatcher = Dispatcher()

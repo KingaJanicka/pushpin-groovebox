@@ -82,9 +82,6 @@ class PyshaApp(object):
 
     # client = SimpleUDPClient("127.0.0.1", 1032)
 
-    # surge
-    surge = {}
-
     def __init__(self):
         if os.path.exists("settings.json"):
             settings = json.load(open("settings.json"))
@@ -114,8 +111,7 @@ class PyshaApp(object):
         # Init jack server and passthrus
 
         # Initialise Surge and wait for it to load
-        self.init_surge()
-        time.sleep(2.5)
+
 
         # Init passthru clients for controling volume when tracks are used as sends
 
@@ -612,10 +608,9 @@ class PyshaApp(object):
                 None,
             )
             if instrument:
-                instance = self.surge.get(instrument["instrument_short_name"], None)
-                if instance["port"]:
-                    port = instance["port"]
-                    port.send(msg)
+                instance = self.osc_mode.instruments.get(instrument["instrument_short_name"], None)
+                if instance.midi_port:
+                    instance.midi_port.send(msg)
             # This will rule out sysex and other "strange" messages that don't have channel info
             # if (
             #     self.midi_in_channel == -1 or msg.channel == self.midi_in_channel
@@ -733,48 +728,6 @@ class PyshaApp(object):
         # When the above with-statement is left (either because the end of the
         # code block is reached, or because an exception was raised inside),
         # client.deactivate() and client.close() are called automatically.
-
-    def init_surge(self):
-        sample_rate = 48000
-        buffer_size = 512
-        for idx, instrument in enumerate(
-            self.instrument_selection_mode.instruments_info
-        ):
-
-            out_port = mido.open_output(
-                instrument["instrument_short_name"],
-                client_name=instrument["instrument_short_name"],
-            )
-
-            # @client.set_process_callback
-            # def process(frames):
-            #     for offset, data in port.incoming_midi_events():
-            #         print(
-            #             "{}: 0x{}".format(
-            #                 client.last_frame_time + offset,
-            #                 binascii.hexlify(data).decode(),
-            #             )
-            #         )
-            device_idx = [els.split(":")[0] for els in mido.get_input_names()].index(
-                instrument["instrument_short_name"]
-            )
-
-            ps = subprocess.Popen(
-                [
-                    "surge-xt-cli",
-                    "--audio-interface=0.1",
-                    f"--midi-input={device_idx}",
-                    f"--sample-rate={sample_rate}",
-                    f"--buffer-size={buffer_size}",
-                    f"--osc-in-port={instrument['osc_in_port']}",
-                    f"--osc-out-port={instrument['osc_out_port']}",
-                ]
-            )
-
-            self.surge[instrument["instrument_short_name"]] = {
-                # "process": ps,
-                "port": out_port,
-            }
 
     def init_push(self):
         print("Configuring Push...")
