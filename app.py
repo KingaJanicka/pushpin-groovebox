@@ -15,6 +15,7 @@ import logging
 import asyncio
 import jack
 import binascii
+import multiprocessing
 
 from melodic_mode import MelodicMode
 from instrument_selection_mode import InstrumentSelectionMode
@@ -132,9 +133,9 @@ class PyshaApp(object):
         self.osc_mode = OSCMode(
             self, settings=settings
         )  # Must be initialized after instrument selection mode so it gets info about loaded instruments
-        self.sequencer_mode = SequencerMode(
-            self, settings=settings, send_osc_func=self.send_osc
-        )
+        # self.sequencer_mode = SequencerMode(
+        #     self, settings=settings, send_osc_func=self.send_osc
+        # )
         # self.active_modes += [self.instrument_selection_mode, self.midi_cc_mode]
         self.active_modes += [self.instrument_selection_mode, self.osc_mode]
         self.instrument_selection_mode.select_instrument(
@@ -297,14 +298,14 @@ class PyshaApp(object):
                     self.set_mode_for_xor_group(self.melodic_mode)
 
     def toggle_melodic_rhythmic_slice_modes(self):
-        if self.is_mode_active(self.sequencer_mode):
-            self.set_rhythmic_mode()
-        elif self.is_mode_active(self.rhythmic_mode):
+        # if self.is_mode_active(self.sequencer_mode):
+        #     self.set_rhythmic_mode()
+        if self.is_mode_active(self.rhythmic_mode):
             self.set_slice_notes_mode()
         elif self.is_mode_active(self.slice_notes_mode):
             self.set_melodic_mode()
         elif self.is_mode_active(self.melodic_mode):
-            self.set_sequencer_mode()
+            self.set_rhythmic_mode()
         else:
             # If none of melodic or rhythmic or slice modes were active, enable melodic by default
             self.set_melodic_mode()
@@ -997,7 +998,7 @@ def on_midi_connected(_):
 
 
 async def main():
-    # Initialise OSC Instruments
+    # Initialise OSC sockets
     loop = asyncio.get_event_loop()
 
     for instrument in app.osc_mode.instruments:

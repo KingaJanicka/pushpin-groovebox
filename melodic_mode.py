@@ -378,18 +378,20 @@ class MelodicMode(definitions.PyshaMode):
                 # notes info comming from any other source
                 self.add_note_being_played(midi_note, "push")
                 # print("Illuminate local note check whatever")
-            print("before MIDO")
+            # print("before MIDO")
             msg = mido.Message(
                 "note_on",
                 note=midi_note,
                 velocity=velocity if not self.fixed_velocity_mode else 127,
             )
             self.app.send_midi(msg)
-            print("after MIDO")
+            instrument = self.app.instrument_selection_mode.get_current_instrument_short_name()
+            self.app.send_osc("/mnote", [float(midi_note), float(velocity)], instrument)
+            # print("after MIDO")
             # TODO: this send osc hangs at sending to client for some reason, for now commented out but needs to be fixed later
             # self.send_osc_func('/mnote', [float(midi_note), float(velocity)])
             self.update_pads()  # Directly calling update pads method because we want user to feel feedback as quick as possible
-            print("after update pads")
+            # print("after update pads")
             return True
 
     def on_pad_released(self, pad_n, pad_ij, velocity):
@@ -405,11 +407,13 @@ class MelodicMode(definitions.PyshaMode):
                 self.remove_note_being_played(midi_note, "push")
             msg = mido.Message("note_off", note=midi_note, velocity=velocity)
             self.app.send_midi(msg)
-            print("midi sent", pad_ij)
+            instrument = self.app.instrument_selection_mode.get_current_instrument_short_name()
+            self.app.send_osc("/mnote/rel", [float(midi_note), float(velocity)], instrument)
+            # print("midi sent", pad_ij)
             # TODO: This send_osc_func makes so the sequencer pads don't update correctly
             # self.send_osc_func('/mnote/rel', [float(midi_note), float(velocity)])
             self.update_pads()  # Directly calling update pads method because we want user to feel feedback as quick as possible
-            print("pad released")
+            # print("pad released")
             return True
 
     def on_pad_aftertouch(self, pad_n, pad_ij, velocity):

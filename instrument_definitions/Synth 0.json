@@ -5,5 +5,5 @@
   "midi_channel": 0,
   "osc_in_port": 1030,
   "osc_out_port": 1040,
-  "default_layout": "lseq"
+  "default_layout": "lmelodic"
 }

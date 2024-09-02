@@ -1,27 +1,9 @@
-from abc import ABC, abstractmethod
-import subprocess
+from abc import ABC
+import asyncio
 
-# import jack
 import re
 import sys
 import json
-from time import sleep
-
-# JACK_INTERFACE = None
-
-# def getJackInterface():
-#     global JACK_INTERFACE
-#     if JACK_INTERFACE == None:
-#         surge_devices = subprocess.check_output(['surge-xt-cli', '-l']).decode(sys.stdout.encoding).strip()
-#         groups = re.search(r"\[(\d+\.\d+)\] : ALSA\.JACK Audio Connection Kit", surge_devices).groups()
-#         if groups:
-#             JACK_INTERFACE = groups[0]
-#         else:
-#             print("jackd not running; starting...")
-#             subprocess.Popen(['jack_control', 'start'])
-#             getJackInterface()
-
-# getJackInterface()
 
 class Engine(ABC):
     type = None
@@ -39,51 +21,52 @@ class Engine(ABC):
     osc_in_port = None
     osc_out_port = None
     jack_client = None
+    instrument = None
 
-    def __init__(self, sample_rate=48000, buffer_size=512, midi_device_idx=None):
+    def __init__(self, sample_rate=48000, buffer_size=512, midi_device_idx=None, instrument_definition=None):
         self.sample_rate = sample_rate
         self.buffer_size = buffer_size
         self.midi_device_idx = midi_device_idx
-        self.connections = [self.createLoopback()]
-        print(self.connections)
+        self.connections = []
+        self.instrument = instrument_definition
+
         if self.midi_device_idx == None:
             raise Exception("Midi not init")
 
-    @abstractmethod
-    def start(self):
-        pass
+    async def start(self):
+        self.connections.append(await self.createLoopback())
 
     def stop(self):
         self.process.kill()
 
-    def createLoopback(self, name="pushpin-loopback", capture_serial=None, playback_serial=None):
-        ps = subprocess.Popen(
-            [
-                "pw-loopback",
-                f'-n={name}',
-                (f'-C={capture_serial}' if capture_serial else ''),
-                (f'-P={playback_serial}' if playback_serial else ''),
-            ]
+    async def createLoopback(self, name="pushpin-loopback", capture_serial=None, playback_serial=None):
+        ps = await asyncio.create_subprocess_shell(
+            f"pw-loopback -n={name} -C={capture_serial if capture_serial else ''} -P={playback_serial if playback_serial else ''}"
         )
         try:
             while True:
-                data = json.loads(
-                    subprocess.check_output(["pw-dump", "-N", "Client"])
-                    .decode(sys.stdout.encoding)
-                    .strip()
-                )
-        
-                return {
-                    "config": list(
-                        filter(
-                            lambda x: x["info"]["props"].get("pipewire.sec.pid") == int(ps.pid),
-                            data,
-                        )
-                    ).pop(),
-                    "process": ps,
-                }
+                proc = await asyncio.create_subprocess_shell("pw-dump -N Client", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+                stdout, stderr = await proc.communicate()
+                if stderr:
+                    print('Error!', stderr.decode())
+                elif stdout:
+                    data = json.loads(
+                        stdout
+                        .decode(sys.stdout.encoding)
+                        .strip()
+                    )
+            
+                    return {
+                        "config": list(
+                            filter(
+                                lambda x: x["info"]["props"].get("pipewire.sec.pid") == int(ps.pid),
+                                data,
+                            )
+                        ).pop(),
+                        "process": ps,
+                    }
         except:
-            sleep(0.25)
+            await asyncio.sleep(0.25)
 
     def setVolume(self, volume):
         setVolumeByPipewireID(pipewire_id=self.pipewireID, volume=volume)
@@ -118,11 +101,12 @@ class Engine(ABC):
 
 
 class SurgeXTEngine(Engine):
-    def __init__(self, sample_rate=48000, buffer_size=512, midi_device_idx=None):
+    def __init__(self, sample_rate=48000, buffer_size=512, midi_device_idx=None, instrument_definition=None):
         super().__init__(
             sample_rate=sample_rate,
             buffer_size=buffer_size,
             midi_device_idx=midi_device_idx,
+            instrument_definition=instrument_definition
         )
 
     def getPID(self):
@@ -134,72 +118,89 @@ class SurgeXTEngine(Engine):
     def getObjectSerial(self):
         return self.pipewire["info"]["props"]["object.serial"]
 
-    def start(self, instrument):
+    async def start(self):
         # self.jack_client = jack.Client(f"Pushpin_{instrument['instrument_short_name']}")
+        await super().start()
 
-        self.osc_in_port = instrument["osc_in_port"]
-        self.osc_out_port = instrument["osc_out_port"]
-        self.process = subprocess.Popen(
-            [
-                "surge-xt-cli",
-                f"--audio-interface={'0.0'}",
-                f"--audio-input-interface={'0.0'}",
-                f"--midi-input={self.midi_device_idx}",
-                f"--sample-rate={self.sample_rate}",
-                f"--buffer-size={self.buffer_size}",
-                f"--osc-in-port={self.osc_in_port}",
-                f"--osc-out-port={self.osc_out_port}",
-            ]
+        self.osc_in_port = self.instrument["osc_in_port"]
+        self.osc_out_port = self.instrument["osc_out_port"]
+        print('SURGE')
+        
+        self.process = await asyncio.create_subprocess_shell(
+            f"/pushpin/surge/build/surge_xt_products/surge-xt-cli --audio-interface={'0.0'} --midi-input={self.midi_device_idx} --sample-rate={self.sample_rate} --buffer-size={self.buffer_size} --osc-in-port={self.osc_in_port} --osc-out-port={self.osc_out_port}",
+            # stdin=asyncio.subprocess.PIPE,
+            # stdout=asyncio.subprocess.PIPE,
+            # stderr=asyncio.subprocess.STDOUT
         )
-        self.PID = self.process.pid
+        # self.PID = self.process.pid
         
-        pwConfig = getPipewireConfigForPID(self.PID)
+        # # pwConfig = await getPipewireConfigForPID(self.PID)
         
-        if pwConfig:
-            self.pipewire = pwConfig
-            self.pipewireID = pwConfig["id"]
+        # # if pwConfig:
+        # #     self.pipewire = pwConfig
+        # #     self.pipewireID = pwConfig["id"]
 
-            print("_________________________")
-            print(self.getObjectSerial())
+        # #     print("_________________________")
+        # #     print(await self.getObjectSerial())
+        # # print('waht')
+        await self.process.wait()
+        print(asyncio.subprocess.STDOUT)
+        print(asyncio.subprocess.PIPE)
+async def setVolumeByPipewireID(pipewire_id, volume):
+    proc = await asyncio.create_subprocess_shell(["pw-cli", "s", pipewire_id, f"Props '{{mute: false, volume:{volume}}}'"], stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
     
-def setVolumeByPipewireID(pipewire_id, volume):
-    subprocess.check_output(["pw-cli", "s", pipewire_id, f"Props '{{mute: false, volume:{volume}}}'"]).decode(sys.stdout.encoding).strip()
+    stdout, stderr = await proc.communicate()
 
-def connectPipewireSourceToPipewireDest(source_id, dest_id):    
+    if stdout:
+        print(stdout.decode().strip())
+    elif stderr:
+        print(stderr.decode().strip())
+
+async def connectPipewireSourceToPipewireDest(source_id, dest_id):    
     if not source_id or not dest_id:
         raise Exception('Invalid call to connectPipewireSourcetoPipewireDest()')
     
-    subprocess.check_output(["pw-link", source_id, dest_id]).decode(sys.stdout.encoding).strip()
+    proc = await asyncio.create_subprocess_shell(["pw-link", source_id, dest_id], stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+    stdout, stderr = await proc.communicate()
 
-def disconnectPipewireSourceFromPipewireDest(source_id, dest_id):    
+    if stdout:
+        print(stdout.decode().strip())
+    elif stderr:
+        print(stderr.decode().strip())
+async def disconnectPipewireSourceFromPipewireDest(source_id, dest_id):    
     if not source_id or not dest_id:
         raise Exception('Invalid call to disconnectPipewireSourceFromPipewireDest()')
     
-    subprocess.check_output(["pw-link","-d", source_id, dest_id]).decode(sys.stdout.encoding).strip()
+    proc = await asyncio.create_subprocess_shell(["pw-link","-d", source_id, dest_id], stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+    stdout, stderr = await proc.communicate()
 
+    if stdout:
+        print(stdout.decode().strip())
+    elif stderr:
+        print(stderr.decode().strip())
 
 # Given an engine PID, run pw-dump until the PID shows up and then return that node config
-def getPipewireConfigForPID(pid):
+async def getPipewireConfigForPID(pid):
     if not pid: raise Exception('No PID provided to getPipewireConfigForPID()')
 
     while True:
         try:
-            data = json.loads(
-                subprocess.check_output(["pw-dump", "-N"])
-                .decode(sys.stdout.encoding)
-                .strip()
-            )
-            nodes = filter(lambda x: x["type"] == "PipeWire:Interface:Node", data)
-            return list(
-                filter(
-                    lambda x: x["info"]["props"].get("application.process.id")
-                    == int(pid),
-                    nodes,
+            proc = await asyncio.create_subprocess_shell("pw-dump -N", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+            stdout, stderr = await proc.communicate()
+            if stdout:
+                data = json.loads(
+                    stdout.decode().strip()
                 )
-            ).pop()
+                nodes = filter(lambda x: x["type"] == "PipeWire:Interface:Node", data)
+                return list(
+                    filter(
+                        lambda x: x["info"]["props"].get("application.process.id")
+                        == int(pid),
+                        nodes,
+                    )
+                ).pop()
         except:
-            sleep(0.25)
-
+            await asyncio.sleep(0.25)
 
 
 

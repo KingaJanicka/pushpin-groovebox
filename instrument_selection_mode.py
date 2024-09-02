@@ -137,19 +137,19 @@ class InstrumentSelectionMode(definitions.PyshaMode):
             == definitions.LAYOUT_SLICES
         ):
             self.app.set_slice_notes_mode()
-        elif (
-            self.get_current_instrument_info()["default_layout"]
-            == definitions.LAYOUT_SEQUENCER
-        ):
-            self.app.set_sequencer_mode()
+        # elif (
+        #     self.get_current_instrument_info()["default_layout"]
+        #     == definitions.LAYOUT_SEQUENCER
+        # ):
+        #     self.app.set_sequencer_mode()
 
     def clean_currently_notes_being_played(self):
         if self.app.is_mode_active(self.app.melodic_mode):
             self.app.melodic_mode.remove_all_notes_being_played()
         elif self.app.is_mode_active(self.app.rhythmic_mode):
             self.app.rhythmic_mode.remove_all_notes_being_played()
-        elif self.app.is_mode_active(self.app.sequencer_mode):
-            self.app.sequencer_mode.update_pads()
+        # elif self.app.is_mode_active(self.app.sequencer_mode):
+        #     self.app.sequencer_mode.update_pads()
 
     def select_instrument(self, instrument_idx):
         # Selects a instrument and activates its melodic/rhythmic layout

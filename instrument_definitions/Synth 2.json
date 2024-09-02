@@ -6,5 +6,5 @@
   "osc_in_port": 1032,
   "osc_out_port": 1042,
   "n_banks": 2,
-  "default_layout": "lseq"
+  "default_layout": "lmelodic"
 }

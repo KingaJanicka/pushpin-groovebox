@@ -6,7 +6,9 @@ from pythonosc.osc_server import AsyncIOOSCUDPServer
 from pythonosc.dispatcher import Dispatcher
 from osc_device import OSCDevice
 from mod_matrix_device import ModMatrixDevice
+from audio_in_device import AudioInDevice
 from definitions import PyshaMode
+import asyncio
 logger = logging.getLogger("osc_instrument")
 # logger.setLevel(level=logging.DEBUG)
 
@@ -57,10 +59,8 @@ class OSCInstrument(PyshaMode):
             instrument_definition["instrument_short_name"]
         )
         if kwargs.get("engine", "surge-xt-cli") == "surge-xt-cli":
-            self.engine = engine.SurgeXTEngine(midi_device_idx=midi_device_idx)
+            self.engine = engine.SurgeXTEngine(midi_device_idx=midi_device_idx, instrument_definition=instrument_definition)
 
-            # if kwargs.get('start_engine', True):
-            self.engine.start(instrument_definition)
             
         client = None
         server = None
@@ -87,6 +87,14 @@ class OSCInstrument(PyshaMode):
                     osc_in_port=self.osc_in_port,
                     osc_out_port=self.osc_out_port,
                     app=app,
+                )
+            elif device_name == "audio_1":
+                device = AudioInDevice(
+                    device_definitions[device_name],
+                    self.osc,
+                    get_color=get_current_instrument_color_helper,
+                    osc_in_port=self.osc_in_port,
+                    osc_out_port=self.osc_out_port,
                 )
             else:
                 # TODO: There needs to be a better way than just drilling this right?
@@ -164,6 +172,7 @@ class OSCInstrument(PyshaMode):
             self.log_out.debug(f"Receiving OSC on port {self.osc_out_port}")
             self.query_slots()
             self.query_devices()
+            asyncio.create_task(self.engine.start())
 
     def query_all_params(self):
         for device in self.devices:
