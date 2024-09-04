@@ -99,7 +99,6 @@ class Engine(ABC):
         disconnectPipewireSourceFromPipewireDest(source_id=source_node_id, dest_id=dest_node_id)
 
 
-
 class SurgeXTEngine(Engine):
     def __init__(self, sample_rate=48000, buffer_size=512, midi_device_idx=None, instrument_definition=None):
         super().__init__(
@@ -126,26 +125,38 @@ class SurgeXTEngine(Engine):
         self.osc_out_port = self.instrument["osc_out_port"]
         print('SURGE')
         
-        self.process = await asyncio.create_subprocess_shell(
-            f"/pushpin/surge/build/surge_xt_products/surge-xt-cli --audio-interface={'0.0'} --midi-input={self.midi_device_idx} --sample-rate={self.sample_rate} --buffer-size={self.buffer_size} --osc-in-port={self.osc_in_port} --osc-out-port={self.osc_out_port}",
+        self.process = await asyncio.create_subprocess_exec(
+            f"/pushpin/surge/build/surge_xt_products/surge-xt-cli",
+            f"--audio-interface={'0.0'}", f"--midi-input={self.midi_device_idx}", f"--sample-rate={self.sample_rate}", f"--buffer-size={self.buffer_size}", f"--osc-in-port={self.osc_in_port}", f"--osc-out-port={self.osc_out_port}",
             # stdin=asyncio.subprocess.PIPE,
             # stdout=asyncio.subprocess.PIPE,
             # stderr=asyncio.subprocess.STDOUT
+            
         )
-        # self.PID = self.process.pid
-        
-        # # pwConfig = await getPipewireConfigForPID(self.PID)
-        
-        # # if pwConfig:
-        # #     self.pipewire = pwConfig
-        # #     self.pipewireID = pwConfig["id"]
+        #TODO: This isn't the real PID, it doesn't match with what the CLI/Top give us
 
-        # #     print("_________________________")
-        # #     print(await self.getObjectSerial())
-        # # print('waht')
-        await self.process.wait()
-        print(asyncio.subprocess.STDOUT)
-        print(asyncio.subprocess.PIPE)
+        self.PID = self.process.pid
+        # print("get config for pID", self.PID)
+        # pwConfig = await getPipewireConfigForPID(self.PID)
+        # print("PW CONFIG ", pwConfig)
+        # if pwConfig:
+        #     self.pipewire = pwConfig
+        #     self.pipewireID = pwConfig["id"]
+
+        #     print("_________________________")
+        #     print(await self.getObjectSerial())
+        # print('waht')
+        # await self.process.wait()
+        # print(asyncio.subprocess.STDOUT)
+        # print(asyncio.subprocess.PIPE)
+
+    async def updateConfig(self):
+        self.PID = self.process.pid
+        pwConfig = await getPipewireConfigForPID(self.PID)
+        if pwConfig:
+            self.pipewire = pwConfig
+            self.pipewireID = pwConfig["id"]
+
 async def setVolumeByPipewireID(pipewire_id, volume):
     proc = await asyncio.create_subprocess_shell(["pw-cli", "s", pipewire_id, f"Props '{{mute: false, volume:{volume}}}'"], stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
     
@@ -201,6 +212,18 @@ async def getPipewireConfigForPID(pid):
                 ).pop()
         except:
             await asyncio.sleep(0.25)
+
+
+async def getAllClients():
+  
+    proc = await asyncio.create_subprocess_shell("pw-dump -N Client", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+    stdout, stderr = await proc.communicate()
+    if stdout:
+        data = json.loads(
+            stdout.decode().strip()
+        )
+        return data
+        
 
 
 

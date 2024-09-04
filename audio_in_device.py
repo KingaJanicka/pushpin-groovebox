@@ -11,7 +11,9 @@ import definitions
 from display_utils import show_text
 import push2_python
 import logging
+import asyncio
 from definitions import PyshaMode
+from engine import getAllClients
 
 logger = logging.getLogger("osc_device")
 # logger.setLevel(level=logging.DEBUG)
@@ -52,9 +54,11 @@ class AudioInDevice(PyshaMode):
         return pages
 
     def __init__(
-        self, config, osc={"client": {}, "server": {}, "dispatcher": {}}, **kwargs
+        self, config, osc={"client": {}, "server": {}, "dispatcher": {}}, engine=None, **kwargs
     ):
+        self.engine = engine
         self.label = ""
+        self.clients = []
         self.definition = {}
         self.controls = []
         self.page = 0
@@ -71,7 +75,6 @@ class AudioInDevice(PyshaMode):
         self.init = config.get("init", [])
         get_color = kwargs.get("get_color")
         control_definitions = config.get("controls", [])
-        print("FART FART INIT")
         # Configure controls
         for control_def in control_definitions:
             match control_def["$type"]:
@@ -116,7 +119,7 @@ class AudioInDevice(PyshaMode):
                     Exception(
                         f"Invalid parameter: {control_def}; did you forget $type?"
                     )
-
+        # asyncio.create_task(self.query_clients)
         # Call /q endpoints for each control currently displayed
         # self.query_visible_controls()
         # mapped_addresses = self.dispatcher
@@ -148,7 +151,7 @@ class AudioInDevice(PyshaMode):
             ctx,
             1,
             50,
-            "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+           "FART",
             height=15,
             font_color=definitions.WHITE,
         )
@@ -191,16 +194,33 @@ class AudioInDevice(PyshaMode):
         for control in visible_controls:
             if hasattr(control, "address") and control.address is not None:
                 self.send_message("/q" + control.address, None)
+        asyncio.run(self.query_clients())
+        # for item in self.clients:
+        #     print(item)
+
 
     def query_all_controls(self):
         all_controls = self.get_all_controls()
         for control in all_controls:
             if hasattr(control, "address") and control.address is not None:
                 self.send_message("/q" + control.address, None)
+        asyncio.run(self.query_clients())
+        self.getConfig()
+    def getConfig(self):
+        for item in self.clients:
+            pid = item["info"]["props"].get("application.process.id")
+            print(pid, self.engine.PID, self.engine.process.pid)
+            if pid == self.engine.PID:
+                print("true")
+                return item
 
     def get_visible_controls(self):
         return self.pages[self.page]
 
+    async def query_clients(self):
+        data = await getAllClients()
+        self.clients = data
+    
     def get_all_controls(self):
         try:
             all_controls = self.pages[0] + self.pages[1]

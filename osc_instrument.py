@@ -88,13 +88,14 @@ class OSCInstrument(PyshaMode):
                     osc_out_port=self.osc_out_port,
                     app=app,
                 )
-            elif device_name == "audio_1":
+            elif device_name == "audio_1" or device_name == "audio_2":
                 device = AudioInDevice(
                     device_definitions[device_name],
                     self.osc,
                     get_color=get_current_instrument_color_helper,
                     osc_in_port=self.osc_in_port,
                     osc_out_port=self.osc_out_port,
+                    engine=self.engine
                 )
             else:
                 # TODO: There needs to be a better way than just drilling this right?
