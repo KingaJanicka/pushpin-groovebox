@@ -76,49 +76,97 @@ class AudioInDevice(PyshaMode):
         get_color = kwargs.get("get_color")
         control_definitions = config.get("controls", [])
         # Configure controls
-        for control_def in control_definitions:
-            match control_def["$type"]:
-                case "control-spacer":
-                    self.controls.append(ControlSpacer())
-                case "control-macro":
-                    self.controls.append(
-                        OSCControlMacro(control_def, get_color, self.send_message)
-                    )
-                    for param in control_def["params"]:
-                        self.dispatcher.map(param.address, control.set_state)
-                case "control-range":
-                    control = OSCControl(control_def, get_color, self.send_message)
-                    self.dispatcher.map(control.address, control.set_state)
-                    self.controls.append(control)
-                case "control-spacer-address":
-                    control = OSCSpacerAddress(control_def, self.send_message)
-                    self.dispatcher.map(control.address, control.set_state)
-                    self.controls.append(control)
-                case "control-switch":
-                    control = OSCControlSwitch(
-                        control_def, get_color, self.send_message, self.dispatcher
-                    )
-                    if control.address:
-                        self.dispatcher.map(control.address, control.set_state)
+        audio_channel_control = OSCControl(			{
+			"$type": "control-range",
+			"label": "Audio Channel",
+			"address": "/param/a/osc/1/param1",
+			"min": 0,
+			"max": 1,
+			"bipolar": 1
+		}, get_color, self.send_message)
+        self.dispatcher.map(audio_channel_control.address, audio_channel_control.set_state)
+        self.controls.append(audio_channel_control)
+        
 
-                    self.controls.append(control)
+        audio_gain_control = OSCControl(					{
+			"$type": "control-range",
+			"label": "Audio Gain",
+			"address": "/param/a/osc/1/param2",
+			"min": 0,
+			"max": 1
+		}, get_color, self.send_message)
+        self.dispatcher.map(audio_gain_control.address, audio_gain_control.set_state)
+        self.controls.append(audio_gain_control)
 
-                case "control-menu":
-                    control = OSCControlMenu(control_def, get_color, self.send_message)
-                    if control.address:
-                        self.dispatcher.map(control.address, control.set_state)
+        self.controls.append(ControlSpacer())
+        self.controls.append(ControlSpacer())
+        self.controls.append(ControlSpacer())
+        self.controls.append(ControlSpacer())
 
-                    # for item in control.items:
-                    #     if item.address:
-                    #         self.dispatcher.map(item.address, control.set_state)
-                    #     else:
-                    #         raise Exception(f"{item} has no message.address property")
+        low_cut_control = OSCControl(				{
+			"$type": "control-range",
+			"label": "Low Cut",
+			"address": "/param/a/osc/1/param6",
+			"min": 0,
+			"max": 1
+		},get_color, self.send_message)
+        self.dispatcher.map(low_cut_control.address, low_cut_control.set_state)
+        self.controls.append(low_cut_control)
 
-                    self.controls.append(control)
-                case _:
-                    Exception(
-                        f"Invalid parameter: {control_def}; did you forget $type?"
-                    )
+        high_cut_control = OSCControl(			{
+			"$type": "control-range",
+			"label": "High Cut",
+			"address": "/param/a/osc/1/param7",
+			"min": 0,
+			"max": 1
+		},get_color, self.send_message)
+        self.dispatcher.map(high_cut_control.address, high_cut_control.set_state)
+        self.controls.append(high_cut_control)
+
+
+        # for control_def in control_definitions:
+        #     match control_def["$type"]:
+        #         case "control-spacer":
+        #             self.controls.append(ControlSpacer())
+        #         case "control-macro":
+        #             self.controls.append(
+        #                 OSCControlMacro(control_def, get_color, self.send_message)
+        #             )
+        #             for param in control_def["params"]:
+        #                 self.dispatcher.map(param.address, control.set_state)
+        #         case "control-range":
+        #             control = OSCControl(control_def, get_color, self.send_message)
+        #             self.dispatcher.map(control.address, control.set_state)
+        #             self.controls.append(control)
+        #         case "control-spacer-address":
+        #             control = OSCSpacerAddress(control_def, self.send_message)
+        #             self.dispatcher.map(control.address, control.set_state)
+        #             self.controls.append(control)
+        #         case "control-switch":
+        #             control = OSCControlSwitch(
+        #                 control_def, get_color, self.send_message, self.dispatcher
+        #             )
+        #             if control.address:
+        #                 self.dispatcher.map(control.address, control.set_state)
+
+        #             self.controls.append(control)
+
+        #         case "control-menu":
+        #             control = OSCControlMenu(control_def, get_color, self.send_message)
+        #             if control.address:
+        #                 self.dispatcher.map(control.address, control.set_state)
+
+        #             # for item in control.items:
+        #             #     if item.address:
+        #             #         self.dispatcher.map(item.address, control.set_state)
+        #             #     else:
+        #             #         raise Exception(f"{item} has no message.address property")
+
+        #             self.controls.append(control)
+        #         case _:
+        #             Exception(
+        #                 f"Invalid parameter: {control_def}; did you forget $type?"
+        #             )
         # asyncio.create_task(self.query_clients)
         # Call /q endpoints for each control currently displayed
         # self.query_visible_controls()
@@ -147,30 +195,30 @@ class AudioInDevice(PyshaMode):
             control.query()
 
     def draw(self, ctx):
-        show_text(
-            ctx,
-            1,
-            50,
-           "FART",
-            height=15,
-            font_color=definitions.WHITE,
-        )
-        # visible_controls = self.get_visible_controls()
-        # all_controls = self.pages
-        # offset = 0
-        # for control in all_controls[self.page]:
-        #     if offset + 1 <= 8:
-        #         control.draw(ctx, offset)
-        #         offset += 1
-        # offset = 0
-        # other_page = (self.page + 1) % 2
-        # try:
-        #     for control in all_controls[other_page]:
-        #         if offset + 1 <= 8:
-        #             control.draw_submenu(ctx, offset)
-        #             offset += 1
-        # except:
-        #     pass
+        # show_text(
+        #     ctx,
+        #     1,
+        #     50,
+        #    "FART",
+        #     height=15,
+        #     font_color=definitions.WHITE,
+        # )
+        visible_controls = self.get_visible_controls()
+        all_controls = self.pages
+        offset = 0
+        for control in all_controls[self.page]:
+            if offset + 1 <= 8:
+                control.draw(ctx, offset)
+                offset += 1
+        offset = 0
+        other_page = (self.page + 1) % 2
+        try:
+            for control in all_controls[other_page]:
+                if offset + 1 <= 8:
+                    control.draw_submenu(ctx, offset)
+                    offset += 1
+        except:
+            pass
 
     def get_next_prev_pages(self):
         show_prev = False
@@ -205,13 +253,12 @@ class AudioInDevice(PyshaMode):
             if hasattr(control, "address") and control.address is not None:
                 self.send_message("/q" + control.address, None)
         asyncio.run(self.query_clients())
-        self.getConfig()
-    def getConfig(self):
+        self.getPipewireConfig()
+
+    def getPipewireConfig(self):
         for item in self.clients:
             pid = item["info"]["props"].get("application.process.id")
-            print(pid, self.engine.PID, self.engine.process.pid)
             if pid == self.engine.PID:
-                print("true")
                 return item
 
     def get_visible_controls(self):

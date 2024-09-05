@@ -34,8 +34,8 @@ class Engine(ABC):
             raise Exception("Midi not init")
 
     async def start(self):
-        self.connections.append(await self.createLoopback())
-
+        # self.connections.append(await self.createLoopback())
+        pass
     def stop(self):
         self.process.kill()
 
@@ -126,14 +126,13 @@ class SurgeXTEngine(Engine):
         print('SURGE')
         
         self.process = await asyncio.create_subprocess_exec(
-            f"/pushpin/surge/build/surge_xt_products/surge-xt-cli",
-            f"--audio-interface={'0.0'}", f"--midi-input={self.midi_device_idx}", f"--sample-rate={self.sample_rate}", f"--buffer-size={self.buffer_size}", f"--osc-in-port={self.osc_in_port}", f"--osc-out-port={self.osc_out_port}",
+            f"surge-xt-cli",
+            f"--audio-interface={'0.0'}",f"--audio-input-interface={'0.0'}", f"--midi-input={self.midi_device_idx}", f"--sample-rate={self.sample_rate}", f"--buffer-size={self.buffer_size}", f"--osc-in-port={self.osc_in_port}", f"--osc-out-port={self.osc_out_port}",
             # stdin=asyncio.subprocess.PIPE,
             # stdout=asyncio.subprocess.PIPE,
             # stderr=asyncio.subprocess.STDOUT
             
         )
-        #TODO: This isn't the real PID, it doesn't match with what the CLI/Top give us
 
         self.PID = self.process.pid
         # print("get config for pID", self.PID)
