@@ -12,6 +12,7 @@ class Engine(ABC):
     pipewire = None
     process = None
     connections = []
+    pw_ports = {"input": [], "output": []}
     sample_rate = 48000
     buffer_size = 512
     midi_in_port = None
@@ -98,6 +99,16 @@ class Engine(ABC):
         dest_node_id = self.pipewireID # TODO does this actually take a PWID?
         disconnectPipewireSourceFromPipewireDest(source_id=source_node_id, dest_id=dest_node_id)
 
+    async def get_instrument_nodes(self):
+        nodes = await getAllNodes()
+        instrument_nodes = []      
+
+        for node in nodes:
+                if node.get("info",{}).get("props",{}).get("application.process.id", None) == (self.PID):
+                    instrument_nodes.append(node)
+
+        return instrument_nodes
+
 
 class SurgeXTEngine(Engine):
     def __init__(self, sample_rate=48000, buffer_size=512, midi_device_idx=None, instrument_definition=None):
@@ -135,19 +146,29 @@ class SurgeXTEngine(Engine):
         )
 
         self.PID = self.process.pid
-        # print("get config for pID", self.PID)
-        # pwConfig = await getPipewireConfigForPID(self.PID)
-        # print("PW CONFIG ", pwConfig)
-        # if pwConfig:
-        #     self.pipewire = pwConfig
-        #     self.pipewireID = pwConfig["id"]
+        
+        # Sleep 2s to allow Surge boot up
+        await asyncio.sleep(2) 
 
-        #     print("_________________________")
-        #     print(await self.getObjectSerial())
-        # print('waht')
-        # await self.process.wait()
-        # print(asyncio.subprocess.STDOUT)
-        # print(asyncio.subprocess.PIPE)
+        all_ports = await getAllPorts()
+        instrument_nodes = await self.get_instrument_nodes()
+
+        for port in all_ports:
+            # with nodes we can associate nodes with clients/instruments via PID
+            # And ports with nodes via ID/node.id
+            # With those IDs in place we can start calling pw-link
+
+            # print(instrument_node["id"], port["info"]["props"]["node.id"])
+            for instrument_node in instrument_nodes:
+                if port.get("info",{}).get("props", {}).get("node.id", None) == instrument_node.get("id", None):
+                    if port.get("info",{}).get("direction",None):
+                        if "output" in port.get("info", []).get("props",[]).get("port.name","None"):
+                            self.pw_ports["output"].append(port)
+                        elif "input" in port.get("info", []).get("props",[]).get("port.name","None"):
+                            self.pw_ports["input"].append(port)
+            
+
+
 
     async def updateConfig(self):
         self.PID = self.process.pid
@@ -155,6 +176,9 @@ class SurgeXTEngine(Engine):
         if pwConfig:
             self.pipewire = pwConfig
             self.pipewireID = pwConfig["id"]
+
+
+
 
 async def setVolumeByPipewireID(pipewire_id, volume):
     proc = await asyncio.create_subprocess_shell(["pw-cli", "s", pipewire_id, f"Props '{{mute: false, volume:{volume}}}'"], stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
@@ -233,19 +257,29 @@ async def getAllClients():
         return data
         
 async def getAllNodes():
-  
     proc = await asyncio.create_subprocess_shell("pw-dump -N Node", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
     stdout, stderr = await proc.communicate()
+    data = []
+    if stderr:
+        print('getAllNodes ERROR:')
+        print(stderr)
     if stdout:
-        data = json.loads(
-            stdout.decode().strip()
-        )
-        return data
-        
+        try:
+            data = json.loads(
+                stdout.decode().strip()
+            )
+        except Exception as e:
+            print(e)
+            # print(stdout)
+    return data
 
 async def getAllPorts():
     proc = await asyncio.create_subprocess_shell("pw-dump -N Port", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
     stdout, stderr = await proc.communicate()
+
+    if stderr:
+        print(stderr.decode())
+
     if stdout:
         data = json.loads(
             stdout.decode().strip()

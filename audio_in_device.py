@@ -13,11 +13,6 @@ import push2_python
 import logging
 import asyncio
 from definitions import PyshaMode
-from engine import getAllClients
-from engine import getAllNodes
-from engine import getAllPorts
-from engine import connectPipewireSourceToPipewireDest
-from engine import disconnectPipewireSourceFromPipewireDest
 
 logger = logging.getLogger("osc_device")
 # logger.setLevel(level=logging.DEBUG)
@@ -71,7 +66,6 @@ class AudioInDevice(PyshaMode):
         self.app = kwargs["app"]
         self.engine = engine
         self.label = ""
-        self.clients = []
         self.definition = {}
         self.controls = []
         self.page = 0
@@ -155,9 +149,6 @@ class AudioInDevice(PyshaMode):
         self.dispatcher.map(high_cut_control.address, high_cut_control.set_state)
         self.controls.append(high_cut_control)
 
-        for client in self.clients:
-            for item in client:
-                print(item)
         # for control_def in control_definitions:
         #     match control_def["$type"]:
         #         case "control-spacer":
@@ -302,81 +293,19 @@ class AudioInDevice(PyshaMode):
         self.log_out.debug(args)
         return self.osc["client"].send_message(*args)
 
-    async def get_instrument_nodes(self, PID=None):
-        nodes = await getAllNodes()
-        #getting nodes for instrument
-        #TODO: broken, this is getting only one node when it should be giving us way more
-        instrument_nodes = []
-        for node in nodes:
-                if node.get("info",{}).get("props",{}).get("application.process.id", None) == (PID or self.engine.PID):
-                    instrument_nodes.append(node)
-        self.instrument_nodes = instrument_nodes
-        instrument = self.get_instrument_for_pid(self.engine.PID)
-        instrument.instrument_nodes = instrument_nodes
-        return instrument_nodes      
-
-    async def get_instrument_ports(self):
-        all_ports = await getAllPorts()
-        instrument_ports = []
-        #getting nodes for instrument
-        instrument_nodes = await self.get_instrument_nodes()
-
-        for port in all_ports:
-            # with nodes we can associate nodes with clients/instruments via PID
-            # And ports with nodes via ID/node.id
-            # With those IDs in place we can start calling pw-link
- 
-            # print(instrument_node["id"], port["info"]["props"]["node.id"])
-            for instrument_node in instrument_nodes:
-                if port.get("info",{}).get("props", {}).get("node.id", None) == instrument_node.get("id", None):
-                    instrument_ports.append(port)
-        self.instrument_ports = instrument_ports
-        instrument = self.get_instrument_for_pid(self.engine.PID)
-        instrument.instrument_ports = instrument_ports
-        return instrument_ports
-
-    async def get_ports_and_nodes(self):
-        instrument_ports = await self.get_instrument_ports()
-        # print(instrument_ports)
-        # for port in instrument_ports:
-        #     print(port)
-
-    async def update_all_instruments_ports_and_nodes(self):
-        instruments = self.app.osc_mode.instruments
-        for instrument in instruments.values():
-            instrument.get_ports_and_nodes()
-
-
     def connect_ports(self, *args):
         try:
             source_instrument = self.get_instrument_for_pid(args[1])
-            print(source_instrument.instrument_ports)
-            source_instrument_ports = {"L": None, "R": None}
-            current_instrument_ports = {"L": None, "R": None}
+            source_instrument_ports = source_instrument.engine.pw_ports
 
-            #This for loop gets a stereo pair of output ports
-            #TODO: this source_instrument.instrument_ports thing does not work
-            #      Because it's only done when device is selected
-            
-            for port in source_instrument.instrument_ports:
-                if port.get("info",[]).get("direction",None):
-                    if port.get("info", []).get("props",[]).get("port.name","None") =="output_FL":
-                        source_instrument_ports["L"] = port
-                    elif port.get("info", []).get("props",[]).get("port.name","None") =="output_FR":
-                        source_instrument_ports["R"] = port
-            
+            current_instrument_ports = self.engine.pw_ports
 
-            for port in self.instrument_ports:
-                if port.get("info",[]).get("direction",None):
-                    if port.get("info", []).get("props",[]).get("port.name","None") =="input_FL":
-                        current_instrument_ports["L"] = port
-                    elif port.get("info", []).get("props",[]).get("port.name","None") =="input_FR":
-                        current_instrument_ports["R"] = port
+            for port in source_instrument_ports:
+                print(port)
 
-            #TODO: uncommenting the 2nd print or the connect functions seems to break something and exception is thrown
-
-            print(source_instrument_ports.get("L", []).get("id", None), "  ", current_instrument_ports.get("L", []).get("id", None))
-            print(source_instrument_ports.get("R", []).get("id", None), "  ", current_instrument_ports.get("R", []).get("id", None))
+            print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++==")
+            for port in current_instrument_ports:
+                print(port)
 
             # asyncio.run(connectPipewireSourceToPipewireDest(source_instrument_ports.get("L", []).get("id", None), current_instrument_ports.get("L", []).get("id", None)))
             # asyncio.run(connectPipewireSourceToPipewireDest(source_instrument_ports.get("R", []).get("id", None), current_instrument_ports.get("R", []).get("id", None)))
@@ -445,7 +374,6 @@ class AudioInDevice(PyshaMode):
         for control in visible_controls:
             if hasattr(control, "address") and control.address is not None:
                 self.send_message("/q" + control.address, None)
-        asyncio.run(self.query_clients())
         # for item in self.clients:
         #     print(item)
 
@@ -454,7 +382,6 @@ class AudioInDevice(PyshaMode):
         for control in all_controls:
             if hasattr(control, "address") and control.address is not None:
                 self.send_message("/q" + control.address, None)
-        asyncio.run(self.query_clients())
 
     def get_pipewire_config(self):
         for item in self.clients:
@@ -473,13 +400,6 @@ class AudioInDevice(PyshaMode):
     def get_visible_controls(self):
         return self.pages[self.page]
 
-    async def query_clients(self):
-        data = await getAllClients()
-        self.clients = data
-        self.get_pipewire_config()
-        self.get_instrument_for_pid(self.engine.PID)
-        self.update()
-        await self.get_ports_and_nodes()
 
     def get_all_controls(self):
         try:
