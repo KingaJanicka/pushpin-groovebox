@@ -27,6 +27,8 @@ class OSCInstrument(PyshaMode):
     ):
         self.transports = []
         self.devices = []
+        self.instrument_nodes = []
+        self.instrument_ports = []
         self.slots = [
             {"address": "/param/a/osc/1/type", "value": 0.0},
             {"address": "/param/a/osc/2/type", "value": 0.0},
@@ -95,6 +97,7 @@ class OSCInstrument(PyshaMode):
                     get_color=get_current_instrument_color_helper,
                     osc_in_port=self.osc_in_port,
                     osc_out_port=self.osc_out_port,
+                    app=app,
                     engine=self.engine
                 )
             else:
@@ -173,6 +176,7 @@ class OSCInstrument(PyshaMode):
             self.log_out.debug(f"Receiving OSC on port {self.osc_out_port}")
             self.query_slots()
             self.query_devices()
+
             asyncio.create_task(self.engine.start())
 
     def query_all_params(self):

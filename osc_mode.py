@@ -124,6 +124,7 @@ class OSCMode(PyshaMode):
                 app=self.app,
             )
 
+
     def close_transports(self):
         for instrument in self.instruments:
             self.instruments[instrument].close_transports()
@@ -263,6 +264,7 @@ class OSCMode(PyshaMode):
             device.query_all_controls()
 
     def new_instrument_selected(self):
+        # print("WEWEWEWEWEWEWEWEWEWEWEWEWEWEEE")
         pass
         # self.query_devices()
         # if new_instrument:

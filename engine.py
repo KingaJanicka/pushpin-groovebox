@@ -170,13 +170,18 @@ async def connectPipewireSourceToPipewireDest(source_id, dest_id):
     if not source_id or not dest_id:
         raise Exception('Invalid call to connectPipewireSourcetoPipewireDest()')
     
-    proc = await asyncio.create_subprocess_shell(["pw-link", source_id, dest_id], stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+    try:
+        proc = await asyncio.create_subprocess_shell(["pw-link", str(source_id), str(dest_id)], stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+    except Exception as e:
+        print("Error in coonnectPipewireSourceToPipewireDest")
+        print(e)
     stdout, stderr = await proc.communicate()
 
     if stdout:
         print(stdout.decode().strip())
     elif stderr:
         print(stderr.decode().strip())
+        
 async def disconnectPipewireSourceFromPipewireDest(source_id, dest_id):    
     if not source_id or not dest_id:
         raise Exception('Invalid call to disconnectPipewireSourceFromPipewireDest()')
@@ -192,24 +197,28 @@ async def disconnectPipewireSourceFromPipewireDest(source_id, dest_id):
 # Given an engine PID, run pw-dump until the PID shows up and then return that node config
 async def getPipewireConfigForPID(pid):
     if not pid: raise Exception('No PID provided to getPipewireConfigForPID()')
-
+    i=0
     while True:
         try:
-            proc = await asyncio.create_subprocess_shell("pw-dump -N", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+            proc = await asyncio.create_subprocess_shell("pw-dump -N Node", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
             stdout, stderr = await proc.communicate()
             if stdout:
                 data = json.loads(
                     stdout.decode().strip()
                 )
-                nodes = filter(lambda x: x["type"] == "PipeWire:Interface:Node", data)
-                return list(
+                # nodes = filter(lambda x: x["info"]["n-input-ports"] == 0, data)
+                input_node, output_node = list(
                     filter(
                         lambda x: x["info"]["props"].get("application.process.id")
                         == int(pid),
-                        nodes,
+                        # nodes,
                     )
-                ).pop()
+                ).sort(key=lambda x: x["info"]["n-input-ports"], reverse=True)
+                return {"input": input_node, "output": output_node}
         except:
+            i += 1
+            if i >= 10:
+                raise Exception("GetPipewireConfigForPid unable to get nodes")
             await asyncio.sleep(0.25)
 
 
@@ -223,6 +232,26 @@ async def getAllClients():
         )
         return data
         
+async def getAllNodes():
+  
+    proc = await asyncio.create_subprocess_shell("pw-dump -N Node", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+    stdout, stderr = await proc.communicate()
+    if stdout:
+        data = json.loads(
+            stdout.decode().strip()
+        )
+        return data
+        
+
+async def getAllPorts():
+    proc = await asyncio.create_subprocess_shell("pw-dump -N Port", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+    stdout, stderr = await proc.communicate()
+    if stdout:
+        data = json.loads(
+            stdout.decode().strip()
+        )
+        return data
+            
 
 
 
@@ -231,3 +260,11 @@ def getAllConnectionsToNode(self):
     # where ID is the pipewire id of the instance you want to know connections of
     # this will list both inputs and outputs
     pass
+
+
+
+### Connect using pw-cli create-link <pipewire-id> <port-id> <pipewire-id> <port-id>
+
+### Conenct using PW-Link pw-link <port "id"> <port "id">  
+### get port IDs with pw-dump Port
+### ensure which surge instance is which with object.id
