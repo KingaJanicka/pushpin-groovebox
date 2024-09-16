@@ -64,7 +64,7 @@ class AudioInDevice(PyshaMode):
         engine=None,
         **kwargs,
     ):
-        self.last_knob_turned = None
+        self.last_knob_turned = 0
         self.app = kwargs["app"]
         self.engine = engine
         self.label = ""
@@ -297,7 +297,25 @@ class AudioInDevice(PyshaMode):
 
     def connect_ports(self, *args):
         [addr, val] = args
+        column_index = int(self.last_knob_turned / 2 )
+        #TODO: this is super wet, needs a dry
+        current_instrument_ports = self.engine.pw_ports
+        dest_L = None
+        dest_R = None
         if '/q/' in addr or not val:
+            print("None Sel")
+            for port in current_instrument_ports['input']:
+                if port['info']['props']['audio.channel'] == "FL":
+                    dest_L = port['id']
+                elif port['info']['props']['audio.channel'] == "FR":
+                    dest_R = port['id']
+            disconnect_L = self.engine.connections[column_index]["L"]
+            disconnect_R = self.engine.connections[column_index]["R"]
+            if disconnect_L and disconnect_R is not None:
+                asyncio.run(disconnectPipewireSourceFromPipewireDest(disconnect_L, dest_L))
+                asyncio.run(disconnectPipewireSourceFromPipewireDest(disconnect_R, dest_R))
+            self.engine.connections[column_index]["L"] = None
+            self.engine.connections[column_index]["R"] = None
             return
 
         print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++==")        
@@ -305,14 +323,14 @@ class AudioInDevice(PyshaMode):
             source_instrument = self.get_instrument_for_pid(val)
             source_instrument_ports = source_instrument.engine.pw_ports
 
-            column_index = int(self.last_knob_turned / 2 )
             current_instrument_ports = self.engine.pw_ports
-            connections = self.engine.connections
             source_L = None
             source_R = None
             dest_L = None
             dest_R=None
-            
+            #TODO: Make None input work for real
+
+            #We're getting IDs for left and right ports, input and output
             for port in source_instrument_ports['output']:
                 if port['info']['props']['audio.channel'] == "FL":
                     source_L = port['id']
@@ -325,6 +343,7 @@ class AudioInDevice(PyshaMode):
                 elif port['info']['props']['audio.channel'] == "FR":
                     dest_R = port['id']
             
+            # This bit disconnects previously conneted synth within a column
             if self.engine.connections[column_index]["L"] != (source_L or None)  and self.engine.connections[column_index]["R"] != (source_R or None):
                 
                 disconnect_L = self.engine.connections[column_index]["L"]
@@ -333,6 +352,7 @@ class AudioInDevice(PyshaMode):
                     asyncio.run(disconnectPipewireSourceFromPipewireDest(disconnect_L, dest_L))
                     asyncio.run(disconnectPipewireSourceFromPipewireDest(disconnect_R, dest_R))
 
+            # Connects to currently selected instance
             for index, connection in enumerate(self.engine.connections):
                 if index == column_index:
                     connection["L"] = source_L
