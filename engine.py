@@ -12,7 +12,7 @@ class Engine(ABC):
     pipewire = None
     process = None
     connections = []
-    pw_ports = {"input": [], "output": []}
+    pw_ports = None
     sample_rate = 48000
     buffer_size = 512
     midi_in_port = None
@@ -30,7 +30,7 @@ class Engine(ABC):
         self.midi_device_idx = midi_device_idx
         self.connections = []
         self.instrument = instrument_definition
-
+        self.pw_ports = {"input": [], "output": []}
         if self.midi_device_idx == None:
             raise Exception("Midi not init")
 
@@ -152,21 +152,28 @@ class SurgeXTEngine(Engine):
 
         all_ports = await getAllPorts()
         instrument_nodes = await self.get_instrument_nodes()
-
+        print("Engine stuff", " PID: ", self.PID)
         for port in all_ports:
             # with nodes we can associate nodes with clients/instruments via PID
             # And ports with nodes via ID/node.id
             # With those IDs in place we can start calling pw-link
-
-            # print(instrument_node["id"], port["info"]["props"]["node.id"])
+            
+            #TODO: there is a bug in this function where it will give all of the ports to all instruments
+            
             for instrument_node in instrument_nodes:
+                # print(instrument_node.get("id", None), port.get("info",{}).get("props", {}).get("node.id", None))
                 if port.get("info",{}).get("props", {}).get("node.id", None) == instrument_node.get("id", None):
+                    # print("ID correct", instrument_node.get("id", None))
                     if port.get("info",{}).get("direction",None):
                         if "output" in port.get("info", []).get("props",[]).get("port.name","None"):
                             self.pw_ports["output"].append(port)
                         elif "input" in port.get("info", []).get("props",[]).get("port.name","None"):
                             self.pw_ports["input"].append(port)
-            
+
+        for port in self.pw_ports["input"]:
+            print(port["id"])
+        # print("in ports: ", len(self.pw_ports["input"]))
+        # print("out ports: ", len(self.pw_ports["output"]))
 
 
 
@@ -195,9 +202,11 @@ async def connectPipewireSourceToPipewireDest(source_id, dest_id):
         raise Exception('Invalid call to connectPipewireSourcetoPipewireDest()')
     
     try:
-        proc = await asyncio.create_subprocess_shell(["pw-link", str(source_id), str(dest_id)], stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+        cmd = f"pw-link {str(source_id)} {str(dest_id)}"
+        print(cmd)
+        proc = await asyncio.create_subprocess_shell(cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
     except Exception as e:
-        print("Error in coonnectPipewireSourceToPipewireDest")
+        print("Error in connectPipewireSourceToPipewireDest")
         print(e)
     stdout, stderr = await proc.communicate()
 
@@ -210,7 +219,7 @@ async def disconnectPipewireSourceFromPipewireDest(source_id, dest_id):
     if not source_id or not dest_id:
         raise Exception('Invalid call to disconnectPipewireSourceFromPipewireDest()')
     
-    proc = await asyncio.create_subprocess_shell(["pw-link","-d", source_id, dest_id], stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+    proc = await asyncio.create_subprocess_shell(f"pw-link -d {str(source_id)} {str(dest_id)}", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
     stdout, stderr = await proc.communicate()
 
     if stdout:

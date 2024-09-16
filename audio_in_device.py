@@ -13,7 +13,7 @@ import push2_python
 import logging
 import asyncio
 from definitions import PyshaMode
-
+from engine import connectPipewireSourceToPipewireDest
 logger = logging.getLogger("osc_device")
 # logger.setLevel(level=logging.DEBUG)
 
@@ -294,21 +294,43 @@ class AudioInDevice(PyshaMode):
         return self.osc["client"].send_message(*args)
 
     def connect_ports(self, *args):
+        [addr, val] = args
+        if '/q/' in addr or not val:
+            return
+
+        print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++==")        
         try:
-            source_instrument = self.get_instrument_for_pid(args[1])
+            source_instrument = self.get_instrument_for_pid(val)
             source_instrument_ports = source_instrument.engine.pw_ports
 
             current_instrument_ports = self.engine.pw_ports
+            source_L = None
+            source_R = None
+            dest_L = None
+            dest_R=None
+  
+            #TODO: source_inst and current_inst things don't work, they give all of the instruments instead
 
-            for port in source_instrument_ports:
+            print("output port")
+            print("len: ", len(source_instrument_ports["output"]))
+            for port in source_instrument_ports['output']:
                 print(port)
-
-            print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++==")
-            for port in current_instrument_ports:
+                if port['info']['props']['audio.channel'] == "FL":
+                    source_L = port['id']
+                elif port['info']['props']['audio.channel'] == "FR":
+                    source_R = port['id']
+            print("input port")
+            print("len: ", len(current_instrument_ports["input"]))
+            for port in current_instrument_ports['input']:
                 print(port)
-
-            # asyncio.run(connectPipewireSourceToPipewireDest(source_instrument_ports.get("L", []).get("id", None), current_instrument_ports.get("L", []).get("id", None)))
-            # asyncio.run(connectPipewireSourceToPipewireDest(source_instrument_ports.get("R", []).get("id", None), current_instrument_ports.get("R", []).get("id", None)))
+                if port['info']['props']['audio.channel'] == "FL":
+                    dest_L = port['id']
+                elif port['info']['props']['audio.channel'] == "FR":
+                    dest_R = port['id']
+            
+            # TODO: the ports seem wrong but otherwise working
+            asyncio.run(connectPipewireSourceToPipewireDest(source_L, dest_L))
+            asyncio.run(connectPipewireSourceToPipewireDest(source_R, dest_R))
 
         except Exception as e:
             print("Error in connect_ports")
@@ -326,14 +348,6 @@ class AudioInDevice(PyshaMode):
             control.query()
 
     def draw(self, ctx):
-        # show_text(
-        #     ctx,
-        #     1,
-        #     50,
-        #    "FART",
-        #     height=15,
-        #     font_color=definitions.WHITE,
-        # )
         visible_controls = self.get_visible_controls()
         all_controls = self.pages
         offset = 0
@@ -379,6 +393,7 @@ class AudioInDevice(PyshaMode):
 
     def query_all_controls(self):
         all_controls = self.get_all_controls()
+        self.update()
         for control in all_controls:
             if hasattr(control, "address") and control.address is not None:
                 self.send_message("/q" + control.address, None)
@@ -394,8 +409,7 @@ class AudioInDevice(PyshaMode):
         for instrument in instruments.values():
             if instrument.engine.PID == pid:
                 return instrument
-        
-        return False
+        return None
 
     def get_visible_controls(self):
         return self.pages[self.page]
