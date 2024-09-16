@@ -14,6 +14,7 @@ import logging
 import asyncio
 from definitions import PyshaMode
 from engine import connectPipewireSourceToPipewireDest
+from engine import disconnectPipewireSourceFromPipewireDest
 logger = logging.getLogger("osc_device")
 # logger.setLevel(level=logging.DEBUG)
 
@@ -63,6 +64,7 @@ class AudioInDevice(PyshaMode):
         engine=None,
         **kwargs,
     ):
+        self.last_knob_turned = None
         self.app = kwargs["app"]
         self.engine = engine
         self.label = ""
@@ -303,32 +305,39 @@ class AudioInDevice(PyshaMode):
             source_instrument = self.get_instrument_for_pid(val)
             source_instrument_ports = source_instrument.engine.pw_ports
 
+            column_index = int(self.last_knob_turned / 2 )
             current_instrument_ports = self.engine.pw_ports
+            connections = self.engine.connections
             source_L = None
             source_R = None
             dest_L = None
             dest_R=None
-  
-            #TODO: source_inst and current_inst things don't work, they give all of the instruments instead
-
-            print("output port")
-            print("len: ", len(source_instrument_ports["output"]))
+            
             for port in source_instrument_ports['output']:
-                print(port)
                 if port['info']['props']['audio.channel'] == "FL":
                     source_L = port['id']
                 elif port['info']['props']['audio.channel'] == "FR":
                     source_R = port['id']
-            print("input port")
-            print("len: ", len(current_instrument_ports["input"]))
+
             for port in current_instrument_ports['input']:
-                print(port)
                 if port['info']['props']['audio.channel'] == "FL":
                     dest_L = port['id']
                 elif port['info']['props']['audio.channel'] == "FR":
                     dest_R = port['id']
             
-            # TODO: the ports seem wrong but otherwise working
+            if self.engine.connections[column_index]["L"] != (source_L or None)  and self.engine.connections[column_index]["R"] != (source_R or None):
+                
+                disconnect_L = self.engine.connections[column_index]["L"]
+                disconnect_R = self.engine.connections[column_index]["R"]
+                if disconnect_L and disconnect_R is not None:
+                    asyncio.run(disconnectPipewireSourceFromPipewireDest(disconnect_L, dest_L))
+                    asyncio.run(disconnectPipewireSourceFromPipewireDest(disconnect_R, dest_R))
+
+            for index, connection in enumerate(self.engine.connections):
+                if index == column_index:
+                    connection["L"] = source_L
+                    connection["R"] = source_R
+
             asyncio.run(connectPipewireSourceToPipewireDest(source_L, dest_L))
             asyncio.run(connectPipewireSourceToPipewireDest(source_R, dest_R))
 
@@ -437,5 +446,6 @@ class AudioInDevice(PyshaMode):
             visible_controls = self.get_visible_controls()
             control = visible_controls[encoder_idx]
             control.update_value(increment)
+            self.last_knob_turned = encoder_idx
         except ValueError:
             pass  # Encoder not in list

@@ -11,7 +11,7 @@ class Engine(ABC):
     pipewireID = None
     pipewire = None
     process = None
-    connections = []
+    connections = None
     pw_ports = None
     sample_rate = 48000
     buffer_size = 512
@@ -28,9 +28,10 @@ class Engine(ABC):
         self.sample_rate = sample_rate
         self.buffer_size = buffer_size
         self.midi_device_idx = midi_device_idx
-        self.connections = []
         self.instrument = instrument_definition
         self.pw_ports = {"input": [], "output": []}
+        #This needs to be spelled out like that because otherwise they all behave as one and you can't assign different values to dicts
+        self.connections = [{"L": None, "R": None}, {"L": None, "R": None}, {"L": None, "R": None}, {"L": None, "R": None}, {"L": None, "R": None}, {"L": None, "R": None}, {"L": None, "R": None} ,{"L": None, "R": None}]
         if self.midi_device_idx == None:
             raise Exception("Midi not init")
 
@@ -152,7 +153,7 @@ class SurgeXTEngine(Engine):
 
         all_ports = await getAllPorts()
         instrument_nodes = await self.get_instrument_nodes()
-        print("Engine stuff", " PID: ", self.PID)
+        # print("Engine stuff", " PID: ", self.PID)
         for port in all_ports:
             # with nodes we can associate nodes with clients/instruments via PID
             # And ports with nodes via ID/node.id
@@ -170,8 +171,8 @@ class SurgeXTEngine(Engine):
                         elif "input" in port.get("info", []).get("props",[]).get("port.name","None"):
                             self.pw_ports["input"].append(port)
 
-        for port in self.pw_ports["input"]:
-            print(port["id"])
+        # for port in self.pw_ports["input"]:
+        #     print(port["id"])
         # print("in ports: ", len(self.pw_ports["input"]))
         # print("out ports: ", len(self.pw_ports["output"]))
 
@@ -218,8 +219,13 @@ async def connectPipewireSourceToPipewireDest(source_id, dest_id):
 async def disconnectPipewireSourceFromPipewireDest(source_id, dest_id):    
     if not source_id or not dest_id:
         raise Exception('Invalid call to disconnectPipewireSourceFromPipewireDest()')
-    
-    proc = await asyncio.create_subprocess_shell(f"pw-link -d {str(source_id)} {str(dest_id)}", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+    try:
+        cmd = f"pw-link -d {str(source_id)} {str(dest_id)}"
+        print(cmd)
+        proc = await asyncio.create_subprocess_shell(cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+    except Exception as e:
+        print("Error in disconnectPipewireSourceToPipewireDest")
+        print(e)
     stdout, stderr = await proc.communicate()
 
     if stdout:
