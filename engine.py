@@ -204,7 +204,7 @@ async def connectPipewireSourceToPipewireDest(source_id, dest_id):
     
     try:
         cmd = f"pw-link {str(source_id)} {str(dest_id)}"
-        print(cmd)
+        # print(cmd)
         proc = await asyncio.create_subprocess_shell(cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
     except Exception as e:
         print("Error in connectPipewireSourceToPipewireDest")
@@ -221,7 +221,7 @@ async def disconnectPipewireSourceFromPipewireDest(source_id, dest_id):
         raise Exception('Invalid call to disconnectPipewireSourceFromPipewireDest()')
     try:
         cmd = f"pw-link -d {str(source_id)} {str(dest_id)}"
-        print(cmd)
+        # print(cmd)
         proc = await asyncio.create_subprocess_shell(cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
     except Exception as e:
         print("Error in disconnectPipewireSourceToPipewireDest")

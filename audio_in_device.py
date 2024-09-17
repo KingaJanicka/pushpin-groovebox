@@ -213,10 +213,10 @@ class AudioInDevice(PyshaMode):
                 "$type": "group",
                 "label": "None sel.",
                 "onselect": {
-                    # "$type": "message",
-                    # "$comment": "",
-                    # "address": "/",
-                    # "value": 1,
+                    "$type": "message",
+                    "$comment": "",
+                    "address": "/",
+                    "value": None,
                 },
                 "controls": [
                     {
@@ -224,7 +224,7 @@ class AudioInDevice(PyshaMode):
                         "items": [
                             {
                                 "$type": "menu-item",
-                                "label": "",
+                                "label": "None",
                                 "onselect": {
                                     "$type": "message",
                                     "$comment": "RingMod",
@@ -250,7 +250,7 @@ class AudioInDevice(PyshaMode):
                 "onselect": {
                     "$type": "message",
                     "$comment": "",
-                    "address": "/",
+                    "address": "/bla",
                     "value": instrument.engine.PID,
                 },
                 "controls": [
@@ -263,7 +263,7 @@ class AudioInDevice(PyshaMode):
                                 "onselect": {
                                     "$type": "message",
                                     "$comment": "RingMod",
-                                    "address": "/",
+                                    "address": "/bla",
                                     "value": instrument.engine.PID,
                                 },
                             },
@@ -296,30 +296,46 @@ class AudioInDevice(PyshaMode):
         return self.osc["client"].send_message(*args)
 
     def connect_ports(self, *args):
+        #TODO: this doesn't always connect, need to figure out why
+        
         [addr, val] = args
-        column_index = int(self.last_knob_turned / 2 )
+        column_index = None 
+        if self.slot == 0:
+            column_index = int(self.last_knob_turned / 2 ) 
+        if self.slot == 1:
+            column_index = int(self.last_knob_turned / 2 ) + 4
         #TODO: this is super wet, needs a dry
+
         current_instrument_ports = self.engine.pw_ports
         dest_L = None
         dest_R = None
-        if '/q/' in addr or not val:
+
+        visible_controls = self.get_visible_controls()
+
+        # print("Connect Ports _____________________")
+        # print("col idx: ", column_index)
+        # print("last knob turned: ", self.last_knob_turned)
+        # print("Args: ", args)
+
+        if addr == "/":
             print("None Sel")
+            disconnect_L = self.engine.connections[column_index]["L"]
+            disconnect_R = self.engine.connections[column_index]["R"]
             for port in current_instrument_ports['input']:
                 if port['info']['props']['audio.channel'] == "FL":
                     dest_L = port['id']
                 elif port['info']['props']['audio.channel'] == "FR":
                     dest_R = port['id']
-            disconnect_L = self.engine.connections[column_index]["L"]
-            disconnect_R = self.engine.connections[column_index]["R"]
-            if disconnect_L and disconnect_R is not None:
+            if (disconnect_L != None) and (disconnect_R != None):
+                # print("None Sel Disconnect")
                 asyncio.run(disconnectPipewireSourceFromPipewireDest(disconnect_L, dest_L))
                 asyncio.run(disconnectPipewireSourceFromPipewireDest(disconnect_R, dest_R))
             self.engine.connections[column_index]["L"] = None
             self.engine.connections[column_index]["R"] = None
             return
-
-        print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++==")        
+            
         try:
+            print("Try branch")
             source_instrument = self.get_instrument_for_pid(val)
             source_instrument_ports = source_instrument.engine.pw_ports
 
@@ -337,24 +353,27 @@ class AudioInDevice(PyshaMode):
                 elif port['info']['props']['audio.channel'] == "FR":
                     source_R = port['id']
 
-            for port in current_instrument_ports['input']:
-                if port['info']['props']['audio.channel'] == "FL":
-                    dest_L = port['id']
-                elif port['info']['props']['audio.channel'] == "FR":
-                    dest_R = port['id']
-            
             # This bit disconnects previously conneted synth within a column
-            if self.engine.connections[column_index]["L"] != (source_L or None)  and self.engine.connections[column_index]["R"] != (source_R or None):
-                
+            if self.engine.connections[column_index]["L"] != (source_L or None)  and self.engine.connections[column_index]["R"] != (source_R or None) :
+                # print("col idx: ", column_index)
+                # print("disconnect prev synth")
                 disconnect_L = self.engine.connections[column_index]["L"]
                 disconnect_R = self.engine.connections[column_index]["R"]
                 if disconnect_L and disconnect_R is not None:
                     asyncio.run(disconnectPipewireSourceFromPipewireDest(disconnect_L, dest_L))
                     asyncio.run(disconnectPipewireSourceFromPipewireDest(disconnect_R, dest_R))
 
-            # Connects to currently selected instance
+            for port in current_instrument_ports['input']:
+                if port['info']['props']['audio.channel'] == "FL":
+                    dest_L = port['id']
+                elif port['info']['props']['audio.channel'] == "FR":
+                    dest_R = port['id']
+            
+
+            # Connects to currently selected instance, assigns the port IDs for later reference
             for index, connection in enumerate(self.engine.connections):
                 if index == column_index:
+                    # print("connect current synth")
                     connection["L"] = source_L
                     connection["R"] = source_R
 
