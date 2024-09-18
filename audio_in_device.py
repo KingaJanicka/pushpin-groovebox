@@ -326,8 +326,6 @@ class AudioInDevice(PyshaMode):
             return
             
         try:
-            print("Try branch")
-            print(self.engine.connections)
             source_instrument = self.get_instrument_for_pid(val)
             source_instrument_ports = source_instrument.engine.pw_ports
 
@@ -352,13 +350,9 @@ class AudioInDevice(PyshaMode):
                     dest_R = port['id']
             
             if self.engine.connections[column_index]["L"] != (source_L or None)  and self.engine.connections[column_index]["R"] != (source_R or None) :
-                # print("col idx: ", column_index)
-                print("disconnect prev synth")
                 disconnect_L = self.engine.connections[column_index]["L"]
                 disconnect_R = self.engine.connections[column_index]["R"]
                 if disconnect_L and disconnect_R is not None:
-                    print("disconnect not none loop")
-                    print(disconnect_L, disconnect_R, dest_L, dest_R)
                     asyncio.run(disconnectPipewireSourceFromPipewireDest(disconnect_L, dest_L))
                     asyncio.run(disconnectPipewireSourceFromPipewireDest(disconnect_R, dest_R))
 
