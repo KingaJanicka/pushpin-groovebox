@@ -11,7 +11,10 @@ import definitions
 from display_utils import show_text
 import push2_python
 import logging
+from  signal import SIGINT
 import asyncio
+import sys
+import json
 from definitions import PyshaMode
 from engine import connectPipewireSourceToPipewireDest
 from engine import disconnectPipewireSourceFromPipewireDest
@@ -67,6 +70,7 @@ class AudioInDevice(PyshaMode):
         self.last_knob_turned = 0
         self.app = kwargs["app"]
         self.engine = engine
+        self.loopback_shells=[None, None, None, None, None, None, None, None]
         self.label = ""
         self.definition = {}
         self.controls = []
@@ -76,7 +80,6 @@ class AudioInDevice(PyshaMode):
         self.osc = osc
         self.label = config.get("name", "Device")
         self.dispatcher = osc.get("dispatcher", None)
-        self.instrument_nodes = []
         self.instrument_ports = []
         self.slot = config.get("slot", None)
         self.log_in = logger.getChild(f"in-{kwargs['osc_in_port']}")
@@ -276,101 +279,215 @@ class AudioInDevice(PyshaMode):
         for out in range(1, 5):
             try:
                 menu = OSCControlSwitch(
-                    control_def, self.get_color, self.connect_ports, self.dispatcher
+                    control_def, self.get_color, self.create_and_connect_pw_loopback, self.dispatcher
                 )
                 self.controls.append(menu)
             except Exception as e:
                 print(e)
-    
 
-        
 
     def select(self):
         # self.query_visible_controls()
         print("device init______________")
         for cmd in self.init:
             self.send_message(cmd["address"], float(cmd["value"]))
+    
 
     def send_message(self, *args):
         self.log_out.debug(args)
         return self.osc["client"].send_message(*args)
 
-    def connect_ports(self, *args):
+    def killLoopback(self, shell_index=None):
+        shell = self.loopback_shells[shell_index]
+        
+        try:
+            print("kill shell: ", shell.pid)
+
+            shell.send_signal(SIGINT)
+            
+            print("after kill", shell.pid)
+        except Exception as e:
+            print("Exception in killLoopback")
+            print(e)
+
+        self.loopback_shells[shell_index] = None
+
+
+    async def createLoopback(self, name="pushpin-loopback", capture_serial=None, playback_serial=None, shell_index=None):
+        # This serial it's talking about is object.serial of the Node we're trying to connect to
+        # pw-loopback -m '[ FL FR ]' --playback-props='target.object="NUMBER"' --capture-props='target.object="NUMBER"'
+        ps = await asyncio.create_subprocess_shell(
+            f"pw-loopback -n={name} -m '[ FL FR ]' -C='target.object={capture_serial if capture_serial else ''}' -P='target.object={playback_serial if playback_serial else ''}'"
+        )
+        self.loopback_shells[shell_index] = ps
+        try:
+            while True:
+                proc = await asyncio.create_subprocess_shell("pw-dump -N Client", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+                stdout, stderr = await proc.communicate()
+                if stderr:
+                    print('Error!', stderr.decode())
+                elif stdout:
+                    data = json.loads(
+                        stdout
+                        .decode(sys.stdout.encoding)
+                        .strip()
+                    )
+            
+                    return {
+                        "config": list(
+                            filter(
+                                lambda x: x["info"]["props"].get("pipewire.sec.pid") == int(ps.pid),
+                                data,
+                            )
+                        ).pop(),
+                        "process": ps,
+                    }
+        except:
+            await asyncio.sleep(0.25)
+
+
+    def create_and_connect_pw_loopback(self, *args):
 
         [addr, val] = args
         column_index = None 
-        if self.slot == 0:
-            column_index = int(self.last_knob_turned / 2 ) 
-        if self.slot == 1:
-            column_index = int(self.last_knob_turned / 2 ) + 4
-        #TODO: this is super wet, needs a dry
+        if val:
+            if self.slot == 0:
+                column_index = int(self.last_knob_turned / 2 ) 
+            if self.slot == 1:
+                column_index = int(self.last_knob_turned / 2 ) + 4
+            
+            #TODO: this is super wet, needs a dry
+            
+            current_instrument_nodes = self.engine.instrument_nodes
+            dest_serial = None
+
+            # This bit handles selecting a None input, just disconnects if something was already connected
+            if addr == "/":
+
+                self.app.queue.append(self.killLoopback(column_index))
+                self.loopback_shells[column_index] = None
+
+                return
+                
+            try:
+                # print("Start of try block")
+                source_instrument = self.get_instrument_for_pid(val)
+                source_instrument_nodes = source_instrument.engine.instrument_nodes
+
+                current_instrument_nodes = self.engine.instrument_nodes
+                source_serial = None
+                dest_serial = None
+
+
+
+                # print("For loop source")
+                #We're getting serials for left and right ports, input and output
+                for node in source_instrument_nodes:
+                    if node["info"]["params"]["PortConfig"][0]["direction"] == "Output":
+                        # print("for loop past IF")
+                        source_serial = node["info"]["props"]["object.serial"]
+
+                # print("For loop current")
+                # This bit disconnects previously conneted synth within a column
+                for node in current_instrument_nodes:
+                    if node["info"]["params"]["PortConfig"][0]["direction"] == "Input":
+                        dest_serial = node["info"]["props"]["object.serial"]
+
+                # TODO: it will keep spawning shells without any regard for one being active or not
+                # maybe we need to add another prop to indicate if it's for a loopback or direct connection
+                # print("if kill loopback")
+                if self.loopback_shells[column_index] != None:
+                    
+                        #those disconnect calls should kill the shell, using process.kill() or process.terminate()
+                        self.app.queue.append(self.killLoopback(column_index))
+                        self.loopback_shells[column_index] = None
+                # print("run")
+                # those connect calls should spawn a new shell, easier than managing connections
+                self.app.queue.append(self.createLoopback(source_serial, dest_serial, shell_index=column_index))
+                
+            except Exception as e:
+                print("Error in create_and_connect_pw_loopback")
+                print(e)
+            # connectPipewireSourceToPipewireDest()
         
-        current_instrument_ports = self.engine.pw_ports
-        dest_L = None
-        dest_R = None
 
-        # This bit handles selecting a None input, just disconnects if something was already connected
-        if addr == "/":
-            disconnect_L = self.engine.connections[column_index]["L"]
-            disconnect_R = self.engine.connections[column_index]["R"]
-            for port in current_instrument_ports['input']:
-                if port['info']['props']['audio.channel'] == "FL":
-                    dest_L = port['id']
-                elif port['info']['props']['audio.channel'] == "FR":
-                    dest_R = port['id']
-            if (disconnect_L != None) and (disconnect_R != None):
-                asyncio.run(disconnectPipewireSourceFromPipewireDest(disconnect_L, dest_L))
-                asyncio.run(disconnectPipewireSourceFromPipewireDest(disconnect_R, dest_R))
-            self.engine.connections[column_index]["L"] = None
-            self.engine.connections[column_index]["R"] = None
-            return
+    def connect_ports(self, *args):
+
+        [addr, val] = args 
+        if val != None:
+            column_index = None 
+            if self.slot == 0:
+                column_index = int(self.last_knob_turned / 2 ) 
+            if self.slot == 1:
+                column_index = int(self.last_knob_turned / 2 ) + 4
+            #TODO: this is super wet, needs a dry
             
-        try:
-            source_instrument = self.get_instrument_for_pid(val)
-            source_instrument_ports = source_instrument.engine.pw_ports
-
             current_instrument_ports = self.engine.pw_ports
-            source_L = None
-            source_R = None
             dest_L = None
-            dest_R=None
+            dest_R = None
 
-            #We're getting IDs for left and right ports, input and output
-            for port in source_instrument_ports['output']:
-                if port['info']['props']['audio.channel'] == "FL":
-                    source_L = port['id']
-                elif port['info']['props']['audio.channel'] == "FR":
-                    source_R = port['id']
-
-            # This bit disconnects previously conneted synth within a column
-            for port in current_instrument_ports['input']:
-                if port['info']['props']['audio.channel'] == "FL":
-                    dest_L = port['id']
-                elif port['info']['props']['audio.channel'] == "FR":
-                    dest_R = port['id']
-            
-            if self.engine.connections[column_index]["L"] != (source_L or None)  and self.engine.connections[column_index]["R"] != (source_R or None) :
+            # This bit handles selecting a None input, just disconnects if something was already connected
+            if addr == "/":
                 disconnect_L = self.engine.connections[column_index]["L"]
                 disconnect_R = self.engine.connections[column_index]["R"]
-                if disconnect_L and disconnect_R is not None:
-                    asyncio.run(disconnectPipewireSourceFromPipewireDest(disconnect_L, dest_L))
-                    asyncio.run(disconnectPipewireSourceFromPipewireDest(disconnect_R, dest_R))
+                for port in current_instrument_ports['input']:
+                    if port['info']['props']['audio.channel'] == "FL":
+                        dest_L = port['id']
+                    elif port['info']['props']['audio.channel'] == "FR":
+                        dest_R = port['id']
+                if (disconnect_L != None) and (disconnect_R != None):
+                    self.app.queue.append(disconnectPipewireSourceFromPipewireDest(disconnect_L, dest_L))
+                    self.app.queue.append(disconnectPipewireSourceFromPipewireDest(disconnect_R, dest_R))
+                self.engine.connections[column_index]["L"] = None
+                self.engine.connections[column_index]["R"] = None
+                return
+                
+            try:
+                source_instrument = self.get_instrument_for_pid(val)
+                source_instrument_ports = source_instrument.engine.pw_ports
+
+                current_instrument_ports = self.engine.pw_ports
+                source_L = None
+                source_R = None
+                dest_L = None
+                dest_R=None
+
+                #We're getting IDs for left and right ports, input and output
+                for port in source_instrument_ports['output']:
+                    if port['info']['props']['audio.channel'] == "FL":
+                        source_L = port['id']
+                    elif port['info']['props']['audio.channel'] == "FR":
+                        source_R = port['id']
+
+                # This bit disconnects previously conneted synth within a column
+                for port in current_instrument_ports['input']:
+                    if port['info']['props']['audio.channel'] == "FL":
+                        dest_L = port['id']
+                    elif port['info']['props']['audio.channel'] == "FR":
+                        dest_R = port['id']
+                
+                if self.engine.connections[column_index]["L"] != (source_L or None)  and self.engine.connections[column_index]["R"] != (source_R or None) :
+                    disconnect_L = self.engine.connections[column_index]["L"]
+                    disconnect_R = self.engine.connections[column_index]["R"]
+                    if disconnect_L and disconnect_R is not None:
+                        self.app.queue.append(disconnectPipewireSourceFromPipewireDest(disconnect_L, dest_L))
+                        self.app.queue.append(disconnectPipewireSourceFromPipewireDest(disconnect_R, dest_R))
 
 
-            # Connects to currently selected instance, assigns the port IDs for later reference
-            for index, connection in enumerate(self.engine.connections):
-                if index == column_index:
-                    print("connect current synth")
-                    connection["L"] = source_L
-                    connection["R"] = source_R
+                # Connects to currently selected instance, assigns the port IDs for later reference
+                for index, connection in enumerate(self.engine.connections):
+                    if index == column_index:
+                        connection["L"] = source_L
+                        connection["R"] = source_R
 
-            asyncio.run(connectPipewireSourceToPipewireDest(source_L, dest_L))
-            asyncio.run(connectPipewireSourceToPipewireDest(source_R, dest_R))
+                self.app.queue.append(connectPipewireSourceToPipewireDest(source_L, dest_L))
+                self.app.queue.append(connectPipewireSourceToPipewireDest(source_R, dest_R))
 
-        except Exception as e:
-            print("Error in connect_ports")
-            print(e)
-        # connectPipewireSourceToPipewireDest()
+            except Exception as e:
+                print("Error in connect_ports")
+                print(e)
+            # connectPipewireSourceToPipewireDest()
+        
         
 
 

@@ -131,6 +131,7 @@ class OSCDevice(PyshaMode):
         for cmd in self.init:
             self.send_message(cmd["address"], float(cmd["value"]))
 
+
     def send_message(self, *args):
         self.log_out.debug(args)
         return self.osc["client"].send_message(*args)

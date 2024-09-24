@@ -40,83 +40,11 @@ class MelodicMode(definitions.PyshaMode):
     modulation_wheel_mode = False
 
     send_osc_func = None
-    lumi_midi_out = None
-    last_time_tried_initialize_lumi = 0
 
     def __init__(self, app, settings=None, send_osc_func=None):
         self.app = app
         self.send_osc_func = send_osc_func
         self.initialize(settings=settings)
-
-    def init_lumi_midi_out(self):
-        print("Configuring LUMI notes MIDI out...")
-        self.last_time_tried_initialize_lumi = time.time()
-        device_name = "LUMI Keys BLOCK"
-        try:
-            full_name = [
-                name
-                for name in mido.get_output_names()
-                if device_name.lower() in name.lower()
-            ][0]
-        except IndexError:
-            full_name = None
-
-        if full_name is not None:
-            try:
-                self.lumi_midi_out = mido.open_output(full_name)
-                print('Sending notes MIDI in to "{0}"'.format(full_name))
-            except IOError:
-                print(
-                    'Could not connect to notes MIDI output port "{0}"\nAvailable device names:'.format(
-                        full_name
-                    )
-                )
-        else:
-            print("No available device name found for {}".format(device_name))
-
-    def set_lumi_pressure_mode(self):
-        if self.lumi_midi_out is not None:
-            if not self.use_poly_at:
-                msg = mido.Message(
-                    "sysex",
-                    data=[
-                        0x00,
-                        0x21,
-                        0x10,
-                        0x77,
-                        0x27,
-                        0x10,
-                        0x00,
-                        0x24,
-                        0x00,
-                        0x00,
-                        0x00,
-                        0x00,
-                        0x00,
-                        0x64,
-                    ],
-                )
-            else:
-                msg = mido.Message(
-                    "sysex",
-                    data=[
-                        0x00,
-                        0x21,
-                        0x10,
-                        0x77,
-                        0x27,
-                        0x10,
-                        0x00,
-                        0x04,
-                        0x00,
-                        0x00,
-                        0x00,
-                        0x00,
-                        0x00,
-                        0x04,
-                    ],
-                )
-            self.lumi_midi_out.send(msg)
 
     def initialize(self, settings=None):
         if settings is not None:
@@ -126,7 +54,6 @@ class MelodicMode(definitions.PyshaMode):
             self.channel_at_range_end = settings.get("channel_at_range_end", 800)
             self.poly_at_max_range = settings.get("poly_at_max_range", 40)
             self.poly_at_curve_bending = settings.get("poly_at_curve_bending", 50)
-        self.init_lumi_midi_out()
 
     def get_settings_to_save(self):
         return {
@@ -240,7 +167,6 @@ class MelodicMode(definitions.PyshaMode):
         )
         self.push.pads.set_velocity_curve(velocities=self.get_poly_at_curve())
 
-        self.set_lumi_pressure_mode()
 
         # Configure touchstrip behaviour
         if self.modulation_wheel_mode:

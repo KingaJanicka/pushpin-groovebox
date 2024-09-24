@@ -548,7 +548,6 @@ class SettingsMode(definitions.PyshaMode):
                     if self.app.melodic_mode.use_poly_at:
                         self.app.melodic_mode.use_poly_at = False
                         self.app.push.pads.set_channel_aftertouch()
-                self.app.melodic_mode.set_lumi_pressure_mode()
 
             elif encoder_name == push2_python.constants.ENCODER_TRACK3_ENCODER:
                 self.app.melodic_mode.set_channel_at_range_start(
@@ -671,7 +670,6 @@ class SettingsMode(definitions.PyshaMode):
                     self.app.push.pads.set_polyphonic_aftertouch()
                 else:
                     self.app.push.pads.set_channel_aftertouch()
-                self.app.melodic_mode.set_lumi_pressure_mode()
                 return True
 
         elif self.current_page == 1:  # MIDI settings

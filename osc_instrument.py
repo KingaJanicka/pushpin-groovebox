@@ -126,11 +126,25 @@ class OSCInstrument(PyshaMode):
     def set_slot_state(self, *resp):
         address, value, *rest = resp
         # print(f"Setting state of slot {address} to {value}")
+        # TODO: we should put the engine calls to init loopbacks here, four per audio in device
         for slot in self.slots:
             if slot and slot["address"] == address:
+                # if slot["value"] != value:
+                #     print("slot ", slot["address"], slot["value"],  " disselected")
+                #     print("slot ", address, value,  " selected")
+                
+                # This compares new value with current value and fires a selected/disselected call
+                if slot["address"] == ('/param/a/osc/1/type' or 'param/a/osc/2/type') and value == 4 and slot["value"] != 4:
+                    print("audio in selected")
+
+                if slot["address"] == ('/param/a/osc/1/type' or 'param/a/osc/2/type') and value != 4 and slot["value"] == 4:
+                    print("audio in dis-selected")
+
+
                 if float(slot["value"]) != float(value):
                     slot["value"] = float(value)
                     break
+                
 
     def query_devices(self):
         for slot_idx, slot_devices in enumerate(self.devices):

@@ -82,6 +82,8 @@ class PyshaApp(object):
     last_cp_value_recevied_time = 0
 
     # client = SimpleUDPClient("127.0.0.1", 1032)
+    tasks = set()
+    queue = []
 
     def __init__(self):
         if os.path.exists("settings.json"):
@@ -101,8 +103,11 @@ class PyshaApp(object):
         self.init_notes_midi_in(
             device_name=settings.get("default_notes_midi_in_device_name", None)
         )
+        self.tasks = set()
+        self.queue = []
         self.init_push()
         self.init_modes(settings)
+
 
     def init_modes(self, settings):
         self.instrument_selection_mode = InstrumentSelectionMode(
@@ -649,12 +654,7 @@ class PyshaApp(object):
                 for mode in self.active_modes:
                     if mode == self.melodic_mode or mode == self.rhythmic_mode:
                         mode.on_midi_in(msg, source=self.notes_midi_in.name)
-                        if mode.lumi_midi_out is not None:
-                            mode.lumi_midi_out.send(msg)
-                        else:
-                            # If midi not properly initialized try to re-initialize but don't do it too ofter
-                            if time.time() - mode.last_time_tried_initialize_lumi > 5:
-                                mode.init_lumi_midi_out()
+
 
     def add_display_notification(self, text):
         self.notification_text = text
@@ -804,6 +804,16 @@ class PyshaApp(object):
         if self.buttons_need_update:
             self.update_push2_buttons()
             self.buttons_need_update = False
+    
+    async def queue_tasks(self):
+        for task in self.queue:
+            if task:
+                t = asyncio.create_task(task)
+                self.tasks.add(t)
+                t.add_done_callback(self.tasks.discard)
+            
+            self.queue.remove(task)
+
 
     async def run_loop(self):
         print("Pysha is running...")
@@ -827,6 +837,9 @@ class PyshaApp(object):
             # Check if any delayed actions need to be applied
             self.check_for_delayed_actions()
 
+            # Schedule tasks from queue
+            await self.queue_tasks()
+
             after_draw_time = time.time()
 
             # Calculate sleep time to aproximate the target frame rate
@@ -838,10 +851,6 @@ class PyshaApp(object):
                 await asyncio.sleep(sleep_time)
             else:
                 await asyncio.sleep(0)
-
-        # except KeyboardInterrupt:
-        #     print('Exiting Pysha...')
-        #     self.push.f_stop.set()
 
     def on_midi_push_connection_established(self):
         # Do initial configuration of Push
@@ -1024,3 +1033,7 @@ if __name__ == "__main__":
         print("Exiting Pysha...")
         app.push.f_stop.set()
         app.osc_mode.close_transports()
+        # # cancel all tasks in the event loop
+        # tasks = asyncio.all_tasks()
+        # for task in tasks:
+        #     task.cancel()

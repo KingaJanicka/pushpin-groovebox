@@ -1,9 +1,9 @@
 from abc import ABC
 import asyncio
 
-import re
 import sys
 import json
+from  signal import SIGINT
 
 class Engine(ABC):
     type = None
@@ -11,6 +11,9 @@ class Engine(ABC):
     pipewireID = None
     pipewire = None
     process = None
+    loopback_shells = None
+    loopback_loops = None
+    instrument_nodes = None
     connections = None
     pw_ports = None
     sample_rate = 48000
@@ -30,6 +33,8 @@ class Engine(ABC):
         self.midi_device_idx = midi_device_idx
         self.instrument = instrument_definition
         self.pw_ports = {"input": [], "output": []}
+        self.loopback_shells = [None, None, None, None, None, None, None, None]
+        self.loopback_loops = [None, None, None, None, None, None, None, None]
         #This needs to be spelled out like that because otherwise they all behave as one and you can't assign different values to dicts
         self.connections = [{"L": None, "R": None}, {"L": None, "R": None}, {"L": None, "R": None}, {"L": None, "R": None}, {"L": None, "R": None}, {"L": None, "R": None}, {"L": None, "R": None} ,{"L": None, "R": None}]
         if self.midi_device_idx == None:
@@ -41,10 +46,29 @@ class Engine(ABC):
     def stop(self):
         self.process.kill()
 
-    async def createLoopback(self, name="pushpin-loopback", capture_serial=None, playback_serial=None):
+    def killLoopback(self, shell_index=None):
+        shell = self.loopback_shells[shell_index]
+        
+        try:
+            print("kill shell: ", shell.pid)
+
+            shell.send_signal(SIGINT)
+            
+            print("after kill", shell.pid)
+        except Exception as e:
+            print("Exception in killLoopback")
+            print(e)
+
+        self.loopback_shells[shell_index] = None
+
+
+    async def createLoopback(self, name="pushpin-loopback", capture_serial=None, playback_serial=None, shell_index=None):
+        # This serial it's talking about is object.serial of the Node we're trying to connect to
+        # pw-loopback -m '[ FL FR ]' --playback-props='target.object="NUMBER"' --capture-props='target.object="NUMBER"'
         ps = await asyncio.create_subprocess_shell(
-            f"pw-loopback -n={name} -C={capture_serial if capture_serial else ''} -P={playback_serial if playback_serial else ''}"
+            f"pw-loopback -n={name} -m '[ FL FR ]' -C='target.object={capture_serial if capture_serial else ''}' -P='target.object={playback_serial if playback_serial else ''}'"
         )
+        self.loopback_shells[shell_index] = ps
         try:
             while True:
                 proc = await asyncio.create_subprocess_shell("pw-dump -N Client", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
@@ -135,14 +159,13 @@ class SurgeXTEngine(Engine):
 
         self.osc_in_port = self.instrument["osc_in_port"]
         self.osc_out_port = self.instrument["osc_out_port"]
-        print('SURGE')
         
         self.process = await asyncio.create_subprocess_exec(
             f"surge-xt-cli",
             f"--audio-interface={'0.0'}",f"--audio-input-interface={'0.0'}", f"--midi-input={self.midi_device_idx}", f"--sample-rate={self.sample_rate}", f"--buffer-size={self.buffer_size}", f"--osc-in-port={self.osc_in_port}", f"--osc-out-port={self.osc_out_port}",
-            # stdin=asyncio.subprocess.PIPE,
-            # stdout=asyncio.subprocess.PIPE,
-            # stderr=asyncio.subprocess.STDOUT
+            stdin=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
             
         )
 
@@ -153,6 +176,7 @@ class SurgeXTEngine(Engine):
 
         all_ports = await getAllPorts()
         instrument_nodes = await self.get_instrument_nodes()
+        self.instrument_nodes = instrument_nodes
         # print("Engine stuff", " PID: ", self.PID)
         for port in all_ports:
             # with nodes we can associate nodes with clients/instruments via PID
@@ -175,8 +199,6 @@ class SurgeXTEngine(Engine):
         #     print(port["id"])
         # print("in ports: ", len(self.pw_ports["input"]))
         # print("out ports: ", len(self.pw_ports["output"]))
-
-
 
     async def updateConfig(self):
         self.PID = self.process.pid
