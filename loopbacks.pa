@@ -1,0 +1,8 @@
+load-module module-null-sink media.class=Audio/Duplex sink_name=instrument_0 channels=16 channel_map=aux0,aux1,aux2,aux3,aux4,aux5,aux6,aux7,aux8,aux9,aux10,aux11,aux12,aux13,aux14,aux15
+load-module module-null-sink media.class=Audio/Duplex sink_name=instrument_1 channels=16 channel_map=aux0,aux1,aux2,aux3,aux4,aux5,aux6,aux7,aux8,aux9,aux10,aux11,aux12,aux13,aux14,aux15
+load-module module-null-sink media.class=Audio/Duplex sink_name=instrument_2 channels=16 channel_map=aux0,aux1,aux2,aux3,aux4,aux5,aux6,aux7,aux8,aux9,aux10,aux11,aux12,aux13,aux14,aux15
+load-module module-null-sink media.class=Audio/Duplex sink_name=instrument_3 channels=16 channel_map=aux0,aux1,aux2,aux3,aux4,aux5,aux6,aux7,aux8,aux9,aux10,aux11,aux12,aux13,aux14,aux15
+load-module module-null-sink media.class=Audio/Duplex sink_name=instrument_4 channels=16 channel_map=aux0,aux1,aux2,aux3,aux4,aux5,aux6,aux7,aux8,aux9,aux10,aux11,aux12,aux13,aux14,aux15
+load-module module-null-sink media.class=Audio/Duplex sink_name=instrument_5 channels=16 channel_map=aux0,aux1,aux2,aux3,aux4,aux5,aux6,aux7,aux8,aux9,aux10,aux11,aux12,aux13,aux14,aux15
+load-module module-null-sink media.class=Audio/Duplex sink_name=instrument_6 channels=16 channel_map=aux0,aux1,aux2,aux3,aux4,aux5,aux6,aux7,aux8,aux9,aux10,aux11,aux12,aux13,aux14,aux15
+load-module module-null-sink media.class=Audio/Duplex sink_name=instrument_7 channels=16 channel_map=aux0,aux1,aux2,aux3,aux4,aux5,aux6,aux7,aux8,aux9,aux10,aux11,aux12,aux13,aux14,aux15
