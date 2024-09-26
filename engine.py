@@ -161,69 +161,69 @@ class Engine(ABC):
             #TODO: this name will need to change once we get the aux stuff to display corretly
             #TODO: this match be UGGLY
             match port["info"]["props"]["port.name"]:
-                case "capture_0":
-                    self.duplex_ports["inputs"]["Input 0"]["L"] = port
-                case "capture_1":
-                    self.duplex_ports["inputs"]["Input 0"]["R"] = port
-                case "capture_2":
-                    self.duplex_ports["inputs"]["Input 1"]["L"] = port
-                case "capture_3":
-                    self.duplex_ports["inputs"]["Input 1"]["R"] = port
-                case "capture_4":
-                    self.duplex_ports["inputs"]["Input 2"]["L"] = port
-                case "capture_5":
-                    self.duplex_ports["inputs"]["Input 2"]["R"] = port
-                case "capture_6":
-                    self.duplex_ports["inputs"]["Input 3"]["L"] = port
-                case "capture_7":
-                    self.duplex_ports["inputs"]["Input 3"]["R"] = port
-                case "capture_8":
-                    self.duplex_ports["inputs"]["Input 4"]["L"] = port
-                case "capture_9":
-                    self.duplex_ports["inputs"]["Input 4"]["R"] = port
-                case "capture_10":
-                    self.duplex_ports["inputs"]["Input 5"]["L"] = port
-                case "capture_11":
-                    self.duplex_ports["inputs"]["Input 5"]["R"] = port
-                case "capture_12":
-                    self.duplex_ports["inputs"]["Input 6"]["L"] = port
-                case "capture_13":
-                    self.duplex_ports["inputs"]["Input 6"]["R"] = port
-                case "capture_14":
-                    self.duplex_ports["inputs"]["Input 7"]["L"] = port
-                case "capture_15":
-                    self.duplex_ports["inputs"]["Input 7"]["R"] = port
-                case "playback_0":
-                    self.duplex_ports["outputs"]["Output 0"]["L"] = port
                 case "playback_1":
-                    self.duplex_ports["outputs"]["Output 0"]["R"] = port
+                    self.duplex_ports["inputs"]["Input 0"]["L"] = port
                 case "playback_2":
-                    self.duplex_ports["outputs"]["Output 1"]["L"] = port
+                    self.duplex_ports["inputs"]["Input 0"]["R"] = port
                 case "playback_3":
-                    self.duplex_ports["outputs"]["Output 1"]["R"] = port
+                    self.duplex_ports["inputs"]["Input 1"]["L"] = port
                 case "playback_4":
-                    self.duplex_ports["outputs"]["Output 2"]["L"] = port
+                    self.duplex_ports["inputs"]["Input 1"]["R"] = port
                 case "playback_5":
-                    self.duplex_ports["outputs"]["Output 2"]["R"] = port
+                    self.duplex_ports["inputs"]["Input 2"]["L"] = port
                 case "playback_6":
-                    self.duplex_ports["outputs"]["Output 3"]["L"] = port
+                    self.duplex_ports["inputs"]["Input 2"]["R"] = port
                 case "playback_7":
-                    self.duplex_ports["outputs"]["Output 3"]["R"] = port
+                    self.duplex_ports["inputs"]["Input 3"]["L"] = port
                 case "playback_8":
-                    self.duplex_ports["outputs"]["Output 4"]["L"] = port
+                    self.duplex_ports["inputs"]["Input 3"]["R"] = port
                 case "playback_9":
-                    self.duplex_ports["outputs"]["Output 4"]["R"] = port
+                    self.duplex_ports["inputs"]["Input 4"]["L"] = port
                 case "playback_10":
-                    self.duplex_ports["outputs"]["Output 5"]["L"] = port
+                    self.duplex_ports["inputs"]["Input 4"]["R"] = port
                 case "playback_11":
-                    self.duplex_ports["outputs"]["Output 5"]["R"] = port
+                    self.duplex_ports["inputs"]["Input 5"]["L"] = port
                 case "playback_12":
-                    self.duplex_ports["outputs"]["Output 6"]["L"] = port
+                    self.duplex_ports["inputs"]["Input 5"]["R"] = port
                 case "playback_13":
-                    self.duplex_ports["outputs"]["Output 6"]["R"] = port
+                    self.duplex_ports["inputs"]["Input 6"]["L"] = port
                 case "playback_14":
-                    self.duplex_ports["outputs"]["Output 7"]["L"] = port
+                    self.duplex_ports["inputs"]["Input 6"]["R"] = port
                 case "playback_15":
+                    self.duplex_ports["inputs"]["Input 7"]["L"] = port
+                case "playback_16":
+                    self.duplex_ports["inputs"]["Input 7"]["R"] = port
+                case "capture_1":
+                    self.duplex_ports["outputs"]["Output 0"]["L"] = port
+                case "capture_2":
+                    self.duplex_ports["outputs"]["Output 0"]["R"] = port
+                case "capture_3":
+                    self.duplex_ports["outputs"]["Output 1"]["L"] = port
+                case "capture_4":
+                    self.duplex_ports["outputs"]["Output 1"]["R"] = port
+                case "capture_5":
+                    self.duplex_ports["outputs"]["Output 2"]["L"] = port
+                case "capture_6":
+                    self.duplex_ports["outputs"]["Output 2"]["R"] = port
+                case "capture_7":
+                    self.duplex_ports["outputs"]["Output 3"]["L"] = port
+                case "capture_8":
+                    self.duplex_ports["outputs"]["Output 3"]["R"] = port
+                case "capture_9":
+                    self.duplex_ports["outputs"]["Output 4"]["L"] = port
+                case "capture_10":
+                    self.duplex_ports["outputs"]["Output 4"]["R"] = port
+                case "capture_11":
+                    self.duplex_ports["outputs"]["Output 5"]["L"] = port
+                case "capture_12":
+                    self.duplex_ports["outputs"]["Output 5"]["R"] = port
+                case "capture_13":
+                    self.duplex_ports["outputs"]["Output 6"]["L"] = port
+                case "capture_14":
+                    self.duplex_ports["outputs"]["Output 6"]["R"] = port
+                case "capture_15":
+                    self.duplex_ports["outputs"]["Output 7"]["L"] = port
+                case "capture_16":
                     self.duplex_ports["outputs"]["Output 7"]["R"] = port
                 case _:
                     pass
@@ -312,6 +312,7 @@ class SurgeXTEngine(Engine):
         # print("out ports: ", len(self.pw_ports["output"]))
         await self.get_instrument_duplex_node()
         await self.get_instrument_duplex_ports()
+        # print(self.duplex_ports)
 
     async def updateConfig(self):
         self.PID = self.process.pid
