@@ -70,6 +70,7 @@ class AudioInDevice(PyshaMode):
     ):
         self.last_knob_turned = 0
         self.app = kwargs["app"]
+        self.input_gains = [0 ,0 ,0 ,0 ,0 ,0 ,0 ,0]
         self.engine = engine
         self.label = ""
         self.definition = {}
@@ -121,10 +122,57 @@ class AudioInDevice(PyshaMode):
         self.dispatcher.map(audio_gain_control.address, audio_gain_control.set_state)
         self.controls.append(audio_gain_control)
 
-        self.controls.append(ControlSpacer())
-        self.controls.append(ControlSpacer())
-        self.controls.append(ControlSpacer())
-        self.controls.append(ControlSpacer())
+        in_1_gain = OSCControl(
+            {
+                "$type": "control-range",
+                "label": "In 1 Gain",
+                "address": "None",
+                "min": 0,
+                "max": 1,
+            },
+            self.get_color,
+            self.send_message_cli,
+        )
+        self.controls.append(in_1_gain)
+
+        in_2_gain = OSCControl(
+            {
+                "$type": "control-range",
+                "label": "In 2 Gain",
+                "address": "None",
+                "min": 0,
+                "max": 1,
+            },
+            self.get_color,
+            self.send_message_cli,
+        )
+        self.controls.append(in_2_gain)
+
+        in_3_gain = OSCControl(
+            {
+                "$type": "control-range",
+                "label": "In 3 Gain",
+                "address": "None",
+                "min": 0,
+                "max": 1,
+            },
+            self.get_color,
+            self.send_message_cli,
+        )
+        self.controls.append(in_3_gain)
+        
+        in_4_gain = OSCControl(
+            {
+                "$type": "control-range",
+                "label": "In 4 Gain",
+                "address": "None",
+                "min": 0,
+                "max": 1,
+            },
+            self.get_color,
+            self.send_message_cli,
+        )
+        self.controls.append(in_4_gain)
 
         low_cut_control = OSCControl(
             {
@@ -153,56 +201,6 @@ class AudioInDevice(PyshaMode):
         )
         self.dispatcher.map(high_cut_control.address, high_cut_control.set_state)
         self.controls.append(high_cut_control)
-
-        # for control_def in control_definitions:
-        #     match control_def["$type"]:
-        #         case "control-spacer":
-        #             self.controls.append(ControlSpacer())
-        #         case "control-macro":
-        #             self.controls.append(
-        #                 OSCControlMacro(control_def, get_color, self.send_message)
-        #             )
-        #             for param in control_def["params"]:
-        #                 self.dispatcher.map(param.address, control.set_state)
-        #         case "control-range":
-        #             control = OSCControl(control_def, get_color, self.send_message)
-        #             self.dispatcher.map(control.address, control.set_state)
-        #             self.controls.append(control)
-        #         case "control-spacer-address":
-        #             control = OSCSpacerAddress(control_def, self.send_message)
-        #             self.dispatcher.map(control.address, control.set_state)
-        #             self.controls.append(control)
-        #         case "control-switch":
-        #             control = OSCControlSwitch(
-        #                 control_def, get_color, self.send_message, self.dispatcher
-        #             )
-        #             if control.address:
-        #                 self.dispatcher.map(control.address, control.set_state)
-
-        #             self.controls.append(control)
-
-        #         case "control-menu":
-        #             control = OSCControlMenu(control_def, get_color, self.send_message)
-        #             if control.address:
-        #                 self.dispatcher.map(control.address, control.set_state)
-
-        #             # for item in control.items:
-        #             #     if item.address:
-        #             #         self.dispatcher.map(item.address, control.set_state)
-        #             #     else:
-        #             #         raise Exception(f"{item} has no message.address property")
-
-        #             self.controls.append(control)
-        #         case _:
-        #             Exception(
-        #                 f"Invalid parameter: {control_def}; did you forget $type?"
-        #             )
-        # asyncio.create_task(self.query_clients)
-        # Call /q endpoints for each control currently displayed
-        # self.query_visible_controls()
-        # mapped_addresses = self.dispatcher
-        # Select if it has a select attribute
-
 
         for control in self.get_visible_controls():
             if hasattr(control, "select"):
@@ -297,6 +295,58 @@ class AudioInDevice(PyshaMode):
         self.log_out.debug(args)
         return self.osc["client"].send_message(*args)
 
+    def send_message_cli(self, *args):
+        duplex_node = self.engine.duplex_node
+        channel_volumes = []
+        for val in self.input_gains:
+            if val == None:
+                val = 0.0
+            channel_volumes.extend([val, val])
+        device_id = duplex_node["id"]
+        print(channel_volumes)
+        cli_string = f"pw-cli s {device_id} Props '{{channelVolumes: {channel_volumes}}}'"
+
+        #TODO: put a cap/throttle on how often this sends data
+        self.app.queue.append(asyncio.create_subprocess_shell(cli_string, stdout=asyncio.subprocess.PIPE))
+
+
+    def update_input_gains(self):
+        # instrument = self.app.osc_mode.get_current_instrument()
+        devices = self.app.osc_mode.get_current_instrument_devices()
+        value_1 = None 
+        value_2 = None 
+        value_3 = None 
+        value_4 = None 
+        value_5 = None 
+        value_6 = None 
+        value_7 = None 
+        value_8 = None
+        
+        if devices[0].label == "Audio In":
+            value_1 = devices[0].controls[2].value
+            value_2 = devices[0].controls[3].value
+            value_3 = devices[0].controls[4].value
+            value_4 = devices[0].controls[5].value
+        
+        if devices[1].label == "Audio In":
+
+            value_5 = devices[1].controls[2].value
+            value_6 = devices[1].controls[3].value
+            value_7 = devices[1].controls[4].value
+            value_8 = devices[1].controls[5].value
+        
+        for device in devices:
+            if device.label == "Audio In":
+                device.input_gains[0] = value_1
+                device.input_gains[1] = value_2
+                device.input_gains[2] = value_3
+                device.input_gains[3] = value_4
+                device.input_gains[4] = value_5
+                device.input_gains[5] = value_6
+                device.input_gains[6] = value_7
+                device.input_gains[7] = value_8
+
+
     def connect_ports(self, *args):
 
         [addr, val] = args 
@@ -381,7 +431,7 @@ class AudioInDevice(PyshaMode):
         # source synth -> duplex in; duplex out -> dest synth
         # I don't think we need to adjust connections - everything past the initial synth we're connecting will stay the same
         # TODO: This is working, needs a catch to prevent connecting to the same port over and over when a knob is twisted
-
+        # TODO: Need to add the volume controls too, I think we could just edit what message the control is sending directly
 
         [addr, val] = args
         if val != None:
@@ -575,5 +625,11 @@ class AudioInDevice(PyshaMode):
             control = visible_controls[encoder_idx]
             control.update_value(increment)
             self.last_knob_turned = encoder_idx
+            match encoder_idx:
+                case 2 | 3 | 4 | 5:
+                    self.update_input_gains()
+                    print("update gains: ", self.input_gains)
+
+        
         except ValueError:
             pass  # Encoder not in list
