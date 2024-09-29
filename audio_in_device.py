@@ -21,6 +21,7 @@ from engine import connectPipewireSourceToPipewireDest
 from engine import disconnectPipewireSourceFromPipewireDest
 logger = logging.getLogger("osc_device")
 # logger.setLevel(level=logging.DEBUG)
+from ratelimit import limits
 
 
 class AudioInDevice(PyshaMode):
@@ -294,7 +295,9 @@ class AudioInDevice(PyshaMode):
     def send_message(self, *args):
         self.log_out.debug(args)
         return self.osc["client"].send_message(*args)
-
+    
+    
+    @limits(calls=4, period=1)
     def send_message_cli(self, *args):
         duplex_node = self.engine.duplex_node
         channel_volumes = []
@@ -305,13 +308,10 @@ class AudioInDevice(PyshaMode):
         device_id = duplex_node["id"]
         print(channel_volumes)
         cli_string = f"pw-cli s {device_id} Props '{{channelVolumes: {channel_volumes}}}'"
-
-        #TODO: put a cap/throttle on how often this sends data
         self.app.queue.append(asyncio.create_subprocess_shell(cli_string, stdout=asyncio.subprocess.PIPE))
 
 
     def update_input_gains(self):
-        # instrument = self.app.osc_mode.get_current_instrument()
         devices = self.app.osc_mode.get_current_instrument_devices()
         value_1 = None 
         value_2 = None 
@@ -427,11 +427,7 @@ class AudioInDevice(PyshaMode):
 
     def connect_ports_duplex(self, *args):
 
-        # Duplex pseudocode
-        # source synth -> duplex in; duplex out -> dest synth
-        # I don't think we need to adjust connections - everything past the initial synth we're connecting will stay the same
-        # TODO: This is working, needs a catch to prevent connecting to the same port over and over when a knob is twisted
-        # TODO: Need to add the volume controls too, I think we could just edit what message the control is sending directly
+        # TODO: This is working, needs a catch/throttle to prevent connecting to the same port over and over when a knob is twisted
 
         [addr, val] = args
         if val != None:
@@ -444,7 +440,6 @@ class AudioInDevice(PyshaMode):
             
             current_instrument_ports = self.engine.pw_ports
             duplex_ports = self.engine.duplex_ports
-            # print(duplex_ports)
             
             #TODO: L is empty
             duplex_in_L = duplex_ports["inputs"][f'Input {column_index}']["L"]['id']
@@ -489,7 +484,11 @@ class AudioInDevice(PyshaMode):
                         source_L = port['id']
                     elif port['info']['props']['audio.channel'] == "FR":
                         source_R = port['id']
-
+                
+                #makes sure we don't send the same command over and over
+                if source_L == self.engine.connections[column_index]["L"] and source_R == self.engine.connections[column_index]["R"]:
+                    return
+                
                 # This bit disconnects previously conneted synth within a column
                 for port in current_instrument_ports['input']:
                     if port['info']['props']['audio.channel'] == "FL":
@@ -518,7 +517,6 @@ class AudioInDevice(PyshaMode):
                 self.app.queue.append(connectPipewireSourceToPipewireDest(duplex_out_L, dest_L))
                 self.app.queue.append(connectPipewireSourceToPipewireDest(duplex_out_R, dest_R))
 
-                print(source_L, duplex_in_L)
             except Exception as e:
                 print("Error in connect_ports")
                 print(e)
