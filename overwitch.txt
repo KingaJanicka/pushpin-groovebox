@@ -3,3 +3,12 @@ install pipewire-jack
 https://linuxmusicians.com/viewtopic.php?t=25993s
 
 sudo PIPEWIRE_LATENCY="K128/48000" pw-jack overwitch-cli -n 0
+
+/usr/lib/aarch64-linux-gnu/pipewire-0.3/jack
+
+https://www.elektronauts.com/t/overwitch-a-jack-client-for-overbridge-devices-aka-overbridge-for-linux/153983/191
+
+
+seems we need to go to /overwitch/udev and do ``sudo make install`` every boot to prevent an error
+
+we're getting a segfault with midi stuff it seems, we can record just fine
