@@ -129,15 +129,22 @@ class Engine(ABC):
         )
 
     async def get_instrument_nodes(self):
+        clients = await getAllClients()
         nodes = await getAllNodes()
-        instrument_nodes = []
-
-        for node in nodes:
-            if node.get("info", {}).get("props", {}).get(
+        client_id = None
+        print("getting clients", len(clients))
+        for client in clients:
+            if client.get("info", {}).get("props", {}).get(
                 "application.process.id", None
             ) == (self.PID):
+                    client_id = client["id"]
+        instrument_nodes = []
+        print("client id: ", client_id, "for track: ", self.instrument["instrument_name"])
+        for node in nodes:
+            if node.get("info", {}).get("props", {}).get(
+                "client.id", None
+            ) == (client_id):
                 instrument_nodes.append(node)
-
         return instrument_nodes
 
     async def get_instrument_duplex_node(self):
@@ -145,8 +152,10 @@ class Engine(ABC):
         # Gets the right node, so we can adjust volumes and get the ID for ports
         for node in nodes:
             #TODO: we need to have less jank way of matching this
+            # print(node.get("info", []).get("props", []).get("node.description",None), self.instrument["instrument_name"])
             if node.get("info", []).get("props", []).get("node.description",None) == self.instrument["instrument_name"]:
                 self.duplex_node = node
+            
                 return node
             
     async def get_instrument_duplex_ports(self):
@@ -160,6 +169,7 @@ class Engine(ABC):
         for port in unsorted_duplex_ports:
             #TODO: this name will need to change once we get the aux stuff to display corretly
             #TODO: this match be UGGLY
+
             match port["info"]["props"]["port.name"]:
                 case "playback_1":
                     self.duplex_ports["inputs"]["Input 0"]["L"] = port
@@ -280,22 +290,29 @@ class SurgeXTEngine(Engine):
         await asyncio.sleep(2)
 
         all_ports = await getAllPorts()
+        # TODO: this is an _EXTREMLY_ RUDE way of making sure we don't overlap pw-dumps
+        await asyncio.sleep(self.instrument["midi_channel"])
         instrument_nodes = await self.get_instrument_nodes()
         self.instrument_nodes = instrument_nodes
         # print("Engine stuff", " PID: ", self.PID)
         for port in all_ports:
+            # print("___________________________ALL PORTS FOR LOOP")
             # with nodes we can associate nodes with clients/instruments via PID
             # And ports with nodes via ID/node.id
             # With those IDs in place we can start calling pw-link
 
             # TODO: there is a bug in this function where it will give all of the ports to all instruments
 
+            # TODO: This is broken because now inputs and outputs nodes have different node IDs
+            
             for instrument_node in instrument_nodes:
                 # print(instrument_node.get("id", None), port.get("info",{}).get("props", {}).get("node.id", None))
                 if port.get("info", {}).get("props", {}).get(
                     "node.id", None
                 ) == instrument_node.get("id", None):
                     # print("ID correct", instrument_node.get("id", None))
+                    print(instrument_node)
+                    print(port.get("info", []).get("direction", None))
                     if port.get("info", {}).get("direction", None):
                         if "output" in port.get("info", []).get("props", []).get(
                             "port.name", "None"
@@ -305,9 +322,10 @@ class SurgeXTEngine(Engine):
                             "port.name", "None"
                         ):
                             self.pw_ports["input"].append(port)
-
+                
         # for port in self.pw_ports["input"]:
         #     print(port["id"])
+        # print(self.pw_ports)
         # print("in ports: ", len(self.pw_ports["input"]))
         # print("out ports: ", len(self.pw_ports["output"]))
         await self.get_instrument_duplex_node()
@@ -410,17 +428,26 @@ async def getPipewireConfigForPID(pid):
 
 
 async def getAllClients():
-
     proc = await asyncio.create_subprocess_shell(
         "pw-dump -N Client",
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
     stdout, stderr = await proc.communicate()
+    data = []
+    if stderr:
+        print("getAllClients ERROR:")
+        print(stderr)
     if stdout:
-        data = json.loads(stdout.decode().strip())
-        return data
-
+        try:
+            data = json.loads(stdout.decode().strip())
+        except Exception as e:
+            print(e)
+            print(stdout.decode().strip())
+            #calling again because we got trash json
+            print("recursive getAllClients")
+            await getAllClients()
+    return data
 
 async def getAllNodes():
     proc = await asyncio.create_subprocess_shell(
@@ -449,14 +476,17 @@ async def getAllPorts():
         stderr=asyncio.subprocess.PIPE,
     )
     stdout, stderr = await proc.communicate()
-
+    data = []
     if stderr:
-        print(stderr.decode())
-
+        print("getAllNodes ERROR:")
+        print(stderr)
     if stdout:
-        data = json.loads(stdout.decode().strip())
-        return data
-
+        try:
+            data = json.loads(stdout.decode().strip())
+        except Exception as e:
+            print(e)
+            # print(stdout)
+    return data
 
 def getAllConnectionsToNode(self):
     # this will use     pw-link -l id   command
@@ -470,3 +500,76 @@ def getAllConnectionsToNode(self):
 ### Conenct using PW-Link pw-link <port "id"> <port "id">
 ### get port IDs with pw-dump Port
 ### ensure which surge instance is which with object.id
+
+
+
+class ExternalEngine(Engine):
+    def __init__(
+        self,
+        sample_rate=48000,
+        buffer_size=512,
+        midi_device_idx=None,
+        instrument_definition={} # TODO: create stub instrument def
+    ):
+        super().__init__(
+            sample_rate=sample_rate,
+            buffer_size=buffer_size,
+            midi_device_idx=midi_device_idx,
+            instrument_definition=instrument_definition,
+        )
+
+    def getPID(self):
+        return self.PID
+
+    def getInstrumentPipewireID(self):
+        return self.pipewire["id"]
+
+    def getObjectSerial(self):
+        return self.pipewire["info"]["props"]["object.serial"]
+
+    async def start(self):
+        self.process = await asyncio.create_subprocess_shell(
+            f"pw-jack overwitch-cli -n 0",
+            stdin=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+
+        self.PID = self.process.pid
+
+        await asyncio.sleep(2)
+
+        all_ports = await getAllPorts()
+        instrument_nodes = await self.get_instrument_nodes()
+        self.instrument_nodes = instrument_nodes
+        # print("Engine stuff", " PID: ", self.PID)
+        for port in all_ports:
+            # with nodes we can associate nodes with clients/instruments via PID
+            # And ports with nodes via ID/node.id
+            # With those IDs in place we can start calling pw-link
+
+            # TODO: there is a bug in this function where it will give all of the ports to all instruments
+
+            for instrument_node in instrument_nodes:
+                # print(instrument_node.get("id", None), port.get("info",{}).get("props", {}).get("node.id", None))
+                if port.get("info", {}).get("props", {}).get(
+                    "node.id", None
+                ) == instrument_node.get("id", None):
+                    # print("ID correct", instrument_node.get("id", None))
+                    if port.get("info", {}).get("direction", None):
+                        if "output" in port.get("info", []).get("props", []).get(
+                            "port.name", "None"
+                        ):
+                            self.pw_ports["output"].append(port)
+                        elif "input" in port.get("info", []).get("props", []).get(
+                            "port.name", "None"
+                        ):
+                            self.pw_ports["input"].append(port)
+
+
+    async def updateConfig(self):
+        self.PID = self.process.pid
+        pwConfig = await getPipewireConfigForPID(self.PID)
+        if pwConfig:
+            self.pipewire = pwConfig
+            self.pipewireID = pwConfig["id"]

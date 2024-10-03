@@ -30,7 +30,7 @@ from preset_selection_mode import PresetSelectionMode
 from ddrm_tone_selector_mode import DDRMToneSelectorMode
 from menu_mode import MenuMode
 from display_utils import show_notification
-
+from external_instrument import ExternalInstrument
 # logging.basicConfig(level=logging.DEBUG)
 # logging.getLogger().setLevel(level=logging.DEBUG)
 
@@ -84,6 +84,8 @@ class PyshaApp(object):
     # client = SimpleUDPClient("127.0.0.1", 1032)
     tasks = set()
     queue = []
+
+    external_instruments = []
 
     def __init__(self):
         if os.path.exists("settings.json"):
@@ -149,6 +151,13 @@ class PyshaApp(object):
         self.ddrm_tone_selector_mode = DDRMToneSelectorMode(self, settings=settings)
         self.menu_mode = MenuMode(self, settings=settings, send_osc_func=self.send_osc)
         self.settings_mode = SettingsMode(self, settings=settings)
+        
+        overwitch_def = {
+            "instrument_name": "Overwitch",
+            "instrument_short_name": "Overwitch",
+            "midi_channel": 9
+            }
+        self.external_instruments = [ExternalInstrument('overwitch', overwitch_def)]
 
     def get_all_modes(self):
         return [
@@ -1012,6 +1021,9 @@ async def main():
 
     for instrument in app.osc_mode.instruments:
         await app.osc_mode.instruments[instrument].start(loop)
+
+    for instrument in app.external_instruments:
+        await instrument.start(loop)
 
     # await app.init_jack_server()
 
