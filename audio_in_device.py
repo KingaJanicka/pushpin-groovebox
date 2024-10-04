@@ -510,13 +510,25 @@ class AudioInDevice(PyshaMode):
                 dest_R=None
                 
                 #We're getting IDs for left and right ports, input and output
-                for port in source_instrument_ports['output']:
-                    print(port)
-                    if port['info']['props']['audio.channel'] == "FL":
-                        source_L = port['id']
-                    elif port['info']['props']['audio.channel'] == "FR":
-                        source_R = port['id']
-                
+                print(source_instrument.name)
+                if source_instrument.name != "Overwitch":
+                    for port in source_instrument_ports['output']:
+                        if port.get("info", []).get("props",[]).get("audio.channel", None) == "FL":
+                            source_L = port['id']
+                        elif port.get("info", []).get("props",[]).get("audio.channel", None) == "FR":
+                            source_R = port['id']
+                else:
+                    
+                    print(column_index)
+                    # gets the selected values for all 8 menus and assigns the right port
+                    control_idx = column_index % 4
+                    control =  self.controls[8 + control_idx].get_active_group()
+                    control_value = int(control.controls[0].value)
+                    control_label = control.controls[0].label
+                    for port in source_instrument_ports['output']:
+                        if control_label == port["info"]["props"]["port.name"]:
+                            source_L = port['id']
+                            source_R = port['id']
                 #makes sure we don't send the same command over and over
                 if source_L == self.engine.connections[column_index]["L"] and source_R == self.engine.connections[column_index]["R"]:
                     return
@@ -548,7 +560,7 @@ class AudioInDevice(PyshaMode):
                 self.app.queue.append(connectPipewireSourceToPipewireDest(duplex_out_R, dest_R))
                 print("end of try ")
             except Exception as e:
-                print("Error in connect_ports")
+                print("Error in connect_ports_duplex")
                 print(e)
             # connectPipewireSourceToPipewireDest()
       
@@ -619,7 +631,11 @@ class AudioInDevice(PyshaMode):
 
     def get_instrument_for_pid(self, pid):
         instruments = self.app.osc_mode.instruments
+        external = self.app.external_instruments
         for instrument in instruments.values():
+            if instrument.engine.PID == pid:
+                return instrument
+        for instrument in external:
             if instrument.engine.PID == pid:
                 return instrument
         return None
