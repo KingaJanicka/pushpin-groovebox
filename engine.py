@@ -89,43 +89,30 @@ class Engine(ABC):
         instrument_nodes = await self.get_instrument_nodes()
         self.instrument_nodes = instrument_nodes
         all_ports = filter(lambda x: x['type'] == 'PipeWire:Interface:Port', self.app.pipewire)
-        # print(f"Ports: {len(list(all_ports))}")
-        # print("Engine stuff", " PID: ", self.PID)
-        print("____________BEFORE PORTS LOOP")
+
         for port in all_ports:
-            # print("___________________________ALL PORTS FOR LOOP")
             # with nodes we can associate nodes with clients/instruments via PID
             # And ports with nodes via ID/node.id
             # With those IDs in place we can start calling pw-link
 
-
             for instrument_node in instrument_nodes:
-                # print(instrument_node.get("id", None), port.get("info",{}).get("props", {}).get("node.id", None))
                 if port.get("info", {}).get("props", {}).get(
                     "node.id", None
                 ) == instrument_node.get("id", None):
-                    # print("ID correct", instrument_node.get("id", None))
-                    # print(instrument_node)
-                    # print(port.get("info", []).get("direction", None))
                     if port.get("info", {}).get("direction", None):
                         if "output" in port.get("info", []).get("props", []).get(
                             "port.name", "None"
                         ):
                             self.pw_ports["output"].append(port)
-                            # print("append output")
+
                         elif "input" in port.get("info", []).get("props", []).get(
                             "port.name", "None"
                         ):
                             self.pw_ports["input"].append(port)
-                            # print("append input")
-        # for port in self.pw_ports["input"]:
-        #     print(port["id"])
-        # print(self.pw_ports)
-        # print("in ports: ", len(self.pw_ports["input"]))
-        # print("out ports: ", len(self.pw_ports["output"]))
+
         await self.get_instrument_duplex_node()
         await self.get_instrument_duplex_ports()
-        # print(self.duplex_ports)
+
 
     def stop(self):
         self.process.kill()
@@ -175,20 +162,12 @@ class Engine(ABC):
         )
 
     async def get_instrument_nodes(self):
-        # clients = [item if item['type'] == 'PipeWire:Interface:Client' else None for item in self.app.pipewire]
         clients = filter(lambda x: x['type'] == 'PipeWire:Interface:Client', self.app.pipewire.copy())
-        # nodes = [item if item['type'] == 'PipeWire:Interface:Node' else None for item in self.app.pipewire]
         nodes = filter(lambda x: x['type'] == 'PipeWire:Interface:Node', self.app.pipewire.copy())
-        #TODO: The clients do not give us any surge instances or duplexes. 
-        # The sleep statement in app.py before get_pipewire_config helps with surge
-        # All duplexes seems to only show as nodes
-        #TODO: Pretty sure this works now
+    
         client_id = [None]
         try: 
             for client in clients:
-                # if client.get("info", {}).get("props", {}).get( "application.name", None) != None:
-                    # print(client.get("info", {}).get("props", {}).get( "application.name", None))
-                # print(f'PID: {self.PID}, app.p.pid: {client.get("info", {}).get("props", {}).get("application.process.id", None)} ')
                 if client and client.get("info", {}).get("props", {}).get(
                     "application.process.id", None
                 ) == (self.PID):
@@ -197,12 +176,10 @@ class Engine(ABC):
                 
             instrument_nodes = []
             for node in nodes:
-                # print("client ID in node: ", node.get("info", {}).get("props", {}).get("client.id", None ))
                 for id in client_id:
                     if node and id != None and node.get("info", {}).get("props", {}).get(
                         "client.id", None
                     ) == (id):
-                        # print("True!!!!!")
                         instrument_nodes.append(node)
             return instrument_nodes
         except Exception as e:
@@ -215,8 +192,6 @@ class Engine(ABC):
         for node in nodes:
             if node.get("info", []).get("props", []).get("node.description",None) == self.instrument["instrument_name"]:
                 self.duplex_node = node
-            
-                # print("woopppppp", self.duplex_node)
                 return node
             
     async def get_instrument_duplex_ports(self):
@@ -233,6 +208,7 @@ class Engine(ABC):
 
         for port in unsorted_duplex_ports:
             # TODO make work with aendra's nicer code
+            # TODO: Aendra really hates this perfectly reasonable match statement
             # port_name = port["info"]["props"]["port.name"]
 
             # port_type, port_index = port_name.split('_')
