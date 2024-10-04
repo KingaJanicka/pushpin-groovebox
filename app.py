@@ -159,7 +159,7 @@ class PyshaApp(object):
             "instrument_short_name": "Overwitch",
             "midi_channel": 9
             }
-        self.external_instruments = [ExternalInstrument(self, 'overwitch', overwitch_def)]
+        self.external_instruments = [ExternalInstrument(self, 'Overwitch', overwitch_def)]
 
     def get_all_modes(self):
         return [

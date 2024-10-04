@@ -276,6 +276,8 @@ class AudioInDevice(PyshaMode):
             control_def["groups"].append(dest)
         #TODO: make different OW outs appear in this def 
         overwitch = self.app.external_instruments[0]
+        print("OW output ports")
+            
         overwitch_def = {
             "$type": "group",
             "label": f'{overwitch.name}',
@@ -290,20 +292,23 @@ class AudioInDevice(PyshaMode):
                 {
                     "$type": "control-menu",
                     "items": [
-                        {
+                    ],
+                }
+            ],
+        }
+    
+        for port in overwitch.engine.pw_ports["output"]:
+            control = {
                             "$type": "menu-item",
-                            "label": "L+R",
+                            "label": port["info"]["props"]["port.name"],
                             "onselect": {
                                 "$type": "message",
                                 "$comment": "RingMod",
                                 "address": "/bla",
                                 "value": overwitch.engine.PID,
                             },
-                        },
-                    ],
-                }
-            ],
-        }
+                        }
+            overwitch_def["controls"][0]["items"].append(control)
         control_def["groups"].append(overwitch_def)
         for out in range(1, 5):
             try:

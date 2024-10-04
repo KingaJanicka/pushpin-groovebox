@@ -86,10 +86,10 @@ class Engine(ABC):
         pass
 
     async def configure_pipewire(self):
+    
         instrument_nodes = await self.get_instrument_nodes()
         self.instrument_nodes = instrument_nodes
         all_ports = filter(lambda x: x['type'] == 'PipeWire:Interface:Port', self.app.pipewire)
-
         for port in all_ports:
             # with nodes we can associate nodes with clients/instruments via PID
             # And ports with nodes via ID/node.id
@@ -100,7 +100,25 @@ class Engine(ABC):
                     "node.id", None
                 ) == instrument_node.get("id", None):
                     if port.get("info", {}).get("direction", None):
-                        if "output" in port.get("info", []).get("props", []).get(
+                        #TODO: this needs to be re-written to be handled a bit better
+                        # So we don't have sperate cases for surge and OW
+                        # Need to make sure monitor outs won't end up in "outputs"
+                        if self.instrument["instrument_name"] == "Overwitch":
+                            if port.get("info", []).get("props", []).get(
+                                "port.direction", "None"
+                            ) == "out" and port.get("info", []).get("props", []).get(
+                                "format.dsp", "None"
+                            ) != "8 bit raw midi":
+                                self.pw_ports["output"].append(port)   
+                            elif port.get("info", []).get("props", []).get(
+                                "port.direction", "None"
+                            ) == "in" and port.get("info", []).get("props", []).get(
+                                "format.dsp", "None"
+                            ) != "8 bit raw midi":
+                                self.pw_ports["input"].append(port)         
+                            
+                        
+                        elif "output" in port.get("info", []).get("props", []).get(
                             "port.name", "None"
                         ):
                             self.pw_ports["output"].append(port)
@@ -109,6 +127,8 @@ class Engine(ABC):
                             "port.name", "None"
                         ):
                             self.pw_ports["input"].append(port)
+
+
 
         await self.get_instrument_duplex_node()
         await self.get_instrument_duplex_ports()
@@ -164,7 +184,6 @@ class Engine(ABC):
     async def get_instrument_nodes(self):
         clients = filter(lambda x: x['type'] == 'PipeWire:Interface:Client', self.app.pipewire.copy())
         nodes = filter(lambda x: x['type'] == 'PipeWire:Interface:Node', self.app.pipewire.copy())
-    
         client_id = [None]
         try: 
             for client in clients:
@@ -465,8 +484,8 @@ class ExternalEngine(Engine):
         return self.pipewire["info"]["props"]["object.serial"]
 
     async def start(self):
-        self.process = await asyncio.create_subprocess_shell(
-            f"pw-jack overwitch-cli -n 0",
+        self.process = await asyncio.create_subprocess_exec(
+            f"pw-jack", f'overwitch-cli',f"-n", f"0",
             stdin=asyncio.subprocess.PIPE,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
@@ -483,3 +502,5 @@ class ExternalEngine(Engine):
         if pwConfig:
             self.pipewire = pwConfig
             self.pipewireID = pwConfig["id"]
+
+    
