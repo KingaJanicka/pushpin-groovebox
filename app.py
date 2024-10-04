@@ -85,7 +85,9 @@ class PyshaApp(object):
     tasks = set()
     queue = []
 
+    # Pipewire-related
     external_instruments = []
+    pipewire = None
 
     def __init__(self):
         if os.path.exists("settings.json"):
@@ -157,7 +159,7 @@ class PyshaApp(object):
             "instrument_short_name": "Overwitch",
             "midi_channel": 9
             }
-        self.external_instruments = [ExternalInstrument('overwitch', overwitch_def)]
+        self.external_instruments = [ExternalInstrument(self, 'overwitch', overwitch_def)]
 
     def get_all_modes(self):
         return [
@@ -891,6 +893,26 @@ class PyshaApp(object):
         app.update_push2_buttons()
         app.update_push2_pads()
 
+    async def get_pipewire_config(self):
+        try:
+            proc = await asyncio.create_subprocess_shell(
+                f"pw-dump -N",
+                stdin=asyncio.subprocess.PIPE,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
+            stdout, stderr = await proc.communicate()
+
+            if stdout:
+                self.pipewire = json.loads(stdout.decode().strip())
+            if stderr:
+                print(stderr)
+
+        except Exception as e:
+            print(e)
+            print("Waiting 2 seconds for device to become available and trying again...")
+            await asyncio.sleep(2)
+            await self.get_pipewire_config()
 
 # Bind push action handlers with class methods
 @push2_python.on_encoder_rotated()
@@ -1025,7 +1047,17 @@ async def main():
     for instrument in app.external_instruments:
         await instrument.start(loop)
 
-    # await app.init_jack_server()
+    print("Initialising Pipewire support...")
+    await asyncio.sleep(5)
+    await app.get_pipewire_config()
+
+    for instrument in app.osc_mode.instruments:
+        await app.osc_mode.instruments[instrument].engine.configure_pipewire()
+
+    for instrument in app.external_instruments:
+        await instrument.engine.configure_pipewire()
+
+
 
     while True:
         await app.run_loop()

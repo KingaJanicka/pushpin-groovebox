@@ -18,6 +18,7 @@ class ExternalInstrument(PyshaMode):
     
     def __init__(
         self,
+        app,
         instrument_short_name,
         instrument_definition,
         **kwargs
@@ -35,7 +36,7 @@ class ExternalInstrument(PyshaMode):
             instrument_definition["instrument_short_name"]
         )
       
-        self.engine = engine.ExternalEngine(midi_device_idx=midi_device_idx, instrument_definition=instrument_definition)
+        self.engine = engine.ExternalEngine(app, midi_device_idx=midi_device_idx, instrument_definition=instrument_definition)
 
     """
     Initialise OSC servers and add to transport array so they can be gracefully closed

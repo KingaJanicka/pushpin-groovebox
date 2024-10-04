@@ -61,7 +61,7 @@ class OSCInstrument(PyshaMode):
             instrument_definition["instrument_short_name"]
         )
         if kwargs.get("engine", "surge-xt-cli") == "surge-xt-cli":
-            self.engine = engine.SurgeXTEngine(midi_device_idx=midi_device_idx, instrument_definition=instrument_definition)
+            self.engine = engine.SurgeXTEngine(app, midi_device_idx=midi_device_idx, instrument_definition=instrument_definition)
 
             
         client = None

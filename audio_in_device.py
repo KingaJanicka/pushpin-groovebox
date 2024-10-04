@@ -474,11 +474,11 @@ class AudioInDevice(PyshaMode):
                 # print("try block")
                 source_instrument = self.get_instrument_for_pid(val)
                 source_instrument_ports = source_instrument.engine.pw_ports
-                print("Source instrument")
-                print(source_instrument_ports)
+                # print("Source instrument ports")
+                # print(source_instrument_ports)
                 current_instrument_ports = self.engine.pw_ports
-                print("current inst ports")
-                print(current_instrument_ports)
+                # print("current inst ports")
+                # print(current_instrument_ports)
                 source_L = None
                 source_R = None
                 dest_L = None
