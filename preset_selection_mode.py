@@ -70,12 +70,10 @@ class PresetSelectionMode(definitions.PyshaMode):
 
     def load_init_presets(self):
         for item in self.presets:
-            print(self.presets[item][0], "preset printed")
-            print(item, " item printed")
             self.send_osc(
                 "/patch/load",
                 self.presets[item][0],
-                instrument=item,
+                instrument_shortname=item,
             )
 
     def create_dict_from_paths(self, arr):
@@ -504,9 +502,9 @@ class PresetSelectionMode(definitions.PyshaMode):
         except ValueError:
             pass  # Encoder not in list
 
-    def send_osc(self, *args):
+    def send_osc(self, *args, instrument_shortname=None):
         instrument = self.app.osc_mode.instruments.get(
-            self.app.osc_mode.get_current_instrument_short_name_helper(), None
+            instrument_shortname or self.app.osc_mode.get_current_instrument_short_name_helper(), None
         )
         if instrument:
             return instrument.send_message(*args)

@@ -1051,9 +1051,14 @@ async def main():
     print("Initialising Pipewire support...")
     await asyncio.sleep(5)
     await app.get_pipewire_config()
+    app.preset_selection_mode.load_init_presets()
 
     for instrument in app.osc_mode.instruments:
         await app.osc_mode.instruments[instrument].engine.configure_pipewire()
+        await asyncio.sleep(0.1)
+        app.osc_mode.instruments[instrument].query_all_controls()
+        app.osc_mode.instruments[instrument].query_devices()
+        
 
     for instrument in app.external_instruments:
         await instrument.engine.configure_pipewire()
