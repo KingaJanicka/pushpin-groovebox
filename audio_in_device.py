@@ -330,7 +330,7 @@ class AudioInDevice(PyshaMode):
         return self.osc["client"].send_message(*args)
     
     
-    @limits(calls=4, period=1)
+    @limits(calls=1, period=0.1)
     def send_message_cli(self, *args):
         duplex_node = self.engine.duplex_node
         channel_volumes = []
@@ -339,7 +339,6 @@ class AudioInDevice(PyshaMode):
                 val = 0.0
             channel_volumes.extend([val, val])
         device_id = duplex_node["id"]
-        print(channel_volumes)
         cli_string = f"pw-cli s {device_id} Props '{{channelVolumes: {channel_volumes}}}'"
         self.app.queue.append(asyncio.create_subprocess_shell(cli_string, stdout=asyncio.subprocess.PIPE))
 
@@ -667,7 +666,6 @@ class AudioInDevice(PyshaMode):
             match encoder_idx:
                 case 2 | 3 | 4 | 5:
                     self.update_input_gains()
-                    print("update gains: ", self.input_gains)
 
         
         except ValueError:

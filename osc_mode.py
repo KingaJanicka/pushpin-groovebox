@@ -418,24 +418,21 @@ class OSCMode(PyshaMode):
                 self.update_current_instrument_page(new_instrument_page=1)
             return True
 
-    async def resend_cli_message(self, time):
-        #TODO: This assumes we will stay on the same device
-        # I don't think anyone could switch that fast with current UI
-        # But this should be made more resilient later 
-        current_device = self.get_current_instrument_device()
-        await asyncio.sleep(time)
-        current_device.send_message_cli()
-        self.cli_needs_update = False
+    # async def resend_cli_message(self, time):
+    #     #TODO: This assumes we will stay on the same device
+    #     # I don't think anyone could switch that fast with current UI
+    #     # But this should be made more resilient later 
+    #     current_device = self.get_current_instrument_device()
+    #     await asyncio.sleep(time)
+    #     current_device.send_message_cli()
+    #     self.cli_needs_update = False
 
     def on_encoder_rotated(self, encoder_name, increment):
         try:
             current_device = self.get_current_instrument_device()
             current_device.on_encoder_rotated(encoder_name, increment)
         except RateLimitException:
-            print("OSCMODE RATE LIMIT")
-            if self.cli_needs_update == False:
-                self.cli_needs_update = True
-                self.app.queue.append(self.resend_cli_message(time=1))
+            pass
         except Exception as err:
             print("Exception as err in OscMode")
             print(traceback.format_exc())
