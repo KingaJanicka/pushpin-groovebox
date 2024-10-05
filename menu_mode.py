@@ -202,13 +202,7 @@ class MenuMode(PyshaMode):
         elif button_name == push2_constants.BUTTON_ADD_DEVICE:
             selected_device = devices_in_current_slot[self.selected_menu_item_index]
             try:
-                for message in selected_device.init:
-                    self.app.send_osc(
-                        message["address"],
-                        float(message["value"]),
-                        instrument_shortname,
-                    )
-                    
+                self.app.queue.append(selected_device.select())
                 devices = self.app.osc_mode.get_current_instrument_devices()
                 for device in devices:
                     if device.label == selected_device.label:

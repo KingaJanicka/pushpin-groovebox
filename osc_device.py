@@ -7,7 +7,7 @@ from osc_controls import (
     OSCControlMenu,
     OSCGroup,
 )
-
+import asyncio
 import push2_python
 import logging
 from definitions import PyshaMode
@@ -125,12 +125,12 @@ class OSCDevice(PyshaMode):
             if hasattr(control, "select"):
                 control.select()
 
-    def select(self):
-        #TODO: this is not getting called at all
+    async def select(self):
         # self.query_visible_controls()
-        print("device init______________")
         for cmd in self.init:
             self.send_message(cmd["address"], float(cmd["value"]))
+            await asyncio.sleep(0.1)
+    
 
 
     def send_message(self, *args):

@@ -318,11 +318,11 @@ class AudioInDevice(PyshaMode):
                 print(e)
 
 
-    def select(self):
+    async def select(self):
         # self.query_visible_controls()
-        print("device init______________")
         for cmd in self.init:
             self.send_message(cmd["address"], float(cmd["value"]))
+            await asyncio.sleep(0.1)
     
 
     def send_message(self, *args):
