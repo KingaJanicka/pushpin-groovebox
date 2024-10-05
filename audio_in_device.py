@@ -92,11 +92,12 @@ class AudioInDevice(PyshaMode):
         self.get_color = kwargs.get("get_color")
         control_definitions = config.get("controls", [])
         # Configure controls
+        osc_number = self.slot + 1
         audio_channel_control = OSCControl(
             {
                 "$type": "control-range",
                 "label": "Audio Channel",
-                "address": "/param/a/osc/1/param1",
+                "address": f"/param/a/osc/{osc_number}/param1",
                 "min": 0,
                 "max": 1,
                 "bipolar": 1,
@@ -113,7 +114,7 @@ class AudioInDevice(PyshaMode):
             {
                 "$type": "control-range",
                 "label": "Audio Gain",
-                "address": "/param/a/osc/1/param2",
+                "address": f"/param/a/osc/{osc_number}/param2",
                 "min": 0,
                 "max": 1,
             },
@@ -179,7 +180,7 @@ class AudioInDevice(PyshaMode):
             {
                 "$type": "control-range",
                 "label": "Low Cut",
-                "address": "/param/a/osc/1/param6",
+                "address": f"/param/a/osc/{osc_number}/param6",
                 "min": 0,
                 "max": 1,
             },
@@ -193,7 +194,7 @@ class AudioInDevice(PyshaMode):
             {
                 "$type": "control-range",
                 "label": "High Cut",
-                "address": "/param/a/osc/1/param7",
+                "address": f"/param/a/osc/{osc_number}/param7",
                 "min": 0,
                 "max": 1,
             },
@@ -202,7 +203,6 @@ class AudioInDevice(PyshaMode):
         )
         self.dispatcher.map(high_cut_control.address, high_cut_control.set_state)
         self.controls.append(high_cut_control)
-
         for control in self.get_visible_controls():
             if hasattr(control, "select"):
                 control.select()
@@ -274,10 +274,8 @@ class AudioInDevice(PyshaMode):
                 ],
             }
             control_def["groups"].append(dest)
-        #TODO: make different OW outs appear in this def 
+
         overwitch = self.app.external_instruments[0]
-        print("OW output ports")
-            
         overwitch_def = {
             "$type": "group",
             "label": f'{overwitch.name}',
@@ -462,6 +460,8 @@ class AudioInDevice(PyshaMode):
 
 
     def connect_ports_duplex(self, *args):
+        #TODO: 2nd audio in that's loaded will have to be loaded twice???
+
         [addr, val] = args
         if val != None:
             column_index = None 
@@ -510,7 +510,7 @@ class AudioInDevice(PyshaMode):
                 dest_R=None
                 
                 #We're getting IDs for left and right ports, input and output
-                print(source_instrument.name)
+               
                 if source_instrument.name != "Overwitch":
                     for port in source_instrument_ports['output']:
                         if port.get("info", []).get("props",[]).get("audio.channel", None) == "FL":
@@ -518,12 +518,9 @@ class AudioInDevice(PyshaMode):
                         elif port.get("info", []).get("props",[]).get("audio.channel", None) == "FR":
                             source_R = port['id']
                 else:
-                    
-                    print(column_index)
                     # gets the selected values for all 8 menus and assigns the right port
                     control_idx = column_index % 4
                     control =  self.controls[8 + control_idx].get_active_group()
-                    control_value = int(control.controls[0].value)
                     control_label = control.controls[0].label
                     for port in source_instrument_ports['output']:
                         if control_label == port["info"]["props"]["port.name"]:

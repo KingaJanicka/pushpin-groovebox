@@ -326,17 +326,75 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "Send 1 Level",
-			"address": "/param/a/send/1/level",
+			"label": "Portamento",
+			"address": "/param/a/portamento",
 			"min": 0,
 			"max": 1
 		},
 		{
-			"$type": "control-range",
-			"label": "Send 2 Level",
-			"address": "/param/a/send/2/level",
-			"min": 0,
-			"max": 1
+			"$type": "control-menu",
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "Poly",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Poly",
+						"address": "/param/a/play_mode",
+						"value": 0
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Mono",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Mono",
+						"address": "/param/a/play_mode",
+						"value": 1
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Mono ST",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Mono ST",
+						"address": "/param/a/play_mode",
+						"value": 2
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Mono FP",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Mono FP",
+						"address": "/param/a/play_mode",
+						"value": 3
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Mono ST + FP",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Mono ST + FP",
+						"address": "/param/a/play_mode",
+						"value": 4
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Latch",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Latch",
+						"address": "/param/a/play_mode",
+						"value": 5
+					}
+				}
+			]
 		}
 	]
 }

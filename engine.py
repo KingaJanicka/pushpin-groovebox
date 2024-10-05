@@ -389,6 +389,7 @@ async def connectPipewireSourceToPipewireDest(source_id, dest_id):
         raise Exception("Invalid call to connectPipewireSourcetoPipewireDest()")
 
     try:
+        print("source id:", source_id, "dest_id", dest_id)
         cmd = f"pw-link {str(source_id)} {str(dest_id)}"
         # print(cmd)
         proc = await asyncio.create_subprocess_shell(
@@ -485,10 +486,10 @@ class ExternalEngine(Engine):
 
     async def start(self):
         self.process = await asyncio.create_subprocess_exec(
-            f"pw-jack", f'overwitch-cli',f"-n", f"0",
+            f"pw-jack", f'overwitch-cli',f"-n", f"0", 
             stdin=asyncio.subprocess.PIPE,
             stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
+            # stderr=asyncio.subprocess.PIPE,
         )
 
         self.PID = self.process.pid

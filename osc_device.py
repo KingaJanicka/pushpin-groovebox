@@ -126,6 +126,7 @@ class OSCDevice(PyshaMode):
                 control.select()
 
     def select(self):
+        #TODO: this is not getting called at all
         # self.query_visible_controls()
         print("device init______________")
         for cmd in self.init:

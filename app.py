@@ -21,7 +21,7 @@ from melodic_mode import MelodicMode
 from instrument_selection_mode import InstrumentSelectionMode
 from rhythmic_mode import RhythmicMode
 from slice_notes_mode import SliceNotesMode
-from sequencer_mode import SequencerMode
+# from sequencer_mode import SequencerMode
 from settings_mode import SettingsMode
 from main_controls_mode import MainControlsMode
 from midi_cc_mode import MIDICCMode
@@ -336,7 +336,8 @@ class PyshaApp(object):
         self.set_mode_for_xor_group(self.slice_notes_mode)
 
     def set_sequencer_mode(self):
-        self.set_mode_for_xor_group(self.sequencer_mode)
+        pass
+        # self.set_mode_for_xor_group(self.sequencer_mode)
 
     def set_preset_selection_mode(self):
         self.set_mode_for_xor_group(self.preset_selection_mode)

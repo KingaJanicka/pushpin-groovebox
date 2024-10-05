@@ -693,7 +693,7 @@ class OSCGroup(object):
 
 class OSCControlMenu(object):
     name = "Menu"
-
+    
     @property
     def label(self):
         active = self.get_active_menu_item()
@@ -830,7 +830,7 @@ class OSCControlMenu(object):
 
 class OSCMenuItem(object):
     name = "Menu Item"
-
+    #TODO: Switching those menu items is really thrashy, prob a feedback look with osc
     def __init__(self, config, get_color_func=None, send_osc_func=None):
         if config.get("$type", None) != "menu-item":
             raise Exception("Invalid config passed to new OSCMenuItem")

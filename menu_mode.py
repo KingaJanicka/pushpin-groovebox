@@ -208,7 +208,7 @@ class MenuMode(PyshaMode):
                         float(message["value"]),
                         instrument_shortname,
                     )
-                    # TODO: might need removing
+                    
                 devices = self.app.osc_mode.get_current_instrument_devices()
                 for device in devices:
                     if device.label == selected_device.label:
