@@ -66,6 +66,42 @@
 			"groups": [
 				{
 					"$type": "group",
+					"label": "Off",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "Filter Disabled",
+									"onselect": {
+										"$type": "message",
+										"$comment": "",
+										"address": "/param/a/filter/1/type",
+										"value": 0
+									}
+								}
+							]
+						},
+						{
+							"$type": "control-menu",
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "",
+									"onselect": {
+										"$type": "message",
+										"$comment": "Std",
+										"address": "/param/a/filter/1/subtype",
+										"value": 0
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
 					"label": "Classic",
 					"controls": [
 						{
@@ -1234,6 +1270,42 @@
 		{
 			"$type": "control-switch",
 			"groups": [
+				{
+					"$type": "group",
+					"label": "Off",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "Filter Disabled",
+									"onselect": {
+										"$type": "message",
+										"$comment": "",
+										"address": "/param/a/filter/1/type",
+										"value": 0
+									}
+								}
+							]
+						},
+						{
+							"$type": "control-menu",
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "",
+									"onselect": {
+										"$type": "message",
+										"$comment": "Std",
+										"address": "/param/a/filter/1/subtype",
+										"value": 0
+									}
+								}
+							]
+						}
+					]
+				},
 				{
 					"$type": "group",
 					"label": "Classic",
