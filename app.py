@@ -1067,11 +1067,13 @@ async def main():
     app.get_volume_node()
     app.send_message_cli()
     #QUerry controls to update initial state
+
     for instrument in app.osc_mode.instruments:
         await app.osc_mode.instruments[instrument].engine.configure_pipewire()
         await asyncio.sleep(0.1)
         app.osc_mode.instruments[instrument].query_all_controls()
         app.osc_mode.instruments[instrument].query_devices()
+        app.queue.append(app.osc_mode.call_all_instument_device_init())
         
 
     for instrument in app.external_instruments:

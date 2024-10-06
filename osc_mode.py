@@ -265,6 +265,10 @@ class OSCMode(PyshaMode):
         for device in current_instrument_devices:
             device.query_all_controls()
 
+    async def call_all_instument_device_init(self):
+        current_instrument_devices = self.get_current_instrument_page_devices()
+        for device in current_instrument_devices:
+            await device.select()
     def new_instrument_selected(self):
         # print("WEWEWEWEWEWEWEWEWEWEWEWEWEWEEE")
         pass
