@@ -1063,8 +1063,6 @@ async def main():
     for instrument in app.external_instruments:
         await instrument.engine.configure_pipewire()
 
-
-
     while True:
         await app.run_loop()
 

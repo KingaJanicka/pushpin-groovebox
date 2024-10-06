@@ -36,7 +36,6 @@ class Engine(ABC):
         buffer_size=512,
         midi_device_idx=None,
         instrument_definition=None,
-        
     ):
         self.app = app
         self.sample_rate = sample_rate
@@ -86,10 +85,12 @@ class Engine(ABC):
         pass
 
     async def configure_pipewire(self):
-    
+
         instrument_nodes = await self.get_instrument_nodes()
         self.instrument_nodes = instrument_nodes
-        all_ports = filter(lambda x: x['type'] == 'PipeWire:Interface:Port', self.app.pipewire)
+        all_ports = filter(
+            lambda x: x["type"] == "PipeWire:Interface:Port", self.app.pipewire
+        )
         for port in all_ports:
             # with nodes we can associate nodes with clients/instruments via PID
             # And ports with nodes via ID/node.id
@@ -100,24 +101,33 @@ class Engine(ABC):
                     "node.id", None
                 ) == instrument_node.get("id", None):
                     if port.get("info", {}).get("direction", None):
-                        #TODO: this needs to be re-written to be handled a bit better
+                        # TODO: this needs to be re-written to be handled a bit better
                         # So we don't have sperate cases for surge and OW
                         # Need to make sure monitor outs won't end up in "outputs"
                         if self.instrument["instrument_name"] == "Overwitch":
-                            if port.get("info", []).get("props", []).get(
-                                "port.direction", "None"
-                            ) == "out" and port.get("info", []).get("props", []).get(
-                                "format.dsp", "None"
-                            ) != "8 bit raw midi":
-                                self.pw_ports["output"].append(port)   
-                            elif port.get("info", []).get("props", []).get(
-                                "port.direction", "None"
-                            ) == "in" and port.get("info", []).get("props", []).get(
-                                "format.dsp", "None"
-                            ) != "8 bit raw midi":
-                                self.pw_ports["input"].append(port)         
-                            
-                        
+                            if (
+                                port.get("info", [])
+                                .get("props", [])
+                                .get("port.direction", "None")
+                                == "out"
+                                and port.get("info", [])
+                                .get("props", [])
+                                .get("format.dsp", "None")
+                                != "8 bit raw midi"
+                            ):
+                                self.pw_ports["output"].append(port)
+                            elif (
+                                port.get("info", [])
+                                .get("props", [])
+                                .get("port.direction", "None")
+                                == "in"
+                                and port.get("info", [])
+                                .get("props", [])
+                                .get("format.dsp", "None")
+                                != "8 bit raw midi"
+                            ):
+                                self.pw_ports["input"].append(port)
+
                         elif "output" in port.get("info", []).get("props", []).get(
                             "port.name", "None"
                         ):
@@ -128,11 +138,8 @@ class Engine(ABC):
                         ):
                             self.pw_ports["input"].append(port)
 
-
-
         await self.get_instrument_duplex_node()
         await self.get_instrument_duplex_ports()
-
 
     def stop(self):
         self.process.kill()
@@ -182,47 +189,63 @@ class Engine(ABC):
         )
 
     async def get_instrument_nodes(self):
-        clients = filter(lambda x: x['type'] == 'PipeWire:Interface:Client', self.app.pipewire.copy())
-        nodes = filter(lambda x: x['type'] == 'PipeWire:Interface:Node', self.app.pipewire.copy())
+        clients = filter(
+            lambda x: x["type"] == "PipeWire:Interface:Client", self.app.pipewire.copy()
+        )
+        nodes = filter(
+            lambda x: x["type"] == "PipeWire:Interface:Node", self.app.pipewire.copy()
+        )
         client_id = [None]
-        try: 
+        try:
             for client in clients:
                 if client and client.get("info", {}).get("props", {}).get(
                     "application.process.id", None
                 ) == (self.PID):
-                        client_id.append(client["id"])
-                        # print("client ID", client_id)
-                
+                    client_id.append(client["id"])
+                    # print("client ID", client_id)
+
             instrument_nodes = []
             for node in nodes:
                 for id in client_id:
-                    if node and id != None and node.get("info", {}).get("props", {}).get(
-                        "client.id", None
-                    ) == (id):
+                    if (
+                        node
+                        and id != None
+                        and node.get("info", {}).get("props", {}).get("client.id", None)
+                        == (id)
+                    ):
                         instrument_nodes.append(node)
             return instrument_nodes
         except Exception as e:
             print(e)
 
     async def get_instrument_duplex_node(self):
-        nodes = filter(lambda x: x['type'] == 'PipeWire:Interface:Node', self.app.pipewire)
+        nodes = filter(
+            lambda x: x["type"] == "PipeWire:Interface:Node", self.app.pipewire
+        )
 
         # Gets the right node, so we can adjust volumes and get the ID for ports
         for node in nodes:
-            if node.get("info", []).get("props", []).get("node.description",None) == self.instrument["instrument_name"]:
+            if (
+                node.get("info", []).get("props", []).get("node.description", None)
+                == self.instrument["instrument_name"]
+            ):
                 self.duplex_node = node
                 return node
-            
+
     async def get_instrument_duplex_ports(self):
-        ports = filter(lambda x: x['type'] == 'PipeWire:Interface:Port', self.app.pipewire)
+        ports = filter(
+            lambda x: x["type"] == "PipeWire:Interface:Port", self.app.pipewire
+        )
         unsorted_duplex_ports = []
 
         if not self.duplex_node:
             await self.get_instrument_duplex_node()
 
-
         for port in ports:
-            if self.duplex_node and port["info"]["props"]["node.id"] == self.duplex_node["id"]:
+            if (
+                self.duplex_node
+                and port["info"]["props"]["node.id"] == self.duplex_node["id"]
+            ):
                 unsorted_duplex_ports.append(port)
 
         for port in unsorted_duplex_ports:
@@ -234,12 +257,10 @@ class Engine(ABC):
 
             # if port_type not in ['playback', 'capture']:
             #     continue
-            
+
             # channel = "R" if int(port_index) % 2 else "L"
             # input_index = int(port_index) - 1 if channel == 'L' else int(port_index) - 2
             # self.duplex_ports["inputs" if port_type == 'playback' else 'outputs'][f"{'Input' if port_type == 'playback' else 'Output'} {input_index}"][channel] = port
-
-
 
             match port["info"]["props"]["port.name"]:
                 case "playback_1":
@@ -327,6 +348,111 @@ class SurgeXTEngine(Engine):
             instrument_definition=instrument_definition,
         )
 
+    async def configure_pipewire(self):
+        print("________________________")
+        await super().configure_pipewire()
+
+        # d/c from default sinks
+        # get instrument links
+        # surge_input_node = [instrument for instrument in self.instrument_nodes if instrument['info']['props']['media.class'] == 'Stream/Input/Audio'].pop()
+        surge_output_node = [instrument for instrument in self.instrument_nodes if instrument['info']['props']['media.class'] == 'Stream/Output/Audio'].pop()
+        surge_output_ports = [port for port in self.app.pipewire if port['type'] == 'PipeWire:Interface:Port' and port['info']['props']['node.id'] == surge_output_node['id']]
+        init_links = [link for link in self.app.pipewire if link['type'] == 'PipeWire:Interface:Link' and link['info']['output-node-id'] == surge_output_node['id']]
+
+        for link in init_links:
+            await disconnectPipewireLink(link['id'])
+            
+        # connect source of link to duplex in
+        volume_node = [node for node in self.app.pipewire if node['type']  == 'PipeWire:Interface:Node' and node['info']['props']['node.name'] == 'pushpin-volumes'].pop()
+        if not volume_node:
+            raise Exception('Volume Duplex node not found')
+        
+        volume_ports = [port for port in self.app.pipewire if port['type'] == 'PipeWire:Interface:Port' and port['info']['props']['node.id'] == volume_node['id']]
+        
+        midi_channel = self.instrument['midi_channel']
+        volume_input_port_index_L = midi_channel * 2
+        volume_input_port_index_R = (midi_channel * 2) + 1
+
+        volume_L_input = [port for port in volume_ports if port['info']['props']['object.path'] == f"pushpin-volumes:playback_{volume_input_port_index_L}"].pop()
+        volume_R_input = [port for port in volume_ports if port['info']['props']['object.path'] == f"pushpin-volumes:playback_{volume_input_port_index_R}"].pop()
+
+        surge_L = [port for port in surge_output_ports if port['info']['props']['port.name'] == 'output_FL'].pop()
+        surge_R = [port for port in surge_output_ports if port['info']['props']['port.name'] == 'output_FR'].pop()
+
+
+        await connectPipewireSourceToPipewireDest(surge_L['id'], volume_L_input['id'])
+        await connectPipewireSourceToPipewireDest(surge_R['id'], volume_R_input['id'])
+
+        # connect duplex out to destination of link
+        volume_L_output = [port for port in volume_ports if port['info']['props']['object.path'] == f"pushpin-volumes:capture_{volume_input_port_index_L}"].pop()
+        volume_R_output = [port for port in volume_ports if port['info']['props']['object.path'] == f"pushpin-volumes:capture_{volume_input_port_index_R}"].pop()
+
+        interface_L_port = [link['info']['input-port-id'] for link in init_links if link['info']['output-port-id'] == surge_L['id']].pop()
+        interface_R_port = [link['info']['input-port-id'] for link in init_links if link['info']['output-port-id'] == surge_R['id']].pop()
+
+        await connectPipewireSourceToPipewireDest(volume_L_output['id'], interface_L_port)
+        await connectPipewireSourceToPipewireDest(volume_R_output['id'], interface_R_port)
+
+
+
+
+        # volumes_node = None
+        # volumes_ports = []
+        # master = []
+
+        # master_out_ports = {"left":{}, 'right':{}}
+        # for node in self.app.pipewire:
+        #     if node.get("info",{}).get("props",{}).get("node.name", None) == "pushpin-volumes":
+        #         volumes_node = node
+        #         for item in self.app.pipewire:
+        #             if "pushpin-volumes" in item.get("info",{}).get("props",{}).get("object.path", "None"):
+        #                 volumes_ports.append(item)
+        # for node in self.instrument_nodes:
+            
+        #     surge_output_node_id = None
+        #     if node["info"]["props"]["media.category"] == "Playback":
+        #         surge_output_node_id = node["id"]
+        #     surge_output_node_clinet_id = node["info"]["props"]["client.id"]
+            
+           
+        #     for link in self.app.pipewire:
+        #         if link["type"] == "PipeWire:Interface:Link" and link.get('info', None).get('output-node-id', None) == surge_output_node_id:
+        #             # Disconnecting surge from main outs and connecting it again
+        #             # With duplex in between for level control
+        #             # print(link)
+        #             master_out_input_node_id = link['info']['input-node-id']
+        #             master.append(link["info"]["input-port-id"])
+                
+        #             for port in self.app.pipewire:
+        #                 if port.get("type", None) == "PipeWire:Interface:Port" and port.get("info",{}).get("props",{}).get("node.id", None) == master_out_input_node_id:
+        #                     if port.get("info",{}).get("props",{}).get("port.id", None) == 0:
+        #                         master_out_ports["left"] = port
+        #                     elif port.get("info",{}).get("props",{}).get("port.id", None) == 1:
+        #                         master_out_ports["right"] = port
+
+
+        #             await disconnectPipewireLink(link_id=link['id'])
+        #             instrument_idx = self.instrument["midi_channel"]
+        #             # surge_out_node => duplex_in
+        #             for surge_port in self.pw_ports["output"]:
+        #                 if surge_port["info"]["props"]["port.name"] == "output_FL":
+        #                     for volume_port in volumes_ports:
+        #                         if volume_port["info"]["props"]["port.id"] == (0 + instrument_idx*2):
+        #                             await connectPipewireSourceToPipewireDest(surge_port["id"],volume_port["id"])
+        #                             # pass
+        #                 elif surge_port["info"]["props"]["port.name"] == "output_FR":
+        #                     for volume_port in volumes_ports:
+        #                         if volume_port["info"]["props"]["port.id"] == (1 + instrument_idx*2):
+        #                             await connectPipewireSourceToPipewireDest(surge_port["id"],volume_port["id"])
+        #                             # pass
+        #             #duplex_out => master_out
+        #     for volume_port in volumes_ports:
+        #         if volume_port["info"]["props"]["port.id"] %2 == 0:
+        #             await connectPipewireSourceToPipewireDest(volume_port["id"],master_out_ports["left"]["id"])
+        #             # pass
+        #         elif volume_port["info"]["props"]["port.id"] %2 == 1:
+        #             await connectPipewireSourceToPipewireDest(volume_port["id"],master_out_ports["left"]["id"])
+        #             # pass
     def getPID(self):
         return self.PID
 
@@ -426,6 +552,27 @@ async def disconnectPipewireSourceFromPipewireDest(source_id, dest_id):
         print(stderr.decode().strip())
 
 
+async def disconnectPipewireLink(link_id):
+    if not link_id:
+        raise Exception("Invalid call to disconnectPipewireSourceFromPipewireDest()")
+    try:
+        cmd = f"pw-link -d {str(link_id)}"
+        # print(cmd)
+        proc = await asyncio.create_subprocess_shell(
+            cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+        )
+    except Exception as e:
+        print("Error in disconnectPipewireSourceToPipewireDest")
+        print(e)
+    stdout, stderr = await proc.communicate()
+
+    if stdout:
+        print(stdout.decode().strip())
+    elif stderr:
+        print(stderr.decode().strip())
+
+
+
 # Given an engine PID, run pw-dump until the PID shows up and then return that node config
 async def getPipewireConfigForPID(pid):
     if not pid:
@@ -457,7 +604,6 @@ async def getPipewireConfigForPID(pid):
             await asyncio.sleep(0.25)
 
 
-
 class ExternalEngine(Engine):
     def __init__(
         self,
@@ -465,7 +611,7 @@ class ExternalEngine(Engine):
         sample_rate=48000,
         buffer_size=512,
         midi_device_idx=None,
-        instrument_definition={} # TODO: create stub instrument def
+        instrument_definition={},  # TODO: create stub instrument def
     ):
         super().__init__(
             app,
@@ -486,7 +632,10 @@ class ExternalEngine(Engine):
 
     async def start(self):
         self.process = await asyncio.create_subprocess_exec(
-            f"pw-jack", f'overwitch-cli',f"-n", f"0", 
+            f"pw-jack",
+            f"overwitch-cli",
+            f"-n",
+            f"0",
             stdin=asyncio.subprocess.PIPE,
             stdout=asyncio.subprocess.PIPE,
             # stderr=asyncio.subprocess.PIPE,
@@ -496,12 +645,9 @@ class ExternalEngine(Engine):
 
         await asyncio.sleep(2)
 
- 
     async def updateConfig(self):
         self.PID = self.process.pid
         pwConfig = await getPipewireConfigForPID(self.PID)
         if pwConfig:
             self.pipewire = pwConfig
             self.pipewireID = pwConfig["id"]
-
-    

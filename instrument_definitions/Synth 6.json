@@ -2,7 +2,7 @@
     "instrument_name": "Pushpin 6",
     "instrument_short_name": "Pushpin 6",
     "illuminate_local_notes": true,
-    "midi_channel": 5,
+    "midi_channel": 6,
     "osc_in_port": 1036,
     "osc_out_port": 1046,
     "default_layout": "lmelodic",
