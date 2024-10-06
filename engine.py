@@ -349,12 +349,10 @@ class SurgeXTEngine(Engine):
         )
 
     async def configure_pipewire(self):
-        print("________________________")
         await super().configure_pipewire()
 
         # d/c from default sinks
         # get instrument links
-        # surge_input_node = [instrument for instrument in self.instrument_nodes if instrument['info']['props']['media.class'] == 'Stream/Input/Audio'].pop()
         surge_output_node = [instrument for instrument in self.instrument_nodes if instrument['info']['props']['media.class'] == 'Stream/Output/Audio'].pop()
         surge_output_ports = [port for port in self.app.pipewire if port['type'] == 'PipeWire:Interface:Port' and port['info']['props']['node.id'] == surge_output_node['id']]
         init_links = [link for link in self.app.pipewire if link['type'] == 'PipeWire:Interface:Link' and link['info']['output-node-id'] == surge_output_node['id']]
@@ -394,65 +392,6 @@ class SurgeXTEngine(Engine):
         await connectPipewireSourceToPipewireDest(volume_R_output['id'], interface_R_port)
 
 
-
-
-        # volumes_node = None
-        # volumes_ports = []
-        # master = []
-
-        # master_out_ports = {"left":{}, 'right':{}}
-        # for node in self.app.pipewire:
-        #     if node.get("info",{}).get("props",{}).get("node.name", None) == "pushpin-volumes":
-        #         volumes_node = node
-        #         for item in self.app.pipewire:
-        #             if "pushpin-volumes" in item.get("info",{}).get("props",{}).get("object.path", "None"):
-        #                 volumes_ports.append(item)
-        # for node in self.instrument_nodes:
-            
-        #     surge_output_node_id = None
-        #     if node["info"]["props"]["media.category"] == "Playback":
-        #         surge_output_node_id = node["id"]
-        #     surge_output_node_clinet_id = node["info"]["props"]["client.id"]
-            
-           
-        #     for link in self.app.pipewire:
-        #         if link["type"] == "PipeWire:Interface:Link" and link.get('info', None).get('output-node-id', None) == surge_output_node_id:
-        #             # Disconnecting surge from main outs and connecting it again
-        #             # With duplex in between for level control
-        #             # print(link)
-        #             master_out_input_node_id = link['info']['input-node-id']
-        #             master.append(link["info"]["input-port-id"])
-                
-        #             for port in self.app.pipewire:
-        #                 if port.get("type", None) == "PipeWire:Interface:Port" and port.get("info",{}).get("props",{}).get("node.id", None) == master_out_input_node_id:
-        #                     if port.get("info",{}).get("props",{}).get("port.id", None) == 0:
-        #                         master_out_ports["left"] = port
-        #                     elif port.get("info",{}).get("props",{}).get("port.id", None) == 1:
-        #                         master_out_ports["right"] = port
-
-
-        #             await disconnectPipewireLink(link_id=link['id'])
-        #             instrument_idx = self.instrument["midi_channel"]
-        #             # surge_out_node => duplex_in
-        #             for surge_port in self.pw_ports["output"]:
-        #                 if surge_port["info"]["props"]["port.name"] == "output_FL":
-        #                     for volume_port in volumes_ports:
-        #                         if volume_port["info"]["props"]["port.id"] == (0 + instrument_idx*2):
-        #                             await connectPipewireSourceToPipewireDest(surge_port["id"],volume_port["id"])
-        #                             # pass
-        #                 elif surge_port["info"]["props"]["port.name"] == "output_FR":
-        #                     for volume_port in volumes_ports:
-        #                         if volume_port["info"]["props"]["port.id"] == (1 + instrument_idx*2):
-        #                             await connectPipewireSourceToPipewireDest(surge_port["id"],volume_port["id"])
-        #                             # pass
-        #             #duplex_out => master_out
-        #     for volume_port in volumes_ports:
-        #         if volume_port["info"]["props"]["port.id"] %2 == 0:
-        #             await connectPipewireSourceToPipewireDest(volume_port["id"],master_out_ports["left"]["id"])
-        #             # pass
-        #         elif volume_port["info"]["props"]["port.id"] %2 == 1:
-        #             await connectPipewireSourceToPipewireDest(volume_port["id"],master_out_ports["left"]["id"])
-        #             # pass
     def getPID(self):
         return self.PID
 

@@ -339,7 +339,7 @@ class AudioInDevice(PyshaMode):
                 val = 0.0
             channel_volumes.extend([val, val])
         device_id = duplex_node["id"]
-        cli_string = f"pw-cli s {device_id} Props '{{channelVolumes: {channel_volumes}}}'"
+        cli_string = f"pw-cli s {device_id} Props '{{monitorVolumes: {channel_volumes}}}'"
         self.app.queue.append(asyncio.create_subprocess_shell(cli_string, stdout=asyncio.subprocess.PIPE))
 
 

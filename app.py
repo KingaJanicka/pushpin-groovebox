@@ -88,6 +88,8 @@ class PyshaApp(object):
     # Pipewire-related
     external_instruments = []
     pipewire = None
+    volumes = [ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+    volume_node = None
 
     def __init__(self):
         if os.path.exists("settings.json"):
@@ -915,6 +917,16 @@ class PyshaApp(object):
             await asyncio.sleep(2)
             await self.get_pipewire_config()
 
+    def get_volume_node(self):
+        self.volume_node = [node for node in self.pipewire if node['type']  == 'PipeWire:Interface:Node' and node['info']['props']['node.name'] == 'pushpin-volumes'].pop()
+        return self.volume_node
+    
+    def send_message_cli(self, *args):
+        volume_node_id = self.volume_node["id"]
+        cli_string = f"pw-cli s {volume_node_id} Props '{{monitorVolumes: {self.volumes}}}'"
+        self.queue.append(asyncio.create_subprocess_shell(cli_string, stdout=asyncio.subprocess.PIPE))
+  
+
 # Bind push action handlers with class methods
 @push2_python.on_encoder_rotated()
 def on_encoder_rotated(_, encoder_name, increment):
@@ -1037,7 +1049,6 @@ def on_midi_connected(_):
         # print("Error:  {}".format(str(e)))
         # traceback.print_exc()
 
-
 async def main():
     # Initialise OSC sockets
     loop = asyncio.get_event_loop()
@@ -1052,7 +1063,10 @@ async def main():
     await asyncio.sleep(5)
     await app.get_pipewire_config()
     app.preset_selection_mode.load_init_presets()
-
+    #sets volumes to full in the duplex
+    app.get_volume_node()
+    app.send_message_cli()
+    #QUerry controls to update initial state
     for instrument in app.osc_mode.instruments:
         await app.osc_mode.instruments[instrument].engine.configure_pipewire()
         await asyncio.sleep(0.1)
@@ -1062,7 +1076,6 @@ async def main():
 
     for instrument in app.external_instruments:
         await instrument.engine.configure_pipewire()
-
     while True:
         await app.run_loop()
 

@@ -11,6 +11,7 @@ import asyncio
 import push2_python
 import logging
 from definitions import PyshaMode
+from ratelimit import limits
 
 logger = logging.getLogger("osc_device")
 # logger.setLevel(level=logging.DEBUG)
@@ -51,8 +52,10 @@ class OSCDevice(PyshaMode):
         return pages
 
     def __init__(
-        self, config, osc={"client": {}, "server": {}, "dispatcher": {}}, **kwargs
+        self, config, osc={"client": {}, "server": {}, "dispatcher": {}}, engine=None, **kwargs
     ):
+        self.app = kwargs["app"]
+        self.engine = engine
         self.label = ""
         self.definition = {}
         self.controls = []
@@ -202,20 +205,45 @@ class OSCDevice(PyshaMode):
             all_controls = self.pages[0]
         return all_controls
 
+    @limits(calls=1, period=0.05)
+    def send_message_cli(self, *args):
+        volume_node_id = self.app.volume_node["id"]
+        channel_volumes = self.app.volumes
+        cli_string = f"pw-cli s {volume_node_id} Props '{{monitorVolumes: {channel_volumes}}}'"
+        self.app.queue.append(asyncio.create_subprocess_shell(cli_string, stdout=asyncio.subprocess.PIPE))
+  
+
+
     def on_encoder_rotated(self, encoder_name, increment):
         try:
-            encoder_idx = [
-                push2_python.constants.ENCODER_TRACK1_ENCODER,
-                push2_python.constants.ENCODER_TRACK2_ENCODER,
-                push2_python.constants.ENCODER_TRACK3_ENCODER,
-                push2_python.constants.ENCODER_TRACK4_ENCODER,
-                push2_python.constants.ENCODER_TRACK5_ENCODER,
-                push2_python.constants.ENCODER_TRACK6_ENCODER,
-                push2_python.constants.ENCODER_TRACK7_ENCODER,
-                push2_python.constants.ENCODER_TRACK8_ENCODER,
-            ].index(encoder_name)
-            visible_controls = self.get_visible_controls()
-            control = visible_controls[encoder_idx]
-            control.update_value(increment)
+            #This if statement is for setting post-synth volume levels
+            if encoder_name == push2_python.constants.ENCODER_MASTER_ENCODER:
+                instrument = self.app.osc_mode.get_current_instrument()
+                all_volumes = self.app.volumes
+                instrument_idx = instrument.osc_in_port % 10
+                track_L_volume = all_volumes[instrument_idx * 2]
+                track_R_volume = all_volumes[instrument_idx * 2 +1]
+                if 0 <= track_L_volume + increment*0.01 <= 1:
+                    track_L_volume = track_L_volume + increment*0.01
+                    track_R_volume = track_R_volume + increment*0.01
+                all_volumes[instrument_idx*2] = track_L_volume
+                all_volumes[instrument_idx*2 +1] = track_R_volume
+                self.app.volumes = all_volumes
+                self.send_message_cli()
+            else: 
+                encoder_idx = [
+                    push2_python.constants.ENCODER_TRACK1_ENCODER,
+                    push2_python.constants.ENCODER_TRACK2_ENCODER,
+                    push2_python.constants.ENCODER_TRACK3_ENCODER,
+                    push2_python.constants.ENCODER_TRACK4_ENCODER,
+                    push2_python.constants.ENCODER_TRACK5_ENCODER,
+                    push2_python.constants.ENCODER_TRACK6_ENCODER,
+                    push2_python.constants.ENCODER_TRACK7_ENCODER,
+                    push2_python.constants.ENCODER_TRACK8_ENCODER,
+                ].index(encoder_name)
+
+                visible_controls = self.get_visible_controls()
+                control = visible_controls[encoder_idx]
+                control.update_value(increment)
         except ValueError:
             pass  # Encoder not in list
