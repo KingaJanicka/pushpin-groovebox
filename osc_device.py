@@ -205,7 +205,7 @@ class OSCDevice(PyshaMode):
             all_controls = self.pages[0]
         return all_controls
 
-    @limits(calls=1, period=0.05)
+    @limits(calls=1, period=0.01)
     def send_message_cli(self, *args):
         volume_node_id = self.app.volume_node["id"]
         channel_volumes = self.app.volumes
