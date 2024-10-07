@@ -6,6 +6,8 @@ from osc_controls import (
 import push2_python
 import logging
 import definitions
+from ratelimit import limits
+import asyncio
 
 logger = logging.getLogger("mod_matrix_device")
 # logger.setLevel(level=logging.DEBUG)
@@ -25,11 +27,13 @@ class ModMatrixDevice(definitions.PyshaMode):
     def __init__(
         self,
         osc={"client": {}, "server": {}, "dispatcher": {}},
+        engine=None,
         **kwargs,
     ):
         self.app = kwargs["app"]
         self.label = ""
         self.definition = {}
+        self.engine = engine
         self.modmatrix = False
         self.controls = [0] * 8
         self.src_cat_column = 0
@@ -937,8 +941,39 @@ class ModMatrixDevice(definitions.PyshaMode):
         # Sets Mod Depth Knob
         mod_depth_scaled = (selected_entry[2] + 1) / 2
         visible_controls[self.depth_control_column] = mod_depth_scaled
+    
+
+    @limits(calls=1, period=0.1)
+    def send_message_cli(self, *args):
+        volume_node_id = self.app.volume_node["id"]
+        cli_string = f"pw-cli s {volume_node_id} Props '{{monitorVolumes: {self.app.volumes}}}'"
+        self.app.queue.append(asyncio.create_subprocess_shell(cli_string, stdout=asyncio.subprocess.PIPE))
 
     def on_encoder_rotated(self, encoder_name, increment):
+        #This if statement is for setting post-synth volume levels
+        if encoder_name == push2_python.constants.ENCODER_MASTER_ENCODER:
+            instrument = self.app.osc_mode.get_current_instrument()
+            all_volumes = self.app.volumes
+            instrument_idx = instrument.osc_in_port % 10
+            track_L_volume = all_volumes[instrument_idx * 2]
+            track_R_volume = all_volumes[instrument_idx * 2 +1]
+            #This specific wording of elif is needed
+            # to ensure we can reach max/min values
+            if track_L_volume + increment*0.01 <= 0:
+                track_L_volume = 0
+                track_R_volume = 0
+            elif track_L_volume + increment*0.01 >=1:
+                track_L_volume = 1
+                track_R_volume = 1
+            else:
+                track_L_volume = track_L_volume + increment*0.01
+                track_R_volume = track_R_volume + increment*0.01
+            all_volumes[instrument_idx*2] = track_L_volume
+            all_volumes[instrument_idx*2 +1] = track_R_volume
+            self.app.volumes = all_volumes
+            self.send_message_cli()
+
+        
         try:
             encoder_idx = [
                 push2_python.constants.ENCODER_TRACK1_ENCODER,
@@ -1054,6 +1089,8 @@ class ModMatrixDevice(definitions.PyshaMode):
                     self.snap_knobs_to_mod_matrix()
 
     def on_encoder_touched(self, encoder_name):
+        
+        
         try:
             encoder_idx = [
                 push2_python.constants.ENCODER_TRACK1_ENCODER,

@@ -88,7 +88,8 @@ class OSCInstrument(PyshaMode):
                     get_color=get_current_instrument_color_helper,
                     osc_in_port=self.osc_in_port,
                     osc_out_port=self.osc_out_port,
-                    app=app
+                    app=app,
+                    engine=self.engine
                 )
             elif device_name == "audio_1" or device_name == "audio_2":
                 device = AudioInDevice(

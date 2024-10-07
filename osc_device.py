@@ -239,7 +239,6 @@ class OSCDevice(PyshaMode):
                 all_volumes[instrument_idx*2] = track_L_volume
                 all_volumes[instrument_idx*2 +1] = track_R_volume
                 self.app.volumes = all_volumes
-                print(self.app.volumes)
                 self.send_message_cli()
             else: 
                 encoder_idx = [
