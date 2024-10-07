@@ -165,7 +165,9 @@ class OSCDevice(PyshaMode):
                     offset += 1
         except:
             pass
+        
 
+    
     def get_next_prev_pages(self):
         show_prev = False
         if self.page > 0:

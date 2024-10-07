@@ -120,12 +120,6 @@ class PyshaApp(object):
             self, settings=settings
         )
 
-        # Init jack server and passthrus
-
-        # Initialise Surge and wait for it to load
-
-
-        # Init passthru clients for controling volume when tracks are used as sends
 
         self.main_controls_mode = MainControlsMode(self, settings=settings)
         self.active_modes.append(self.main_controls_mode)
@@ -151,7 +145,7 @@ class PyshaApp(object):
         self.active_modes += [self.instrument_selection_mode, self.osc_mode]
         self.instrument_selection_mode.select_instrument(
             self.instrument_selection_mode.selected_instrument
-        )
+        )  
         self.ddrm_tone_selector_mode = DDRMToneSelectorMode(self, settings=settings)
         self.menu_mode = MenuMode(self, settings=settings, send_osc_func=self.send_osc)
         self.settings_mode = SettingsMode(self, settings=settings)
@@ -416,6 +410,7 @@ class PyshaApp(object):
             print("Not receiving from any MIDI input")
 
     def init_midi_out(self, device_name=None):
+        #TODO:: Does this do anything?
         print("Configuring MIDI out to {}...".format(device_name))
         self.available_midi_out_device_names = [
             name
@@ -444,7 +439,6 @@ class PyshaApp(object):
             "Synth 6",
             "Synth 7",
         ]
-
         if device_name is not None:
             try:
                 full_name = [

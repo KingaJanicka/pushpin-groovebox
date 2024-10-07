@@ -206,11 +206,13 @@ class AudioInDevice(PyshaMode):
         for control in self.get_visible_controls():
             if hasattr(control, "select"):
                 control.select()
+        # self.update()
 
     def update(self):
+        name = self.engine.instrument["instrument_name"]
         control_def = {
             "$type": "control-switch",
-            "label": f"{self.instrument.name}",
+            "label": name,
             "groups": [{
                 "$type": "group",
                 "label": "None sel.",
@@ -273,6 +275,7 @@ class AudioInDevice(PyshaMode):
                     }
                 ],
             }
+            print("Audio in device: Definition appended")
             control_def["groups"].append(dest)
 
         overwitch = self.app.external_instruments[0]
@@ -320,6 +323,7 @@ class AudioInDevice(PyshaMode):
 
     async def select(self):
         # self.query_visible_controls()
+        self.update()
         for cmd in self.init:
             self.send_message(cmd["address"], float(cmd["value"]))
             await asyncio.sleep(0.1)
@@ -571,6 +575,7 @@ class AudioInDevice(PyshaMode):
             control.query()
 
     def draw(self, ctx):
+        print(self.page)
         visible_controls = self.get_visible_controls()
         all_controls = self.pages
         offset = 0

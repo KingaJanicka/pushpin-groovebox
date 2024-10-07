@@ -64,6 +64,9 @@ class MenuMode(PyshaMode):
         self.update_buttons()
 
     def deactivate(self):
+        current_device = self.app.osc_mode.get_current_instrument_device()
+        current_device.set_page(0)
+        self.app.osc_mode.current_device_index_and_page[1] = 0
         instrument = self.app.osc_mode.get_current_instrument()
         # print("called q slots")
         # TODO: I have no clue why the fricity frick this sleep needs to be here
@@ -72,7 +75,6 @@ class MenuMode(PyshaMode):
         instrument.query_slots()
 
         time.sleep(0.1)
-        current_device = self.app.osc_mode.get_current_instrument_device()
         current_device.query_all_controls()
         for button_name in (
             self.upper_row_button_names
