@@ -1,5 +1,5 @@
 {
-	"name": "Filter A",
+	"name": "Filters",
 	"slot": 2,
 	"init": [],
 	"controls": [
@@ -1181,7 +1181,7 @@
 			"items": [
 				{
 					"$type": "menu-item",
-					"label": "Serial 1",
+					"label": "F1→Wf→F2 w/o FB",
 					"onselect": {
 						"$type": "message",
 						"$comment": "RingMod",
@@ -1191,7 +1191,7 @@
 				},
 				{
 					"$type": "menu-item",
-					"label": "Serial 2",
+					"label": "F1→Wf→F2 w/FB",
 					"onselect": {
 						"$type": "message",
 						"$comment": "RingMod",
@@ -1201,7 +1201,7 @@
 				},
 				{
 					"$type": "menu-item",
-					"label": "Serial 3",
+					"label": "F1→Wf↵(F2)",
 					"onselect": {
 						"$type": "message",
 						"$comment": "RingMod",
@@ -1211,7 +1211,7 @@
 				},
 				{
 					"$type": "menu-item",
-					"label": "Dual 1",
+					"label": "Dual Both→Wf",
 					"onselect": {
 						"$type": "message",
 						"$comment": "RingMod",
@@ -1221,7 +1221,7 @@
 				},
 				{
 					"$type": "menu-item",
-					"label": "Dual 2",
+					"label": "Dual F1→Wf",
 					"onselect": {
 						"$type": "message",
 						"$comment": "RingMod",
@@ -1263,7 +1263,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "WIDTH",
+			"label": "Width",
 			"address": "/param/a/amp/width",
 			"min": 0,
 			"max": 1,
