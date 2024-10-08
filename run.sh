@@ -1,1 +1,1 @@
-PIPEWIRE_LATENCY="64/44100" python app.py
+PIPEWIRE_PROPS='{ node.group = "pro-audio-4" }' python app.py

@@ -277,19 +277,19 @@ class AudioInDevice(PyshaMode):
                     }
                 ],
             }
-            print("Audio in device: Definition appended")
             control_def["groups"].append(dest)
 
         overwitch = self.app.external_instruments[0]
+        overwitch_def = None
         overwitch_def = {
             "$type": "group",
             "label": f'{overwitch.name}',
-            "pid": f'{overwitch.engine.PID}',
+            "pid": f'{overwitch.engine.PID or 0}',
             "onselect": {
                 "$type": "message",
                 "$comment": "",
                 "address": "/bla",
-                "value": overwitch.engine.PID,
+                "value": overwitch.engine.PID or 0,
             },
             "controls": [
                 {
@@ -308,7 +308,7 @@ class AudioInDevice(PyshaMode):
                                 "$type": "message",
                                 "$comment": "RingMod",
                                 "address": "/bla",
-                                "value": overwitch.engine.PID,
+                                "value": overwitch.engine.PID or 0,
                             },
                         }
             overwitch_def["controls"][0]["items"].append(control)
@@ -465,7 +465,6 @@ class AudioInDevice(PyshaMode):
 
 
     def connect_ports_duplex(self, *args):
-        #TODO: 2nd audio in that's loaded will have to be loaded twice???
 
         [addr, val] = args
         if val != None:
@@ -675,7 +674,7 @@ class AudioInDevice(PyshaMode):
             all_volumes[instrument_idx*2] = track_L_volume
             all_volumes[instrument_idx*2 +1] = track_R_volume
             self.app.volumes = all_volumes
-            self.send_message_cli()
+            self.app.send_message_cli()
 
         try:
             encoder_idx = [

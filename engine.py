@@ -32,8 +32,8 @@ class Engine(ABC):
     def __init__(
         self,
         app,
-        sample_rate=48000,
-        buffer_size=512,
+        sample_rate=44100,
+        buffer_size=64,
         midi_device_idx=None,
         instrument_definition=None,
     ):
@@ -547,8 +547,8 @@ class ExternalEngine(Engine):
     def __init__(
         self,
         app,
-        sample_rate=48000,
-        buffer_size=512,
+        sample_rate=44100,
+        buffer_size=128,
         midi_device_idx=None,
         instrument_definition={},  # TODO: create stub instrument def
     ):
@@ -573,19 +573,20 @@ class ExternalEngine(Engine):
 
         await asyncio.sleep(1)
         self.process = await asyncio.create_subprocess_exec(
-            f"pw-jack",
-            f"overwitch-cli",
-            f"-n",
-            f"0",
+            "pw-jack",
+            "overwitch-cli",
+            "-n",
+            "0",
             f"-b",
-            f"32",
-            f"-p",
-            f"1",
+            f"8",
+            f"-q",
+            f"4",
             stdin=asyncio.subprocess.PIPE,
             stdout=asyncio.subprocess.PIPE,
             # stderr=asyncio.subprocess.PIPE,
+            
         )
-
+        
         self.PID = self.process.pid
 
         await asyncio.sleep(2)
