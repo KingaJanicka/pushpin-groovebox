@@ -1,1 +1,1 @@
-PIPEWIRE_LATENCY="dastr" python app.py
+PIPEWIRE_LATENCY="64/44100" python app.py

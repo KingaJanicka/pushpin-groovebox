@@ -577,7 +577,6 @@ class AudioInDevice(PyshaMode):
             control.query()
 
     def draw(self, ctx):
-        print(self.page)
         visible_controls = self.get_visible_controls()
         all_controls = self.pages
         offset = 0
