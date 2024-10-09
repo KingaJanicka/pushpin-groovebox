@@ -129,7 +129,7 @@ class OSCDevice(PyshaMode):
                 control.select()
 
     async def select(self):
-        # self.query_visible_controls()
+        await asyncio.sleep(0.1)
         for cmd in self.init:
             self.send_message(cmd["address"], float(cmd["value"]))
             await asyncio.sleep(0.1)
@@ -207,14 +207,6 @@ class OSCDevice(PyshaMode):
             all_controls = self.pages[0]
         return all_controls
 
-    @limits(calls=1, period=0.01)
-    def send_message_cli(self, *args):
-        volume_node_id = self.app.volume_node["id"]
-        channel_volumes = self.app.volumes
-        cli_string = f"pw-cli s {volume_node_id} Props '{{monitorVolumes: {channel_volumes}}}'"
-        self.app.queue.append(asyncio.create_subprocess_shell(cli_string, stdout=asyncio.subprocess.PIPE))
-  
-
 
     def on_encoder_rotated(self, encoder_name, increment):
         try:
@@ -239,7 +231,7 @@ class OSCDevice(PyshaMode):
                 all_volumes[instrument_idx*2] = track_L_volume
                 all_volumes[instrument_idx*2 +1] = track_R_volume
                 self.app.volumes = all_volumes
-                self.send_message_cli()
+                self.app.send_message_cli()
             else: 
                 encoder_idx = [
                     push2_python.constants.ENCODER_TRACK1_ENCODER,

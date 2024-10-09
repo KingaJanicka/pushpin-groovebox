@@ -604,7 +604,7 @@ class PyshaApp(object):
 
             if client:
                 client.send_message(address, value)
-            # print("adress", address)
+            # print("adress", address, value)
 
     def send_osc_multi(self, commands, instrument_short_name=None):
         for command in commands:
@@ -1067,7 +1067,8 @@ async def main():
         await asyncio.sleep(0.1)
         app.osc_mode.instruments[instrument].query_all_controls()
         app.osc_mode.instruments[instrument].query_devices()
-        app.queue.append(app.osc_mode.call_all_instument_device_init())
+        
+        app.queue.append(app.osc_mode.instruments[instrument].init_devices())
         
 
     for instrument in app.external_instruments:

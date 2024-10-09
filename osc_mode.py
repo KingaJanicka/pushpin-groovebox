@@ -265,10 +265,6 @@ class OSCMode(PyshaMode):
         for device in current_instrument_devices:
             device.query_all_controls()
 
-    async def call_all_instument_device_init(self):
-        current_instrument_devices = self.get_current_instrument_page_devices()
-        for device in current_instrument_devices:
-            await device.select()
     def new_instrument_selected(self):
         # print("WEWEWEWEWEWEWEWEWEWEWEWEWEWEEE")
         pass
@@ -421,15 +417,6 @@ class OSCMode(PyshaMode):
             elif button_name == push2_python.constants.BUTTON_RIGHT:
                 self.update_current_instrument_page(new_instrument_page=1)
             return True
-
-    # async def resend_cli_message(self, time):
-    #     #TODO: This assumes we will stay on the same device
-    #     # I don't think anyone could switch that fast with current UI
-    #     # But this should be made more resilient later 
-    #     current_device = self.get_current_instrument_device()
-    #     await asyncio.sleep(time)
-    #     current_device.send_message_cli()
-    #     self.cli_needs_update = False
 
     def on_encoder_rotated(self, encoder_name, increment):
         try:

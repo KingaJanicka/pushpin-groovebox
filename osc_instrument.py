@@ -150,6 +150,21 @@ class OSCInstrument(PyshaMode):
                     break
                 
 
+    async def init_devices(self):
+        for slot_idx, slot_devices in enumerate(self.devices):
+            for device in slot_devices:
+                if slot_idx == 2 or slot_idx == 3 or slot_idx == 4:
+                    await device.select()
+                else:
+                    slot = self.slots[slot_idx]
+                    for init in device.init:
+                        if init["address"] == slot["address"] and int(
+                            init["value"]
+                        ) == float(slot["value"]):
+                            await device.select()
+
+
+
     def query_devices(self):
         for slot_idx, slot_devices in enumerate(self.devices):
             for device in slot_devices:
