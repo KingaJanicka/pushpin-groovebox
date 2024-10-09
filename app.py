@@ -1060,7 +1060,8 @@ async def main():
     #sets volumes to full in the duplex
     app.get_volume_node()
     app.send_message_cli()
-    #QUerry controls to update initial state
+    
+    #Querry controls to update initial state
 
     for instrument in app.osc_mode.instruments:
         await app.osc_mode.instruments[instrument].engine.configure_pipewire()

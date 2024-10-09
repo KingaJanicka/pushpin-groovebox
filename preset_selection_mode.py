@@ -324,11 +324,13 @@ class PresetSelectionMode(definitions.PyshaMode):
         #TODO: select needs to be called here
         instrument = self.app.osc_mode.get_current_instrument()
         instrument.query_slots()
+        # instrument.query_devices()
         devices = self.app.osc_mode.get_current_instrument_devices()
         for device in devices:
             device.query_visible_controls()
             self.app.queue.append(device.select())
         self.update_pads()
+        # print("pad released")
         return True  # Prevent other modes to get this event
 
     def nested_draw(

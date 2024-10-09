@@ -129,6 +129,7 @@ class OSCDevice(PyshaMode):
                 control.select()
 
     async def select(self):
+        print("select called")
         await asyncio.sleep(0.1)
         for cmd in self.init:
             self.send_message(cmd["address"], float(cmd["value"]))
