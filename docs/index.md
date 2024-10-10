@@ -25,6 +25,10 @@ by [Raspberry Pi® 5][rpi5].
 - Use any Surge XT preset or patch
 - Built to be extensible and easily fork-able
 
+<div style="text-align: center">
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/2ezX6MCOlo8?si=CztI3rN82s1jOuJb&controls=0&rel=0&iv_load_policy=3" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+</div>
+
 # What is it?
 
 Pushpin is a Python application that builds heavily upon [Frederick Font][ffont]'s open source [Pysha][pysha] framework by creating
