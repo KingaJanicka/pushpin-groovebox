@@ -71,7 +71,7 @@ class MenuMode(PyshaMode):
         # print("called q slots")
         # TODO: I have no clue why the fricity frick this sleep needs to be here
         # TODO: But it does and the FX switching will lag behind one selection if not
-        time.sleep(0.1)
+        time.sleep(0.2)
         instrument.query_slots()
 
         time.sleep(0.1)

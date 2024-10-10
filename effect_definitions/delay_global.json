@@ -5,7 +5,7 @@
 		{
 			"$type": "message",
 			"$comment": "unmute osc",
-			"address": "/param/fx/a/2/type",
+			"address": "/param/fx/global/1/type",
 			"value": 1
 		}
 	],
@@ -13,7 +13,7 @@
 		{
 			"$type": "control-range",
 			"label": "Input Channel",
-			"address": "/param/fx/a/2/param9",
+			"address": "/param/fx/global/1/param9",
 			"min": 0,
 			"max": 1,
 			"bipolar": 1
@@ -21,69 +21,69 @@
 		{
 			"$type": "control-range",
 			"label": "Time L",
-			"address": "/param/fx/a/2/param1",
+			"address": "/param/fx/global/1/param1",
 			"min": 0,
 			"max": 1
 		},
 		{
 			"$type": "control-range",
 			"label": "Time R",
-			"address": "/param/fx/a/2/param2",
+			"address": "/param/fx/global/1/param2",
 			"min": 0,
 			"max": 1
 		},
 		{
 			"$type": "control-range",
 			"label": "Feedback",
-			"address": "/param/fx/a/2/param3",
+			"address": "/param/fx/global/1/param3",
 			"min": 0,
 			"max": 1
 		},
 		{
 			"$type": "control-range",
 			"label": "Fdbk X-Feed",
-			"address": "/param/fx/a/2/param4",
+			"address": "/param/fx/global/1/param4",
 			"min": 0,
 			"max": 1
 		},
 		{
 			"$type": "control-range",
 			"label": "Fdbk Low Cut",
-			"address": "/param/fx/a/2/param5",
+			"address": "/param/fx/global/1/param5",
 			"min": 0,
 			"max": 1
 		},
 		{
 			"$type": "control-range",
 			"label": "Fdbk High Cut",
-			"address": "/param/fx/a/2/param6",
+			"address": "/param/fx/global/1/param6",
 			"min": 0,
 			"max": 1
 		},
 		{
 			"$type": "control-range",
 			"label": "Mix",
-			"address": "/param/fx/a/2/param11",
+			"address": "/param/fx/global/1/param11",
 			"min": 0,
 			"max": 1
 		},
 		{
 			"$type": "control-range",
 			"label": "Mod Rate",
-			"address": "/param/fx/a/2/param7",
+			"address": "/param/fx/global/1/param7",
 			"min": 0,
 			"max": 1
 		},
 		{
 			"$type": "control-range",
 			"label": "Mod Depth",
-			"address": "/param/fx/a/2/param8",
+			"address": "/param/fx/global/1/param8",
 			"min": 0,
 			"max": 1
 		},
 		{
 			"$type": "control-spacer-address",
-			"address": "/param/fx/a/2/param12"
+			"address": "/param/fx/global/1/param12"
 		},
 		{
 			"$type": "control-spacer"
@@ -97,7 +97,7 @@
 		{
 			"$type": "control-range",
 			"label": "Width",
-			"address": "/param/fx/a/2/param12",
+			"address": "/param/fx/global/1/param12",
 			"min": 0,
 			"max": 1,
 			"bipolar": 1

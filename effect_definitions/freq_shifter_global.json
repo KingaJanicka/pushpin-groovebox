@@ -7,6 +7,12 @@
 			"$comment": "unmute osc",
 			"address": "/param/fx/global/1/type",
 			"value": 7
+		},
+		{
+			"$type": "message",
+			"$comment": "unmute osc",
+			"address": "/param/fx/global/1/param1/extend+",
+			"value": 7
 		}
 	],
 	"controls": [
