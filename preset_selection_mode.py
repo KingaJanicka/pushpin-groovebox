@@ -324,6 +324,7 @@ class PresetSelectionMode(definitions.PyshaMode):
         #TODO: select needs to be called here
         instrument = self.app.osc_mode.get_current_instrument()
         instrument.query_slots()
+        # instrument.query_all_params()
         # instrument.query_devices()
         devices = self.app.osc_mode.get_current_instrument_devices()
         for device in devices:
