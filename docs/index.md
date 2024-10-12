@@ -6,6 +6,8 @@ layout: home
 
 > **Pushpin** is an open-source groovebox project by improvisational electronic musician [Kinga Janicka][kinga].
 
+**[Sign up for our mailing list here, we'll let you know once v1 is ready (coming very soon!)](https://forms.gle/PMqjw9pWcNyjHAYd6)**
+
 Building upon Kinga's experience in the field performing live improvised techno, Pushpin seeks to marry the versatility of the
 award-winning open-source [Surge XT][surge] soft-synth with the form-factor of the Ableton® Push® 2, powered as a standalone unit
 by [Raspberry Pi® 5][rpi5].
