@@ -1,36 +1,31 @@
 import json
 import os
 import sys
-import threading
 import platform
 import time
 import traceback
 import cairo
 import definitions
-import subprocess
 import mido
 import numpy
 import push2_python
-import logging
 import asyncio
 import jack
-import binascii
-import multiprocessing
 
-from melodic_mode import MelodicMode
-from instrument_selection_mode import InstrumentSelectionMode
-from rhythmic_mode import RhythmicMode
-from slice_notes_mode import SliceNotesMode
+from modes.melodic_mode import MelodicMode
+from modes.instrument_selection_mode import InstrumentSelectionMode
+from modes.rhythmic_mode import RhythmicMode
+from modes.slice_notes_mode import SliceNotesMode
 # from sequencer_mode import SequencerMode
-from settings_mode import SettingsMode
-from main_controls_mode import MainControlsMode
-from midi_cc_mode import MIDICCMode
-from osc_mode import OSCMode
-from preset_selection_mode import PresetSelectionMode
-from ddrm_tone_selector_mode import DDRMToneSelectorMode
-from menu_mode import MenuMode
-from display_utils import show_notification
-from external_instrument import ExternalInstrument
+from modes.settings_mode import SettingsMode
+from modes.main_controls_mode import MainControlsMode
+from modes.midi_cc_mode import MIDICCMode
+from modes.osc_mode import OSCMode
+from modes.preset_selection_mode import PresetSelectionMode
+from modes.ddrm_tone_selector_mode import DDRMToneSelectorMode
+from modes.menu_mode import MenuMode
+from user_interface.display_utils import show_notification
+from modes.external_instrument import ExternalInstrument
 # logging.basicConfig(level=logging.DEBUG)
 # logging.getLogger().setLevel(level=logging.DEBUG)
 

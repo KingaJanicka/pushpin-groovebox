@@ -109,7 +109,7 @@ INSTRUMENT_DEFINITION_FOLDER = "instrument_definitions"
 DEVICE_DEFINITION_FOLDER = "device_definitions"
 EFFECT_DEFINITION_FOLDER = "effect_definitions"
 MODULATION_DEFINITIONS_FOLDER = "modulation_definitions"
-INSTRUMENT_LISTING_PATH = "instrument_listing.json"
+INSTRUMENT_LISTING_PATH = "definitions/instrument_listing.json"
 SURGE_XT_ROOT = (
     f"{path.expanduser('~')}/.local/share/surge-xt"
     if path.isdir(f"{path.expanduser('~')}/.local/share/surge-xt")

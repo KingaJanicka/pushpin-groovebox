@@ -3,12 +3,11 @@ import push2_python
 import json
 import os
 import logging
-from definitions import PyshaMode, OFF_BTN_COLOR
-from display_utils import show_text
+from definitions import PyshaMode
+from user_interface.display_utils import show_text
 from glob import glob
 from pathlib import Path
 from osc_instrument import OSCInstrument
-import asyncio
 from ratelimit import RateLimitException
 import traceback
 

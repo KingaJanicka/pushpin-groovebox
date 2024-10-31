@@ -1,8 +1,7 @@
-from osc_device import OSCDevice
+from modes.osc_device import OSCDevice
 from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.dispatcher import Dispatcher
 import push2_python
-import pytest
 
 nested_switch_groups_menu_fixture = {
     "device_name": "Filter B",

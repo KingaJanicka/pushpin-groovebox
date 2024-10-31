@@ -9,7 +9,7 @@ __pycache__/
 *$py.class
 
 .vscode/
-
+.idea/
 # C extensions
 *.so
 
