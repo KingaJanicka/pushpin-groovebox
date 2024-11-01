@@ -4,7 +4,7 @@ import mido
 from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.osc_server import AsyncIOOSCUDPServer
 from pythonosc.dispatcher import Dispatcher
-from osc_device import OSCDevice
+from modes.osc_device import OSCDevice
 from modes.mod_matrix_device import ModMatrixDevice
 from modes.audio_in_device import AudioInDevice
 from definitions import PyshaMode

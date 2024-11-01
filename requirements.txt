@@ -34,4 +34,3 @@ wsproto==1.2.0
 
 #missing in master
 ratelimit
-jack
