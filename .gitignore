@@ -2,6 +2,10 @@ settings.json
 presets.json
 .DS_Store
 node_modules
+surge
+overwitch
+scripts
+out 
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
