@@ -4,7 +4,6 @@ presets.json
 node_modules
 surge
 overwitch
-scripts
 out 
 
 # Byte-compiled / optimized / DLL files
