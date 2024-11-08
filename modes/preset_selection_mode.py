@@ -1,12 +1,9 @@
 import definitions
-import mido
 import push2_python
-import time
 import os
 import json
 from glob import glob
-from display_utils import show_notification
-from display_utils import show_text
+from user_interface.display_utils import show_text
 from pathlib import Path
 import logging
 

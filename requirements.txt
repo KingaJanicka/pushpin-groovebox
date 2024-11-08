@@ -30,3 +30,7 @@ pyusb==1.2.1
 simple-websocket==1.0.0
 Werkzeug==3.0.3
 wsproto==1.2.0
+
+
+#missing in master
+ratelimit

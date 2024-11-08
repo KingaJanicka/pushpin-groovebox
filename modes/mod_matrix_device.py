@@ -1,7 +1,4 @@
-from display_utils import show_text
-from osc_controls import (
-    OSCControlMenu,
-)
+from user_interface.display_utils import show_text
 
 import push2_python
 import logging

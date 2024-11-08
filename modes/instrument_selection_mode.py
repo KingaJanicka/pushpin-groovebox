@@ -3,7 +3,7 @@ import push2_python
 import os
 import json
 
-from display_utils import show_text
+from user_interface.display_utils import show_text
 
 
 class InstrumentSelectionMode(definitions.PyshaMode):

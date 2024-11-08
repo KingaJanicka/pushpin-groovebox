@@ -1,13 +1,12 @@
 import definitions
 import mido
 import push2_python
-import time
 import math
 import json
 import os
 
-from definitions import PyshaMode, OFF_BTN_COLOR
-from display_utils import show_text
+from definitions import PyshaMode
+from user_interface.display_utils import show_text
 
 
 class MIDICCControl(object):

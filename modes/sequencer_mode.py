@@ -1,5 +1,5 @@
 import definitions
-import push2_constants
+from controllers import push2_constants
 import push2_python
 from sequencer import Sequencer
 from melodic_mode import MelodicMode
@@ -190,8 +190,8 @@ class SequencerMode(MelodicMode):
             self.app.pads_need_update = True
 
         elif (
-            button_name == push2_constants.BUTTON_OCTAVE_UP
-            or button_name == push2_constants.BUTTON_OCTAVE_DOWN
+                button_name == push2_constants.BUTTON_OCTAVE_UP
+                or button_name == push2_constants.BUTTON_OCTAVE_DOWN
         ):
             # Don't react to octave up/down buttons as these are not used in rhythm mode
             pass

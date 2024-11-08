@@ -4,10 +4,8 @@ import time
 import os
 import sys
 import psutil
-import threading
-import subprocess
 
-from display_utils import show_title, show_value, draw_text_at
+from user_interface.display_utils import show_title, show_value, draw_text_at
 
 
 class SettingsMode(definitions.PyshaMode):

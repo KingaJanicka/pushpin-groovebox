@@ -1,22 +1,13 @@
 from osc_controls import (
     OSCControl,
-    OSCControlMacro,
     ControlSpacer,
-    OSCSpacerAddress,
     OSCControlSwitch,
-    OSCControlMenu,
     OSCGroup,
 )
-import definitions
-from display_utils import show_text
 import push2_python
 import logging
-from  signal import SIGTERM
 import asyncio
-import sys
-import json
 from definitions import PyshaMode
-import pprint
 from engine import connectPipewireSourceToPipewireDest
 from engine import disconnectPipewireSourceFromPipewireDest
 logger = logging.getLogger("osc_device")
