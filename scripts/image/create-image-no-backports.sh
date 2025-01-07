@@ -78,8 +78,8 @@ raspiconfig:boot_behavior=B1
 L10n:host
 
 # Run config script
-#runscript:script=$PWD/pushpin.sh
-#runscript:script=$PWD/hifi_berry.sh
+#runscript:script=$PWD/setup_pushpin.sh
+#runscript:script=$PWD/setup_hifi_berry.sh
 runscript:script=$PWD/setup_no_backports.sh
 
 EOF
