@@ -80,7 +80,7 @@ L10n:host
 # Run config script
 #runscript:script=$PWD/setup_pushpin.sh
 #runscript:script=$PWD/setup_hifi_berry.sh
-runscript:script=$PWD/setup_no_backports.sh
+runscript:script=$PWD/setup_full_no_backports.sh
 
 EOF
     ) | bash -c "cat >|$assets/my.plugins"
