@@ -55,9 +55,7 @@ apps:name=python3-dev|apps=python3-dev libcairo2-dev
 apps:name=git-automake-libtool|apps=git automake libtool
 apps:name=overwitch-dependencies|apps=libusb-1.0-0-dev,qpwgraph
 
-# Configure network
-# https://github.com/gitbls/sdm/blob/master/Docs/Plugins.md#network
-# network:ctype=wifi|wifi-ssid=ONTOLEDGY_WIFI|wifi-password=PAKI4200|wificountry=GB|autoconnect=true
+
 
 # This configuration eliminates the need for piwiz so disable it
 disables:piwiz

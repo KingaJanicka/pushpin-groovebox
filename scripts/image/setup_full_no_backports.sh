@@ -24,9 +24,6 @@ echo "---------------------------------------------"
 echo "Setting up folder structure"
 mkdir -p "$PUSHPIN_SOURCE_PATH" "$OVERWITCH_SOURCE_PATH" "$PYTHON_ENVIRONMENT_PATH" "$PUSHPIN_SOURCE_PATH" "$PIPEWIRE_CONFIGURATION_PATH"
 
-#echo "Upgrading Pipewire"
-echo "deb http://deb.debian.org/debian bookworm-backports main contrib non-free" >> /etc/apt/sources.list
-
 apt update
 
 #echo "Adding initial packages"

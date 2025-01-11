@@ -1,7 +1,7 @@
 #!/bin/bash
 
-SSID="ONTOLEDGY_WIFI"
-PSK="PAKI4200"
+SSID="<SSID>"
+PSK="<PSK>"
 
 # Log file path
 LOG_FILE_PATH="/var/log/sdm_image_setup.log"

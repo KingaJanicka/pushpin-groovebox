@@ -68,7 +68,7 @@ graphics:graphics=wayland
 L10n:host
 
 # Run config script
-# runscript:script=$PWD/setup.sh
+# runscript:script=$PWD/setup_full_with_backports.sh
 
 EOF
     ) | bash -c "cat >|$assets/my.plugins"
