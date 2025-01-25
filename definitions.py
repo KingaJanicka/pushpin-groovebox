@@ -104,12 +104,12 @@ OFF_BTN_COLOR = GRAY_DARK
 NOTE_ON_COLOR = GREEN
 
 DEFAULT_ANIMATION = push2_python.constants.ANIMATION_PULSING_QUARTER
-
-INSTRUMENT_DEFINITION_FOLDER = "instrument_definitions"
-DEVICE_DEFINITION_FOLDER = "device_definitions"
-EFFECT_DEFINITION_FOLDER = "effect_definitions"
-MODULATION_DEFINITIONS_FOLDER = "modulation_definitions"
-INSTRUMENT_LISTING_PATH = "instrument_listing.json"
+DEFINITIONS_FOLDER = "definitions"
+INSTRUMENT_DEFINITION_FOLDER = DEFINITIONS_FOLDER +"/"+"instrument_definitions"
+DEVICE_DEFINITION_FOLDER = DEFINITIONS_FOLDER +"/"+"device_definitions"
+EFFECT_DEFINITION_FOLDER = DEFINITIONS_FOLDER +"/"+"effect_definitions"
+MODULATION_DEFINITIONS_FOLDER = DEFINITIONS_FOLDER +"/"+"modulation_definitions"
+INSTRUMENT_LISTING_PATH = "definitions/instrument_listing.json"
 SURGE_XT_ROOT = (
     f"{path.expanduser('~')}/.local/share/surge-xt"
     if path.isdir(f"{path.expanduser('~')}/.local/share/surge-xt")

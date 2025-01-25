@@ -1,7 +1,7 @@
 import definitions
 import push2_python
 import time
-import push2_constants
+from controllers import push2_constants
 
 TOGGLE_DISPLAY_BUTTON = push2_python.constants.BUTTON_USER
 SETUP_BUTTON = push2_python.constants.BUTTON_SETUP

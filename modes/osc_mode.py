@@ -3,12 +3,11 @@ import push2_python
 import json
 import os
 import logging
-from definitions import PyshaMode, OFF_BTN_COLOR
-from display_utils import show_text
+from definitions import PyshaMode
+from user_interface.display_utils import show_text
 from glob import glob
 from pathlib import Path
-from osc_instrument import OSCInstrument
-import asyncio
+from modes.osc_instrument import OSCInstrument
 from ratelimit import RateLimitException
 import traceback
 
@@ -47,18 +46,18 @@ class OSCMode(PyshaMode):
     def initialize(self, settings=None):
         device_names = [
             Path(device_file).stem
-            for device_file in glob("./device_definitions/*.json")
+            for device_file in glob("./definitions/device_definitions/*.json")
         ]
         device_definitions = {}
 
         effect_names = [
             Path(effect_file).stem
-            for effect_file in glob("./effect_definitions/*.json")
+            for effect_file in glob("./definitions/effect_definitions/*.json")
         ]
 
         modulation_names = [
             Path(effect_file).stem
-            for effect_file in glob("./modulation_definitions/*.json")
+            for effect_file in glob("./definitions/modulation_definitions/*.json")
         ]
 
         for device_name in device_names:

@@ -6,7 +6,8 @@ from glob import glob
 from pathlib import Path
 
 
-device_schema = json.load(open(os.path.join("./docs/schemas/v2/device.json")))
+device_schema = json.load(open(os.path.join(
+    "../docs/schemas/v2/device.json")))
 
 device_names = [
     Path(device_file).stem for device_file in glob("./device_definitions/*.json")

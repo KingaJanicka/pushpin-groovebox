@@ -1,14 +1,10 @@
 import definitions
-import mido
 import push2_python
 import time
-import math
-import json
-import os
-import push2_constants
+from controllers import push2_constants
 
 from definitions import PyshaMode
-from display_utils import show_text
+from user_interface.display_utils import show_text
 
 
 class MenuMode(PyshaMode):

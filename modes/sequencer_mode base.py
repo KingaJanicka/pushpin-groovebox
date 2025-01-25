@@ -1,12 +1,7 @@
 import definitions
 import push2_python.constants
 
-from melodic_mode import MelodicMode
-
-
-from warpseq.api import demo
-from warpseq.api.public import Api as WarpApi
-from warpseq.model.slot import Slot
+from modes.melodic_mode import MelodicMode
 
 
 class SequencerMode(MelodicMode):

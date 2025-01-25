@@ -1,7 +1,7 @@
 import definitions
 import math
 import push2_python
-from display_utils import show_text
+from user_interface.display_utils import show_text
 import logging
 
 logger = logging.getLogger("osc_controls")
