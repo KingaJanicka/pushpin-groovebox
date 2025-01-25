@@ -48,10 +48,6 @@ user:adduser=ladmin|password=Numark234|addgroup=audio
 # https://github.com/gitbls/sdm/blob/master/Docs/Plugins.md#apps
 #apps:name=pushpindependencies|apps=libasound2-dev,libjack-dev,python3-brlapi,git,libcairo2-dev,python3-dev,raspberrypi-ui-mods
 
-# Configure network
-# https://github.com/gitbls/sdm/blob/master/Docs/Plugins.md#network
-# network:ctype=wifi|wifi-ssid=ONTOLEDGY_WIFI|wifi-password=PAKI4200|wificountry=GB|autoconnect=true
-
 # This configuration eliminates the need for piwiz so disable it
 disables:piwiz
 
