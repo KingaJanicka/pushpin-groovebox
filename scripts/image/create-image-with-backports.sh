@@ -14,12 +14,12 @@ function errexit() {
 
 [ $EUID -eq 0 ] && sudo="" || sudo="sudo"
 
-IMAGE="2024-07-04-raspios-bookworm-arm64-lite.img"
+IMAGE="2024-11-19-raspios-bookworm-arm64-lite.img"
 
 # service dbus start
 
 if ! test -f $IMAGE; then
-  curl -O https://downloads.raspberrypi.org/raspios_lite_arm64/images/raspios_lite_arm64-2024-07-04/$IMAGE.xz
+  curl -O https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-11-19/2024-11-19-raspios-bookworm-arm64-lite.img.xz
   xz -d $IMAGE.xz
 fi
 
@@ -38,7 +38,7 @@ user:deluser=pi
 
 # Add a new user
 # https://github.com/gitbls/sdm/blob/master/Docs/Plugins.md#user
-user:adduser=pushpin|password=groovebox|addgroup=audio
+user:adduser=ladmin|password=Numark234|addgroup=audio
 
 # Install btwifiset (Control Pi's WiFi from your phone)
 # https://github.com/gitbls/sdm/blob/master/Docs/Plugins.md#btwifiset
@@ -46,14 +46,10 @@ user:adduser=pushpin|password=groovebox|addgroup=audio
 
 # Install apps
 # https://github.com/gitbls/sdm/blob/master/Docs/Plugins.md#apps
-# apps:name=pushpinaudio|apps=libasound2-dev,libjack-dev,python3-brlapi,git,libcairo2-dev,python3-dev,raspberrypi-ui-mods
-
-# Configure network
-# https://github.com/gitbls/sdm/blob/master/Docs/Plugins.md#network
-# network:wifissid=$WIFI_SSID|wifipassword=$WIFI_PASSWORD|wificountry=GB
+#apps:name=pushpindependencies|apps=libasound2-dev,libjack-dev,python3-brlapi,git,libcairo2-dev,python3-dev,raspberrypi-ui-mods
 
 # This configuration eliminates the need for piwiz so disable it
-# disables:piwiz
+disables:piwiz
 
 # Uncomment to enable trim on all disks
 # https://github.com/gitbls/sdm/blob/master/Docs/Plugins.md#trim-enable
@@ -61,17 +57,20 @@ trim-enable
 
 # Enable X11
 # https://github.com/gitbls/sdm/blob/master/Docs/Plugins.md#graphics
-graphics:graphics=wayland
+# graphics:graphics=wayland
+
+# Set Boot to console.
+raspiconfig:boot_behavior=B1
 
 # Configure localization settings to the same as this system
 # https://github.com/gitbls/sdm/blob/master/Docs/Plugins.md#l10n
 L10n:host
 
 # Run config script
-# runscript:script=$PWD/setup_full_with_backports.sh
+runscript:script=$PWD/setup_full_with_backports.sh
 
 EOF
     ) | bash -c "cat >|$assets/my.plugins"
 echo $assets/my.plugins
 
-$sudo sdm --customize --plugin @$assets/my.plugins --extend --xmb 4096 --restart --regen-ssh-host-keys $IMAGE
+$sudo sdm --customize --plugin @$assets/my.plugins --extend --xmb 4096 --bootscripts --restart --regen-ssh-host-keys  $IMAGE
