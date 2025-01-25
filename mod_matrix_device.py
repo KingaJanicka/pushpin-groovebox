@@ -56,6 +56,7 @@ class ModMatrixDevice(definitions.PyshaMode):
         self.init = []
         self.is_active = False
         self.all_active_devices = []
+        self.mod_matrix_mappings = []
 
         self.mod_sources_macros = [
             {"address": "/mod/macro_1", "label": "Macro 1"},
@@ -119,7 +120,6 @@ class ModMatrixDevice(definitions.PyshaMode):
         # self.mod_matrix_mappings = (
         #     self.mod_sources_macros + self.mod_sources_internal + self.mod_sources_lfos
         # )
-        self.mod_matrix_mappings = []
         get_color = kwargs.get("get_color")
         # # Configure controls
         # for i in range(9):
@@ -143,29 +143,44 @@ class ModMatrixDevice(definitions.PyshaMode):
     def set_state(self, source, *args):
         dest, depth, *rest = args
         new_mapping = [source, dest, depth]
-        for current_mapping in self.mod_matrix_mappings.copy():
-            if (
-                current_mapping[0] == new_mapping[0]
-                and current_mapping[1] == new_mapping[1]
-            ):
-                # TODO Still a bit wonky, puts 0.0 mappings on the bottom sometimes
-                # This happens when a mapping has a dest that's not in the list
+        # print("New mod matrix mapping")
+        # print(new_mapping)
+        
+        if len(self.mod_matrix_mappings) != 0:
+            # print("For loop")
+            for idx, current_mapping in enumerate(self.mod_matrix_mappings.copy()):
+                if (
+                    current_mapping[0] == new_mapping[0]
+                    and current_mapping[1] == new_mapping[1]
+                ):
 
-                # Remove a mapping when surge sends 0 depth
-                if float(depth) == float(0.0):
-                    try:
-                        self.mod_matrix_mappings.remove(current_mapping)
-                    except:
-                        pass
-                    return
+                    # Update existing mapping
+                    if round(current_mapping[2], 4) != round(new_mapping[2], 4):
+                        print("Updated mapping")
+                        print(self.mod_matrix_mappings[idx])
+                        self.mod_matrix_mappings[idx] = new_mapping
+                        print(self.mod_matrix_mappings[idx])
+                        # current_mapping = new_mapping
+                        return
 
-                # Update existing mapping
-                elif current_mapping[2] == new_mapping[2]:
-                    current_mapping = new_mapping
-                    return
-        # Add new mapping if none of the earlier loop iterations returned early
-        self.mod_matrix_mappings.append(new_mapping)
+                    # Remove a mapping when surge sends 0 depth
+                    elif float(depth) == float(0.0):
+                        try:
+                            # print("removed mapping")
+                            self.mod_matrix_mappings.remove(current_mapping)
+                        except:
+                            pass
+                        return
+            
+            # Adds a new mod matrix mapping if one doesn't already exist
+            if new_mapping in self.mod_matrix_mappings:
+                return
+            else:
+                print("added mapping")
+                self.mod_matrix_mappings.append(new_mapping)
+        else: self.mod_matrix_mappings.append(new_mapping)
         # print(self.mod_matrix_mappings)
+
 
     def select(self):
         self.snap_knobs_to_mod_matrix()
