@@ -56,10 +56,9 @@ class OSCMode(PyshaMode):
         ]
 
         modulation_names = [
-            Path(effect_file).stem
-            for effect_file in glob("./definitions/modulation_definitions/*.json")
+            Path(modulation_file).stem
+            for modulation_file in glob("./definitions/modulation_definitions/*.json")
         ]
-
         for device_name in device_names:
             try:
                 device_definitions[device_name] = json.load(
@@ -206,6 +205,7 @@ class OSCMode(PyshaMode):
 
     def get_current_instrument_device_and_page(self):
         device_idx, page = self.current_device_index_and_page
+        
         current_device = self.get_current_instrument_page_devices()[device_idx]
         return (current_device, page)
 
