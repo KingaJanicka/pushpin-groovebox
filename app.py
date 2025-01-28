@@ -16,7 +16,7 @@ from modes.melodic_mode import MelodicMode
 from modes.instrument_selection_mode import InstrumentSelectionMode
 from modes.rhythmic_mode import RhythmicMode
 from modes.slice_notes_mode import SliceNotesMode
-# from sequencer_mode import SequencerMode
+from modes.sequencer_mode import SequencerMode
 from modes.settings_mode import SettingsMode
 from modes.main_controls_mode import MainControlsMode
 from modes.midi_cc_mode import MIDICCMode
@@ -133,10 +133,10 @@ class PyshaApp(object):
         self.osc_mode = OSCMode(
             self, settings=settings
         )  # Must be initialized after instrument selection mode so it gets info about loaded instruments
-        # self.sequencer_mode = SequencerMode(
-        #     self, settings=settings, send_osc_func=self.send_osc
-        # )
-        # self.active_modes += [self.instrument_selection_mode, self.midi_cc_mode]
+        self.sequencer_mode = SequencerMode(
+            self, settings=settings, send_osc_func=self.send_osc
+        )
+        self.active_modes += [self.instrument_selection_mode, self.midi_cc_mode]
         self.active_modes += [self.instrument_selection_mode, self.osc_mode]
         self.instrument_selection_mode.select_instrument(
             self.instrument_selection_mode.selected_instrument
@@ -305,14 +305,14 @@ class PyshaApp(object):
                     self.set_mode_for_xor_group(self.melodic_mode)
 
     def toggle_melodic_rhythmic_slice_modes(self):
-        # if self.is_mode_active(self.sequencer_mode):
-        #     self.set_rhythmic_mode()
-        if self.is_mode_active(self.rhythmic_mode):
+        if self.is_mode_active(self.sequencer_mode):
+            self.set_rhythmic_mode()
+        elif self.is_mode_active(self.rhythmic_mode):
             self.set_slice_notes_mode()
         elif self.is_mode_active(self.slice_notes_mode):
             self.set_melodic_mode()
         elif self.is_mode_active(self.melodic_mode):
-            self.set_rhythmic_mode()
+            self.set_sequencer_mode()
         else:
             # If none of melodic or rhythmic or slice modes were active, enable melodic by default
             self.set_melodic_mode()
@@ -327,8 +327,8 @@ class PyshaApp(object):
         self.set_mode_for_xor_group(self.slice_notes_mode)
 
     def set_sequencer_mode(self):
-        pass
-        # self.set_mode_for_xor_group(self.sequencer_mode)
+        # pass
+        self.set_mode_for_xor_group(self.sequencer_mode)
 
     def set_preset_selection_mode(self):
         self.set_mode_for_xor_group(self.preset_selection_mode)

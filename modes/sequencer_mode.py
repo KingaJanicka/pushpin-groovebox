@@ -1,8 +1,8 @@
 import definitions
 from controllers import push2_constants
 import push2_python
-from sequencer import Sequencer
-from melodic_mode import MelodicMode
+from sequencer import sequencer
+from modes.melodic_mode import MelodicMode
 import isobar as iso
 import os
 import sys
@@ -67,7 +67,7 @@ class SequencerMode(MelodicMode):
         for (
             instrument_short_name
         ) in self.get_all_distinct_instrument_short_names_helper():
-            self.instrument_sequencers[instrument_short_name] = Sequencer(
+            self.instrument_sequencers[instrument_short_name] = sequencer.Sequencer(
                 instrument_short_name,
                 self.timeline,
                 self.sequencer_on_tick,
