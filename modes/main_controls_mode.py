@@ -114,6 +114,11 @@ class MainControlsMode(definitions.PyshaMode):
                 self.app.toggle_menu_mode()
                 self.app.buttons_need_update = True
             return True
+        elif button_name  == CLIP_BUTTON:
+            if self.app.trig_edit_mode.should_be_enabled():
+                self.app.toggle_trig_edit_mode()
+                self.app.buttons_need_update = True
+            return True
 
     def on_button_released(self, button_name):
         if button_name == BROWSE_BUTTON:

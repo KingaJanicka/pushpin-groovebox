@@ -22,6 +22,7 @@ from modes.main_controls_mode import MainControlsMode
 from modes.midi_cc_mode import MIDICCMode
 from modes.osc_mode import OSCMode
 from modes.preset_selection_mode import PresetSelectionMode
+from modes.trig_edit_mode import TrigEditMode
 from modes.ddrm_tone_selector_mode import DDRMToneSelectorMode
 from modes.menu_mode import MenuMode
 from user_interface.display_utils import show_notification
@@ -127,6 +128,7 @@ class PyshaApp(object):
         self.set_melodic_mode()
 
         self.preset_selection_mode = PresetSelectionMode(self, settings=settings)
+        self.trig_edit_mode = TrigEditMode(self, settings=settings)
         self.midi_cc_mode = MIDICCMode(
             self, settings=settings
         )  # Must be initialized after instrument selection mode so it gets info about loaded instruments
@@ -136,7 +138,6 @@ class PyshaApp(object):
         self.sequencer_mode = SequencerMode(
             self, settings=settings, send_osc_func=self.send_osc
         )
-        self.active_modes += [self.instrument_selection_mode, self.midi_cc_mode]
         self.active_modes += [self.instrument_selection_mode, self.osc_mode]
         self.instrument_selection_mode.select_instrument(
             self.instrument_selection_mode.selected_instrument
@@ -196,7 +197,10 @@ class PyshaApp(object):
             new_active_modes.append(self.menu_mode)
             self.active_modes = new_active_modes
             self.preset_selection_mode.deactivate()
+            self.trig_edit_mode.deactivate()
             self.menu_mode.activate()
+
+    # TODO: preset sel/trig edit get wonky when switching from one to another
 
     def toggle_preset_selection_mode(self):
         if self.is_mode_active(self.preset_selection_mode):
@@ -222,7 +226,37 @@ class PyshaApp(object):
             self.active_modes = new_active_modes
             self.menu_mode.deactivate()
             self.osc_mode.deactivate()
+            self.trig_edit_mode.deactivate()
             self.preset_selection_mode.activate()
+            # print(self.active_modes, "active modes")
+
+
+    def toggle_trig_edit_mode(self):
+        if self.is_mode_active(self.trig_edit_mode):
+            # Deactivate (replace ddrm tone selector mode by midi cc and instrument selection mode)
+            new_active_modes = []
+            for mode in self.active_modes:
+                if mode != self.trig_edit_mode:
+                    new_active_modes.append(mode)
+
+            new_active_modes.append(self.osc_mode)
+
+            self.active_modes = new_active_modes
+            self.osc_mode.activate()
+            self.trig_edit_mode.deactivate()
+        else:
+            # Activate (replace midi cc and instrument selection mode by ddrm tone selector mode)
+            new_active_modes = []
+            for mode in self.active_modes:
+                if mode != self.menu_mode and mode != self.osc_mode:
+                    new_active_modes.append(mode)
+
+            new_active_modes.append(self.trig_edit_mode)
+            self.active_modes = new_active_modes
+            self.menu_mode.deactivate()
+            self.osc_mode.deactivate()
+            self.preset_selection_mode.deactivate()
+            self.trig_edit_mode.activate()
             # print(self.active_modes, "active modes")
 
     def toggle_ddrm_tone_selector_mode(self):
