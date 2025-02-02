@@ -140,7 +140,15 @@ class SequencerMode(MelodicMode):
                 # print("on midi note", self.is_midi_note_being_played(corresponding_midi_note) )
                 # otherwise if a pad is being pushed and it's not active currently, turn it on
                 # print(self.on_pad_pressed( 0 , [int(i/8), int(i%8)], 127))
-
+        
+                if (self.is_midi_note_being_played(corresponding_midi_note) and self.app.is_mode_active(self.app.trig_edit_mode) == True):
+                    # print("setting lock state to", self.notes_being_played)
+                    # Get last touched knob, get values from trig_edit_mode
+                    # parameter_idx = 0
+                    # control = self.app.trig_edit_mode.controls[parameter_idx]
+                    # self.app.trig_edit_mode.prepare_lock()
+                    # seq.set_lock_state(i, parameter_idx, control.value)
+                    pass
                 if (
                     self.is_midi_note_being_played(corresponding_midi_note)
                     and seq_pad_state[i] is False
@@ -156,8 +164,9 @@ class SequencerMode(MelodicMode):
                 ):
                     # print("pad disactivated")
                     button_colors[i] = definitions.OFF_BTN_COLOR
-                    seq.set_state(self.selected_track, i, False)
+                    seq.set_state(self.selected_track, i, False)#
 
+                    
                 # if self.is_midi_note_being_played(corresponding_midi_note):
                 # print("MIDI NOTE PLAYED")
                 # print(seq_pad_state[i])
@@ -208,3 +217,4 @@ class SequencerMode(MelodicMode):
         else:
             # For the other buttons, refer to the base class
             super().on_button_pressed(button_name)
+            

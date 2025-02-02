@@ -219,7 +219,7 @@ class PyshaApp(object):
             # Activate (replace midi cc and instrument selection mode by ddrm tone selector mode)
             new_active_modes = []
             for mode in self.active_modes:
-                if mode != self.menu_mode and mode != self.osc_mode:
+                if mode != self.menu_mode and mode != self.osc_mode and mode != self.trig_edit_mode:
                     new_active_modes.append(mode)
 
             new_active_modes.append(self.preset_selection_mode)
@@ -248,7 +248,7 @@ class PyshaApp(object):
             # Activate (replace midi cc and instrument selection mode by ddrm tone selector mode)
             new_active_modes = []
             for mode in self.active_modes:
-                if mode != self.menu_mode and mode != self.osc_mode:
+                if mode != self.menu_mode and mode != self.osc_mode and mode != self.preset_selection_mode:
                     new_active_modes.append(mode)
 
             new_active_modes.append(self.trig_edit_mode)
@@ -968,6 +968,18 @@ def on_encoder_touched(_, encoder_name):
     try:
         for mode in app.active_modes[::-1]:
             action_performed = mode.on_encoder_touched(encoder_name)
+            if action_performed:
+                break  # If mode took action, stop event propagation
+    except NameError as e:
+        print("Error:  {}".format(str(e)))
+        traceback.print_exc()
+
+
+@push2_python.on_encoder_released()
+def on_encoder_released(_, encoder_name):
+    try:
+        for mode in app.active_modes[::-1]:
+            action_performed = mode.on_encoder_released(encoder_name)
             if action_performed:
                 break  # If mode took action, stop event propagation
     except NameError as e:

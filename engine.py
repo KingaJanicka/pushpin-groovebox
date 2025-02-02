@@ -353,7 +353,10 @@ class SurgeXTEngine(Engine):
 
         # d/c from default sinks
         # get instrument links
+        # print([instrument['info']['props']['media.class'] for instrument in self.instrument_nodes if instrument['info']['props']['media.class']])
+        
         surge_output_node = [instrument for instrument in self.instrument_nodes if instrument['info']['props']['media.class'] == 'Stream/Output/Audio'].pop()
+
         surge_output_ports = [port for port in self.app.pipewire if port['type'] == 'PipeWire:Interface:Port' and port['info']['props']['node.id'] == surge_output_node['id']]
         init_links = [link for link in self.app.pipewire if link['type'] == 'PipeWire:Interface:Link' and link['info']['output-node-id'] == surge_output_node['id']]
 

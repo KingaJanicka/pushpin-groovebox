@@ -31,6 +31,8 @@ class Sequencer(object):
     accent = list()  # int
     swing = list()  # int
     slide = list()  # boolean
+    locks = list() # for locks of trig menu
+
     timeline = iso.timeline
 
     def __init__(
@@ -47,6 +49,10 @@ class Sequencer(object):
         self.slide = [False] * default_number_of_steps
         self.playhead = playhead
         self.send_osc_func = send_osc_func
+
+        for x in range(default_number_of_steps):
+            self.locks.append([None, None, None, None, None, None, None, None])
+
         self.timeline = timeline.schedule(
             {
                 "action": lambda: (
@@ -92,7 +98,7 @@ class Sequencer(object):
             self.set_state(lane, index, value)
 
     def set_state(self, lane, index, value):
-        print(f"lane: {lane} index: {index} value: {value}")
+        # print(f"lane: {lane} index: {index} value: {value}")
         if lane == "gate":
             self.gate[index] = value
         elif lane == "pitch1":
@@ -109,3 +115,8 @@ class Sequencer(object):
             self.swing[index] = value
         elif lane == "slide":
             self.slide[index] = value
+
+    def set_lock_state(self, index, parameter_idx, value):
+        self.locks[index][parameter_idx] = value
+ 
+        
