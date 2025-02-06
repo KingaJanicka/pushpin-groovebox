@@ -56,6 +56,7 @@ class SequencerMode(MelodicMode):
 
     playhead = 0
     seq_tick = 0
+    timeline_is_playing = False
     current_selected_section_and_page = {}
     instrument_sequencers = {}
     tempo = 120
@@ -208,12 +209,14 @@ class SequencerMode(MelodicMode):
 
             self.selected_track = TRACK_NAMES[6]
         elif button_name == push2_constants.BUTTON_PLAY:
-            self.start_timeline()
-            print("play")
+            if self.timeline_is_playing == False:
+                self.start_timeline()
+                self.timeline_is_playing = True
 
-        elif button_name == push2_constants.BUTTON_STOP:
-            self.stop_timeline()
-            print("stop")
+            elif self.timeline_is_playing == True:
+                self.stop_timeline()
+                self.timeline_is_playing = False
+
         else:
             # For the other buttons, refer to the base class
             super().on_button_pressed(button_name)
