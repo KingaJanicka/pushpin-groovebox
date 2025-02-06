@@ -32,12 +32,16 @@ class Sequencer(object):
     swing = list()  # int
     slide = list()  # boolean
     locks = list() # for locks of trig menu
+    timeline = None
+    midi_out_device = None
+    midi_in_name = None
+    midi_in_device = None
 
-    timeline = iso.timeline
 
     def __init__(
         self, instrument_name, timeline, tick_callback, playhead, send_osc_func
     ):
+        
         self.name = instrument_name
         self.gate = [False] * default_number_of_steps
         self.pitch1 = [False] * default_number_of_steps
@@ -49,6 +53,14 @@ class Sequencer(object):
         self.slide = [False] * default_number_of_steps
         self.playhead = playhead
         self.send_osc_func = send_osc_func
+
+        for item in iso.io.midi.get_midi_input_names():
+            if item.startswith(self.name) == True:
+                self.midi_in_name = item
+
+        self.midi_in_device = iso.MidiInputDevice(device_name=self.midi_in_name)
+        self.midi_out_device = iso.MidiOutputDevice(device_name=f"{self.name} sequencer", send_clock=True, virtual=True)
+        self.timeline = iso.Timeline(tempo=120, output_device=self.midi_out_device, clock_source=self.midi_in_device)
 
         for x in range(default_number_of_steps):
             self.locks.append([None, None, None, None, None, None, None, None])

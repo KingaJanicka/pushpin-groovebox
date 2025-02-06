@@ -449,24 +449,24 @@ class PyshaApp(object):
             and "Through" not in name
         ]
         self.available_midi_out_device_names += [
-            "Synth 0",
-            "Synth 1",
-            "Synth 2",
-            "Synth 3",
-            "Synth 4",
-            "Synth 5",
-            "Synth 6",
-            "Synth 7",
+            "Pushpin 0",
+            "Pushpin 1",
+            "Pushpin 2",
+            "Pushpin 3",
+            "Pushpin 4",
+            "Pushpin 5",
+            "Pushpin 6",
+            "Pushpin 7",
         ]
         virtual_device_names = [
-            "Synth 0",
-            "Synth 1",
-            "Synth 2",
-            "Synth 3",
-            "Synth 4",
-            "Synth 5",
-            "Synth 6",
-            "Synth 7",
+            "Pushpin 0",
+            "Pushpin 1",
+            "Pushpin 2",
+            "Pushpin 3",
+            "Pushpin 4",
+            "Pushpin 5",
+            "Pushpin 6",
+            "Pushpin 7",
         ]
         if device_name is not None:
             try:
