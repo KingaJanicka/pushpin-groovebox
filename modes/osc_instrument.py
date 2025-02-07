@@ -57,9 +57,12 @@ class OSCInstrument(PyshaMode):
             instrument_definition["instrument_short_name"],
             client_name=instrument_definition["instrument_short_name"],
         )
-        midi_device_idx = [els.split(":")[0] for els in mido.get_input_names()].index(
-            instrument_definition["instrument_short_name"]
+
+        
+        midi_device_idx = [f'{instrument_definition["instrument_short_name"]} sequencer' in input_name for input_name in mido.get_input_names()].index(
+            True
         )
+        print("MIDI", midi_device_idx, mido.get_input_names()[midi_device_idx])
         if kwargs.get("engine", "surge-xt-cli") == "surge-xt-cli":
             self.engine = engine.SurgeXTEngine(app, midi_device_idx=midi_device_idx, instrument_definition=instrument_definition)
 
@@ -209,7 +212,8 @@ class OSCInstrument(PyshaMode):
             self.log_out.debug(f"Receiving OSC on port {self.osc_out_port}")
             self.query_slots()
             self.query_devices()
-
+            
+            # This starts the Surge-XT instances
             asyncio.create_task(self.engine.start())
 
     def query_all_params(self):

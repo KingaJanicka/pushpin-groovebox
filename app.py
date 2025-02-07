@@ -132,11 +132,11 @@ class PyshaApp(object):
         self.midi_cc_mode = MIDICCMode(
             self, settings=settings
         )  # Must be initialized after instrument selection mode so it gets info about loaded instruments
-        self.osc_mode = OSCMode(
-            self, settings=settings
-        )  # Must be initialized after instrument selection mode so it gets info about loaded instruments
         self.sequencer_mode = SequencerMode(
             self, settings=settings, send_osc_func=self.send_osc
+        ) # Must be initialized after instrument selection mode so it gets info about loaded instruments
+        self.osc_mode = OSCMode(
+            self, settings=settings
         )
         self.active_modes += [self.instrument_selection_mode, self.osc_mode]
         self.instrument_selection_mode.select_instrument(

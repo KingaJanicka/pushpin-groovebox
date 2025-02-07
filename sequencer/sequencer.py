@@ -57,7 +57,8 @@ class Sequencer(object):
         for item in iso.io.midi.get_midi_input_names():
             if item.startswith(self.name) == True:
                 self.midi_in_name = item
-
+        
+        # TODO: We need to init the sequencer before surge in the engine.py
         self.midi_in_device = iso.MidiInputDevice(device_name=self.midi_in_name)
         self.midi_out_device = iso.MidiOutputDevice(device_name=f"{self.name} sequencer", send_clock=True, virtual=True)
         self.timeline = iso.Timeline(tempo=120, output_device=self.midi_out_device, clock_source=self.midi_in_device)

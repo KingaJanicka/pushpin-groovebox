@@ -1,7 +1,7 @@
 import definitions
 from controllers import push2_constants
 import push2_python
-from sequencer import sequencer
+from sequencer.sequencer import Sequencer
 from modes.melodic_mode import MelodicMode
 import isobar as iso
 import os
@@ -62,13 +62,15 @@ class SequencerMode(MelodicMode):
     tempo = 120
     timeline = iso.Timeline(tempo, output_device=iso.DummyOutputDevice())
     selected_track = "gate"
+    # TODO: we should add the engine here, so we can take the iso.timeline from there
+    # this would also allow us easy access to timelines for other deivces
 
     def initialize(self, settings):
         super().initialize(settings)
         for (
             instrument_short_name
         ) in self.get_all_distinct_instrument_short_names_helper():
-            self.instrument_sequencers[instrument_short_name] = sequencer.Sequencer(
+            self.instrument_sequencers[instrument_short_name] = Sequencer(
                 instrument_short_name,
                 self.timeline,
                 self.sequencer_on_tick,

@@ -81,7 +81,10 @@ class Engine(ABC):
             raise Exception("Midi not init")
 
     async def start(self):
+        # TODO: We should prob init all the isobar timeline and midi in/out right here
+        # This should be after midi
         # self.connections.append(await self.createLoopback())
+        
         pass
 
     async def configure_pipewire(self):

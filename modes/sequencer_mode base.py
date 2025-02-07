@@ -17,7 +17,6 @@ class SequencerMode(MelodicMode):
     ]
 
     sequencer_pad_state = {}
-
     def initialize(self, settings):
         super().initialize(settings)
         for row in self.sequencer_pad_matrix:
