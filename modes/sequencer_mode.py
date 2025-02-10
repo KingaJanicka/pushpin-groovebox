@@ -62,8 +62,6 @@ class SequencerMode(MelodicMode):
     tempo = 120
     timeline = iso.Timeline(tempo, output_device=iso.DummyOutputDevice())
     selected_track = "gate"
-    # TODO: we should add the engine here, so we can take the iso.timeline from there
-    # this would also allow us easy access to timelines for other deivces
 
     def initialize(self, settings):
         super().initialize(settings)
@@ -79,9 +77,17 @@ class SequencerMode(MelodicMode):
             )
 
     def start_timeline(self):
+        # TODO: I think we need to start the timelines in seq still?
+        instrument_short_name = self.get_current_instrument_short_name_helper()
+        self.instrument_sequencers[instrument_short_name].local_timeline.background()
+
         self.timeline.background()
 
     def stop_timeline(self):
+
+        instrument_short_name = self.get_current_instrument_short_name_helper()
+        self.instrument_sequencers[instrument_short_name].local_timeline.stop()
+
         self.timeline.stop()
 
     def get_settings_to_save(self):

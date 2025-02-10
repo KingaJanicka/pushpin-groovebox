@@ -32,7 +32,8 @@ class Sequencer(object):
     swing = list()  # int
     slide = list()  # boolean
     locks = list() # for locks of trig menu
-    timeline = None
+    playhead_track = None
+    note_track = None
     midi_out_device = None
     midi_in_name = None
     midi_in_device = None
@@ -43,6 +44,7 @@ class Sequencer(object):
     ):
         
         self.name = instrument_name
+        self.note = [False] * default_number_of_steps
         self.gate = [False] * default_number_of_steps
         self.pitch1 = [False] * default_number_of_steps
         self.pitch2 = [False] * default_number_of_steps
@@ -53,40 +55,40 @@ class Sequencer(object):
         self.slide = [False] * default_number_of_steps
         self.playhead = playhead
         self.send_osc_func = send_osc_func
-
+        self.timeline = timeline
         for item in iso.io.midi.get_midi_input_names():
             if item.startswith(self.name) == True:
                 self.midi_in_name = item
         
-        # TODO: We need to init the sequencer before surge in the engine.py
         self.midi_in_device = iso.MidiInputDevice(device_name=self.midi_in_name)
         self.midi_out_device = iso.MidiOutputDevice(device_name=f"{self.name} sequencer", send_clock=True, virtual=True)
-        self.timeline = iso.Timeline(tempo=120, output_device=self.midi_out_device, clock_source=self.midi_in_device)
-
+        # TODO: had to remove the input device from here for this to work
+        self.local_timeline = iso.Timeline(tempo=120, output_device=self.midi_out_device)
+        self.note_track = self.local_timeline.schedule({"note": None, "duration": 0.25, "gate": 0.2, "amplitude": 127})
         for x in range(default_number_of_steps):
             self.locks.append([None, None, None, None, None, None, None, None])
-
-        self.timeline = timeline.schedule(
+        # We should use track.update() to update the sequencers to match the pad state
+        self.playhead_track = timeline.schedule(
             {
                 "action": lambda: (
                     tick_callback(self.name, len(self.gate)),
-                    self.seq(),
+                    self.seq_playhead_update(),
                 ),
                 "duration": 0.25,
             }
         )
 
-    def seq(self):
-        # This should be syncing well but for some reason it does not
+    def seq_playhead_update(self):
         playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01) % 64)
-        if self.gate[playhead] is True:
-            print(self.name, "NAME")
-            print("sent note seq", self.name)
-            self.send_osc_func("/mnote", [float(25), float(0)], self.name)
-            self.send_osc_func("/mnote", [float(25), float(127)], self.name)
+        
+    def update_notes(self):
+        for idx, note in enumerate(self.note):
+            if self.gate[idx] == True:
+                self.note[idx] = 64
+            if self.gate[idx] == False:
+                self.note[idx] = None
+        self.note_track.update(events=iso.PDict({"note": iso.PSequence(self.note), "duration": iso.PSequence([0.25]), "gate": iso.PSequence([0.2]), "amplitude": iso.PSequence([127])}))
 
-        if self.gate[playhead] is False:
-            self.send_osc_func("/mnote", [float(25), float(0)], self.name)
 
     def get_track(self, lane):
         if lane == "gate":
@@ -112,6 +114,7 @@ class Sequencer(object):
 
     def set_state(self, lane, index, value):
         # print(f"lane: {lane} index: {index} value: {value}")
+        self.update_notes()
         if lane == "gate":
             self.gate[index] = value
         elif lane == "pitch1":
