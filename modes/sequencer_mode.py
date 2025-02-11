@@ -103,7 +103,7 @@ class SequencerMode(MelodicMode):
     def sequencer_on_tick(self, instrument_name, length):
         self.update_pads()
         if self.get_current_instrument_short_name_helper() == instrument_name:
-            self.playhead = (self.playhead + 1) % length
+            self.playhead = self.instrument_sequencers[instrument_name].playhead
 
     def get_all_distinct_instrument_short_names_helper(self):
         return (

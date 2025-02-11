@@ -44,7 +44,7 @@ class Sequencer(object):
     ):
         
         self.name = instrument_name
-        self.note = [False] * default_number_of_steps
+        self.note = [None] * default_number_of_steps
         self.gate = [False] * default_number_of_steps
         self.pitch1 = [False] * default_number_of_steps
         self.pitch2 = [False] * default_number_of_steps
@@ -60,11 +60,11 @@ class Sequencer(object):
             if item.startswith(self.name) == True:
                 self.midi_in_name = item
         
+        self.note_pattern = iso.PSeq(self.note)
         self.midi_in_device = iso.MidiInputDevice(device_name=self.midi_in_name)
         self.midi_out_device = iso.MidiOutputDevice(device_name=f"{self.name} sequencer", send_clock=True, virtual=True)
         # TODO: had to remove the input device from here for this to work
         self.local_timeline = iso.Timeline(tempo=120, output_device=self.midi_out_device)
-        self.note_track = self.local_timeline.schedule({"note": None, "duration": 0.25, "gate": 0.2, "amplitude": 127})
         for x in range(default_number_of_steps):
             self.locks.append([None, None, None, None, None, None, None, None])
         # We should use track.update() to update the sequencers to match the pad state
@@ -79,16 +79,22 @@ class Sequencer(object):
         )
 
     def seq_playhead_update(self):
-        playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01) % 64)
+        # TODO: Playhead does not reset when the sequencer does
+        self.playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01) % 64)
+        # print("playhead", self.local_timeline.current_time)
+        # self.playhead = int(self.local_timeline.current_time * 4 + 0.01) % 64
+        self.update_notes()
+        if self.note[self.playhead] != None:
+            self.local_timeline.schedule({"note": 64, "gate": 0.2, "amplitude": 127}, count=1)
+        
         
     def update_notes(self):
         for idx, note in enumerate(self.note):
             if self.gate[idx] == True:
                 self.note[idx] = 64
+                
             if self.gate[idx] == False:
                 self.note[idx] = None
-        self.note_track.update(events=iso.PDict({"note": iso.PSequence(self.note), "duration": iso.PSequence([0.25]), "gate": iso.PSequence([0.2]), "amplitude": iso.PSequence([127])}))
-
 
     def get_track(self, lane):
         if lane == "gate":
