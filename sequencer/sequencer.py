@@ -79,14 +79,13 @@ class Sequencer(object):
         )
 
     def seq_playhead_update(self):
-        # TODO: Playhead does not reset when the sequencer does
+        # TODO: Somewhere a crash occurs when a note is played
         self.playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01) % 64)
-        # print("playhead", self.playhead)
-        # self.playhead = int(self.local_timeline.current_time * 4 + 0.01) % 64
         self.update_notes()
-        if self.gate_1[self.playhead] == True and self.aux_1[self.playhead] != True:
-            amplitude = 127 if self.aux_2 else 64
-            self.local_timeline.schedule({"note": 64, "gate_1": 0.2, "amplitude": amplitude}, count=1)
+        
+        if self.gate_1[self.playhead] == True and self.trig_mute_1[self.playhead] != True:
+            amplitude = 127 if self.accent_1 else 64
+            self.local_timeline.schedule({"note": 64, "gate": 0.2, "amplitude": amplitude}, count=1)
         
         
     def update_notes(self):
