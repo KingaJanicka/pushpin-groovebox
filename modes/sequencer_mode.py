@@ -6,28 +6,29 @@ from modes.melodic_mode import MelodicMode
 import isobar as iso
 import os
 import sys
+import time
 
 EMPTY_PATTERN = []
 
 TRACK_NAMES = [
-    "gate",
-    "pitch1",
-    "pitch2",
-    "pitch3",
-    "trig_mute",
-    "accent",
-    "swing",
-    "slide",
+    "gate_1",
+    "pitch_1",
+    "trig_mute_1",
+    "accent_1",
+    "aux_1",
+    "aux_2",
+    "aux_3",
+    "aux_4",
 ]
 TRACK_COLORS = {
-    "gate": definitions.BLUE,
-    "pitch1": definitions.GREEN,
-    "pitch2": definitions.GREEN,
-    "pitch3": definitions.GREEN,
-    "trig_mute": definitions.RED,
-    "accent": definitions.PURPLE,
-    "swing": definitions.YELLOW,
-    "slide": definitions.TURQUOISE,
+    "gate_1": definitions.BLUE,
+    "pitch_1": definitions.GREEN,
+    "trig_mute_1": definitions.RED,
+    "accent_1": definitions.YELLOW,
+    "aux_1": definitions.CYAN,
+    "aux_2": definitions.CYAN,
+    "aux_3": definitions.CYAN,
+    "aux_4": definitions.CYAN,
 }
 
 track_button_names = [
@@ -61,8 +62,10 @@ class SequencerMode(MelodicMode):
     instrument_sequencers = {}
     tempo = 120
     timeline = iso.Timeline(tempo, output_device=iso.DummyOutputDevice())
-    selected_track = "gate"
-
+    selected_track = "gate_1"
+    pads_press_time = [False] * 64
+    pad_quick_press_time = 0.400
+    
     def initialize(self, settings):
         super().initialize(settings)
         for (
@@ -129,6 +132,7 @@ class SequencerMode(MelodicMode):
         # print(self.selected_instrument)
         # print(self.app.osc_mode.get_current_instrument_osc_address_sections())
 
+
     def update_pads(self):
         try:
             seq = self.instrument_sequencers[
@@ -136,52 +140,22 @@ class SequencerMode(MelodicMode):
             ]
             seq_pad_state = seq.get_track(self.selected_track)
             button_colors = [definitions.OFF_BTN_COLOR] * len(seq_pad_state)
+            
+
             for i, value in enumerate(seq.get_track(self.selected_track)):
                 if value:
                     button_colors[i] = TRACK_COLORS[self.selected_track]
 
-                corresponding_midi_note = self.sequencer_pad_matrix[int(i / 8)][
-                    int(i % 8)
-                ]
-
-                if self.playhead == i and self.timeline.running:
-                    button_colors[i] = definitions.WHITE
-                # print("on midi note", self.is_midi_note_being_played(corresponding_midi_note) )
-                # otherwise if a pad is being pushed and it's not active currently, turn it on
-                # print(self.on_pad_pressed( 0 , [int(i/8), int(i%8)], 127))
-        
-                if (self.is_midi_note_being_played(corresponding_midi_note) and self.app.is_mode_active(self.app.trig_edit_mode) == True):
-                    # print("setting lock state to", self.notes_being_played)
-                    # Get last touched knob, get values from trig_edit_mode
-                    # parameter_idx = 0
-                    # control = self.app.trig_edit_mode.controls[parameter_idx]
-                    # self.app.trig_edit_mode.prepare_lock()
-                    # seq.set_lock_state(i, parameter_idx, control.value)
-                    pass
-                if (
-                    self.is_midi_note_being_played(corresponding_midi_note)
-                    and seq_pad_state[i] is False
-                ):
-                    # print("pad activated")
+                # Set pad colours for on/off states of the seq
+                if (seq_pad_state[i] is True):
                     button_colors[i] = TRACK_COLORS[self.selected_track]
-                    seq.set_state(self.selected_track, i, True)
 
-                # otherwise if a pad is being pushed and it is active, turn it off
-                elif (
-                    self.is_midi_note_being_played(corresponding_midi_note)
-                    and seq_pad_state[i] is True
-                ):
-                    # print("pad disactivated")
+                if seq_pad_state[i] is False:
                     button_colors[i] = definitions.OFF_BTN_COLOR
-                    seq.set_state(self.selected_track, i, False)#
 
-                    
-                # if self.is_midi_note_being_played(corresponding_midi_note):
-                # print("MIDI NOTE PLAYED")
-                # print(seq_pad_state[i])
-                # # otherwise if a pad is on, leave it on
-                # elif self.seq_pad_state[self.get_current_instrument_short_name_helper()][i] is not None:
-                #     button_colors[i] = definitions.NOTE_ON_COLOR
+            # Draw the playhead
+            playhead = seq.playhead
+            button_colors[playhead] = definitions.WHITE
 
             # makes the values into a multi-dimensional array
             button_colors_array = []
@@ -199,6 +173,47 @@ class SequencerMode(MelodicMode):
             print(
                 f"{exception_message} {exception_type} {filename}, Line {exception_traceback.tb_lineno}"
             )
+
+    def on_pad_pressed(self, pad_n, pad_ij, velocity):
+        seq = self.instrument_sequencers[
+            self.get_current_instrument_short_name_helper()
+        ]
+        seq_pad_state = seq.get_track(self.selected_track)
+        idx = pad_n - 36
+        idx = pad_ij[0]*8 + pad_ij[1]
+        
+        # If a pad is off, turn it on
+        if seq_pad_state[idx] == False:
+            seq.set_state(self.selected_track, idx, True)
+
+        # If it's on, save the time and cont in on_pad_released
+        elif seq_pad_state[idx] == True:
+            self.pads_press_time[idx] = time.time()
+            
+
+        super().on_pad_pressed(pad_n, pad_ij, velocity)
+
+    def on_pad_released(self, pad_n, pad_ij, velocity):
+        seq = self.instrument_sequencers[
+            self.get_current_instrument_short_name_helper()
+        ]
+        seq_pad_state = seq.get_track(self.selected_track)
+        idx = pad_ij[0]*8 + pad_ij[1]
+        epoch_time = time.time()
+        press_time = epoch_time - self.pads_press_time[idx]
+
+        # Short Press - turn the pad off, reset the timer
+        if press_time <= self.pad_quick_press_time and self.pads_press_time[idx] != False:
+            seq.set_state(self.selected_track, idx, False)
+            self.pads_press_time[idx] = False
+            
+        # Long Press - keep the pad on, trigger a lock preview
+        elif press_time > self.pad_quick_press_time:
+            pass
+            # seq.set_state(self.selected_track, idx, False)
+
+        self.app.pads_need_update = True
+        super().on_pad_released(pad_n, pad_ij, velocity)
 
     def on_button_pressed(self, button_name):
         if button_name in track_button_names:

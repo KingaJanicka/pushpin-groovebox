@@ -186,8 +186,7 @@ class TrigEditMode(definitions.PyshaMode):
         seq = self.app.sequencer_mode.instrument_sequencers[self.get_current_instrument_short_name_helper()]
         notes_being_played = []
         notes_being_played = self.app.sequencer_mode.notes_being_played
-        print("Notes played", notes_being_played)
-
+        
         # Take all notes being pressed
         # Convert to index by removing 36
         # loop to check for all knobs being touched / turned
