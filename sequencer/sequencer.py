@@ -42,7 +42,7 @@ class Sequencer(object):
     def __init__(
         self, instrument_name, timeline, tick_callback, playhead, send_osc_func
     ):
-        
+        self.show_locks = False
         self.name = instrument_name
         self.note = [None] * default_number_of_steps
         self.gate_1 = [False] * default_number_of_steps

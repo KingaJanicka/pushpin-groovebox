@@ -67,7 +67,8 @@ class OSCControl(object):
     def send_osc_func(self, address, payload):
         pass
 
-    def draw(self, ctx, x_part):
+    def draw(self, ctx, x_part, draw_lock=False):
+        font_color = definitions.RED if draw_lock else definitions.WHITE
         if self.bipolar == True:
             margin_top = 25
             # Param name
@@ -78,7 +79,7 @@ class OSCControl(object):
                 margin_top,
                 self.label,
                 height=name_height,
-                font_color=definitions.WHITE,
+                font_color=font_color,
                 center_horizontally=True,
             )
 
@@ -159,7 +160,7 @@ class OSCControl(object):
                 margin_top,
                 self.label,
                 height=name_height,
-                font_color=definitions.WHITE,
+                font_color=font_color,
                 center_horizontally=True,
             )
 
@@ -228,6 +229,7 @@ class OSCControl(object):
             ctx.set_source_rgb(*definitions.get_color_rgb_float(color))
             ctx.fill_preserve()
             ctx.restore()
+
 
     def draw_submenu(self, ctx, x_part):
         margin_top = 95

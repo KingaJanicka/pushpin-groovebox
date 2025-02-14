@@ -203,10 +203,12 @@ class TrigEditMode(definitions.PyshaMode):
     def update_display(self, ctx, w, h):
         visible_controls = self.controls
         offset = 0
+        seq = self.app.sequencer_mode.instrument_sequencers[self.get_current_instrument_short_name_helper()]
+        draw_lock = seq.show_locks
         for control in visible_controls:
             if offset + 1 <= 8:
                 try:
-                    control.draw(ctx, offset)
+                    control.draw(ctx, offset, draw_lock)
                     offset += 1
                 except:
                     pass
