@@ -181,7 +181,6 @@ class SequencerMode(MelodicMode):
         seq_pad_state = seq.get_track(self.selected_track)
         idx = pad_n - 36
         idx = pad_ij[0]*8 + pad_ij[1]
-        seq.show_locks = True
         seq.steps_held.append(idx)
         # If a pad is off, turn it on
         if seq_pad_state[idx] == False:
@@ -191,8 +190,6 @@ class SequencerMode(MelodicMode):
         elif seq_pad_state[idx] == True:
             self.pads_press_time[idx] = time.time()
             # call func to show lock here
-            
-        super().on_pad_pressed(pad_n, pad_ij, velocity)
 
     def on_pad_released(self, pad_n, pad_ij, velocity):
         seq = self.instrument_sequencers[
@@ -213,9 +210,7 @@ class SequencerMode(MelodicMode):
             # seq.set_state(self.selected_track, idx, False
 
         seq.steps_held.remove(idx)
-        seq.show_locks = False
         self.app.pads_need_update = True
-        super().on_pad_released(pad_n, pad_ij, velocity)
 
     def on_button_pressed(self, button_name):
         if button_name in track_button_names:

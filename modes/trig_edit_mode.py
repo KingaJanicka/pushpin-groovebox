@@ -187,20 +187,27 @@ class TrigEditMode(definitions.PyshaMode):
         visible_controls = self.controls
         offset = 0
         seq = self.app.sequencer_mode.instrument_sequencers[self.get_current_instrument_short_name_helper()]
-        draw_lock = seq.show_locks
         for control in visible_controls:
+            draw_lock = True if len(seq.steps_held) is not 0 else False
             if offset + 1 <= 8:
                 try:
                     step_idx = seq.steps_held[0] if draw_lock == True else None
-                    if draw_lock == True and self.locks[step_idx][offset] is not None:
-                        print("if draw lock")
-                        control.draw(ctx, offset, draw_lock, self.locks[step_idx][offset])
+                    if draw_lock == True:
+                        # TODO: Does not get past this draw call, if the pads are pressed
+                        # Weird Shenaningans with the draw_lock value
+                        # TODO: When pad is pressed we are not calling this func at all???
+                        lock_value = seq.locks[step_idx][offset]
+                        control.draw(ctx, offset, draw_lock=draw_lock, lock_value=lock_value)
                         offset += 1
                     else:
-                        print("else draw lock")
+                        print("else loop")
+                        # self.app.osc_mode.update_display(ctx)
                         control.draw(ctx, offset)
                         offset += 1
-                except:
+                        # print("else draw lock")
+                except Exception as e:
+                    print("Exception in trig_edit_mode.update_display()")
+                    print(e)
                     pass
                 
     def on_button_pressed(self, button_name):

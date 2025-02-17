@@ -70,9 +70,13 @@ class OSCControl(object):
     def draw(self, ctx, x_part, draw_lock=False, lock_value=None):
         font_color = definitions.WHITE        
         value = self.value
-        if lock_value != None and draw_lock!= False:
-            value = lock_value
+        if draw_lock is not False:
             font_color = definitions.RED
+            if lock_value is not None:
+                value = lock_value
+            else:
+                value = float(0.0)
+        
         if self.bipolar == True:
             margin_top = 25
             # Param name
