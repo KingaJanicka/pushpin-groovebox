@@ -191,11 +191,13 @@ class TrigEditMode(definitions.PyshaMode):
         for control in visible_controls:
             if offset + 1 <= 8:
                 try:
-                    if draw_lock == True:
-                        step_idx = seq.steps_held[0] if draw_lock == True else None
-                        control.draw(ctx, offset, draw_lock, lock_value=self.locks[step_idx][offset])
+                    step_idx = seq.steps_held[0] if draw_lock == True else None
+                    if draw_lock == True and self.locks[step_idx][offset] is not None:
+                        print("if draw lock")
+                        control.draw(ctx, offset, draw_lock, self.locks[step_idx][offset])
                         offset += 1
                     else:
+                        print("else draw lock")
                         control.draw(ctx, offset)
                         offset += 1
                 except:
@@ -216,9 +218,9 @@ class TrigEditMode(definitions.PyshaMode):
                 push2_python.constants.ENCODER_TRACK7_ENCODER,
                 push2_python.constants.ENCODER_TRACK8_ENCODER,
             ].index(encoder_name)
-            self.prepare_lock()
             control = self.controls[encoder_idx]
             control.update_value(increment)
+            self.prepare_lock()
         
         except ValueError:
             pass  # Encoder not in list

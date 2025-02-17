@@ -271,9 +271,10 @@ class SequencerMode(MelodicMode):
                     if mode == self.app.trig_edit_mode:
                         print("Trig Edit mode lock")
                         idx = seq.steps_held[0]
+                        self.app.trig_edit_mode.on_encoder_rotated(encoder_name, increment)
                         seq.set_lock_state(idx, encoder_idx,)
                         return
-    
+
 
             current_device = self.app.osc_mode.get_current_instrument_device()
             current_device.on_encoder_rotated(encoder_name, increment)
