@@ -182,6 +182,7 @@ class SequencerMode(MelodicMode):
         idx = pad_n - 36
         idx = pad_ij[0]*8 + pad_ij[1]
         seq.show_locks = True
+        seq.steps_held.append(idx)
         # If a pad is off, turn it on
         if seq_pad_state[idx] == False:
             seq.set_state(self.selected_track, idx, True)
@@ -201,7 +202,6 @@ class SequencerMode(MelodicMode):
         idx = pad_ij[0]*8 + pad_ij[1]
         epoch_time = time.time()
         press_time = epoch_time - self.pads_press_time[idx]
-
         # Short Press - turn the pad off, reset the timer
         if press_time <= self.pad_quick_press_time and self.pads_press_time[idx] != False:
             seq.set_state(self.selected_track, idx, False)
@@ -210,7 +210,9 @@ class SequencerMode(MelodicMode):
         # Long Press - keep the pad on, trigger a lock preview
         elif press_time > self.pad_quick_press_time:
             pass
-            # seq.set_state(self.selected_track, idx, False)
+            # seq.set_state(self.selected_track, idx, False
+
+        seq.steps_held.remove(idx)
         seq.show_locks = False
         self.app.pads_need_update = True
         super().on_pad_released(pad_n, pad_ij, velocity)
@@ -244,3 +246,36 @@ class SequencerMode(MelodicMode):
             # For the other buttons, refer to the base class
             super().on_button_pressed(button_name)
             
+    def on_encoder_rotated(self, encoder_name, increment):
+        try:
+            encoder_idx = [
+                push2_python.constants.ENCODER_TRACK1_ENCODER,
+                push2_python.constants.ENCODER_TRACK2_ENCODER,
+                push2_python.constants.ENCODER_TRACK3_ENCODER,
+                push2_python.constants.ENCODER_TRACK4_ENCODER,
+                push2_python.constants.ENCODER_TRACK5_ENCODER,
+                push2_python.constants.ENCODER_TRACK6_ENCODER,
+                push2_python.constants.ENCODER_TRACK7_ENCODER,
+                push2_python.constants.ENCODER_TRACK8_ENCODER,
+            ].index(encoder_name)
+            # Check for state of pads here, if pads are being touched, set lock
+            seq = self.instrument_sequencers[
+                self.get_current_instrument_short_name_helper()
+            ]
+            
+            device = self.app.osc_mode.get_current_instrument_device()
+            modes = self.app.active_modes
+
+            if len(seq.steps_held) != 0:
+                for mode in modes:
+                    if mode == self.app.trig_edit_mode:
+                        print("Trig Edit mode lock")
+                        idx = seq.steps_held[0]
+                        seq.set_lock_state(idx, encoder_idx,)
+                        return
+    
+
+            current_device = self.app.osc_mode.get_current_instrument_device()
+            current_device.on_encoder_rotated(encoder_name, increment)
+        except ValueError:
+            pass

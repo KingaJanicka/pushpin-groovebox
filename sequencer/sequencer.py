@@ -43,6 +43,7 @@ class Sequencer(object):
         self, instrument_name, timeline, tick_callback, playhead, send_osc_func
     ):
         self.show_locks = False
+        self.steps_held = []
         self.name = instrument_name
         self.note = [None] * default_number_of_steps
         self.gate_1 = [False] * default_number_of_steps
@@ -56,6 +57,8 @@ class Sequencer(object):
         self.playhead = playhead
         self.send_osc_func = send_osc_func
         self.timeline = timeline
+        for x in range(default_number_of_steps):
+            self.locks.append([None, None, None, None, None, None, None, None])
         for item in iso.io.midi.get_midi_input_names():
             if item.startswith(self.name) == True:
                 self.midi_in_name = item
@@ -65,8 +68,6 @@ class Sequencer(object):
         self.midi_out_device = iso.MidiOutputDevice(device_name=f"{self.name} sequencer", send_clock=True, virtual=True)
         # TODO: had to remove the input device from here for this to work
         self.local_timeline = iso.Timeline(tempo=120, output_device=self.midi_out_device)
-        for x in range(default_number_of_steps):
-            self.locks.append([None, None, None, None, None, None, None, None])
         # We should use track.update() to update the sequencers to match the pad state
         self.playhead_track = timeline.schedule(
             {

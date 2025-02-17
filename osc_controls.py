@@ -67,8 +67,9 @@ class OSCControl(object):
     def send_osc_func(self, address, payload):
         pass
 
-    def draw(self, ctx, x_part, draw_lock=False):
+    def draw(self, ctx, x_part, draw_lock=False, lock_value=None):
         font_color = definitions.RED if draw_lock else definitions.WHITE
+        value = lock_value if lock_value is not None else self.value
         if self.bipolar == True:
             margin_top = 25
             # Param name
@@ -90,11 +91,11 @@ class OSCControl(object):
                 ctx,
                 x_part,
                 margin_top + name_height,
-                str(round(self.value, 2)),
+                str(round(value, 2)),
                 # str(self.string),
                 height=val_height,
                 font_color=color,
-                margin_left=int(self.value / self.max * 80 + 10),
+                margin_left=int(value / self.max * 80 + 10),
             )
 
             # Knob
@@ -119,7 +120,7 @@ class OSCControl(object):
             ctx.stroke()
 
             # Inner line
-            bipolar_value = self.value / self.max - 0.5 * self.max
+            bipolar_value = value / self.max - 0.5 * self.max
             ctx.move_to(xc, yc)
             ctx.line_to(xc + length, yc)
             ctx.set_source_rgb(*definitions.get_color_rgb_float(definitions.GRAY_LIGHT))
@@ -134,16 +135,16 @@ class OSCControl(object):
             ctx.stroke()
 
             # Triangle indicator
-            ctx.move_to(xc + length * self.value / self.max, yc - triangle_padding)
+            ctx.move_to(xc + length * value / self.max, yc - triangle_padding)
             ctx.line_to(
-                xc + length * self.value / self.max - triangle_size,
+                xc + length * value / self.max - triangle_size,
                 yc - triangle_padding - 2 * triangle_size,
             )
             ctx.line_to(
-                xc + length * self.value / self.max + triangle_size,
+                xc + length * value / self.max + triangle_size,
                 yc - triangle_padding - 2 * triangle_size,
             )
-            ctx.move_to(xc + length * self.value, yc - triangle_padding)
+            ctx.move_to(xc + length * value, yc - triangle_padding)
             ctx.close_path()
             ctx.set_source_rgb(*definitions.get_color_rgb_float(color))
             ctx.fill_preserve()
@@ -171,11 +172,11 @@ class OSCControl(object):
                 ctx,
                 x_part,
                 margin_top + name_height,
-                str(round(self.value, 2)),
+                str(round(value, 2)),
                 # str(self.string),
                 height=val_height,
                 font_color=color,
-                margin_left=int(self.value / self.max * 80 + 10),
+                margin_left=int(value / self.max * 80 + 10),
             )
 
             # Knob
@@ -209,22 +210,22 @@ class OSCControl(object):
 
             # Outer line
             ctx.move_to(xc, yc)
-            ctx.line_to(xc + length * self.value / self.max, yc)
+            ctx.line_to(xc + length * value / self.max, yc)
             ctx.set_source_rgb(*definitions.get_color_rgb_float(color))
             ctx.set_line_width(3)
             ctx.stroke()
 
             # Triangle indicator
-            ctx.move_to(xc + length * self.value / self.max, yc - triangle_padding)
+            ctx.move_to(xc + length * value / self.max, yc - triangle_padding)
             ctx.line_to(
-                xc + length * self.value / self.max - triangle_size,
+                xc + length * value / self.max - triangle_size,
                 yc - triangle_padding - 2 * triangle_size,
             )
             ctx.line_to(
-                xc + length * self.value / self.max + triangle_size,
+                xc + length * value / self.max + triangle_size,
                 yc - triangle_padding - 2 * triangle_size,
             )
-            ctx.move_to(xc + length * self.value, yc - triangle_padding)
+            ctx.move_to(xc + length * value, yc - triangle_padding)
             ctx.close_path()
             ctx.set_source_rgb(*definitions.get_color_rgb_float(color))
             ctx.fill_preserve()
