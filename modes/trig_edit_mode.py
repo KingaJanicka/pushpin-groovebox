@@ -133,7 +133,9 @@ class TrigEditMode(definitions.PyshaMode):
         )
         self.controls.append(recur)
 
-    def send_message(self):
+    def send_message(self, *args):
+        # self.log_out.debug(args)
+        # return self.osc["client"].send_message(*args)
         pass
 
     def activate(self):
@@ -200,7 +202,6 @@ class TrigEditMode(definitions.PyshaMode):
                         control.draw(ctx, offset, draw_lock=draw_lock, lock_value=lock_value)
                         offset += 1
                     else:
-                        print("else loop")
                         # self.app.osc_mode.update_display(ctx)
                         control.draw(ctx, offset)
                         offset += 1
@@ -227,7 +228,6 @@ class TrigEditMode(definitions.PyshaMode):
             ].index(encoder_name)
             control = self.controls[encoder_idx]
             control.update_value(increment)
-            self.prepare_lock()
         
         except ValueError:
             pass  # Encoder not in list

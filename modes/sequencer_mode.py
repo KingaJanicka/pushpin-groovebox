@@ -8,6 +8,7 @@ import os
 import sys
 import time
 
+from modes.trig_edit_mode import TrigEditMode
 EMPTY_PATTERN = []
 
 TRACK_NAMES = [
@@ -257,21 +258,20 @@ class SequencerMode(MelodicMode):
             seq = self.instrument_sequencers[
                 self.get_current_instrument_short_name_helper()
             ]
-            
             device = self.app.osc_mode.get_current_instrument_device()
-            modes = self.app.active_modes
-
-            if len(seq.steps_held) != 0:
-                for mode in modes:
-                    if mode == self.app.trig_edit_mode:
-                        print("Trig Edit mode lock")
-                        idx = seq.steps_held[0]
-                        self.app.trig_edit_mode.on_encoder_rotated(encoder_name, increment)
-                        seq.set_lock_state(idx, encoder_idx,)
-                        return
-
+            try:
+                if len(seq.steps_held) != 0:
+                    for mode in self.app.active_modes:
+                        if mode == self.app.trig_edit_mode:
+                            value = self.app.trig_edit_mode.controls[encoder_idx].value
+                            idx = seq.steps_held[0]
+                            self.app.trig_edit_mode.on_encoder_rotated(encoder_name, increment)
+                            seq.set_lock_state(idx, encoder_idx, value)
+                            return
+            except Exception as e:
+                print(e)
 
             current_device = self.app.osc_mode.get_current_instrument_device()
             current_device.on_encoder_rotated(encoder_name, increment)
-        except ValueError:
-            pass
+        except Exception as e:
+            print(e)
