@@ -141,7 +141,7 @@ class Sequencer(object):
             self.aux_4[index] = value
 
     def set_lock_state(self, index, parameter_idx, value):
-        print(f"Set_lock_state: index {index}, param_idx {parameter_idx}, value {value}")
+        # print(f"Set_lock_state: index {index}, param_idx {parameter_idx}, value {value}")
         self.locks[index][parameter_idx] = value
  
         
