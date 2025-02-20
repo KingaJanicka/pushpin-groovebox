@@ -7,6 +7,7 @@ from osc_controls import (
     ControlSpacer,
     OSCControlSwitch,
     OSCGroup,
+    OSCControlMenu
 )
 from glob import glob
 from user_interface.display_utils import show_text
@@ -29,27 +30,281 @@ class TrigEditMode(definitions.PyshaMode):
 
         self.get_color = kwargs.get("get_color")
         # Sets up controls for the trig menu
-        note = OSCControl(
-            {
-                "$type": "control-range",
-                "label": "Note",
-                "address": f"/",
-                "min": 0,
-                "max": 1,
-            },
+        note = OSCControlMenu(
+        {
+			"$type": "control-menu",
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "C",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Sine",
+						"address": "/",
+						"value": 0
+					}
+				},
+                				{
+					"$type": "menu-item",
+					"label": "C#/Db",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Sine",
+						"address": "/",
+						"value": 1
+					}
+				},
+                				{
+					"$type": "menu-item",
+					"label": "D",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Sine",
+						"address": "/",
+						"value": 2
+					}
+				},
+                				{
+					"$type": "menu-item",
+					"label": "D#/Eb",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Sine",
+						"address": "/",
+						"value": 3
+					}
+				},
+                				{
+					"$type": "menu-item",
+					"label": "E",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Sine",
+						"address": "/",
+						"value": 4
+					}
+				},
+                				{
+					"$type": "menu-item",
+					"label": "F/E#",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Sine",
+						"address": "/",
+						"value": 5
+					}
+				},
+                				{
+					"$type": "menu-item",
+					"label": "F#/Gb",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Sine",
+						"address": "/",
+						"value": 6
+					}
+				},
+                				{
+					"$type": "menu-item",
+					"label": "F#/Gb",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Sine",
+						"address": "/",
+						"value": 6
+					}
+				},
+                				{
+					"$type": "menu-item",
+					"label": "G",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Sine",
+						"address": "/",
+						"value": 7
+					}
+				},
+                {
+					"$type": "menu-item",
+					"label": "G#/Ab",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Sine",
+						"address": "/",
+						"value": 8
+					}
+				},
+                {
+					"$type": "menu-item",
+					"label": "A",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Sine",
+						"address": "/",
+						"value": 9
+					}
+				},
+                {
+					"$type": "menu-item",
+					"label": "A#/Bb",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Sine",
+						"address": "/",
+						"value": 10
+					}
+				},
+                {
+					"$type": "menu-item",
+					"label": "B",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Sine",
+						"address": "/",
+						"value": 11
+					}
+				}
+			]
+		},
             self.get_current_instrument_color_helper,
             self.send_message,
         )
         self.controls.append(note)
 
-        octave = OSCControl(
+        octave = OSCControlMenu(
             {
-                "$type": "control-range",
-                "label": "Octave",
-                "address": f"/",
-                "min": 0,
-                "max": 1,
-            },
+			"$type": "control-menu",
+			"items": [
+                        	{
+					"$type": "menu-item",
+					"label": "Oct -2",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Sine",
+						"address": "/",
+						"value": 0
+					}
+				},
+                				{
+					"$type": "menu-item",
+					"label": "Oct -1",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Sine",
+						"address": "/",
+						"value": 1
+					}
+				},
+                				{
+					"$type": "menu-item",
+					"label": "Oct 0",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Sine",
+						"address": "/",
+						"value": 2
+					}
+				},
+                				{
+					"$type": "menu-item",
+					"label": "Oct 1",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Sine",
+						"address": "/",
+						"value": 3
+					}
+				},
+                				{
+					"$type": "menu-item",
+					"label": "Oct 2",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Sine",
+						"address": "/",
+						"value": 4
+					}
+				},
+                				{
+					"$type": "menu-item",
+					"label": "Oct 3",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Sine",
+						"address": "/",
+						"value": 5
+					}
+				},
+                				{
+					"$type": "menu-item",
+					"label": "Oct 4",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Sine",
+						"address": "/",
+						"value": 6
+					}
+				},
+                				{
+					"$type": "menu-item",
+					"label": "Oct 5",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Sine",
+						"address": "/",
+						"value": 6
+					}
+				},
+                				{
+					"$type": "menu-item",
+					"label": "Oct 6",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Sine",
+						"address": "/",
+						"value": 7
+					}
+				},
+                {
+					"$type": "menu-item",
+					"label": "Oct 7",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Sine",
+						"address": "/",
+						"value": 8
+					}
+				},
+                {
+					"$type": "menu-item",
+					"label": "Oct 8",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Sine",
+						"address": "/",
+						"value": 9
+					}
+				},
+                {
+					"$type": "menu-item",
+					"label": "Oct 9",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Sine",
+						"address": "/",
+						"value": 10
+					}
+				},
+                {
+					"$type": "menu-item",
+					"label": "Oct 10",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Sine",
+						"address": "/",
+						"value": 11
+					}
+				}]},
             self.get_current_instrument_color_helper,
             self.send_message,
         )
@@ -61,7 +316,7 @@ class TrigEditMode(definitions.PyshaMode):
                 "label": "Velocity",
                 "address": f"/",
                 "min": 0,
-                "max": 1,
+                "max": 127,
             },
             self.get_current_instrument_color_helper,
             self.send_message,

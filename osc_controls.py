@@ -775,7 +775,7 @@ class OSCControlMenu(object):
         self.log.debug((self.value, active.address, active.value))
         self.send_osc_func(active.address, float(active.value))
 
-    def draw(self, ctx, offset):
+    def draw(self, ctx, offset, draw_lock=False, lock_value=None):
         margin_top = 30
         next_prev_height = 15
         val_height = 25
@@ -783,6 +783,17 @@ class OSCControlMenu(object):
         prev_label = ""
 
         idx = int(math.floor(self.value))
+
+        font_color = definitions.WHITE        
+        value = self.value
+        if draw_lock is not False:
+            font_color = definitions.RED
+            if lock_value is not None:
+                value = lock_value
+                idx = int(math.floor(lock_value))
+            else:
+                value = float(0.0)
+        
 
         if len(self.items) > idx + 1:
             next_label = self.items[idx + 1].label
@@ -798,7 +809,7 @@ class OSCControlMenu(object):
                 margin_top,
                 prev_label,
                 height=next_prev_height,
-                font_color=definitions.WHITE,
+                font_color=font_color,
             )
 
         # Current param value
@@ -807,7 +818,7 @@ class OSCControlMenu(object):
             ctx,
             offset,
             margin_top + next_prev_height,
-            str(self.label),
+            self.items[idx].label,
             height=val_height,
             font_color=color,
         )
@@ -820,7 +831,7 @@ class OSCControlMenu(object):
                 margin_top + next_prev_height + val_height,
                 next_label,
                 height=next_prev_height,
-                font_color=definitions.WHITE,
+                font_color=font_color,
             )
 
     def draw_submenu(self, ctx, offset):
