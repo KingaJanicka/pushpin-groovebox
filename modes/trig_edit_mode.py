@@ -194,11 +194,11 @@ class TrigEditMode(definitions.PyshaMode):
             if offset + 1 <= 8:
                 try:
                     step_idx = seq.steps_held[0] if draw_lock == True else None
-                    if draw_lock == True:
+                    lock_value = seq.locks[step_idx][offset] if step_idx != None else None
+                    if draw_lock == True and lock_value != None:
                         # TODO: Does not get past this draw call, if the pads are pressed
                         # Weird Shenaningans with the draw_lock value
                         # TODO: When pad is pressed we are not calling this func at all???
-                        lock_value = seq.locks[step_idx][offset]
                         control.draw(ctx, offset, draw_lock=draw_lock, lock_value=lock_value)
                         offset += 1
                     else:
