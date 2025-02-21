@@ -82,9 +82,11 @@ class Sequencer(object):
         )
 
     def seq_playhead_update(self):
-        # TODO: Somewhere a crash occurs when a note is played
         self.playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01) % 64)
         self.update_notes()
+        self.evaluate_and_play_notes()
+
+    def evaluate_and_play_notes(self):
         controls = self.app.trig_edit_mode.controls
         note = None
         prob = True if self.app.trig_edit_mode.controls[4].value >= random.random() else False
@@ -97,7 +99,7 @@ class Sequencer(object):
             amplitude = 127 if self.accent_1 else 64
             self.local_timeline.schedule({"note": note, "gate": gate, "amplitude": amplitude}, count=1)
         
-        
+
     def update_notes(self):
         for idx, note in enumerate(self.note):
             if self.gate_1[idx] == True:
