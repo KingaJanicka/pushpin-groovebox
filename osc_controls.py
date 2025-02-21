@@ -798,6 +798,8 @@ class OSCControlMenu(object):
         if len(self.items) > idx + 1:
             next_label = self.items[idx + 1].label
 
+        current_label = self.items[idx].label
+        
         if (idx - 1) >= 0:
             prev_label = self.items[idx - 1].label
 
@@ -818,7 +820,7 @@ class OSCControlMenu(object):
             ctx,
             offset,
             margin_top + next_prev_height,
-            self.items[idx].label,
+            current_label,
             height=val_height,
             font_color=color,
         )
@@ -837,6 +839,7 @@ class OSCControlMenu(object):
     def draw_submenu(self, ctx, offset):
         margin_top = 95
         val_height = 15
+        # TODO: need to add the lock drawing stuff here
         # Current param value
         color = self.get_color_func()
         show_text(

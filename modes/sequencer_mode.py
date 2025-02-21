@@ -78,6 +78,7 @@ class SequencerMode(MelodicMode):
                 self.sequencer_on_tick,
                 self.playhead,
                 self.send_osc_func,
+                self.app
             )
 
     def start_timeline(self):

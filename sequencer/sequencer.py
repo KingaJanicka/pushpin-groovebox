@@ -1,6 +1,6 @@
 import asyncio
 import isobar as iso
-
+import random
 from pythonosc.udp_client import SimpleUDPClient
 
 default_number_of_steps = 64
@@ -40,9 +40,10 @@ class Sequencer(object):
 
 
     def __init__(
-        self, instrument_name, timeline, tick_callback, playhead, send_osc_func
+        self, instrument_name, timeline, tick_callback, playhead, send_osc_func, app
     ):
         self.locks = []
+        self.app = app
         self.show_locks = False
         self.steps_held = []
         self.name = instrument_name
@@ -84,10 +85,17 @@ class Sequencer(object):
         # TODO: Somewhere a crash occurs when a note is played
         self.playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01) % 64)
         self.update_notes()
-        
-        if self.gate_1[self.playhead] == True and self.trig_mute_1[self.playhead] != True:
+        controls = self.app.trig_edit_mode.controls
+        note = None
+        prob = True if self.app.trig_edit_mode.controls[4].value >= random.random() else False
+        if self.gate_1[self.playhead] == True and self.trig_mute_1[self.playhead] != True and prob == True:
+            pitch = int(self.locks[self.playhead][0]) if self.locks[self.playhead][0] is not None else int(controls[0].value) 
+            octave = int(self.locks[self.playhead][1]) * 12 if self.locks[self.playhead][1] is not None else int(controls[1].value)*12 
+            note = pitch + octave
+            amplitude = self.app.trig_edit_mode.controls[2].value
+            gate =  self.app.trig_edit_mode.controls[3].value
             amplitude = 127 if self.accent_1 else 64
-            self.local_timeline.schedule({"note": 64, "gate": 0.2, "amplitude": amplitude}, count=1)
+            self.local_timeline.schedule({"note": note, "gate": gate, "amplitude": amplitude}, count=1)
         
         
     def update_notes(self):

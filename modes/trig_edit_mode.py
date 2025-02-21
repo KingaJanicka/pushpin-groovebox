@@ -284,27 +284,8 @@ class TrigEditMode(definitions.PyshaMode):
 						"address": "/",
 						"value": 9
 					}
-				},
-                {
-					"$type": "menu-item",
-					"label": "Oct 9",
-					"onselect": {
-						"$type": "message",
-						"$comment": "Sine",
-						"address": "/",
-						"value": 10
-					}
-				},
-                {
-					"$type": "menu-item",
-					"label": "Oct 10",
-					"onselect": {
-						"$type": "message",
-						"$comment": "Sine",
-						"address": "/",
-						"value": 11
-					}
-				}]},
+				}
+				]},
             self.get_current_instrument_color_helper,
             self.send_message,
         )
@@ -470,6 +451,7 @@ class TrigEditMode(definitions.PyshaMode):
         pass
 
     def on_encoder_rotated(self, encoder_name, increment=0.01):
+        # TODO: Still modifies the device underneath
         try:
             encoder_idx = [
                 push2_python.constants.ENCODER_TRACK1_ENCODER,
