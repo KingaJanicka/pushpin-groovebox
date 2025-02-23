@@ -87,18 +87,20 @@ class Sequencer(object):
         self.evaluate_and_play_notes()
 
     def evaluate_and_play_notes(self):
-        controls = self.app.trig_edit_mode.controls
-        note = None
-        prob = True if self.app.trig_edit_mode.controls[4].value >= random.random() else False
-        if self.gate_1[self.playhead] == True and self.trig_mute_1[self.playhead] != True and prob == True:
-            pitch = int(self.locks[self.playhead][0]) if self.locks[self.playhead][0] is not None else int(controls[0].value) 
-            octave = int(self.locks[self.playhead][1]) * 12 if self.locks[self.playhead][1] is not None else int(controls[1].value)*12 
-            note = pitch + octave
-            amplitude = self.app.trig_edit_mode.controls[2].value
-            gate =  self.app.trig_edit_mode.controls[3].value
-            amplitude = 127 if self.accent_1 else 64
-            self.local_timeline.schedule({"note": note, "gate": gate, "amplitude": amplitude}, count=1)
-        
+        try:
+            controls = self.app.trig_edit_mode.controls
+            note = None
+            prob = True if self.app.trig_edit_mode.controls[4].value >= random.random() else False
+            if self.gate_1[self.playhead] == True and self.trig_mute_1[self.playhead] != True and prob == True:
+                pitch = int(self.locks[self.playhead][0]) if self.locks[self.playhead][0] is not None else int(controls[0].value) 
+                octave = int(self.locks[self.playhead][1]) * 12 if self.locks[self.playhead][1] is not None else int(controls[1].value)*12 
+                note = pitch + octave
+                amplitude = self.app.trig_edit_mode.controls[2].value
+                gate =  self.app.trig_edit_mode.controls[3].value
+                amplitude = 127 if self.accent_1 else 64
+                self.local_timeline.schedule({"note": note, "gate": gate, "amplitude": amplitude}, count=1)
+        except Exception as e:
+            print("Error in evaluate_and_play_notes, ",e)
 
     def update_notes(self):
         for idx, note in enumerate(self.note):

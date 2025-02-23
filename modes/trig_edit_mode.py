@@ -20,7 +20,8 @@ log = logging.getLogger("preset_selection_mode")
 
 
 class TrigEditMode(definitions.PyshaMode):
-
+    # Should we fold this under the sequencer/seq mode so it will init per instrument
+    # Right now controls are shared between instruments
     current_page = 0
     controls = []
     state = [0] * 8

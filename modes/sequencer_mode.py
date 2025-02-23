@@ -82,17 +82,19 @@ class SequencerMode(MelodicMode):
             )
 
     def start_timeline(self):
-        # TODO: I think we need to start the timelines in seq still?
-        instrument_short_name = self.get_current_instrument_short_name_helper()
-        self.instrument_sequencers[instrument_short_name].local_timeline.background()
-
+        for (
+            instrument_short_name
+        ) in self.get_all_distinct_instrument_short_names_helper():
+            self.instrument_sequencers[instrument_short_name].local_timeline.background()
+        
         self.timeline.background()
 
     def stop_timeline(self):
-
-        instrument_short_name = self.get_current_instrument_short_name_helper()
-        self.instrument_sequencers[instrument_short_name].local_timeline.stop()
-
+        for (
+            instrument_short_name
+        ) in self.get_all_distinct_instrument_short_names_helper():
+            self.instrument_sequencers[instrument_short_name].local_timeline.stop()
+        
         self.timeline.stop()
 
     def get_settings_to_save(self):

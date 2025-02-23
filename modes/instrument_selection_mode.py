@@ -156,7 +156,8 @@ class InstrumentSelectionMode(definitions.PyshaMode):
         # Note that if this is called from a mode form the same xor group with melodic/rhythmic modes,
         # that other mode will be deactivated.
         self.selected_instrument = instrument_idx
-        self.load_current_default_layout()
+        # self.load_current_default_layout()
+        # Commented out so that mode stays the same as intruments switch
         self.clean_currently_notes_being_played()
 
         try:
