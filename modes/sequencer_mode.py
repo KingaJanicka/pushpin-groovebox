@@ -274,7 +274,7 @@ class SequencerMode(MelodicMode):
             except Exception as e:
                 print(e)
 
-            current_device = self.app.osc_mode.get_current_instrument_device()
-            current_device.on_encoder_rotated(encoder_name, increment)
+            # current_device = self.app.osc_mode.get_current_instrument_device()
+            # current_device.on_encoder_rotated(encoder_name, increment)
         except Exception as e:
             print(e)
