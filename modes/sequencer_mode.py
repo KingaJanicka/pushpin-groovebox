@@ -266,10 +266,11 @@ class SequencerMode(MelodicMode):
                 if len(seq.steps_held) != 0:
                     for mode in self.app.active_modes:
                         if mode == self.app.trig_edit_mode:
-                            value = self.app.trig_edit_mode.controls[encoder_idx].value
                             idx = seq.steps_held[0]
-                            self.app.trig_edit_mode.on_encoder_rotated(encoder_name, increment)
-                            seq.set_lock_state(idx, encoder_idx, value)
+                            value = self.app.trig_edit_mode.controls[encoder_idx].value 
+                            lock_value  = seq.get_lock_state(idx, encoder_idx, lock_value)
+                            # self.app.trig_edit_mode.on_encoder_rotated(encoder_name, increment)
+                            seq.set_lock_state(idx, encoder_idx, lock_value)
                             return
             except Exception as e:
                 print(e)
