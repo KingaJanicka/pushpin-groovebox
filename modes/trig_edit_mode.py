@@ -24,6 +24,7 @@ class TrigEditMode(definitions.PyshaMode):
 	# Right now controls are shared between instruments
 	current_page = 0
 	controls = []
+	state = {}
 	current_address = None
 
 	def initialize(self, settings=None, **kwargs):
@@ -369,6 +370,12 @@ class TrigEditMode(definitions.PyshaMode):
 		)
 		self.controls.append(recur)
 
+		for instrument in self.get_all_distinct_instrument_short_names_helper():
+			self.state[instrument] = []
+			for control in self.controls:
+				self.state[instrument].append(control.value)
+
+	
 	def send_message(self, *args):
 		# self.log_out.debug(args)
 		# return self.osc["client"].send_message(*args)
@@ -383,6 +390,9 @@ class TrigEditMode(definitions.PyshaMode):
 		self.current_page = 0
 		self.app.pads_need_update = True
 		self.app.buttons_need_update = True
+		current_state = self.state[self.get_current_instrument_short_name_helper()]
+		for idx, control in enumerate(self.controls):
+			control.value = current_state[idx]
 
 	def should_be_enabled(self):
 		return True
@@ -426,7 +436,7 @@ class TrigEditMode(definitions.PyshaMode):
 		offset = 0
 		seq = self.app.sequencer_mode.instrument_sequencers[self.get_current_instrument_short_name_helper()]
 		for control in visible_controls:
-			draw_lock = True if len(seq.steps_held) is not 0 else False
+			draw_lock = True if len(seq.steps_held) != 0 else False
 			if offset + 1 <= 8:
 				try:
 					step_idx = seq.steps_held[0] if draw_lock == True else None
@@ -465,11 +475,12 @@ class TrigEditMode(definitions.PyshaMode):
 			].index(encoder_name)
 			seq = self.app.sequencer_mode.instrument_sequencers[self.get_current_instrument_short_name_helper()]
 			
-			if len(seq.steps_held) is not 0:
+			if len(seq.steps_held) != 0:
 				pass
 			else:
 				control = self.controls[encoder_idx]
 				control.update_value(increment)
+				self.state[self.get_current_instrument_short_name_helper()][encoder_idx] = control.value
 
 		except ValueError:
 			pass  # Encoder not in list

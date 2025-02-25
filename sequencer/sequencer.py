@@ -157,7 +157,7 @@ class Sequencer(object):
         self.locks[index][parameter_idx] = value
  
 
-    def get_lock_state(self, index, parameter_idx, value):
+    def get_lock_state(self, index, parameter_idx):
         # print(f"Set_lock_state: index {index}, param_idx {parameter_idx}, value {value}")
         return self.locks[index][parameter_idx]
         

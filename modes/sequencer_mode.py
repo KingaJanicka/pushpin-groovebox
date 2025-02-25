@@ -263,14 +263,16 @@ class SequencerMode(MelodicMode):
             ]
             device = self.app.osc_mode.get_current_instrument_device()
             try:
+                # TODO: bug here to do with plocked values
                 if len(seq.steps_held) != 0:
                     for mode in self.app.active_modes:
                         if mode == self.app.trig_edit_mode:
                             idx = seq.steps_held[0]
-                            value = self.app.trig_edit_mode.controls[encoder_idx].value 
-                            lock_value  = seq.get_lock_state(idx, encoder_idx, lock_value)
+                            # TODO: Need to set max/min bounds here here
+                            value = self.app.trig_edit_mode.controls[encoder_idx].value if seq.get_lock_state is not float else seq.get_lock_state(idx, encoder_idx) + increment*0.01
+                            # lock_value  = seq.get_lock_state(idx, encoder_idx) 
                             # self.app.trig_edit_mode.on_encoder_rotated(encoder_name, increment)
-                            seq.set_lock_state(idx, encoder_idx, lock_value)
+                            seq.set_lock_state(idx, encoder_idx, value)
                             return
             except Exception as e:
                 print(e)
