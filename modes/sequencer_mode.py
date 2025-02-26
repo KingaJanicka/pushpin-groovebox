@@ -276,9 +276,12 @@ class SequencerMode(MelodicMode):
                                 # calmping to min/max values, scaling
                                 control = self.app.trig_edit_mode.controls[encoder_idx]
                                 lock_value = seq.get_lock_state(idx, encoder_idx)
-                                range = control.max - control.min
+                                
+                                min = 0 if hasattr(control, "items") else control.min
+                                max = len(control.items) if hasattr(control, "items") else control.max
+                                range = max - min
                                 incr = increment*range/100
-                                if control.min <= (lock_value + incr) <= control.max:
+                                if min <= (lock_value + incr) <= max:
                                     value = lock_value + incr
                                 else:
                                     value = lock_value
