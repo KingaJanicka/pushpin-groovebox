@@ -263,28 +263,30 @@ class SequencerMode(MelodicMode):
             ]
             device = self.app.osc_mode.get_current_instrument_device()
             try:
-                # TODO: bug here to do with plocked values
                 if len(seq.steps_held) != 0:
                     for mode in self.app.active_modes:
                         if mode == self.app.trig_edit_mode:
-                            print("if mode trig edit")
                             idx = seq.steps_held[0]
                             value = None
-                            # TODO: Need to set max/min bounds here here
+                            
                             if seq.get_lock_state(idx, encoder_idx) is None:
                                 value = self.app.trig_edit_mode.controls[encoder_idx].value
-                                print("lock state not float")
+
                             else :
-                                value = seq.get_lock_state(idx, encoder_idx) + increment*0.01
-                                print("else")
-                            # lock_value  = seq.get_lock_state(idx, encoder_idx) 
-                            # self.app.trig_edit_mode.on_encoder_rotated(encoder_name, increment)
+                                # calmping to min/max values, scaling
+                                control = self.app.trig_edit_mode.controls[encoder_idx]
+                                lock_value = seq.get_lock_state(idx, encoder_idx)
+                                range = control.max - control.min
+                                incr = increment*range/100
+                                if control.min <= (lock_value + incr) <= control.max:
+                                    value = lock_value + incr
+                                else:
+                                    value = lock_value
+                                    
                             seq.set_lock_state(idx, encoder_idx, value)
                             return
             except Exception as e:
                 print(e)
 
-            # current_device = self.app.osc_mode.get_current_instrument_device()
-            # current_device.on_encoder_rotated(encoder_name, increment)
         except Exception as e:
             print(e)
