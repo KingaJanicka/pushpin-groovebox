@@ -31,6 +31,7 @@ class ModMatrixDevice(definitions.PyshaMode):
         self.label = ""
         self.definition = {}
         self.engine = engine
+        self.disable_controls = False
         self.modmatrix = False
         self.controls = [0] * 8
         self.src_cat_column = 0
@@ -1005,104 +1006,103 @@ class ModMatrixDevice(definitions.PyshaMode):
         devices = self.get_all_mod_matrix_devices()
         selected_device = int(self.controls[self.device_column])
         controls = self.get_all_mod_matrix_controls_for_device_in_slot(selected_device)
+        if self.disable_controls == False:
+            match encoder_idx:
+                # First encoder
+                case self.src_cat_column:
+                    # Check new value is in range
+                    if is_in_bounds(self.all_mod_src, new_value):
+                        if int(visible_controls[encoder_idx] + new_value) != int(
+                            visible_controls[encoder_idx]
+                        ):
+                            visible_controls[self.src_type_column] = 0
 
-        match encoder_idx:
-            # First encoder
-            case self.src_cat_column:
-                # Check new value is in range
-                if is_in_bounds(self.all_mod_src, new_value):
-                    if int(visible_controls[encoder_idx] + new_value) != int(
-                        visible_controls[encoder_idx]
+                        visible_controls[encoder_idx] = new_value
+
+                # Second encoder
+                case self.src_type_column:
+                    if is_in_bounds(
+                        self.all_mod_src[int(visible_controls[0])]["values"], new_value
                     ):
-                        visible_controls[self.src_type_column] = 0
+                        visible_controls[encoder_idx] = new_value
 
-                    visible_controls[encoder_idx] = new_value
+                # Third encoder
+                case self.device_column:
+                    if is_in_bounds(devices, new_value):
+                        if int(visible_controls[encoder_idx] + new_value) != int(
+                            visible_controls[encoder_idx]
+                        ):
+                            visible_controls[self.control_column] = 0
+                        visible_controls[encoder_idx] = new_value
 
-            # Second encoder
-            case self.src_type_column:
-                if is_in_bounds(
-                    self.all_mod_src[int(visible_controls[0])]["values"], new_value
-                ):
-                    visible_controls[encoder_idx] = new_value
+                # Fourth encoder
+                case self.control_column:
+                    if is_in_bounds(controls, new_value):
+                        visible_controls[encoder_idx] = new_value
 
-            # Third encoder
-            case self.device_column:
-                if is_in_bounds(devices, new_value):
-                    if int(visible_controls[encoder_idx] + new_value) != int(
-                        visible_controls[encoder_idx]
-                    ):
-                        visible_controls[self.control_column] = 0
-                    visible_controls[encoder_idx] = new_value
+                # Fifth encoder
+                case self.depth_control_column:
+                    if 0 <= visible_controls[encoder_idx] + (increment * 0.01) <= 1:
+                        visible_controls[encoder_idx] = (
+                            visible_controls[encoder_idx] + increment * 0.01
+                        )
 
-            # Fourth encoder
-            case self.control_column:
-                if is_in_bounds(controls, new_value):
-                    visible_controls[encoder_idx] = new_value
+                # Sixth encoder
+                case self.set_mapping_column:
+                    src_cat_idx = int(self.controls[self.src_cat_column])
+                    src_type_idx = int(self.controls[self.src_type_column])
+                    mod_mapping = self.all_mod_src[src_cat_idx]["values"][src_type_idx]
 
-            # Fifth encoder
-            case self.depth_control_column:
-                if 0 <= visible_controls[encoder_idx] + (increment * 0.01) <= 1:
-                    visible_controls[encoder_idx] = (
-                        visible_controls[encoder_idx] + increment * 0.01
+                    devices = self.get_all_mod_matrix_devices()
+                    selected_device_slot = int(self.controls[int(self.device_column)])
+                    device_controls = self.get_all_mod_matrix_controls_for_device_in_slot(
+                        selected_device_slot
                     )
 
-            # Sixth encoder
-            case self.set_mapping_column:
-                src_cat_idx = int(self.controls[self.src_cat_column])
-                src_type_idx = int(self.controls[self.src_type_column])
-                mod_mapping = self.all_mod_src[src_cat_idx]["values"][src_type_idx]
+                    selected_control = self.controls[self.control_column]
 
-                devices = self.get_all_mod_matrix_devices()
-                selected_device_slot = int(self.controls[int(self.device_column)])
-                device_controls = self.get_all_mod_matrix_controls_for_device_in_slot(
-                    selected_device_slot
-                )
+                    depth_scaled = (visible_controls[self.depth_control_column] - 0.5) * 2
 
-                selected_control = self.controls[self.control_column]
-
-                depth_scaled = (visible_controls[self.depth_control_column] - 0.5) * 2
-
-                self.send_message(
-                    f'{mod_mapping["address"]}',
-                    [
-                        str(device_controls[int(selected_control)].address),
-                        float(depth_scaled),
-                    ],
-                )
-                self.controls[7] = len(self.mod_matrix_mappings) - 1
-                ## THIS COMMENTED BLOCK NEEDS TO BE REVISED AND POSSIBLY MOVED TO SET_STATE TODO
-
-                # current_knob_value = int(visible_controls[7]) or 0
-                # print(current_knob_value, self.mod_matrix_mappings)
-                # mapping_address = self.mod_matrix_mappings[current_knob_value][0]
-
-                # mapping_dest = self.mod_matrix_mappings[current_knob_value][1]
-
-                # selected_control_address = str(
-                #     device_controls[int(selected_control)].address
-                # )
-
-                # if (
-                #     mapping_address == mod_mapping["address"]
-                #     and mapping_dest == selected_control_address
-                # ):
-                #     self.mod_matrix_mappings[current_knob_value][2] = depth_scaled
-
-            # Seventh encoder
-            case self.scroll_column:
-                # Scroll through mappings and snap knobs
-                if is_in_bounds(
-                    self.mod_matrix_mappings,
-                    visible_controls[encoder_idx] + increment * 0.1,
-                ):
-                    visible_controls[encoder_idx] = (
-                        visible_controls[encoder_idx] + increment * 0.1
+                    self.send_message(
+                        f'{mod_mapping["address"]}',
+                        [
+                            str(device_controls[int(selected_control)].address),
+                            float(depth_scaled),
+                        ],
                     )
-                    self.snap_knobs_to_mod_matrix()
+                    self.controls[7] = len(self.mod_matrix_mappings) - 1
+                    ## THIS COMMENTED BLOCK NEEDS TO BE REVISED AND POSSIBLY MOVED TO SET_STATE TODO
+
+                    # current_knob_value = int(visible_controls[7]) or 0
+                    # print(current_knob_value, self.mod_matrix_mappings)
+                    # mapping_address = self.mod_matrix_mappings[current_knob_value][0]
+
+                    # mapping_dest = self.mod_matrix_mappings[current_knob_value][1]
+
+                    # selected_control_address = str(
+                    #     device_controls[int(selected_control)].address
+                    # )
+
+                    # if (
+                    #     mapping_address == mod_mapping["address"]
+                    #     and mapping_dest == selected_control_address
+                    # ):
+                    #     self.mod_matrix_mappings[current_knob_value][2] = depth_scaled
+
+                # Seventh encoder
+                case self.scroll_column:
+                    # Scroll through mappings and snap knobs
+                    if is_in_bounds(
+                        self.mod_matrix_mappings,
+                        visible_controls[encoder_idx] + increment * 0.1,
+                    ):
+                        visible_controls[encoder_idx] = (
+                            visible_controls[encoder_idx] + increment * 0.1
+                        )
+                        self.snap_knobs_to_mod_matrix()
 
     def on_encoder_touched(self, encoder_name):
-        
-        
+           
         try:
             encoder_idx = [
                 push2_python.constants.ENCODER_TRACK1_ENCODER,
@@ -1118,6 +1118,6 @@ class ModMatrixDevice(definitions.PyshaMode):
         except ValueError:
             return
 
-        if encoder_idx == self.delete_mapping_column:
+        if encoder_idx == self.delete_mapping_column and self.disable_controls == False:
             self.snap_knobs_to_mod_matrix()
             self.send_delete_message()

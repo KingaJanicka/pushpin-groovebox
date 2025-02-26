@@ -61,6 +61,7 @@ class OSCDevice(PyshaMode):
         self.controls = []
         self.page = 0
         self.slot = None
+        self.disable_controls = False
         self.definition = config
         self.modmatrix = config.get("modmatrix", True)
         self.osc = osc
@@ -243,9 +244,9 @@ class OSCDevice(PyshaMode):
                     push2_python.constants.ENCODER_TRACK7_ENCODER,
                     push2_python.constants.ENCODER_TRACK8_ENCODER,
                 ].index(encoder_name)
-
-                visible_controls = self.get_visible_controls()
-                control = visible_controls[encoder_idx]
-                control.update_value(increment)
+                if self.disable_controls == False:
+                    visible_controls = self.get_visible_controls()
+                    control = visible_controls[encoder_idx]
+                    control.update_value(increment)
         except ValueError:
             pass  # Encoder not in list

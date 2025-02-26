@@ -66,6 +66,7 @@ class AudioInDevice(PyshaMode):
         self.engine = engine
         self.label = ""
         self.definition = {}
+        self.disable_controls = False
         # self.modmatrix = config.get("modmatrix", True)
         self.modmatrix = False
         self.controls = []
@@ -678,13 +679,14 @@ class AudioInDevice(PyshaMode):
                 push2_python.constants.ENCODER_TRACK7_ENCODER,
                 push2_python.constants.ENCODER_TRACK8_ENCODER,
             ].index(encoder_name)
-            visible_controls = self.get_visible_controls()
-            control = visible_controls[encoder_idx]
-            control.update_value(increment)
-            self.last_knob_turned = encoder_idx
-            match encoder_idx:
-                case 2 | 3 | 4 | 5:
-                    self.update_input_gains()
+            if self.disable_controls == False:
+                visible_controls = self.get_visible_controls()
+                control = visible_controls[encoder_idx]
+                control.update_value(increment)
+                self.last_knob_turned = encoder_idx
+                match encoder_idx:
+                    case 2 | 3 | 4 | 5:
+                        self.update_input_gains()
 
         
         except ValueError:

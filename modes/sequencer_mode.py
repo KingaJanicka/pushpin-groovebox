@@ -7,6 +7,7 @@ import isobar as iso
 import os
 import sys
 import time
+from user_interface.display_utils import show_text
 
 from modes.trig_edit_mode import TrigEditMode
 EMPTY_PATTERN = []
@@ -62,6 +63,7 @@ class SequencerMode(MelodicMode):
     current_selected_section_and_page = {}
     instrument_sequencers = {}
     tempo = 120
+    show_scale_menu = False
     timeline = iso.Timeline(tempo, output_device=iso.DummyOutputDevice())
     selected_track = "gate_1"
     pads_press_time = [False] * 64
@@ -135,7 +137,22 @@ class SequencerMode(MelodicMode):
         self.selected_instrument = TRACK_NAMES[0]
         # print(self.selected_instrument)
         # print(self.app.osc_mode.get_current_instrument_osc_address_sections())
-
+    
+    def update_display(self, ctx, w, h):
+        if self.show_scale_menu == True:
+            show_text(
+                        ctx,
+                        1,
+                        20,
+                        "FARTS",
+                        height=25,
+                        font_color=definitions.BLACK,
+                        background_color=definitions.YELLOW,
+                        font_size_percentage=0.8,
+                        center_vertically=True,
+                        center_horizontally=True,
+                        rectangle_padding=1,
+                    )
 
     def update_pads(self):
         try:
@@ -240,11 +257,16 @@ class SequencerMode(MelodicMode):
             elif self.timeline_is_playing == True:
                 self.stop_timeline()
                 self.timeline_is_playing = False
+        elif button_name == push2_constants.BUTTON_SCALE:
+            device = self.app.osc_mode.get_current_instrument_device()
+            device.disable_controls = True if self.show_scale_menu == False else False 
+            self.show_scale_menu = True if self.show_scale_menu == False else False
 
         else:
             # For the other buttons, refer to the base class
             super().on_button_pressed(button_name)
-            
+
+
     def on_encoder_rotated(self, encoder_name, increment):
         try:
             encoder_idx = [
@@ -261,7 +283,6 @@ class SequencerMode(MelodicMode):
             seq = self.instrument_sequencers[
                 self.get_current_instrument_short_name_helper()
             ]
-            device = self.app.osc_mode.get_current_instrument_device()
             try:
                 if len(seq.steps_held) != 0:
                     for mode in self.app.active_modes:
