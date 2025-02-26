@@ -267,9 +267,16 @@ class SequencerMode(MelodicMode):
                 if len(seq.steps_held) != 0:
                     for mode in self.app.active_modes:
                         if mode == self.app.trig_edit_mode:
+                            print("if mode trig edit")
                             idx = seq.steps_held[0]
+                            value = None
                             # TODO: Need to set max/min bounds here here
-                            value = self.app.trig_edit_mode.controls[encoder_idx].value if seq.get_lock_state is not float else seq.get_lock_state(idx, encoder_idx) + increment*0.01
+                            if seq.get_lock_state(idx, encoder_idx) is None:
+                                value = self.app.trig_edit_mode.controls[encoder_idx].value
+                                print("lock state not float")
+                            else :
+                                value = seq.get_lock_state(idx, encoder_idx) + increment*0.01
+                                print("else")
                             # lock_value  = seq.get_lock_state(idx, encoder_idx) 
                             # self.app.trig_edit_mode.on_encoder_rotated(encoder_name, increment)
                             seq.set_lock_state(idx, encoder_idx, value)
