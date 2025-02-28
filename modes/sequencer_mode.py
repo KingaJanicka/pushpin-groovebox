@@ -8,8 +8,14 @@ import os
 import sys
 import time
 from user_interface.display_utils import show_text
-
+from osc_controls import (
+    OSCControl,
+    ControlSpacer,
+    OSCControlSwitch,
+    OSCGroup,
+)
 from modes.trig_edit_mode import TrigEditMode
+
 EMPTY_PATTERN = []
 
 TRACK_NAMES = [
@@ -68,9 +74,27 @@ class SequencerMode(MelodicMode):
     selected_track = "gate_1"
     pads_press_time = [False] * 64
     pad_quick_press_time = 0.400
-    
+    disable_controls = False
+    instrument_scale_edit_controls = {}
+    scale_edit_controls = []
+
     def initialize(self, settings):
         super().initialize(settings)
+
+        # len = OSCControl(
+        # 	{
+        # 		"$type": "control-range",
+        # 		"label": "Steps",
+        # 		"address": f"/",
+        # 		"min": 0,
+        # 		"max": 64,
+        # 	},
+        # 	self.get_current_instrument_color_helper,
+        # 	None,
+        # )
+        # len.value = 64
+        # self.scale_edit_controls.append(len)
+
         for (
             instrument_short_name
         ) in self.get_all_distinct_instrument_short_names_helper():
@@ -80,15 +104,37 @@ class SequencerMode(MelodicMode):
                 self.sequencer_on_tick,
                 self.playhead,
                 self.send_osc_func,
-                self.app
+                self.app,
             )
+            self.instrument_scale_edit_controls[instrument_short_name] = {}
+            for track_name in TRACK_NAMES:
+                menu = []
+
+                len = OSCControl(
+                    {
+                        "$type": "control-range",
+                        "label": "Steps",
+                        "address": f"/",
+                        "min": 0,
+                        "max": 64,
+                    },
+                    self.get_current_instrument_color_helper,
+                    None,
+                )
+                len.value = 64
+                menu.append(len)
+                self.instrument_scale_edit_controls[instrument_short_name][
+                    track_name
+                ] = menu
 
     def start_timeline(self):
         for (
             instrument_short_name
         ) in self.get_all_distinct_instrument_short_names_helper():
-            self.instrument_sequencers[instrument_short_name].local_timeline.background()
-        
+            self.instrument_sequencers[
+                instrument_short_name
+            ].local_timeline.background()
+
         self.timeline.background()
 
     def stop_timeline(self):
@@ -96,7 +142,7 @@ class SequencerMode(MelodicMode):
             instrument_short_name
         ) in self.get_all_distinct_instrument_short_names_helper():
             self.instrument_sequencers[instrument_short_name].local_timeline.stop()
-        
+
         self.timeline.stop()
 
     def get_settings_to_save(self):
@@ -127,7 +173,11 @@ class SequencerMode(MelodicMode):
             "osc_out_port"
         ]
 
+    def get_current_instrument_color_helper(self):
+        return self.app.instrument_selection_mode.get_current_instrument_color()
+
     def new_instrument_selected(self):
+        print("instrument selected")
         instrument_index = self.app.instrument_selection_mode.selected_instrument % 8
         instrument_index = int(
             (self.app.instrument_selection_mode.selected_instrument - instrument_index)
@@ -135,44 +185,74 @@ class SequencerMode(MelodicMode):
         )
 
         self.selected_instrument = TRACK_NAMES[0]
+
+        device = self.app.osc_mode.get_current_instrument_device()
+        device.disable_controls = self.disable_controls
         # print(self.selected_instrument)
         # print(self.app.osc_mode.get_current_instrument_osc_address_sections())
-    
+
     def update_display(self, ctx, w, h):
         if self.show_scale_menu == True:
+            background_colour = self.get_current_instrument_color_helper()
+            instrument_name = self.get_current_instrument_short_name_helper()
+            track_name = self.selected_track
+            track_controls = self.instrument_scale_edit_controls[instrument_name][
+                track_name
+            ]
+            offset = 0
+            for control in track_controls:
+                control.draw(ctx, offset)
+                offset += 1
+
             show_text(
-                        ctx,
-                        1,
-                        20,
-                        "FARTS",
-                        height=25,
-                        font_color=definitions.BLACK,
-                        background_color=definitions.YELLOW,
-                        font_size_percentage=0.8,
-                        center_vertically=True,
-                        center_horizontally=True,
-                        rectangle_padding=1,
-                    )
+                ctx,
+                1,
+                20,
+                instrument_name,
+                height=30,
+                font_color=definitions.WHITE,
+                background_color=background_colour,
+                font_size_percentage=0.8,
+                center_vertically=True,
+                center_horizontally=True,
+                rectangle_padding=1,
+            )
+            show_text(
+                ctx,
+                2,
+                20,
+                track_name,
+                height=30,
+                font_color=definitions.WHITE,
+                background_color=background_colour,
+                font_size_percentage=0.8,
+                center_vertically=True,
+                center_horizontally=True,
+                rectangle_padding=1,
+            )
 
     def update_pads(self):
         try:
-            seq = self.instrument_sequencers[
-                self.get_current_instrument_short_name_helper()
-            ]
+            instrument_name = self.get_current_instrument_short_name_helper()
+            seq = self.instrument_sequencers[instrument_name]
             seq_pad_state = seq.get_track(self.selected_track)
             button_colors = [definitions.OFF_BTN_COLOR] * len(seq_pad_state)
-            
-
+            selected_track_controls = self.instrument_scale_edit_controls[
+                instrument_name
+            ][self.selected_track]
+            track_length = selected_track_controls[0]
             for i, value in enumerate(seq.get_track(self.selected_track)):
-                if value:
-                    button_colors[i] = TRACK_COLORS[self.selected_track]
 
-                # Set pad colours for on/off states of the seq
-                if (seq_pad_state[i] is True):
-                    button_colors[i] = TRACK_COLORS[self.selected_track]
+                if i <= int(track_length.value):
+                    if value:
+                        button_colors[i] = TRACK_COLORS[self.selected_track]
 
-                if seq_pad_state[i] is False:
-                    button_colors[i] = definitions.OFF_BTN_COLOR
+                    # Set pad colours for on/off states of the seq
+                    if seq_pad_state[i] is True:
+                        button_colors[i] = TRACK_COLORS[self.selected_track]
+
+                    if seq_pad_state[i] is False:
+                        button_colors[i] = definitions.OFF_BTN_COLOR
 
             # Draw the playhead
             playhead = seq.playhead
@@ -201,7 +281,7 @@ class SequencerMode(MelodicMode):
         ]
         seq_pad_state = seq.get_track(self.selected_track)
         idx = pad_n - 36
-        idx = pad_ij[0]*8 + pad_ij[1]
+        idx = pad_ij[0] * 8 + pad_ij[1]
         seq.steps_held.append(idx)
         # If a pad is off, turn it on
         if seq_pad_state[idx] == False:
@@ -217,14 +297,17 @@ class SequencerMode(MelodicMode):
             self.get_current_instrument_short_name_helper()
         ]
         seq_pad_state = seq.get_track(self.selected_track)
-        idx = pad_ij[0]*8 + pad_ij[1]
+        idx = pad_ij[0] * 8 + pad_ij[1]
         epoch_time = time.time()
         press_time = epoch_time - self.pads_press_time[idx]
         # Short Press - turn the pad off, reset the timer
-        if press_time <= self.pad_quick_press_time and self.pads_press_time[idx] != False:
+        if (
+            press_time <= self.pad_quick_press_time
+            and self.pads_press_time[idx] != False
+        ):
             seq.set_state(self.selected_track, idx, False)
             self.pads_press_time[idx] = False
-            
+
         # Long Press - keep the pad on, trigger a lock preview
         elif press_time > self.pad_quick_press_time:
             pass
@@ -241,8 +324,8 @@ class SequencerMode(MelodicMode):
             self.app.pads_need_update = True
 
         elif (
-                button_name == push2_constants.BUTTON_OCTAVE_UP
-                or button_name == push2_constants.BUTTON_OCTAVE_DOWN
+            button_name == push2_constants.BUTTON_OCTAVE_UP
+            or button_name == push2_constants.BUTTON_OCTAVE_DOWN
         ):
             # Don't react to octave up/down buttons as these are not used in rhythm mode
             pass
@@ -258,14 +341,28 @@ class SequencerMode(MelodicMode):
                 self.stop_timeline()
                 self.timeline_is_playing = False
         elif button_name == push2_constants.BUTTON_SCALE:
-            device = self.app.osc_mode.get_current_instrument_device()
-            device.disable_controls = True if self.show_scale_menu == False else False 
+            self.disable_controls = True if self.show_scale_menu == False else False
             self.show_scale_menu = True if self.show_scale_menu == False else False
+            device = self.app.osc_mode.get_current_instrument_device()
+            device.disable_controls = self.disable_controls
+        elif (
+            button_name
+            == push2_constants.BUTTON_UPPER_ROW_1
+            | push2_constants.BUTTON_UPPER_ROW_2
+            | push2_constants.BUTTON_UPPER_ROW_3
+            | push2_constants.BUTTON_UPPER_ROW_4
+            | push2_constants.BUTTON_UPPER_ROW_5
+            | push2_constants.BUTTON_UPPER_ROW_6
+            | push2_constants.BUTTON_UPPER_ROW_7
+            | push2_constants.BUTTON_UPPER_ROW_8
+        ):
+            super().on_button_pressed(button_name)
+            device = self.app.osc_mode.get_current_instrument_device()
+            device.disable_controls = self.disable_controls
 
         else:
             # For the other buttons, refer to the base class
             super().on_button_pressed(button_name)
-
 
     def on_encoder_rotated(self, encoder_name, increment):
         try:
@@ -289,26 +386,49 @@ class SequencerMode(MelodicMode):
                         if mode == self.app.trig_edit_mode:
                             idx = seq.steps_held[0]
                             value = None
-                            
-                            if seq.get_lock_state(idx, encoder_idx) is None:
-                                value = self.app.trig_edit_mode.controls[encoder_idx].value
 
-                            else :
+                            if seq.get_lock_state(idx, encoder_idx) is None:
+                                value = self.app.trig_edit_mode.controls[
+                                    encoder_idx
+                                ].value
+
+                            else:
                                 # calmping to min/max values, scaling
                                 control = self.app.trig_edit_mode.controls[encoder_idx]
                                 lock_value = seq.get_lock_state(idx, encoder_idx)
-                                
+
                                 min = 0 if hasattr(control, "items") else control.min
-                                max = len(control.items) if hasattr(control, "items") else control.max
+                                max = (
+                                    len(control.items)
+                                    if hasattr(control, "items")
+                                    else control.max
+                                )
                                 range = max - min
-                                incr = increment*range/100
+                                incr = increment * range / 100
                                 if min <= (lock_value + incr) <= max:
                                     value = lock_value + incr
                                 else:
                                     value = lock_value
-                                    
+
                             seq.set_lock_state(idx, encoder_idx, value)
                             return
+                if self.show_scale_menu == True:
+                    # Update scale menu controls
+                    instrument_name = self.get_current_instrument_short_name_helper()
+                    track_name = self.selected_track
+                    track_controls = self.instrument_scale_edit_controls[
+                        instrument_name
+                    ][track_name]
+
+                    control = track_controls[encoder_idx]
+                    min = control.min
+                    max = control.max
+                    range = max - min
+                    incr = increment * range / 100
+                    if min <= control.value + incr <= max:
+                        control.value = control.value + incr
+                    self.update_pads()
+
             except Exception as e:
                 print(e)
 
