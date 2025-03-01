@@ -13,7 +13,7 @@ from glob import glob
 from user_interface.display_utils import show_text
 from pathlib import Path
 import logging
-
+from definitions import TRACK_NAMES
 log = logging.getLogger("preset_selection_mode")
 
 # log.setLevel(level=logging.DEBUG)
@@ -371,9 +371,11 @@ class TrigEditMode(definitions.PyshaMode):
 		self.controls.append(recur)
 
 		for instrument in self.get_all_distinct_instrument_short_names_helper():
-			self.state[instrument] = []
-			for control in self.controls:
-				self.state[instrument].append(control.value)
+			self.state[instrument] = {}
+			for track in TRACK_NAMES:
+				self.state[instrument][track] = []
+				for control in self.controls:
+					self.state[instrument][track].append(control.value)
 
 	
 	def send_message(self, *args):
@@ -390,9 +392,13 @@ class TrigEditMode(definitions.PyshaMode):
 		self.current_page = 0
 		self.app.pads_need_update = True
 		self.app.buttons_need_update = True
+		self.update_state()
+
+	def update_state(self):
 		current_state = self.state[self.get_current_instrument_short_name_helper()]
+		track_name = self.app.sequencer_mode.selected_track
 		for idx, control in enumerate(self.controls):
-			control.value = current_state[idx]
+			control.value = current_state[track_name][idx]
 
 	def should_be_enabled(self):
 		return True
@@ -480,7 +486,8 @@ class TrigEditMode(definitions.PyshaMode):
 			else:
 				control = self.controls[encoder_idx]
 				control.update_value(increment)
-				self.state[self.get_current_instrument_short_name_helper()][encoder_idx] = control.value
+				track_name = self.app.sequencer_mode.selected_track
+				self.state[self.get_current_instrument_short_name_helper()][track_name][encoder_idx] = control.value
 
 		except ValueError:
 			pass  # Encoder not in list

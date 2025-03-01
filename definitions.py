@@ -118,7 +118,16 @@ SURGE_XT_ROOT = (
 FACTORY_PATCHES_FOLDER = f"{SURGE_XT_ROOT}/patches_factory"
 THIRD_PARTY_PATCHES_FOLDER = f"{SURGE_XT_ROOT}/patches_3rdparty"
 USER_PATCHES_FOLDER = f"{path.expanduser('~')}/Documents/Surge XT/Patches"
-
+TRACK_NAMES = [
+    "gate_1",
+    "pitch_1",
+    "trig_mute_1",
+    "accent_1",
+    "aux_1",
+    "aux_2",
+    "aux_3",
+    "aux_4",
+]
 
 class PyshaMode(object):
     """ """

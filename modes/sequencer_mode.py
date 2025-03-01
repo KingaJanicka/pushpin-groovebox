@@ -15,19 +15,9 @@ from osc_controls import (
     OSCGroup,
 )
 from modes.trig_edit_mode import TrigEditMode
-
+from definitions import TRACK_NAMES
 EMPTY_PATTERN = []
 
-TRACK_NAMES = [
-    "gate_1",
-    "pitch_1",
-    "trig_mute_1",
-    "accent_1",
-    "aux_1",
-    "aux_2",
-    "aux_3",
-    "aux_4",
-]
 TRACK_COLORS = {
     "gate_1": definitions.BLUE,
     "pitch_1": definitions.GREEN,
@@ -319,6 +309,7 @@ class SequencerMode(MelodicMode):
         if button_name in track_button_names:
             idx = track_button_names.index(button_name)
             self.selected_track = TRACK_NAMES[idx]
+            self.app.trig_edit_mode.update_state()
             self.app.buttons_need_update = True
             self.app.pads_need_update = True
 
