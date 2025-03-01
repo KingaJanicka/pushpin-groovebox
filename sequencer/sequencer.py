@@ -82,7 +82,7 @@ class Sequencer(object):
         )
 
     def seq_playhead_update(self):
-        self.playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01) % 64)
+        self.playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01))
         self.update_notes()
         self.evaluate_and_play_notes()
 
@@ -90,10 +90,11 @@ class Sequencer(object):
         try:
             controls = self.app.trig_edit_mode.controls
             note = None
+            step = self.playhead % 64
             prob = True if self.app.trig_edit_mode.controls[4].value >= random.random() else False
-            if self.gate_1[self.playhead] == True and self.trig_mute_1[self.playhead] != True and prob == True:
-                pitch = int(self.locks[self.playhead][0]) if self.locks[self.playhead][0] is not None else int(controls[0].value) 
-                octave = int(self.locks[self.playhead][1]) * 12 if self.locks[self.playhead][1] is not None else int(controls[1].value)*12 
+            if self.gate_1[step] == True and self.trig_mute_1[step] != True and prob == True:
+                pitch = int(self.locks[step][0]) if self.locks[step][0] is not None else int(controls[0].value) 
+                octave = int(self.locks[step][1]) * 12 if self.locks[step][1] is not None else int(controls[1].value)*12 
                 note = pitch + octave
                 amplitude = self.app.trig_edit_mode.controls[2].value
                 gate =  self.app.trig_edit_mode.controls[3].value

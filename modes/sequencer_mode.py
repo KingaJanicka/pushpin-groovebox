@@ -177,7 +177,6 @@ class SequencerMode(MelodicMode):
         return self.app.instrument_selection_mode.get_current_instrument_color()
 
     def new_instrument_selected(self):
-        print("instrument selected")
         instrument_index = self.app.instrument_selection_mode.selected_instrument % 8
         instrument_index = int(
             (self.app.instrument_selection_mode.selected_instrument - instrument_index)
@@ -243,7 +242,7 @@ class SequencerMode(MelodicMode):
             track_length = selected_track_controls[0]
             for i, value in enumerate(seq.get_track(self.selected_track)):
 
-                if i <= int(track_length.value):
+                if i < int(track_length.value):
                     if value:
                         button_colors[i] = TRACK_COLORS[self.selected_track]
 
@@ -255,8 +254,8 @@ class SequencerMode(MelodicMode):
                         button_colors[i] = definitions.OFF_BTN_COLOR
 
             # Draw the playhead
-            playhead = seq.playhead
-            button_colors[playhead] = definitions.WHITE
+            step = seq.playhead % int(track_length.value)
+            button_colors[step] = definitions.WHITE
 
             # makes the values into a multi-dimensional array
             button_colors_array = []
@@ -348,17 +347,18 @@ class SequencerMode(MelodicMode):
         elif (
             button_name
             == push2_constants.BUTTON_UPPER_ROW_1
-            | push2_constants.BUTTON_UPPER_ROW_2
-            | push2_constants.BUTTON_UPPER_ROW_3
-            | push2_constants.BUTTON_UPPER_ROW_4
-            | push2_constants.BUTTON_UPPER_ROW_5
-            | push2_constants.BUTTON_UPPER_ROW_6
-            | push2_constants.BUTTON_UPPER_ROW_7
-            | push2_constants.BUTTON_UPPER_ROW_8
+            or push2_constants.BUTTON_UPPER_ROW_2
+            or push2_constants.BUTTON_UPPER_ROW_3
+            or push2_constants.BUTTON_UPPER_ROW_4
+            or push2_constants.BUTTON_UPPER_ROW_5
+            or push2_constants.BUTTON_UPPER_ROW_6
+            or push2_constants.BUTTON_UPPER_ROW_7
+            or push2_constants.BUTTON_UPPER_ROW_8
         ):
-            super().on_button_pressed(button_name)
-            device = self.app.osc_mode.get_current_instrument_device()
-            device.disable_controls = self.disable_controls
+            # TODO: Disable device switching when menu is on
+            # Don't think it would make sense anyway
+            # This needs to be disabled somewhere in osc_mode
+            pass
 
         else:
             # For the other buttons, refer to the base class
