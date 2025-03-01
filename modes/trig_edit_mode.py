@@ -448,16 +448,11 @@ class TrigEditMode(definitions.PyshaMode):
 					step_idx = seq.steps_held[0] if draw_lock == True else None
 					lock_value = seq.get_lock_state(step_idx,offset) if step_idx != None else None
 					if draw_lock == True and lock_value != None:
-						# TODO: Does not get past this draw call, if the pads are pressed
-						# Weird Shenaningans with the draw_lock value
-						# TODO: When pad is pressed we are not calling this func at all???
 						control.draw(ctx, offset, draw_lock=draw_lock, lock_value=lock_value)
 						offset += 1
 					else:
-						# self.app.osc_mode.update_display(ctx)
 						control.draw(ctx, offset)
 						offset += 1
-						# print("else draw lock")
 				except Exception as e:
 					print("Exception in trig_edit_mode.update_display()")
 					print(e)
@@ -467,7 +462,6 @@ class TrigEditMode(definitions.PyshaMode):
 		pass
 
 	def on_encoder_rotated(self, encoder_name, increment=0.01):
-		# TODO: Still modifies the device underneath
 		try:
 			encoder_idx = [
 				push2_python.constants.ENCODER_TRACK1_ENCODER,
