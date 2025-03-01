@@ -42,7 +42,11 @@ class Sequencer(object):
     def __init__(
         self, instrument_name, timeline, tick_callback, playhead, send_osc_func, app
     ):
-        self.locks = []
+        self.locks = {}
+        for key in TRACK_NAMES:
+            self.locks[key] = []
+            for x in range(default_number_of_steps):
+                self.locks[key].append([None, None, None, None, None, None, None, None])
         self.app = app
         self.show_locks = False
         self.steps_held = []
@@ -59,8 +63,6 @@ class Sequencer(object):
         self.playhead = playhead
         self.send_osc_func = send_osc_func
         self.timeline = timeline
-        for x in range(default_number_of_steps):
-            self.locks.append([None, None, None, None, None, None, None, None])
         for item in iso.io.midi.get_midi_input_names():
             if item.startswith(self.name) == True:
                 self.midi_in_name = item
@@ -155,10 +157,12 @@ class Sequencer(object):
 
     def set_lock_state(self, index, parameter_idx, value):
         # print(f"Set_lock_state: index {index}, param_idx {parameter_idx}, value {value}")
-        self.locks[index][parameter_idx] = value
+        selected_track = self.app.sequencer_mode.selected_track
+        self.locks[selected_track][index][parameter_idx] = value
  
 
     def get_lock_state(self, index, parameter_idx):
         # print(f"Set_lock_state: index {index}, param_idx {parameter_idx}, value {value}")
-        return self.locks[index][parameter_idx]
+        selected_track = self.app.sequencer_mode.selected_track
+        return self.locks[selected_track][index][parameter_idx]
         

@@ -446,7 +446,7 @@ class TrigEditMode(definitions.PyshaMode):
 			if offset + 1 <= 8:
 				try:
 					step_idx = seq.steps_held[0] if draw_lock == True else None
-					lock_value = seq.locks[step_idx][offset] if step_idx != None else None
+					lock_value = seq.get_lock_state(step_idx,offset) if step_idx != None else None
 					if draw_lock == True and lock_value != None:
 						# TODO: Does not get past this draw call, if the pads are pressed
 						# Weird Shenaningans with the draw_lock value
