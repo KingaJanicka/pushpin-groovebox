@@ -107,7 +107,7 @@ class Sequencer(object):
             gate_pitch = int(gate_trig_menu_locks[0]) if gate_trig_menu_locks[0] is not None else int(instrument_state["gate_1"][0]) 
             gate_octave = int(gate_trig_menu_locks[1]) * 12 if gate_trig_menu_locks[1] is not None else int(instrument_state["gate_1"][1])*12 
             gate_note = gate_pitch + gate_octave
-            gate_amplitude = instrument_state["gate_1"][2] if instrument_state["gate_1"][2] is not None else int(instrument_state["gate_1"][2])
+            gate_velocity = instrument_state["gate_1"][2] if instrument_state["gate_1"][2] is not None else int(instrument_state["gate_1"][2])
             gate_gate = instrument_state["gate_1"][3]
             gate_prob = True if instrument_state["gate_1"][4] >= random.random() else False
             
@@ -119,7 +119,7 @@ class Sequencer(object):
             pitch_pitch = int(pitch_trig_menu_locks[0]) if pitch_trig_menu_locks[0] is not None else int(instrument_state["pitch_1"][0]) 
             pitch_octave = int(pitch_trig_menu_locks[1]) * 12 if pitch_trig_menu_locks[1] is not None else int(instrument_state["pitch_1"][1])*12 
             pitch_note = pitch_pitch + pitch_octave
-            pitch_amplitude = instrument_state["pitch_1"][2] if instrument_state["pitch_1"][2] is not None else int(instrument_state["pitch_1"][2])
+            pitch_velocity = instrument_state["pitch_1"][2] if instrument_state["pitch_1"][2] is not None else int(instrument_state["pitch_1"][2])
             pitch_gate = instrument_state["pitch_1"][3]
             pitch_prob = True if instrument_state["pitch_1"][4] >= random.random() else False
             
@@ -130,22 +130,30 @@ class Sequencer(object):
             trig_mute_prob = True if instrument_state["trig_mute_1"][4] >= random.random() else False  
 
             # Accent track stuff
-
-
-            # Evaluate gate track, note and amp here to avoid a None value
+            accent_track_len = instrument_scale_edit_controls["accent_1"][0].value
+            accent_step = self.playhead % int(trig_mute_track_len)
+            accent_trig_menu_locks = self.locks["accent_1"][accent_step]  
+            accent_prob = True if instrument_state["accent_1"][4] >= random.random() else False  
+            accent_velocity = instrument_state["accent_1"][2] if instrument_state["accent_1"][2] is not None else int(instrument_state["accent_1"][2])
+           
+            # Evaluate Gate track, note and amp here to avoid a None value
             note = gate_note
-            amplitude = gate_amplitude
+            amplitude = gate_velocity
             if self.gate_1[gate_step] == True and gate_prob == True:
                 gate =  gate_gate
                 
-            # Evaluate note track
+            # Evaluate Pitch track
             if self.pitch_1[pitch_step] == True and pitch_prob == True:
                 note = pitch_note
-                amplitude = pitch_amplitude
+                amplitude = pitch_velocity
 
             # Evaluate Mute track
             if self.trig_mute_1[trig_mute_step] == True and trig_mute_prob == True:
                 schedule_note = False
+
+            # Evaluate Accent track
+            if self.accent_1[accent_step] == True and accent_prob == True:
+                amplitude = accent_velocity
 
             if schedule_note == True:
                 self.local_timeline.schedule({"note": note, "gate": gate, "amplitude": amplitude}, count=1)
