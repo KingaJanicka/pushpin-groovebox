@@ -90,6 +90,7 @@ class Sequencer(object):
 
     def evaluate_and_play_notes(self):
         try:
+        # Setting values used by all tracks
             instrument_name = self.get_current_instrument_short_name_helper()
             instrument_state = self.app.trig_edit_mode.state[instrument_name]
             instrument_scale_edit_controls = self.app.sequencer_mode.instrument_scale_edit_controls[instrument_name]
@@ -97,6 +98,7 @@ class Sequencer(object):
             gate = None
             amplitude = None
             schedule_note = True
+        # Setting values per track
             # Gate track stuff
             gate_track_len = instrument_scale_edit_controls["gate_1"][0].value
             gate_step = self.playhead % int(gate_track_len)
@@ -110,8 +112,22 @@ class Sequencer(object):
             gate_prob = True if instrument_state["gate_1"][4] >= random.random() else False
             
             # Note track stuff
+            pitch_track_len = instrument_scale_edit_controls["pitch_1"][0].value
+            pitch_step = self.playhead % int(pitch_track_len)
+            pitch_trig_menu_locks = self.locks["pitch_1"][pitch_step]    
 
+            pitch_pitch = int(pitch_trig_menu_locks[0]) if pitch_trig_menu_locks[0] is not None else int(instrument_state["pitch_1"][0]) 
+            pitch_octave = int(pitch_trig_menu_locks[1]) * 12 if pitch_trig_menu_locks[1] is not None else int(instrument_state["pitch_1"][1])*12 
+            pitch_note = pitch_pitch + pitch_octave
+            pitch_amplitude = instrument_state["pitch_1"][2] if instrument_state["pitch_1"][2] is not None else int(instrument_state["pitch_1"][2])
+            pitch_gate = instrument_state["pitch_1"][3]
+            pitch_prob = True if instrument_state["pitch_1"][4] >= random.random() else False
+            
             # Mute track stuff
+            trig_mute_track_len = instrument_scale_edit_controls["trig_mute_1"][0].value
+            trig_mute_step = self.playhead % int(trig_mute_track_len)
+            trig_mute_trig_menu_locks = self.locks["trig_mute_1"][trig_mute_step]  
+            trig_mute_prob = True if instrument_state["trig_mute_1"][4] >= random.random() else False  
 
             # Accent track stuff
 
@@ -123,6 +139,14 @@ class Sequencer(object):
                 gate =  gate_gate
                 
             # Evaluate note track
+            if self.pitch_1[pitch_step] == True and pitch_prob == True:
+                note = pitch_note
+                amplitude = pitch_amplitude
+
+            # Evaluate Mute track
+            if self.trig_mute_1[trig_mute_step] == True and trig_mute_prob == True:
+                schedule_note = False
+
             if schedule_note == True:
                 self.local_timeline.schedule({"note": note, "gate": gate, "amplitude": amplitude}, count=1)
         except Exception as e:
