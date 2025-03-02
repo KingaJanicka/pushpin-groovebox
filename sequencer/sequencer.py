@@ -90,17 +90,40 @@ class Sequencer(object):
 
     def evaluate_and_play_notes(self):
         try:
-            controls = self.app.trig_edit_mode.controls
+            instrument_name = self.get_current_instrument_short_name_helper()
+            instrument_state = self.app.trig_edit_mode.state[instrument_name]
+            instrument_scale_edit_controls = self.app.sequencer_mode.instrument_scale_edit_controls[instrument_name]
             note = None
-            step = self.playhead % 64
-            prob = True if self.app.trig_edit_mode.controls[4].value >= random.random() else False
-            if self.gate_1[step] == True and self.trig_mute_1[step] != True and prob == True:
-                pitch = int(self.locks[step][0]) if self.locks[step][0] is not None else int(controls[0].value) 
-                octave = int(self.locks[step][1]) * 12 if self.locks[step][1] is not None else int(controls[1].value)*12 
-                note = pitch + octave
-                amplitude = self.app.trig_edit_mode.controls[2].value
-                gate =  self.app.trig_edit_mode.controls[3].value
-                amplitude = 127 if self.accent_1 else 64
+            gate = None
+            amplitude = None
+            schedule_note = True
+            # Gate track stuff
+            gate_track_len = instrument_scale_edit_controls["gate_1"][0].value
+            gate_step = self.playhead % int(gate_track_len)
+            gate_trig_menu_locks = self.locks["gate_1"][gate_step]    
+
+            gate_pitch = int(gate_trig_menu_locks[0]) if gate_trig_menu_locks[0] is not None else int(instrument_state["gate_1"][0]) 
+            gate_octave = int(gate_trig_menu_locks[1]) * 12 if gate_trig_menu_locks[1] is not None else int(instrument_state["gate_1"][1])*12 
+            gate_note = gate_pitch + gate_octave
+            gate_amplitude = instrument_state["gate_1"][2] if instrument_state["gate_1"][2] is not None else int(instrument_state["gate_1"][2])
+            gate_gate = instrument_state["gate_1"][3]
+            gate_prob = True if instrument_state["gate_1"][4] >= random.random() else False
+            
+            # Note track stuff
+
+            # Mute track stuff
+
+            # Accent track stuff
+
+
+            # Evaluate gate track, note and amp here to avoid a None value
+            note = gate_note
+            amplitude = gate_amplitude
+            if self.gate_1[gate_step] == True and gate_prob == True:
+                gate =  gate_gate
+                
+            # Evaluate note track
+            if schedule_note == True:
                 self.local_timeline.schedule({"note": note, "gate": gate, "amplitude": amplitude}, count=1)
         except Exception as e:
             print("Error in evaluate_and_play_notes, ",e)
@@ -130,6 +153,9 @@ class Sequencer(object):
             return self.aux_3
         elif lane == "aux_4":
             return self.aux_4
+        
+    def get_current_instrument_short_name_helper(self):
+        return self.app.instrument_selection_mode.get_current_instrument_short_name()
 
     def set_states(self, lane, values):
         for index, value in enumerate(values):
