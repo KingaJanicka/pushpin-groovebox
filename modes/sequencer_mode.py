@@ -188,6 +188,15 @@ class SequencerMode(MelodicMode):
             track_controls = self.instrument_scale_edit_controls[instrument_name][
                 track_name
             ]
+            ctx.move_to(0,0)
+            ctx.line_to(0,135)
+            ctx.line_to(960,135)
+            ctx.line_to(960, 0)            
+            ctx.close_path()
+            ctx.set_source_rgb(0,0,0)
+            ctx.fill_preserve()
+            ctx.restore()
+
             offset = 0
             for control in track_controls:
                 control.draw(ctx, offset)

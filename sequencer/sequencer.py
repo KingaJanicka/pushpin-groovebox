@@ -135,7 +135,8 @@ class Sequencer(object):
             accent_trig_menu_locks = self.locks["accent_1"][accent_step]  
             accent_prob = True if instrument_state["accent_1"][4] >= random.random() else False  
             accent_velocity = instrument_state["accent_1"][2] if instrument_state["accent_1"][2] is not None else int(instrument_state["accent_1"][2])
-           
+        
+        # Evaluate all tracks
             # Evaluate Gate track, note and amp here to avoid a None value
             note = gate_note
             amplitude = gate_velocity
@@ -155,6 +156,10 @@ class Sequencer(object):
             if self.accent_1[accent_step] == True and accent_prob == True:
                 amplitude = accent_velocity
 
+        # Schedule the note
+        # TODO: should we grab all the evals from one step before the playhead, 
+        # then schedule it one note in the future to allow for some drift?
+        # Not sure how much time this entire eval process takes, might introduce flanging? 
             if schedule_note == True:
                 self.local_timeline.schedule({"note": note, "gate": gate, "amplitude": amplitude}, count=1)
         except Exception as e:
