@@ -252,6 +252,9 @@ class SequencerMode(MelodicMode):
                     if seq_pad_state[i] is False:
                         button_colors[i] = definitions.OFF_BTN_COLOR
 
+                else:
+                    button_colors[i] = definitions.BLACK
+
             # Draw the playhead
             step = seq.playhead % int(track_length.value)
             button_colors[step] = definitions.WHITE
