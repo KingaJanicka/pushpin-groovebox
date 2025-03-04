@@ -105,7 +105,6 @@ class OSCInstrument(PyshaMode):
                     engine=self.engine
                 )
             else:
-                # TODO: There needs to be a better way than just drilling this right?
                 device = OSCDevice(
                     device_definitions[device_name],
                     self.osc,

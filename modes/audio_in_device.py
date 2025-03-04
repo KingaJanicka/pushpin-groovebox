@@ -465,8 +465,7 @@ class AudioInDevice(PyshaMode):
                 column_index = int(self.last_knob_turned / 2 ) 
             if self.slot == 1:
                 column_index = int(self.last_knob_turned / 2 ) + 4
-            #TODO: this is super wet, needs a dry
-            
+           
             current_instrument_ports = self.engine.pw_ports
             duplex_ports = self.engine.duplex_ports
 

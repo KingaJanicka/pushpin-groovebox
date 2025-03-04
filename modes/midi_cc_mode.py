@@ -104,7 +104,6 @@ class MIDICCControl(object):
             self.value = self.vmin
         else:
             self.value += increment
-        # TODO: Make sure this send floats instead of 0-127 int
 
         # Send cc message, subtract 1 to number because MIDO works from 0 - 127
         msg = mido.Message("control_change", control=self.cc_number, value=self.value)

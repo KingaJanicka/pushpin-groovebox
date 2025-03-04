@@ -1071,24 +1071,7 @@ class ModMatrixDevice(definitions.PyshaMode):
                         ],
                     )
                     self.controls[7] = len(self.mod_matrix_mappings) - 1
-                    ## THIS COMMENTED BLOCK NEEDS TO BE REVISED AND POSSIBLY MOVED TO SET_STATE TODO
-
-                    # current_knob_value = int(visible_controls[7]) or 0
-                    # print(current_knob_value, self.mod_matrix_mappings)
-                    # mapping_address = self.mod_matrix_mappings[current_knob_value][0]
-
-                    # mapping_dest = self.mod_matrix_mappings[current_knob_value][1]
-
-                    # selected_control_address = str(
-                    #     device_controls[int(selected_control)].address
-                    # )
-
-                    # if (
-                    #     mapping_address == mod_mapping["address"]
-                    #     and mapping_dest == selected_control_address
-                    # ):
-                    #     self.mod_matrix_mappings[current_knob_value][2] = depth_scaled
-
+                    
                 # Seventh encoder
                 case self.scroll_column:
                     # Scroll through mappings and snap knobs

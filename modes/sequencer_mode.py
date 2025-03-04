@@ -71,20 +71,6 @@ class SequencerMode(MelodicMode):
     def initialize(self, settings):
         super().initialize(settings)
 
-        # len = OSCControl(
-        # 	{
-        # 		"$type": "control-range",
-        # 		"label": "Steps",
-        # 		"address": f"/",
-        # 		"min": 0,
-        # 		"max": 64,
-        # 	},
-        # 	self.get_current_instrument_color_helper,
-        # 	None,
-        # )
-        # len.value = 64
-        # self.scale_edit_controls.append(len)
-
         for (
             instrument_short_name
         ) in self.get_all_distinct_instrument_short_names_helper():
@@ -195,7 +181,6 @@ class SequencerMode(MelodicMode):
             ctx.close_path()
             ctx.set_source_rgb(0,0,0)
             ctx.fill_preserve()
-            ctx.restore()
 
             offset = 0
             for control in track_controls:
@@ -251,7 +236,7 @@ class SequencerMode(MelodicMode):
 
                     if seq_pad_state[i] is False:
                         button_colors[i] = definitions.OFF_BTN_COLOR
-
+                # Turn pads that are outside the bounds of the sequence black/off
                 else:
                     button_colors[i] = definitions.BLACK
 
@@ -358,9 +343,6 @@ class SequencerMode(MelodicMode):
             or push2_constants.BUTTON_UPPER_ROW_7
             or push2_constants.BUTTON_UPPER_ROW_8
         ):
-            # TODO: Disable device switching when menu is on
-            # Don't think it would make sense anyway
-            # This needs to be disabled somewhere in osc_mode
             pass
 
         else:

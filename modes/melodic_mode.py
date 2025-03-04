@@ -314,7 +314,6 @@ class MelodicMode(definitions.PyshaMode):
             instrument = self.app.instrument_selection_mode.get_current_instrument_short_name()
             self.app.send_osc("/mnote", [float(midi_note), float(velocity)], instrument)
             # print("after MIDO")
-            # TODO: this send osc hangs at sending to client for some reason, for now commented out but needs to be fixed later
             # self.send_osc_func('/mnote', [float(midi_note), float(velocity)])
             self.update_pads()  # Directly calling update pads method because we want user to feel feedback as quick as possible
             # print("after update pads")

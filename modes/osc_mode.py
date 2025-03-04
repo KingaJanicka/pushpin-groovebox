@@ -265,7 +265,6 @@ class OSCMode(PyshaMode):
             device.query_all_controls()
 
     def new_instrument_selected(self):
-        # print("WEWEWEWEWEWEWEWEWEWEWEWEWEWEEE")
         pass
         # self.query_devices()
         # if new_instrument:
@@ -374,7 +373,7 @@ class OSCMode(PyshaMode):
         show_prev, show_next = selected_device.get_next_prev_pages()
         _, current_page = self.get_current_instrument_device_and_page()
 
-        if button_name in self.upper_row_button_names:
+        if button_name in self.upper_row_button_names and self.app.sequencer_mode.show_scale_menu != True:
             current_instrument_devices = self.get_current_instrument_page_devices()
             _, current_page = self.get_current_instrument_device_and_page()
 
