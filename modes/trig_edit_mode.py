@@ -376,7 +376,7 @@ class TrigEditMode(definitions.PyshaMode):
 				self.state[instrument][track] = []
 				for control in self.controls:
 					self.state[instrument][track].append(control.value)
-
+				self.state[instrument][track].append(255)
 	
 	def send_message(self, *args):
 		# self.log_out.debug(args)

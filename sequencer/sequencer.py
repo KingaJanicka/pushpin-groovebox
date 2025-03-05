@@ -46,7 +46,7 @@ class Sequencer(object):
         for key in TRACK_NAMES:
             self.locks[key] = []
             for x in range(default_number_of_steps):
-                self.locks[key].append([None, None, None, None, None, None, None, None])
+                self.locks[key].append([None, None, None, None, None, None, None, None, None])
         self.app = app
         self.show_locks = False
         self.steps_held = []
@@ -103,6 +103,9 @@ class Sequencer(object):
             gate_track_len = instrument_scale_edit_controls["gate_1"][0].value
             gate_step = self.playhead % int(gate_track_len)
             gate_trig_menu_locks = self.locks["gate_1"][gate_step]    
+            gate_loop_count = int(self.playhead / int(gate_track_len))
+            gate_recur_default = self.app.trig_edit_mode.state[instrument_name]["gate_1"][8]
+            gate_recur = int(gate_recur_default) if gate_trig_menu_locks[8] == None else int(gate_trig_menu_locks[8])
 
             gate_pitch = int(gate_trig_menu_locks[0]) if gate_trig_menu_locks[0] is not None else int(instrument_state["gate_1"][0]) 
             gate_octave = int(gate_trig_menu_locks[1]) * 12 if gate_trig_menu_locks[1] is not None else int(instrument_state["gate_1"][1])*12 
@@ -110,6 +113,8 @@ class Sequencer(object):
             gate_velocity = instrument_state["gate_1"][2] if instrument_state["gate_1"][2] is not None else int(instrument_state["gate_1"][2])
             gate_gate = instrument_state["gate_1"][3]
             gate_prob = True if instrument_state["gate_1"][4] >= random.random() else False
+            gate_recur_binary_list = [int(i) for i in bin(gate_recur)[2:] ]
+             
             
             # Note track stuff
             pitch_track_len = instrument_scale_edit_controls["pitch_1"][0].value
@@ -140,7 +145,8 @@ class Sequencer(object):
             # Evaluate Gate track, note and amp here to avoid a None value
             note = gate_note
             amplitude = gate_velocity
-            if self.gate_1[gate_step] == True and gate_prob == True:
+            # TODO: make this loop count max out with last enc on the trig menu
+            if self.gate_1[gate_step] == True and gate_prob == True and gate_recur_binary_list[int(gate_loop_count % 8)] == 1:
                 gate =  gate_gate
                 
             # Evaluate Pitch track

@@ -133,6 +133,7 @@ class SequencerMode(MelodicMode):
 
     def sequencer_on_tick(self, instrument_name, length):
         self.update_pads()
+        self.update_button_colours()
         if self.get_current_instrument_short_name_helper() == instrument_name:
             self.playhead = self.instrument_sequencers[instrument_name].playhead
 
@@ -303,6 +304,9 @@ class SequencerMode(MelodicMode):
         self.app.pads_need_update = True
 
     def on_button_pressed(self, button_name):
+        seq = self.instrument_sequencers[
+                self.get_current_instrument_short_name_helper()
+            ]
         if button_name in track_button_names:
             idx = track_button_names.index(button_name)
             self.selected_track = TRACK_NAMES[idx]
@@ -343,12 +347,55 @@ class SequencerMode(MelodicMode):
             or push2_constants.BUTTON_UPPER_ROW_7
             or push2_constants.BUTTON_UPPER_ROW_8
         ):
-            pass
+            try:
+                instrument = self.get_current_instrument_short_name_helper()
+                seq = self.instrument_sequencers[instrument]
+                idx = seq.steps_held[0] if len(seq.steps_held) != 0 else 0
+                lock = seq.get_lock_state(idx, 8)
+                current_state = self.app.trig_edit_mode.state[instrument][self.selected_track][8]
+                value = int(current_state) if lock == None else int(lock)
+                binary_list = [int(i) for i in bin(value)[2:] ]
+                
+                try:
+                    button_idx = int(button_name[-1]) - 1
+                except:
+                    return
+                # Updates the binary number
+                if binary_list[button_idx] == True:
+                    binary_list[button_idx] = 0
+                else:
+                    binary_list[button_idx] = 1   
+                # Converts binary to int
+                new_int = int(''.join(map(str,binary_list)), 2)
+                if len(seq.steps_held) > 0:
+                    # set lock
+                    seq.set_lock_state(idx, 8, new_int)
+                else:
+                    # set state
+                    self.app.trig_edit_mode.state[instrument][self.selected_track][8] = new_int
+
+                self.update_button_colours()
+            except:
+                pass
 
         else:
             # For the other buttons, refer to the base class
             super().on_button_pressed(button_name)
-
+    # TODO: I think this button stuff needs to be moved to trig_edit_mode
+    def update_button_colours(self):
+        instrument = self.get_current_instrument_short_name_helper()
+        seq = self.instrument_sequencers[instrument]
+        idx = seq.steps_held[0] if len(seq.steps_held) != 0 else 0
+        lock = seq.get_lock_state(idx, 8)
+        current_state = self.app.trig_edit_mode.state[instrument][self.selected_track][8]
+        value = int(current_state) if lock == None else int(lock)
+        binary_list = [int(i) for i in bin(value)[2:] ]
+        
+        for idx, item in enumerate(binary_list):
+            button_name = f"Upper Row {idx + 1}"
+            button_color = definitions.WHITE if item == True else definitions.OFF_BTN_COLOR
+            self.push.buttons.set_button_color(button_name, button_color)
+            
     def on_encoder_rotated(self, encoder_name, increment):
         try:
             encoder_idx = [
@@ -413,6 +460,7 @@ class SequencerMode(MelodicMode):
                     if min <= control.value + incr <= max:
                         control.value = control.value + incr
                     self.update_pads()
+                    self.update_button_colours()
 
             except Exception as e:
                 print(e)
