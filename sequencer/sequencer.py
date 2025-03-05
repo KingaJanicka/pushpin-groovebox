@@ -106,6 +106,7 @@ class Sequencer(object):
             gate_loop_count = int(self.playhead / int(gate_track_len))
             gate_recur_default = self.app.trig_edit_mode.state[instrument_name]["gate_1"][8]
             gate_recur = int(gate_recur_default) if gate_trig_menu_locks[8] == None else int(gate_trig_menu_locks[8])
+            gate_recur_len = int(self.trig_edit_mode.state[instrument_name]["gate_1"][7])
 
             gate_pitch = int(gate_trig_menu_locks[0]) if gate_trig_menu_locks[0] is not None else int(instrument_state["gate_1"][0]) 
             gate_octave = int(gate_trig_menu_locks[1]) * 12 if gate_trig_menu_locks[1] is not None else int(instrument_state["gate_1"][1])*12 
@@ -122,7 +123,8 @@ class Sequencer(object):
             pitch_trig_menu_locks = self.locks["pitch_1"][pitch_step]   
             pitch_loop_count = int(self.playhead / int(pitch_track_len))
             pitch_recur_default = self.app.trig_edit_mode.state[instrument_name]["pitch_1"][8]
-            pitch_recur = int(pitch_recur_default) if pitch_trig_menu_locks[8] == None else int(pitch_trig_menu_locks[8]) 
+            pitch_recur = int(pitch_recur_default) if pitch_trig_menu_locks[8] == None else int(pitch_trig_menu_locks[8])
+            pitch_recur_len = int(self.trig_edit_mode.state[instrument_name]["pitch_1"][7])
 
             pitch_pitch = int(pitch_trig_menu_locks[0]) if pitch_trig_menu_locks[0] is not None else int(instrument_state["pitch_1"][0]) 
             pitch_octave = int(pitch_trig_menu_locks[1]) * 12 if pitch_trig_menu_locks[1] is not None else int(instrument_state["pitch_1"][1])*12 
@@ -140,6 +142,7 @@ class Sequencer(object):
             trig_mute_loop_count = int(self.playhead / int(trig_mute_track_len))
             trig_mute_recur_default = self.app.trig_edit_mode.state[instrument_name]["trig_mute_1"][8]
             trig_mute_recur = int(trig_mute_recur_default) if trig_mute_trig_menu_locks[8] == None else int(trig_mute_trig_menu_locks[8]) 
+            trig_mute_recur_len = int(self.trig_edit_mode.state[instrument_name]["trig_mute_1"][7])
             
             trig_mute_recur_binary_list = [int(i) for i in bin(trig_mute_recur)[2:] ]
            
@@ -151,7 +154,8 @@ class Sequencer(object):
             accent_velocity = instrument_state["accent_1"][2] if instrument_state["accent_1"][2] is not None else int(instrument_state["accent_1"][2])
             accent_loop_count = int(self.playhead / int(accent_track_len))
             accent_recur_default = self.app.trig_edit_mode.state[instrument_name]["accent_1"][8]
-            accent_recur = int(accent_recur_default) if accent_trig_menu_locks[8] == None else int(accent_trig_menu_locks[8]) 
+            accent_recur = int(accent_recur_default) if accent_trig_menu_locks[8] == None else int(accent_trig_menu_locks[8])
+            accent_recur_len = int(self.trig_edit_mode.state[instrument_name]["accent_1"][7]) 
             
             accent_recur_binary_list = [int(i) for i in bin(accent_recur)[2:] ]
             
@@ -160,20 +164,20 @@ class Sequencer(object):
             note = gate_note
             amplitude = gate_velocity
             # TODO: make this loop count max out with last enc on the trig menu
-            if self.gate_1[gate_step] == True and gate_prob == True and gate_recur_binary_list[int(gate_loop_count % 8)] == 1:
+            if self.gate_1[gate_step] == True and gate_prob == True and gate_recur_binary_list[int(gate_loop_count % gate_recur_len)] == 1:
                 gate =  gate_gate
                 
             # Evaluate Pitch track
-            if self.pitch_1[pitch_step] == True and pitch_prob == True and pitch_recur_binary_list[int(pitch_loop_count % 8)] == 1:
+            if self.pitch_1[pitch_step] == True and pitch_prob == True and pitch_recur_binary_list[int(pitch_loop_count % pitch_recur_len)] == 1:
                 note = pitch_note
                 amplitude = pitch_velocity
 
             # Evaluate Mute track
-            if self.trig_mute_1[trig_mute_step] == True and trig_mute_prob == True and trig_mute_recur_binary_list[int(trig_mute_loop_count % 8)] == 1:
+            if self.trig_mute_1[trig_mute_step] == True and trig_mute_prob == True and trig_mute_recur_binary_list[int(trig_mute_loop_count % trig_mute_recur_len)] == 1:
                 schedule_note = False
 
             # Evaluate Accent track
-            if self.accent_1[accent_step] == True and accent_prob == True and accent_recur_binary_list[int(accent_loop_count % 8)] == 1:
+            if self.accent_1[accent_step] == True and accent_prob == True and accent_recur_binary_list[int(accent_loop_count % accent_recur_len)] == 1:
                 amplitude = accent_velocity
 
         # Schedule the note

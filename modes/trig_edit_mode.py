@@ -363,7 +363,7 @@ class TrigEditMode(definitions.PyshaMode):
 				"label": "Recurrance",
 				"address": f"/",
 				"min": 0,
-				"max": 1,
+				"max": 8,
 			},
 			self.get_current_instrument_color_helper,
 			self.send_message,

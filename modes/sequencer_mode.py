@@ -390,12 +390,16 @@ class SequencerMode(MelodicMode):
         current_state = self.app.trig_edit_mode.state[instrument][self.selected_track][8]
         value = int(current_state) if lock == None else int(lock)
         binary_list = [int(i) for i in bin(value)[2:] ]
-        
+        recur_len = self.app.trig_edit_mode.state[instrument][self.selected_track][7]
         for idx, item in enumerate(binary_list):
             button_name = f"Upper Row {idx + 1}"
-            button_color = definitions.WHITE if item == True else definitions.OFF_BTN_COLOR
+            if idx < recur_len:
+                button_color = definitions.WHITE if item == True else definitions.OFF_BTN_COLOR
+            else:
+                button_color = definitions.BLACK
             self.push.buttons.set_button_color(button_name, button_color)
             
+
     def on_encoder_rotated(self, encoder_name, increment):
         try:
             encoder_idx = [
@@ -460,8 +464,7 @@ class SequencerMode(MelodicMode):
                     if min <= control.value + incr <= max:
                         control.value = control.value + incr
                     self.update_pads()
-                    self.update_button_colours()
-
+                self.update_button_colours()
             except Exception as e:
                 print(e)
 
