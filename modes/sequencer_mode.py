@@ -179,12 +179,13 @@ class SequencerMode(MelodicMode):
             track_controls = self.instrument_scale_edit_controls[instrument_name][
                 track_name
             ]
+            # ctx.save()
             ctx.move_to(0,0)
             ctx.line_to(0,135)
             ctx.line_to(960,135)
             ctx.line_to(960, 0)            
+            ctx.set_source_rgb(255,0,0)
             ctx.close_path()
-            ctx.set_source_rgb(0,0,0)
             ctx.fill_preserve()
             offset = 0
             for control in track_controls:
@@ -217,6 +218,7 @@ class SequencerMode(MelodicMode):
                 center_horizontally=True,
                 rectangle_padding=1,
             )
+            # ctx.restore()
 
     def update_pads(self):
         try:
@@ -337,8 +339,7 @@ class SequencerMode(MelodicMode):
         elif button_name == push2_constants.BUTTON_SCALE:
             self.disable_controls = True if self.show_scale_menu == False else False
             self.show_scale_menu = True if self.show_scale_menu == False else False
-            device = self.app.osc_mode.get_current_instrument_device()
-            device.disable_controls = self.disable_controls
+
         elif (
             button_name
             == push2_constants.BUTTON_UPPER_ROW_1

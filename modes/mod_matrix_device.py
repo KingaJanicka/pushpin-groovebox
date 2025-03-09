@@ -31,7 +31,6 @@ class ModMatrixDevice(definitions.PyshaMode):
         self.label = ""
         self.definition = {}
         self.engine = engine
-        self.disable_controls = False
         self.modmatrix = False
         self.controls = [0] * 8
         self.src_cat_column = 0
@@ -1006,7 +1005,7 @@ class ModMatrixDevice(definitions.PyshaMode):
         devices = self.get_all_mod_matrix_devices()
         selected_device = int(self.controls[self.device_column])
         controls = self.get_all_mod_matrix_controls_for_device_in_slot(selected_device)
-        if self.disable_controls == False:
+        if self.app.sequencer_mode.disable_controls == False:
             match encoder_idx:
                 # First encoder
                 case self.src_cat_column:
@@ -1101,6 +1100,6 @@ class ModMatrixDevice(definitions.PyshaMode):
         except ValueError:
             return
 
-        if encoder_idx == self.delete_mapping_column and self.disable_controls == False:
+        if encoder_idx == self.delete_mapping_column and self.app.sequencer_mode.disable_controls == False:
             self.snap_knobs_to_mod_matrix()
             self.send_delete_message()

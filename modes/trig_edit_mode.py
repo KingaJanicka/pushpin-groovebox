@@ -368,6 +368,7 @@ class TrigEditMode(definitions.PyshaMode):
 			self.get_current_instrument_color_helper,
 			self.send_message,
 		)
+		recur.value = 8
 		self.controls.append(recur)
 
 		for instrument in self.get_all_distinct_instrument_short_names_helper():
@@ -419,6 +420,7 @@ class TrigEditMode(definitions.PyshaMode):
 
 	def activate(self):
 		self.update_pads()
+		self.disa
 		self.set_knob_postions()
 
 	def deactivate(self):
@@ -474,8 +476,8 @@ class TrigEditMode(definitions.PyshaMode):
 				push2_python.constants.ENCODER_TRACK8_ENCODER,
 			].index(encoder_name)
 			seq = self.app.sequencer_mode.instrument_sequencers[self.get_current_instrument_short_name_helper()]
-			
-			if len(seq.steps_held) != 0:
+			disable_controls = self.sequencer_mode.disable_controls
+			if len(seq.steps_held) != 0 or disable_controls == True:
 				pass
 			else:
 				control = self.controls[encoder_idx]

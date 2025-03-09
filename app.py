@@ -253,10 +253,10 @@ class PyshaApp(object):
 
             new_active_modes.append(self.trig_edit_mode)
             self.active_modes = new_active_modes
+            self.trig_edit_mode.activate()
             self.menu_mode.deactivate()
             self.osc_mode.deactivate()
             self.preset_selection_mode.deactivate()
-            self.trig_edit_mode.activate()
             # print(self.active_modes, "active modes")
 
     def toggle_ddrm_tone_selector_mode(self):
@@ -800,7 +800,9 @@ class PyshaApp(object):
 
             # Call all active modes to write to context
             for mode in self.active_modes:
-                mode.update_display(ctx, w, h)
+                    mode.update_display(ctx, w, h)
+            # Makes seq submenus always draw on top of other modes
+            self.sequencer_mode.update_display(ctx, w, h)
 
             # Show any notifications that should be shown
             if self.notification_text is not None:
