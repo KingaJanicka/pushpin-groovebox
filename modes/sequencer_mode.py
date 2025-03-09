@@ -132,8 +132,11 @@ class SequencerMode(MelodicMode):
         pass
 
     def sequencer_on_tick(self, instrument_name, length):
-        self.update_pads()
-        self.update_button_colours()
+    # if seq is active
+        seq_mode = self.app.sequencer_mode
+        if self.app.is_mode_active(seq_mode):
+            self.update_pads()
+            self.update_button_colours()
         if self.get_current_instrument_short_name_helper() == instrument_name:
             self.playhead = self.instrument_sequencers[instrument_name].playhead
 
@@ -168,6 +171,7 @@ class SequencerMode(MelodicMode):
         # print(self.app.osc_mode.get_current_instrument_osc_address_sections())
 
     def update_display(self, ctx, w, h):
+        # TODO: Some regressive bug with how this menu is drawn, will not draw the background after the 1st time
         if self.show_scale_menu == True:
             background_colour = self.get_current_instrument_color_helper()
             instrument_name = self.get_current_instrument_short_name_helper()
@@ -182,7 +186,6 @@ class SequencerMode(MelodicMode):
             ctx.close_path()
             ctx.set_source_rgb(0,0,0)
             ctx.fill_preserve()
-
             offset = 0
             for control in track_controls:
                 control.draw(ctx, offset)

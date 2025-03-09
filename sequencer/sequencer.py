@@ -106,7 +106,7 @@ class Sequencer(object):
             gate_loop_count = int(self.playhead / int(gate_track_len))
             gate_recur_default = self.app.trig_edit_mode.state[instrument_name]["gate_1"][8]
             gate_recur = int(gate_recur_default) if gate_trig_menu_locks[8] == None else int(gate_trig_menu_locks[8])
-            gate_recur_len = int(self.trig_edit_mode.state[instrument_name]["gate_1"][7])
+            gate_recur_len = int(self.app.trig_edit_mode.state[instrument_name]["gate_1"][7])
 
             gate_pitch = int(gate_trig_menu_locks[0]) if gate_trig_menu_locks[0] is not None else int(instrument_state["gate_1"][0]) 
             gate_octave = int(gate_trig_menu_locks[1]) * 12 if gate_trig_menu_locks[1] is not None else int(instrument_state["gate_1"][1])*12 
@@ -124,7 +124,7 @@ class Sequencer(object):
             pitch_loop_count = int(self.playhead / int(pitch_track_len))
             pitch_recur_default = self.app.trig_edit_mode.state[instrument_name]["pitch_1"][8]
             pitch_recur = int(pitch_recur_default) if pitch_trig_menu_locks[8] == None else int(pitch_trig_menu_locks[8])
-            pitch_recur_len = int(self.trig_edit_mode.state[instrument_name]["pitch_1"][7])
+            pitch_recur_len = int(self.app.trig_edit_mode.state[instrument_name]["pitch_1"][7])
 
             pitch_pitch = int(pitch_trig_menu_locks[0]) if pitch_trig_menu_locks[0] is not None else int(instrument_state["pitch_1"][0]) 
             pitch_octave = int(pitch_trig_menu_locks[1]) * 12 if pitch_trig_menu_locks[1] is not None else int(instrument_state["pitch_1"][1])*12 
@@ -142,7 +142,7 @@ class Sequencer(object):
             trig_mute_loop_count = int(self.playhead / int(trig_mute_track_len))
             trig_mute_recur_default = self.app.trig_edit_mode.state[instrument_name]["trig_mute_1"][8]
             trig_mute_recur = int(trig_mute_recur_default) if trig_mute_trig_menu_locks[8] == None else int(trig_mute_trig_menu_locks[8]) 
-            trig_mute_recur_len = int(self.trig_edit_mode.state[instrument_name]["trig_mute_1"][7])
+            trig_mute_recur_len = int(self.app.trig_edit_mode.state[instrument_name]["trig_mute_1"][7])
             
             trig_mute_recur_binary_list = [int(i) for i in bin(trig_mute_recur)[2:] ]
            
@@ -155,7 +155,7 @@ class Sequencer(object):
             accent_loop_count = int(self.playhead / int(accent_track_len))
             accent_recur_default = self.app.trig_edit_mode.state[instrument_name]["accent_1"][8]
             accent_recur = int(accent_recur_default) if accent_trig_menu_locks[8] == None else int(accent_trig_menu_locks[8])
-            accent_recur_len = int(self.trig_edit_mode.state[instrument_name]["accent_1"][7]) 
+            accent_recur_len = int(self.app.trig_edit_mode.state[instrument_name]["accent_1"][7]) 
             
             accent_recur_binary_list = [int(i) for i in bin(accent_recur)[2:] ]
             
