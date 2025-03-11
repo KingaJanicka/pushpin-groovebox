@@ -128,11 +128,7 @@ class SequencerMode(MelodicMode):
             ) in self.get_all_distinct_instrument_short_names_helper():
                 for track_name in TRACK_NAMES:
                     for idx, control in enumerate(self.instrument_scale_edit_controls[instrument_short_name][track_name]):
-                        control.value = dump[instrument_short_name][track_name][idx]
-                    
-                    # for idx, dump_value in enumerate(dump[instrument_short_name][track_name]):
-                    #     control = self.instrument_scale_edit_controls[instrument_short_name][track_name][idx]
-                    #     control.value = dump_value                       
+                        control.value = dump[instrument_short_name][track_name][idx]                     
         except Exception as e:
             print("Exception in trig_edit load_state")
             print(e)
