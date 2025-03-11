@@ -278,6 +278,7 @@ class SequencerMode(MelodicMode):
         # If a pad is off, turn it on
         if seq_pad_state[idx] == False:
             seq.set_state(self.selected_track, idx, True)
+            self.app.pads_need_update = True
 
         # If it's on, save the time and cont in on_pad_released
         elif seq_pad_state[idx] == True:
