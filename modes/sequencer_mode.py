@@ -7,6 +7,7 @@ import isobar as iso
 import os
 import sys
 import time
+import json
 from user_interface.display_utils import show_text
 from osc_controls import (
     OSCControl,
@@ -70,7 +71,6 @@ class SequencerMode(MelodicMode):
 
     def initialize(self, settings):
         super().initialize(settings)
-
         for (
             instrument_short_name
         ) in self.get_all_distinct_instrument_short_names_helper():
@@ -102,6 +102,31 @@ class SequencerMode(MelodicMode):
                 self.instrument_scale_edit_controls[instrument_short_name][
                     track_name
                 ] = menu
+        self.load_state()
+
+    def load_state(self):
+        # Loads seq state
+        for (
+            instrument_short_name
+        ) in self.get_all_distinct_instrument_short_names_helper():
+            self.instrument_sequencers[
+                instrument_short_name
+            ].load_state()
+
+        # Loads Trig edit state
+        self.app.trig_edit_mode.load_state()
+
+    def save_state(self):
+        # Saves seq state
+        for (
+            instrument_short_name
+        ) in self.get_all_distinct_instrument_short_names_helper():
+            self.instrument_sequencers[
+                instrument_short_name
+            ].save_state()
+            
+        # Saves Trig edit state
+        self.app.trig_edit_mode.save_state()
 
     def start_timeline(self):
         for (
@@ -307,6 +332,7 @@ class SequencerMode(MelodicMode):
             # seq.set_state(self.selected_track, idx, False
 
         seq.steps_held.remove(idx)
+        self.save_state()
         self.app.pads_need_update = True
 
     def on_button_pressed(self, button_name):

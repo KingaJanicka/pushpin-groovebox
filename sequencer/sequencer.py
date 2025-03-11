@@ -1,6 +1,8 @@
 import asyncio
 import isobar as iso
 import random
+import json
+import os
 from pythonosc.udp_client import SimpleUDPClient
 
 default_number_of_steps = 64
@@ -42,6 +44,7 @@ class Sequencer(object):
         self, instrument_name, timeline, tick_callback, playhead, send_osc_func, app
     ):
         self.locks = {}
+        self.seq_filename = f"seq_{instrument_name}.json"
         for key in TRACK_NAMES:
             self.locks[key] = []
             for x in range(default_number_of_steps):
@@ -88,6 +91,45 @@ class Sequencer(object):
             }
         )
 
+    def load_state(self):
+        try:
+            if os.path.exists(self.seq_filename):
+                dump = json.load(open(self.seq_filename))
+                self.locks = dump["locks"]
+                self.note = dump["note"]
+                self.gate_1 = dump["gate_1"]
+                self.pitch_1 = dump["pitch_1"]
+                self.trig_mute_1 = dump["trig_mute_1"]
+                self.accent_1 = dump["accent_1"]
+                self.aux_1 = dump["aux_1"]
+                self.aux_2 = dump["aux_2"]
+                self.aux_3 = dump["aux_3"]
+                self.aux_4 = dump["aux_4"]
+        except Exception as e:
+            print("Exception in seq load_state")
+            print(e)
+
+    def save_state(self):
+        try:
+            sequencer_state = {
+                "locks": self.locks,
+                "note": self.note,
+                "gate_1": self.gate_1,
+                "pitch_1": self.pitch_1,
+                "trig_mute_1": self.trig_mute_1,
+                "accent_1": self.accent_1,
+                "aux_1": self.aux_1,
+                "aux_2": self.aux_2,
+                "aux_3": self.aux_3,
+                "aux_4": self.aux_4,
+            }
+            json.dump(
+                sequencer_state, open(self.seq_filename, "w")
+            )  # Save to file
+        except Exception as e:
+            print("Exception in seq save_state")
+            print(e)
+
     def seq_playhead_update(self):
         self.playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01))
         self.update_notes()
@@ -122,7 +164,9 @@ class Sequencer(object):
             gate_recur_len = int(
                 self.app.trig_edit_mode.state[instrument_name]["gate_1"][7]
             )
-            gate_track_active = self.app.mute_mode.tracks_active[instrument_name]["gate_1"]
+            gate_track_active = self.app.mute_mode.tracks_active[instrument_name][
+                "gate_1"
+            ]
 
             gate_pitch = (
                 int(gate_trig_menu_locks[0])
@@ -162,7 +206,9 @@ class Sequencer(object):
             pitch_recur_len = int(
                 self.app.trig_edit_mode.state[instrument_name]["pitch_1"][7]
             )
-            pitch_track_active = self.app.mute_mode.tracks_active[instrument_name]["pitch_1"]
+            pitch_track_active = self.app.mute_mode.tracks_active[instrument_name][
+                "pitch_1"
+            ]
 
             pitch_pitch = (
                 int(pitch_trig_menu_locks[0])
@@ -235,7 +281,9 @@ class Sequencer(object):
             accent_recur_len = int(
                 self.app.trig_edit_mode.state[instrument_name]["accent_1"][7]
             )
-            accent_track_active = self.app.mute_mode.tracks_active[instrument_name]["accent_1"]
+            accent_track_active = self.app.mute_mode.tracks_active[instrument_name][
+                "accent_1"
+            ]
 
             accent_recur_binary_list = [int(i) for i in bin(accent_recur)[2:]]
 

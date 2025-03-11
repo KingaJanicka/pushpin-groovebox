@@ -26,7 +26,7 @@ class TrigEditMode(definitions.PyshaMode):
 	controls = []
 	state = {}
 	current_address = None
-
+	trig_edit_filename = "trig_edit.json"
 	def initialize(self, settings=None, **kwargs):
 
 		self.get_color = kwargs.get("get_color")
@@ -379,6 +379,25 @@ class TrigEditMode(definitions.PyshaMode):
 					self.state[instrument][track].append(control.value)
 				self.state[instrument][track].append(255)
 	
+	def load_state(self):
+		try:
+			if os.path.exists(self.trig_edit_filename):
+				dump = json.load(open(self.trig_edit_filename))
+				self.state = dump
+		except Exception as e:
+			print("Exception in seq load_state")
+			print(e)
+
+	def save_state(self):
+		try:
+			json.dump(
+                self.state, open(self.trig_edit_filename, "w")
+            )  # Save to file
+		except Exception as e:
+			print("Exception in seq save_state")
+			print(e)
+
+
 	def send_message(self, *args):
 		# self.log_out.debug(args)
 		# return self.osc["client"].send_message(*args)
