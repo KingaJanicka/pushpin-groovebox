@@ -476,7 +476,7 @@ class TrigEditMode(definitions.PyshaMode):
 				push2_python.constants.ENCODER_TRACK8_ENCODER,
 			].index(encoder_name)
 			seq = self.app.sequencer_mode.instrument_sequencers[self.get_current_instrument_short_name_helper()]
-			disable_controls = self.sequencer_mode.disable_controls
+			disable_controls = self.app.sequencer_mode.disable_controls
 			if len(seq.steps_held) != 0 or disable_controls == True:
 				pass
 			else:

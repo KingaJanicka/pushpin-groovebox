@@ -14,6 +14,7 @@ BROWSE_BUTTON = push2_python.constants.BUTTON_BROWSE
 CONVERT_BUTTON = push2_python.constants.BUTTON_CONVERT
 DOUBLE_LOOP_BUTTON = push2_python.constants.BUTTON_DOUBLE_LOOP
 QUANTIZE_BUTTON = push2_python.constants.BUTTON_QUANTIZE
+MUTE_BUTTON = push2_python.constants.BUTTON_MUTE
 
 
 class MainControlsMode(definitions.PyshaMode):
@@ -87,6 +88,11 @@ class MainControlsMode(definitions.PyshaMode):
     def on_button_pressed(self, button_name):
         if button_name == NOTE_BUTTON:
             self.app.toggle_melodic_rhythmic_slice_modes()
+            self.app.pads_need_update = True
+            self.app.buttons_need_update = True
+            return True
+        elif button_name == MUTE_BUTTON:
+            self.app.set_mute_mode()
             self.app.pads_need_update = True
             self.app.buttons_need_update = True
             return True

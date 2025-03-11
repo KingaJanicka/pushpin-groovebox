@@ -25,6 +25,7 @@ from modes.preset_selection_mode import PresetSelectionMode
 from modes.trig_edit_mode import TrigEditMode
 from modes.ddrm_tone_selector_mode import DDRMToneSelectorMode
 from modes.menu_mode import MenuMode
+from modes.mute_mode import MuteMode
 from user_interface.display_utils import show_notification
 from modes.external_instrument import ExternalInstrument
 # logging.basicConfig(level=logging.DEBUG)
@@ -145,7 +146,7 @@ class PyshaApp(object):
         self.ddrm_tone_selector_mode = DDRMToneSelectorMode(self, settings=settings)
         self.menu_mode = MenuMode(self, settings=settings, send_osc_func=self.send_osc)
         self.settings_mode = SettingsMode(self, settings=settings)
-        
+        self.mute_mode = MuteMode(self, settings=settings)
         overwitch_def = {
             "instrument_name": "Overwitch",
             "instrument_short_name": "Overwitch",
@@ -253,9 +254,9 @@ class PyshaApp(object):
 
             new_active_modes.append(self.trig_edit_mode)
             self.active_modes = new_active_modes
-            self.trig_edit_mode.activate()
             self.menu_mode.deactivate()
             self.osc_mode.deactivate()
+            self.trig_edit_mode.activate()
             self.preset_selection_mode.deactivate()
             # print(self.active_modes, "active modes")
 
@@ -345,7 +346,7 @@ class PyshaApp(object):
             self.set_slice_notes_mode()
         elif self.is_mode_active(self.slice_notes_mode):
             self.set_melodic_mode()
-        elif self.is_mode_active(self.melodic_mode):
+        elif self.is_mode_active(self.melodic_mode) or self.is_mode_active(self.mute_mode):
             self.set_sequencer_mode()
         else:
             # If none of melodic or rhythmic or slice modes were active, enable melodic by default
@@ -363,6 +364,9 @@ class PyshaApp(object):
     def set_sequencer_mode(self):
         # pass
         self.set_mode_for_xor_group(self.sequencer_mode)
+
+    def set_mute_mode(self):
+        self.set_mode_for_xor_group(self.mute_mode)
 
     def set_preset_selection_mode(self):
         self.set_mode_for_xor_group(self.preset_selection_mode)
