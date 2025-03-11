@@ -385,7 +385,7 @@ class TrigEditMode(definitions.PyshaMode):
 				dump = json.load(open(self.trig_edit_filename))
 				self.state = dump
 		except Exception as e:
-			print("Exception in seq load_state")
+			print("Exception in trig_edit load_state")
 			print(e)
 
 	def save_state(self):
@@ -394,7 +394,7 @@ class TrigEditMode(definitions.PyshaMode):
                 self.state, open(self.trig_edit_filename, "w")
             )  # Save to file
 		except Exception as e:
-			print("Exception in seq save_state")
+			print("Exception in trig_edit save_state")
 			print(e)
 
 
