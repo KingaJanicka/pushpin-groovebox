@@ -63,6 +63,7 @@ class SequencerMode(MelodicMode):
     show_scale_menu = False
     timeline = iso.Timeline(tempo, output_device=iso.DummyOutputDevice())
     selected_track = "gate_1"
+    scale_menu_filename = "scale_menu.json"
     pads_press_time = [False] * 64
     pad_quick_press_time = 0.400
     disable_controls = False
@@ -116,17 +117,57 @@ class SequencerMode(MelodicMode):
         # Loads Trig edit state
         self.app.trig_edit_mode.load_state()
 
+        # Loads scale edit menu
+        try:
+            # TODO: Bug here
+            dump = None
+            if os.path.exists(self.scale_menu_filename):
+                dump = json.load(open(self.scale_menu_filename))
+            for (
+                instrument_short_name
+            ) in self.get_all_distinct_instrument_short_names_helper():
+                for track_name in TRACK_NAMES:
+                    for idx, control in enumerate(self.instrument_scale_edit_controls[instrument_short_name][track_name]):
+                        control.value = dump[instrument_short_name][track_name][idx]
+                    
+                    # for idx, dump_value in enumerate(dump[instrument_short_name][track_name]):
+                    #     control = self.instrument_scale_edit_controls[instrument_short_name][track_name][idx]
+                    #     control.value = dump_value                       
+        except Exception as e:
+            print("Exception in trig_edit load_state")
+            print(e)
+
     def save_state(self):
         # Saves seq state
-        for (
-            instrument_short_name
-        ) in self.get_all_distinct_instrument_short_names_helper():
-            self.instrument_sequencers[
+        scale_edit_state = {}
+        try:
+            for (
                 instrument_short_name
-            ].save_state()
-            
+            ) in self.get_all_distinct_instrument_short_names_helper():
+                
+                self.instrument_sequencers[instrument_short_name].save_state()
+                scale_edit_state[instrument_short_name] = {}
+                # Populates the temp scale_edit_state array with current state
+                for track_name in TRACK_NAMES:
+                    scale_edit_state[instrument_short_name][track_name] = [None, None, None, None, None, None, None, None]
+                    for index, control in enumerate(self.instrument_scale_edit_controls[instrument_short_name][track_name]):
+                        scale_edit_state[instrument_short_name][track_name][index] = control.value 
+        except Exception as e:
+            print("Error in saving scale_edit state")
+            print(e)
+        # Saves scale edit menu
+        try:
+            json.dump(
+                scale_edit_state, open(self.scale_menu_filename, "w")
+            )  # Save to file
+        except Exception as e:
+            print("Exception in trig_edit save_state")
+            print(e)
+
         # Saves Trig edit state
         self.app.trig_edit_mode.save_state()
+
+
 
     def start_timeline(self):
         for (
