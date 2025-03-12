@@ -156,18 +156,28 @@ class Sequencer(object):
             gate_recur_default = self.app.trig_edit_mode.state[instrument_name][
                 "gate_1"
             ][8]
+            gate_recur_len = int(
+                self.app.trig_edit_mode.state[instrument_name]["gate_1"][7]
+            )
             gate_recur = (
                 int(gate_recur_default)
                 if gate_trig_menu_locks[8] == None
                 else int(gate_trig_menu_locks[8])
             )
-            gate_recur_len = int(
-                self.app.trig_edit_mode.state[instrument_name]["gate_1"][7]
-            )
+            gate_recur_binary_list = [int(i) for i in bin(gate_recur)[2:]]
+            
+            if gate_recur_len == 0:
+            # Prevents modulo by zero later on
+                gate_recur_len = 1
+                gate_recur_binary_list = [1]
+                gate_loop_count = 1
+            
+            
+            
             gate_track_active = self.app.mute_mode.tracks_active[instrument_name][
                 "gate_1"
             ]
-
+            
             gate_pitch = (
                 int(gate_trig_menu_locks[0])
                 if gate_trig_menu_locks[0] is not None
@@ -188,7 +198,6 @@ class Sequencer(object):
             gate_prob = (
                 True if instrument_state["gate_1"][4] >= random.random() else False
             )
-            gate_recur_binary_list = [int(i) for i in bin(gate_recur)[2:]]
 
             # Note track stuff
             pitch_track_len = instrument_scale_edit_controls["pitch_1"][0].value
@@ -206,6 +215,16 @@ class Sequencer(object):
             pitch_recur_len = int(
                 self.app.trig_edit_mode.state[instrument_name]["pitch_1"][7]
             )
+            pitch_recur_binary_list = [int(i) for i in bin(pitch_recur)[2:]]
+            
+            if pitch_recur_len == 0:
+            # Prevents modulo by zero later on
+                pitch_recur_len = 1
+                pitch_recur_binary_list = [1]
+                pitch_loop_count = 1
+            
+            
+            
             pitch_track_active = self.app.mute_mode.tracks_active[instrument_name][
                 "pitch_1"
             ]
@@ -230,7 +249,6 @@ class Sequencer(object):
             pitch_prob = (
                 True if instrument_state["pitch_1"][4] >= random.random() else False
             )
-            pitch_recur_binary_list = [int(i) for i in bin(pitch_recur)[2:]]
 
             # Mute track stuff
             trig_mute_track_len = instrument_scale_edit_controls["trig_mute_1"][0].value
@@ -251,11 +269,17 @@ class Sequencer(object):
             trig_mute_recur_len = int(
                 self.app.trig_edit_mode.state[instrument_name]["trig_mute_1"][7]
             )
+            trig_mute_recur_binary_list = [int(i) for i in bin(trig_mute_recur)[2:]]
+            if trig_mute_recur_len == 0:
+            # Prevents modulo by zero later on
+                trig_mute_recur_len = 1
+                trig_mute_recur_binary_list = [1]
+                trig_mute_loop_count = 1
+            
             trig_mute_track_active = self.app.mute_mode.tracks_active[instrument_name][
                 "trig_mute_1"
             ]
 
-            trig_mute_recur_binary_list = [int(i) for i in bin(trig_mute_recur)[2:]]
 
             # Accent track stuff
             accent_track_len = instrument_scale_edit_controls["accent_1"][0].value
@@ -281,11 +305,18 @@ class Sequencer(object):
             accent_recur_len = int(
                 self.app.trig_edit_mode.state[instrument_name]["accent_1"][7]
             )
+            accent_recur_binary_list = [int(i) for i in bin(accent_recur)[2:]]
+            
+            if accent_recur_len == 0:
+            # Prevents modulo by zero later on
+                accent_recur_len = 1
+                accent_recur_binary_list = [1]
+                accent_loop_count = 1
+
             accent_track_active = self.app.mute_mode.tracks_active[instrument_name][
                 "accent_1"
             ]
 
-            accent_recur_binary_list = [int(i) for i in bin(accent_recur)[2:]]
 
             # Evaluate all tracks
             # Evaluate Gate track, note and amp here to avoid a None value
