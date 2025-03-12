@@ -452,17 +452,28 @@ class SequencerMode(MelodicMode):
     # TODO: I think this button stuff needs to be moved to trig_edit_mode
     def update_button_colours(self):
         instrument = self.get_current_instrument_short_name_helper()
+        instrument_scale_edit_controls = (
+            self.app.sequencer_mode.instrument_scale_edit_controls[instrument]
+        )
         seq = self.instrument_sequencers[instrument]
+        sel_track_len = instrument_scale_edit_controls[self.selected_track][0].value
+        
         idx = seq.steps_held[0] if len(seq.steps_held) != 0 else 0
         lock = seq.get_lock_state(idx, 8)
         current_state = self.app.trig_edit_mode.state[instrument][self.selected_track][8]
         value = int(current_state) if lock == None else int(lock)
         binary_list = [int(i) for i in bin(value)[2:] ]
-        recur_len = self.app.trig_edit_mode.state[instrument][self.selected_track][7]
+
+        recur_len = int(self.app.trig_edit_mode.state[instrument][self.selected_track][7])
+        
+        loop_count = int(seq.playhead / int(sel_track_len)) % recur_len 
         for idx, item in enumerate(binary_list):
             button_name = f"Upper Row {idx + 1}"
             if idx < recur_len:
-                button_color = definitions.WHITE if item == True else definitions.OFF_BTN_COLOR
+                if idx == loop_count:
+                    button_color = definitions.GREEN
+                else:
+                    button_color = definitions.WHITE if item == True else definitions.OFF_BTN_COLOR
             else:
                 button_color = definitions.BLACK
             self.push.buttons.set_button_color(button_name, button_color)
