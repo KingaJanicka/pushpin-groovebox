@@ -17,6 +17,7 @@ from osc_controls import (
 )
 from modes.trig_edit_mode import TrigEditMode
 from definitions import TRACK_NAMES
+
 EMPTY_PATTERN = []
 
 TRACK_COLORS = {
@@ -110,9 +111,7 @@ class SequencerMode(MelodicMode):
         for (
             instrument_short_name
         ) in self.get_all_distinct_instrument_short_names_helper():
-            self.instrument_sequencers[
-                instrument_short_name
-            ].load_state()
+            self.instrument_sequencers[instrument_short_name].load_state()
 
         # Loads Trig edit state
         self.app.trig_edit_mode.load_state()
@@ -127,8 +126,12 @@ class SequencerMode(MelodicMode):
                 instrument_short_name
             ) in self.get_all_distinct_instrument_short_names_helper():
                 for track_name in TRACK_NAMES:
-                    for idx, control in enumerate(self.instrument_scale_edit_controls[instrument_short_name][track_name]):
-                        control.value = dump[instrument_short_name][track_name][idx]                     
+                    for idx, control in enumerate(
+                        self.instrument_scale_edit_controls[instrument_short_name][
+                            track_name
+                        ]
+                    ):
+                        control.value = dump[instrument_short_name][track_name][idx]
         except Exception as e:
             print("Exception in trig_edit load_state")
             print(e)
@@ -140,14 +143,29 @@ class SequencerMode(MelodicMode):
             for (
                 instrument_short_name
             ) in self.get_all_distinct_instrument_short_names_helper():
-                
+
                 self.instrument_sequencers[instrument_short_name].save_state()
                 scale_edit_state[instrument_short_name] = {}
                 # Populates the temp scale_edit_state array with current state
                 for track_name in TRACK_NAMES:
-                    scale_edit_state[instrument_short_name][track_name] = [None, None, None, None, None, None, None, None]
-                    for index, control in enumerate(self.instrument_scale_edit_controls[instrument_short_name][track_name]):
-                        scale_edit_state[instrument_short_name][track_name][index] = control.value 
+                    scale_edit_state[instrument_short_name][track_name] = [
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                    ]
+                    for index, control in enumerate(
+                        self.instrument_scale_edit_controls[instrument_short_name][
+                            track_name
+                        ]
+                    ):
+                        scale_edit_state[instrument_short_name][track_name][
+                            index
+                        ] = control.value
         except Exception as e:
             print("Error in saving scale_edit state")
             print(e)
@@ -162,8 +180,6 @@ class SequencerMode(MelodicMode):
 
         # Saves Trig edit state
         self.app.trig_edit_mode.save_state()
-
-
 
     def start_timeline(self):
         for (
@@ -194,11 +210,11 @@ class SequencerMode(MelodicMode):
         pass
 
     def sequencer_on_tick(self, instrument_name, length):
-    # if seq is active
+        # if seq is active
         seq_mode = self.app.sequencer_mode
         if self.app.is_mode_active(seq_mode):
             self.update_pads()
-            self.update_button_colours()
+            self.app.trig_edit_mode.update_button_colours()
         if self.get_current_instrument_short_name_helper() == instrument_name:
             self.playhead = self.instrument_sequencers[instrument_name].playhead
 
@@ -242,11 +258,11 @@ class SequencerMode(MelodicMode):
                 track_name
             ]
             # ctx.save()
-            ctx.move_to(0,0)
-            ctx.line_to(0,135)
-            ctx.line_to(960,135)
-            ctx.line_to(960, 0)            
-            ctx.set_source_rgb(255,0,0)
+            ctx.move_to(0, 0)
+            ctx.line_to(0, 135)
+            ctx.line_to(960, 135)
+            ctx.line_to(960, 0)
+            ctx.set_source_rgb(255, 0, 0)
             ctx.close_path()
             ctx.fill_preserve()
             offset = 0
@@ -374,8 +390,8 @@ class SequencerMode(MelodicMode):
 
     def on_button_pressed(self, button_name):
         seq = self.instrument_sequencers[
-                self.get_current_instrument_short_name_helper()
-            ]
+            self.get_current_instrument_short_name_helper()
+        ]
         if button_name in track_button_names:
             idx = track_button_names.index(button_name)
             self.selected_track = TRACK_NAMES[idx]
@@ -404,80 +420,9 @@ class SequencerMode(MelodicMode):
             self.disable_controls = True if self.show_scale_menu == False else False
             self.show_scale_menu = True if self.show_scale_menu == False else False
 
-        elif (
-            button_name
-            == push2_constants.BUTTON_UPPER_ROW_1
-            or push2_constants.BUTTON_UPPER_ROW_2
-            or push2_constants.BUTTON_UPPER_ROW_3
-            or push2_constants.BUTTON_UPPER_ROW_4
-            or push2_constants.BUTTON_UPPER_ROW_5
-            or push2_constants.BUTTON_UPPER_ROW_6
-            or push2_constants.BUTTON_UPPER_ROW_7
-            or push2_constants.BUTTON_UPPER_ROW_8
-        ):
-            try:
-                instrument = self.get_current_instrument_short_name_helper()
-                seq = self.instrument_sequencers[instrument]
-                idx = seq.steps_held[0] if len(seq.steps_held) != 0 else 0
-                lock = seq.get_lock_state(idx, 8)
-                current_state = self.app.trig_edit_mode.state[instrument][self.selected_track][8]
-                value = int(current_state) if lock == None else int(lock)
-                binary_list = [int(i) for i in bin(value)[2:] ]
-                
-                try:
-                    button_idx = int(button_name[-1]) - 1
-                except:
-                    return
-                # Updates the binary number
-                if binary_list[button_idx] == True:
-                    binary_list[button_idx] = 0
-                else:
-                    binary_list[button_idx] = 1   
-                # Converts binary to int
-                new_int = int(''.join(map(str,binary_list)), 2)
-                if len(seq.steps_held) > 0:
-                    # set lock
-                    seq.set_lock_state(idx, 8, new_int)
-                else:
-                    # set state
-                    self.app.trig_edit_mode.state[instrument][self.selected_track][8] = new_int
-
-                self.update_button_colours()
-            except:
-                pass
-
         else:
             # For the other buttons, refer to the base class
             super().on_button_pressed(button_name)
-    # TODO: I think this button stuff needs to be moved to trig_edit_mode
-    def update_button_colours(self):
-        instrument = self.get_current_instrument_short_name_helper()
-        instrument_scale_edit_controls = (
-            self.app.sequencer_mode.instrument_scale_edit_controls[instrument]
-        )
-        seq = self.instrument_sequencers[instrument]
-        sel_track_len = instrument_scale_edit_controls[self.selected_track][0].value
-        
-        idx = seq.steps_held[0] if len(seq.steps_held) != 0 else 0
-        lock = seq.get_lock_state(idx, 8)
-        current_state = self.app.trig_edit_mode.state[instrument][self.selected_track][8]
-        value = int(current_state) if lock == None else int(lock)
-        binary_list = [int(i) for i in bin(value)[2:] ]
-
-        recur_len = int(self.app.trig_edit_mode.state[instrument][self.selected_track][7])
-        
-        loop_count = int(seq.playhead / int(sel_track_len)) % recur_len 
-        for idx, item in enumerate(binary_list):
-            button_name = f"Upper Row {idx + 1}"
-            if idx < recur_len:
-                if idx == loop_count:
-                    button_color = definitions.GREEN
-                else:
-                    button_color = definitions.WHITE if item == True else definitions.OFF_BTN_COLOR
-            else:
-                button_color = definitions.BLACK
-            self.push.buttons.set_button_color(button_name, button_color)
-            
 
     def on_encoder_rotated(self, encoder_name, increment):
         try:
@@ -543,7 +488,7 @@ class SequencerMode(MelodicMode):
                     if min <= control.value + incr <= max:
                         control.value = control.value + incr
                     self.update_pads()
-                self.update_button_colours()
+                self.app.trig_edit_mode.update_button_colours()
             except Exception as e:
                 print(e)
 
