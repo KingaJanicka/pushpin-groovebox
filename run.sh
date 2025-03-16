@@ -1,0 +1,1 @@
+PIPEWIRE_PROPS='{ node.group = "pro-audio-4" }' python app.py
