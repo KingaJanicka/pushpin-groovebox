@@ -15,7 +15,6 @@ from osc_controls import (
     OSCControlSwitch,
     OSCGroup,
 )
-from modes.trig_edit_mode import TrigEditMode
 from definitions import TRACK_NAMES
 
 EMPTY_PATTERN = []

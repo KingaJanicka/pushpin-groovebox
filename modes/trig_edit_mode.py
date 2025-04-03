@@ -32,7 +32,7 @@ class TrigEditMode(definitions.PyshaMode):
     is_active = False
 
     def initialize(self, settings=None, **kwargs):
-
+        self.is_active = False
         self.get_color = kwargs.get("get_color")
         # Sets up controls for the trig menu
         note = OSCControlMenu(
@@ -406,6 +406,9 @@ class TrigEditMode(definitions.PyshaMode):
         pass
 
     def activate(self):
+        # TODO: this does seem rather slow
+        self.is_active = True
+        self.update_button_colours()
         self.current_page = 0
         self.update_buttons()
         self.update_pads()
@@ -438,11 +441,6 @@ class TrigEditMode(definitions.PyshaMode):
 
     def get_current_page(self):
         return self.current_page
-
-    def activate(self):
-        # TODO: this does seem rather slow
-        self.is_active = True
-        self.update_button_colours()
 
     def deactivate(self):
         self.is_active = False
@@ -499,69 +497,69 @@ class TrigEditMode(definitions.PyshaMode):
             or push2_constants.BUTTON_UPPER_ROW_7
             or push2_constants.BUTTON_UPPER_ROW_8
         ):
-            if self.is_active == True:
-                try:
-                    instrument = self.get_current_instrument_short_name_helper()
-                    seq = self.app.sequencer_mode.instrument_sequencers[instrument]
-                    idx = seq.steps_held[0] if len(seq.steps_held) != 0 else 0
-                    selected_track = self.app.sequencer_mode.selected_track
-                    lock = seq.get_lock_state(idx, 8)
-                    current_state = self.state[instrument][selected_track][8]
-                    value = int(current_state) if lock == None else int(lock)
-                    binary_list = [int(i) for i in bin(value)[2:]]
+            try:
+                instrument = self.get_current_instrument_short_name_helper()
+                seq = self.app.sequencer_mode.instrument_sequencers[instrument]
+                idx = seq.steps_held[0] if len(seq.steps_held) != 0 else 0
+                selected_track = self.app.sequencer_mode.selected_track
+                lock = seq.get_lock_state(idx, 8)
+                current_state = self.state[instrument][selected_track][8]
+                value = int(current_state) if lock == None else int(lock)
+                binary_list = [int(i) for i in bin(value)[2:]]
 
-                    try:
-                        button_idx = int(button_name[-1]) - 1
-                    except:
-                        return
-                    # Updates the binary number
-                    if binary_list[button_idx] == True:
-                        binary_list[button_idx] = 0
-                    else:
-                        binary_list[button_idx] = 1
-                    # Converts binary to int
-                    new_int = int("".join(map(str, binary_list)), 2)
-                    if len(seq.steps_held) > 0:
-                        # set lock
-                        seq.set_lock_state(idx, 8, new_int)
-                    else:
-                        # set state
-                        self.state[instrument][selected_track][8] = new_int
-                    self.update_button_colours()
-                except Exception as e:
-                    print("Exception in on_button_presed in trig_edit_mode")
-                    print(e)
-                    pass
+                try:
+                    button_idx = int(button_name[-1]) - 1
+                except:
+                    return
+                # Updates the binary number
+                if binary_list[button_idx] == True:
+                    binary_list[button_idx] = 0
+                else:
+                    binary_list[button_idx] = 1
+                # Converts binary to int
+                new_int = int("".join(map(str, binary_list)), 2)
+                if len(seq.steps_held) > 0:
+                    # set lock
+                    seq.set_lock_state(idx, 8, new_int)
+                else:
+                    # set state
+                    self.state[instrument][selected_track][8] = new_int
+                self.update_button_colours()
+            except Exception as e:
+                print("Exception in on_button_presed in trig_edit_mode")
+                print(e)
+                pass
 
     def update_button_colours(self):
-        instrument = self.get_current_instrument_short_name_helper()
-        instrument_scale_edit_controls = (
-            self.app.sequencer_mode.instrument_scale_edit_controls[instrument]
-        )
-        selected_track = self.app.sequencer_mode.selected_track
-        seq = self.app.sequencer_mode.instrument_sequencers[instrument]
-        sel_track_len = instrument_scale_edit_controls[selected_track][0].value
+        if self.is_active == True:
+            instrument = self.get_current_instrument_short_name_helper()
+            instrument_scale_edit_controls = (
+                self.app.sequencer_mode.instrument_scale_edit_controls[instrument]
+            )
+            selected_track = self.app.sequencer_mode.selected_track
+            seq = self.app.sequencer_mode.instrument_sequencers[instrument]
+            sel_track_len = instrument_scale_edit_controls[selected_track][0].value
 
-        idx = seq.steps_held[0] if len(seq.steps_held) != 0 else 0
-        lock = seq.get_lock_state(idx, 8)
-        current_state = self.state[instrument][selected_track][8]
-        value = int(current_state) if lock == None else int(lock)
-        binary_list = [int(i) for i in bin(value)[2:]]
-        recur_len = int(self.state[instrument][selected_track][7])
+            idx = seq.steps_held[0] if len(seq.steps_held) != 0 else 0
+            lock = seq.get_lock_state(idx, 8)
+            current_state = self.state[instrument][selected_track][8]
+            value = int(current_state) if lock == None else int(lock)
+            binary_list = [int(i) for i in bin(value)[2:]]
+            recur_len = int(self.state[instrument][selected_track][7])
 
-        loop_count = int(seq.playhead / int(sel_track_len)) % recur_len
-        for idx, item in enumerate(binary_list):
-            button_name = f"Upper Row {idx + 1}"
-            if idx < recur_len:
-                if idx == loop_count:
-                    button_color = definitions.GREEN
+            loop_count = int(seq.playhead / int(sel_track_len)) % recur_len
+            for idx, item in enumerate(binary_list):
+                button_name = f"Upper Row {idx + 1}"
+                if idx < recur_len:
+                    if idx == loop_count:
+                        button_color = definitions.GREEN
+                    else:
+                        button_color = (
+                            definitions.WHITE if item == True else definitions.OFF_BTN_COLOR
+                        )
                 else:
-                    button_color = (
-                        definitions.WHITE if item == True else definitions.OFF_BTN_COLOR
-                    )
-            else:
-                button_color = definitions.BLACK
-            self.app.push.buttons.set_button_color(button_name, button_color)
+                    button_color = definitions.BLACK
+                self.app.push.buttons.set_button_color(button_name, button_color)
 
     def on_encoder_rotated(self, encoder_name, increment=0.01):
         try:

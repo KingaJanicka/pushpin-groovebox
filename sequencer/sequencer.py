@@ -369,9 +369,11 @@ class Sequencer(object):
             # then schedule it one note in the future to allow for some drift?
             # Not sure how much time this entire eval process takes, might introduce flanging?
             if schedule_note == True:
+                print("Scheduled note for track", self.name)
                 self.local_timeline.schedule(
                     {"note": note, "gate": gate, "amplitude": amplitude}, count=1
                 )
+                print("Note for track", self.name, " fired")
         except Exception as e:
             print("Error in evaluate_and_play_notes, ", e)
 
