@@ -582,25 +582,28 @@ class TrigEditMode(definitions.PyshaMode):
             else:
                 control = self.controls[encoder_idx]
 
-                min = control.min
-                max = control.max
-                range = max - min
-                incr = increment * range / 100
-                if min <= control.value + incr <= max:
-                    control.value = control.value + incr
-                if min >= (control.value + incr):
-                    control.value = min
-                if max <= (control.value + incr):
-                    control.value = max
+                try:
+                    min = control.min if hasattr(control, "min") else 0
+                    max = control.max if hasattr(control, "max") else len(control.items)
+                    range = max - min
+                    incr = increment * range / 100
+                    if min < control.value + incr < max:
+                        control.value = control.value + incr
+                    if min >= (control.value + incr):
+                        control.value = min
+                    if max < (control.value + incr):
+                        control.value = max - incr
 
-                # control.update_value(increment)
-                track_name = self.app.sequencer_mode.selected_track
-                self.state[self.get_current_instrument_short_name_helper()][track_name][
-                    encoder_idx
-                ] = control.value
-                if encoder_idx == 7:
-                    self.update_button_colours()
-
+                    # control.update_value(increment)
+                    track_name = self.app.sequencer_mode.selected_track
+                    self.state[self.get_current_instrument_short_name_helper()][track_name][
+                        encoder_idx
+                    ] = control.value
+                    if encoder_idx == 7:
+                        self.update_button_colours()
+                except Exception as e:
+                    print("Error in on_encoder_rotated in TrigEditMode")
+                    print(e)
         except ValueError:
             pass  # Encoder not in list
 

@@ -481,16 +481,17 @@ class SequencerMode(MelodicMode):
                     ][track_name]
 
                     control = track_controls[encoder_idx]
-                    min = control.min
-                    max = control.max
+                    min = control.min if hasattr(control, "min") else 0
+                    max = control.max if hasattr(control, "max") else len(control.items)
                     range = max - min
                     incr = increment * range / 100
-                    if min <= control.value + incr <= max:
+                    if min < control.value + incr < max:
                         control.value = control.value + incr
-                    if min >= control.value + incr:
+                    if min >= (control.value + incr):
                         control.value = min
-                    if max <= control.value + incr:
-                        control.value = max
+                    if max < (control.value + incr):
+                        control.value = max - incr
+
                     self.update_pads()
                 self.app.trig_edit_mode.update_button_colours()
             except Exception as e:
