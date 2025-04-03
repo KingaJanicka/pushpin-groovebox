@@ -146,7 +146,7 @@ class Sequencer(object):
             note = None
             gate = None
             amplitude = None
-            schedule_note = True
+            schedule_note = False
             # Setting values per track
             # Gate track stuff
             gate_track_len = instrument_scale_edit_controls["gate_1"][0].value
@@ -328,6 +328,7 @@ class Sequencer(object):
                 and gate_recur_binary_list[int(gate_loop_count % gate_recur_len)] == 1
                 and gate_track_active == True
             ):
+                schedule_note = True
                 gate = gate_gate
 
             # Evaluate Pitch track

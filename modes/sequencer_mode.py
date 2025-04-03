@@ -325,8 +325,9 @@ class SequencerMode(MelodicMode):
                     button_colors[i] = definitions.BLACK
 
             # Draw the playhead
-            step = seq.playhead % int(track_length.value)
-            button_colors[step] = definitions.WHITE
+            if self.timeline_is_playing == True:
+                step = seq.playhead % int(track_length.value)
+                button_colors[step] = definitions.WHITE
 
             # makes the values into a multi-dimensional array
             button_colors_array = []

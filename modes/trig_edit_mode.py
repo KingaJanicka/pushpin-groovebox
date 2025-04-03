@@ -29,6 +29,7 @@ class TrigEditMode(definitions.PyshaMode):
     state = {}
     current_address = None
     trig_edit_filename = "trig_edit.json"
+    is_active = False
 
     def initialize(self, settings=None, **kwargs):
 
@@ -439,11 +440,12 @@ class TrigEditMode(definitions.PyshaMode):
         return self.current_page
 
     def activate(self):
-        self.update_pads()
-        self.disa
-        self.set_knob_postions()
+        # TODO: this does seem rather slow
+        self.is_active = True
+        self.update_button_colours()
 
     def deactivate(self):
+        self.is_active = False
         self.app.push.pads.set_all_pads_to_color(color=definitions.BLACK)
         self.push.buttons.set_button_color(
             push2_python.constants.BUTTON_LEFT, definitions.BLACK
@@ -497,38 +499,39 @@ class TrigEditMode(definitions.PyshaMode):
             or push2_constants.BUTTON_UPPER_ROW_7
             or push2_constants.BUTTON_UPPER_ROW_8
         ):
-            try:
-                instrument = self.get_current_instrument_short_name_helper()
-                seq = self.app.sequencer_mode.instrument_sequencers[instrument]
-                idx = seq.steps_held[0] if len(seq.steps_held) != 0 else 0
-                selected_track = self.app.sequencer_mode.selected_track
-                lock = seq.get_lock_state(idx, 8)
-                current_state = self.state[instrument][selected_track][8]
-                value = int(current_state) if lock == None else int(lock)
-                binary_list = [int(i) for i in bin(value)[2:]]
-
+            if self.is_active == True:
                 try:
-                    button_idx = int(button_name[-1]) - 1
-                except:
-                    return
-                # Updates the binary number
-                if binary_list[button_idx] == True:
-                    binary_list[button_idx] = 0
-                else:
-                    binary_list[button_idx] = 1
-                # Converts binary to int
-                new_int = int("".join(map(str, binary_list)), 2)
-                if len(seq.steps_held) > 0:
-                    # set lock
-                    seq.set_lock_state(idx, 8, new_int)
-                else:
-                    # set state
-                    self.state[instrument][selected_track][8] = new_int
-                self.update_button_colours()
-            except Exception as e:
-                print("Exception in on_button_presed in trig_edit_mode")
-                print(e)
-                pass
+                    instrument = self.get_current_instrument_short_name_helper()
+                    seq = self.app.sequencer_mode.instrument_sequencers[instrument]
+                    idx = seq.steps_held[0] if len(seq.steps_held) != 0 else 0
+                    selected_track = self.app.sequencer_mode.selected_track
+                    lock = seq.get_lock_state(idx, 8)
+                    current_state = self.state[instrument][selected_track][8]
+                    value = int(current_state) if lock == None else int(lock)
+                    binary_list = [int(i) for i in bin(value)[2:]]
+
+                    try:
+                        button_idx = int(button_name[-1]) - 1
+                    except:
+                        return
+                    # Updates the binary number
+                    if binary_list[button_idx] == True:
+                        binary_list[button_idx] = 0
+                    else:
+                        binary_list[button_idx] = 1
+                    # Converts binary to int
+                    new_int = int("".join(map(str, binary_list)), 2)
+                    if len(seq.steps_held) > 0:
+                        # set lock
+                        seq.set_lock_state(idx, 8, new_int)
+                    else:
+                        # set state
+                        self.state[instrument][selected_track][8] = new_int
+                    self.update_button_colours()
+                except Exception as e:
+                    print("Exception in on_button_presed in trig_edit_mode")
+                    print(e)
+                    pass
 
     def update_button_colours(self):
         instrument = self.get_current_instrument_short_name_helper()
