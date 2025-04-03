@@ -581,11 +581,25 @@ class TrigEditMode(definitions.PyshaMode):
                 pass
             else:
                 control = self.controls[encoder_idx]
-                control.update_value(increment)
+
+                min = control.min
+                max = control.max
+                range = max - min
+                incr = increment * range / 100
+                if min <= control.value + incr <= max:
+                    control.value = control.value + incr
+                if min >= (control.value + incr):
+                    control.value = min
+                if max <= (control.value + incr):
+                    control.value = max
+
+                # control.update_value(increment)
                 track_name = self.app.sequencer_mode.selected_track
                 self.state[self.get_current_instrument_short_name_helper()][track_name][
                     encoder_idx
                 ] = control.value
+                if encoder_idx == 7:
+                    self.update_button_colours()
 
         except ValueError:
             pass  # Encoder not in list

@@ -138,7 +138,7 @@ class Sequencer(object):
     def evaluate_and_play_notes(self):
         try:
             # Setting values used by all tracks
-            instrument_name = self.get_current_instrument_short_name_helper()
+            instrument_name = self.name
             instrument_state = self.app.trig_edit_mode.state[instrument_name]
             instrument_scale_edit_controls = (
                 self.app.sequencer_mode.instrument_scale_edit_controls[instrument_name]

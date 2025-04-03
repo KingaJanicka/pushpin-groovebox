@@ -487,6 +487,10 @@ class SequencerMode(MelodicMode):
                     incr = increment * range / 100
                     if min <= control.value + incr <= max:
                         control.value = control.value + incr
+                    if min >= control.value + incr:
+                        control.value = min
+                    if max <= control.value + incr:
+                        control.value = max
                     self.update_pads()
                 self.app.trig_edit_mode.update_button_colours()
             except Exception as e:
