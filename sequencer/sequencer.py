@@ -158,7 +158,7 @@ class Sequencer(object):
             ][8]
             gate_recur_len = int(
                 self.app.trig_edit_mode.state[instrument_name]["gate_1"][7]
-            )
+            ) + 1
             gate_recur = (
                 int(gate_recur_default)
                 if gate_trig_menu_locks[8] == None
@@ -166,11 +166,11 @@ class Sequencer(object):
             )
             gate_recur_binary_list = [int(i) for i in bin(gate_recur)[2:]]
             
-            if gate_recur_len == 0:
-            # Prevents modulo by zero later on
-                gate_recur_len = 1
-                gate_recur_binary_list = [1]
-                gate_loop_count = 1
+            # if gate_recur_len == 0:
+            # # Prevents modulo by zero later on
+            #     gate_recur_len = 1
+            #     gate_recur_binary_list = [1]
+            #     gate_loop_count = 1
             
             
             
@@ -214,14 +214,14 @@ class Sequencer(object):
             )
             pitch_recur_len = int(
                 self.app.trig_edit_mode.state[instrument_name]["pitch_1"][7]
-            )
+            ) + 1
             pitch_recur_binary_list = [int(i) for i in bin(pitch_recur)[2:]]
             
-            if pitch_recur_len == 0:
-            # Prevents modulo by zero later on
-                pitch_recur_len = 1
-                pitch_recur_binary_list = [1]
-                pitch_loop_count = 1
+            # if pitch_recur_len == 0:
+            # # Prevents modulo by zero later on
+            #     pitch_recur_len = 1
+            #     pitch_recur_binary_list = [1]
+            #     pitch_loop_count = 1
             
             
             
@@ -268,13 +268,13 @@ class Sequencer(object):
             )
             trig_mute_recur_len = int(
                 self.app.trig_edit_mode.state[instrument_name]["trig_mute_1"][7]
-            )
+            ) + 1
             trig_mute_recur_binary_list = [int(i) for i in bin(trig_mute_recur)[2:]]
-            if trig_mute_recur_len == 0:
-            # Prevents modulo by zero later on
-                trig_mute_recur_len = 1
-                trig_mute_recur_binary_list = [1]
-                trig_mute_loop_count = 1
+            # if trig_mute_recur_len == 0:
+            # # Prevents modulo by zero later on
+            #     trig_mute_recur_len = 1
+            #     trig_mute_recur_binary_list = [1]
+            #     trig_mute_loop_count = 1
             
             trig_mute_track_active = self.app.mute_mode.tracks_active[instrument_name][
                 "trig_mute_1"
@@ -304,14 +304,14 @@ class Sequencer(object):
             )
             accent_recur_len = int(
                 self.app.trig_edit_mode.state[instrument_name]["accent_1"][7]
-            )
+            ) + 1
             accent_recur_binary_list = [int(i) for i in bin(accent_recur)[2:]]
             
-            if accent_recur_len == 0:
-            # Prevents modulo by zero later on
-                accent_recur_len = 1
-                accent_recur_binary_list = [1]
-                accent_loop_count = 1
+            # if accent_recur_len == 0:
+            # # Prevents modulo by zero later on
+            #     accent_recur_len = 1
+            #     accent_recur_binary_list = [1]
+            #     accent_loop_count = 1
 
             accent_track_active = self.app.mute_mode.tracks_active[instrument_name][
                 "accent_1"

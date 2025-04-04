@@ -506,12 +506,17 @@ class TrigEditMode(definitions.PyshaMode):
                 current_state = self.state[instrument][selected_track][8]
                 value = int(current_state) if lock == None else int(lock)
                 binary_list = [int(i) for i in bin(value)[2:]]
-
+                if len(binary_list) != 8:
+                    list = binary_list.copy()
+                    while len(list) <= 8:
+                        list.append(0)
+                binary_list = list
                 try:
                     button_idx = int(button_name[-1]) - 1
                 except:
                     return
                 # Updates the binary number
+                print(binary_list, button_idx)
                 if binary_list[button_idx] == True:
                     binary_list[button_idx] = 0
                 else:
@@ -545,7 +550,7 @@ class TrigEditMode(definitions.PyshaMode):
             current_state = self.state[instrument][selected_track][8]
             value = int(current_state) if lock == None else int(lock)
             binary_list = [int(i) for i in bin(value)[2:]]
-            recur_len = int(self.state[instrument][selected_track][7])
+            recur_len = int(self.state[instrument][selected_track][7]) + 1
 
             loop_count = int(seq.playhead / int(sel_track_len)) % recur_len
             for idx, item in enumerate(binary_list):
