@@ -516,7 +516,6 @@ class TrigEditMode(definitions.PyshaMode):
                 except:
                     return
                 # Updates the binary number
-                print(binary_list, button_idx)
                 if binary_list[button_idx] == True:
                     binary_list[button_idx] = 0
                 else:
