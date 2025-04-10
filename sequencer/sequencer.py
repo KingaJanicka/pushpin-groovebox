@@ -253,7 +253,7 @@ class Sequencer(object):
             # Mute track stuff
             trig_mute_track_len = instrument_scale_edit_controls["trig_mute_1"][0].value
             trig_mute_step = self.playhead % int(trig_mute_track_len)
-            trig_mute_trig_menu_locks = self.locks["trig_mute_1"][trig_mute_step]
+            trig_mute_trig_menu_locks = self.locks[instrument_name]["trig_edit_mode"]["trig_mute_1"][trig_mute_step]
             trig_mute_prob = (
                 True if instrument_state["trig_mute_1"][4] >= random.random() else False
             )
