@@ -51,6 +51,7 @@ class Sequencer(object):
                 self.locks[key].append(
                     [None, None, None, None, None, None, None, None, None]
                 )
+
         self.app = app
         self.show_locks = False
         self.steps_held = []

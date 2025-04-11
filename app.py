@@ -153,7 +153,9 @@ class PyshaApp(object):
             "midi_channel": 9
             }
         self.external_instruments = [ExternalInstrument(self, 'Overwitch', overwitch_def)]
-
+        
+        # Init sequencers and synths
+        self.sequencer_mode.load_state()
     def get_all_modes(self):
         return [
             getattr(self, element)

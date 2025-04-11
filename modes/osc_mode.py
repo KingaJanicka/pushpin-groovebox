@@ -42,7 +42,7 @@ class OSCMode(PyshaMode):
     instrument_page = 0
     transports = []
     cli_needs_update = False
-
+    osc_mode_filename = "osc_mode.json"
     def initialize(self, settings=None):
         device_names = [
             Path(device_file).stem
@@ -124,6 +124,45 @@ class OSCMode(PyshaMode):
                 app=self.app,
             )
 
+    def load_state(self):
+        try:
+            if os.path.exists(self.osc_mode_filename):
+                dump = json.load(open(self.osc_mode_filename))
+                self.state = dump
+        except Exception as e:
+            print("Exception in trig_edit load_state")
+            print(e)
+
+    def save_state(self):
+        try:
+            state = {}
+            for (
+            instrument_short_name
+            ) in self.get_all_distinct_instrument_short_names_helper():
+                devices = self.get_instrument_devices(instrument_short_name)
+                instrument_state = {instrument_short_name: []}
+                
+                # TODO: Error handling, spacers have no value and throw
+                # Need to handle that
+                
+                # Getting the right device for slot
+                for index, device in enumerate(devices):
+                    # Appending the control values to the state list
+                    values = []
+                    for control in device.controls:
+                        if hasattr(control, "value"):
+                            values.append(control.value)
+                        else:
+                            values.append(None)
+                    instrument_state[instrument_short_name].append(values)
+                state.update(instrument_state)
+            print(state)
+            json.dump(state, open(self.osc_mode_filename, "w"))  # Save to file
+        except Exception as e:
+            print("Exception in osc_mode save_state")
+            print(e)
+
+
 
     def close_transports(self):
         for instrument in self.instruments:
@@ -143,6 +182,27 @@ class OSCMode(PyshaMode):
     def get_current_instrument_devices(self):
         instrument_shortname = self.get_current_instrument_short_name_helper()
         instrument = self.instruments.get(instrument_shortname, None)
+
+        devices = []
+
+        for slot_idx, slot_devices in enumerate(instrument.devices):
+            for device in slot_devices:
+                if slot_idx == 2 or slot_idx == 3 or slot_idx == 4:
+                    devices.append(device)
+                elif 8 <= slot_idx <= 15:
+                    devices.append(device)
+                else:
+                    slot = instrument.slots[slot_idx]
+                    for init in device.init:
+                        if init["address"] == slot["address"] and int(
+                            init["value"]
+                        ) == float(slot["value"]):
+                            devices.append(device)
+
+        return devices
+
+    def get_instrument_devices(self, instrument_short_name):
+        instrument = self.instruments.get(instrument_short_name, None)
 
         devices = []
 
