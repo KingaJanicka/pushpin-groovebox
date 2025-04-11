@@ -128,7 +128,21 @@ class OSCMode(PyshaMode):
         try:
             if os.path.exists(self.osc_mode_filename):
                 dump = json.load(open(self.osc_mode_filename))
-                self.state = dump
+                state = dump
+                for (
+                instrument_short_name
+                ) in self.get_all_distinct_instrument_short_names_helper():
+                    devices = self.get_instrument_devices(instrument_short_name)
+                    
+                    # Getting the right device for slot
+                    for device_index, device in enumerate(devices):
+                        # Replaces the control values with state
+                        values = []
+                        for control_index, control in enumerate(device.controls):
+                            if hasattr(control, "value"):
+                                control.value = state[instrument_short_name][device_index][control_index]
+                            else:
+                                pass
         except Exception as e:
             print("Exception in trig_edit load_state")
             print(e)

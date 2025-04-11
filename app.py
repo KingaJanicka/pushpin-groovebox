@@ -154,8 +154,6 @@ class PyshaApp(object):
             }
         self.external_instruments = [ExternalInstrument(self, 'Overwitch', overwitch_def)]
         
-        # Init sequencers and synths
-        self.sequencer_mode.load_state()
     def get_all_modes(self):
         return [
             getattr(self, element)
@@ -861,8 +859,9 @@ class PyshaApp(object):
 
 
     async def run_loop(self):
+        print("Loading State ...")
+        self.sequencer_mode.load_state()
         print("Pysha is running...")
-
         while True:
             before_draw_time = time.time()
 
