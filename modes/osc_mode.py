@@ -10,7 +10,6 @@ from pathlib import Path
 from modes.osc_instrument import OSCInstrument
 from ratelimit import RateLimitException
 import traceback
-
 logger = logging.getLogger("osc_mode")
 
 
@@ -40,6 +39,7 @@ class OSCMode(PyshaMode):
     instruments = {}
     current_device_index_and_page = [0, 0]
     instrument_page = 0
+    state = {}
     transports = []
     cli_needs_update = False
     osc_mode_filename = "osc_mode.json"
@@ -126,9 +126,11 @@ class OSCMode(PyshaMode):
 
     def load_state(self):
         try:
+            print("Loading Osc_mode state")
             if os.path.exists(self.osc_mode_filename):
                 dump = json.load(open(self.osc_mode_filename))
                 state = dump
+                self.state = dump
                 for (
                 instrument_short_name
                 ) in self.get_all_distinct_instrument_short_names_helper():
@@ -139,19 +141,27 @@ class OSCMode(PyshaMode):
                         # Replaces the control values with state
                         values = []
                         for control_index, control in enumerate(device.controls):
+                            state_value = state[instrument_short_name][device_index][control_index]
                             if hasattr(control, "value"):
                                 # Update state of the devices and send OSC message
-                                state_value = state[instrument_short_name][device_index][control_index]
                                 if control.value != state_value:
-                                    control.value = state[instrument_short_name][device_index][control_index]
-                                    # IDK why this isn't sending osc
+                                    control.value = float(state[instrument_short_name][device_index][control_index])
                                     self.app.send_osc(control.address, float(control.value), instrument_short_name)
-
-                            else:
-                                pass
+                            if control.name == "Group" or control.name == "Menu":
+                                control.select()
+                            if control.name == "Switch":
+                                print(state_value)
+                                # TODO: This isn't working right 
+                                # Nested items need more care with saving their state
+                                active_group = control.get_active_group()
+                                active_group.value = state_value
+                                active_group.select()
+                                
+            else:
+                # if file does not exist, create one
+                self.save_state()
         except Exception as e:
-            print("Exception in trig_edit load_state")
-            print(e)
+            print("Exception in trig_edit load_state:", e)
 
     def save_state(self):
         try:
@@ -161,10 +171,7 @@ class OSCMode(PyshaMode):
             ) in self.get_all_distinct_instrument_short_names_helper():
                 devices = self.get_instrument_devices(instrument_short_name)
                 instrument_state = {instrument_short_name: []}
-                
-                # TODO: Error handling, spacers have no value and throw
-                # Need to handle that
-                
+                # TODO: This breaks with Switches
                 # Getting the right device for slot
                 for index, device in enumerate(devices):
                     # Appending the control values to the state list
@@ -178,6 +185,8 @@ class OSCMode(PyshaMode):
                 state.update(instrument_state)
 
             json.dump(state, open(self.osc_mode_filename, "w"))  # Save to file
+            self.state = state
+            print("saved osc_mode state")
         except Exception as e:
             print("Exception in osc_mode save_state")
             print(e)

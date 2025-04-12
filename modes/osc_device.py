@@ -247,5 +247,14 @@ class OSCDevice(PyshaMode):
                     visible_controls = self.get_visible_controls()
                     control = visible_controls[encoder_idx]
                     control.update_value(increment)
+                    
+                    # Update state with current control value
+                    instrument_shortname = self.app.osc_mode.get_current_instrument_short_name_helper()
+                    state = self.app.osc_mode.state 
+                    if len(state) == 0:
+                        self.app.osc_mode.load_state()
+                    state[instrument_shortname][self.slot][encoder_idx] = control.value
+                    
+
         except ValueError:
             pass  # Encoder not in list
