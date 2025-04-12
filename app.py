@@ -622,22 +622,26 @@ class PyshaApp(object):
         #     self.instrument_selection_mode.get_current_instrument_short_name(),
         #     "SEND OSC",
         # )
-        if instrument_short_name is not None:
-            # This is for the sequencer
-            client = self.osc_mode.instruments[instrument_short_name].osc.get(
-                "client", None
-            )
-            if client:
-                client.send_message(address, value)
-        else:
-            # This is for wiggling knobs
-            client = self.osc_mode.instruments[
-                self.instrument_selection_mode.get_current_instrument_short_name()
-            ].get("client", None)
+        # print("App.py send_osc", address, value, instrument_short_name)
+        try:
+            if instrument_short_name is not None:
+                # This is for the sequencer
+                client = self.osc_mode.instruments[instrument_short_name].osc.get(
+                    "client", None
+                )
+                if client:
+                    client.send_message(address, value)
+            else:
+                # This is for wiggling knobs
+                client = self.osc_mode.instruments[
+                    self.instrument_selection_mode.get_current_instrument_short_name()
+                ].get("client", None)
 
-            if client:
-                client.send_message(address, value)
-            # print("adress", address, value)
+                if client:
+                    client.send_message(address, value)
+                # print("adress", address, value)
+        except Exception as e:
+            print("Exception in app.py send_osc", e)
 
     def send_osc_multi(self, commands, instrument_short_name=None):
         for command in commands:

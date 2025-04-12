@@ -140,7 +140,13 @@ class OSCMode(PyshaMode):
                         values = []
                         for control_index, control in enumerate(device.controls):
                             if hasattr(control, "value"):
-                                control.value = state[instrument_short_name][device_index][control_index]
+                                # Update state of the devices and send OSC message
+                                state_value = state[instrument_short_name][device_index][control_index]
+                                if control.value != state_value:
+                                    control.value = state[instrument_short_name][device_index][control_index]
+                                    # IDK why this isn't sending osc
+                                    self.app.send_osc(control.address, float(control.value), instrument_short_name)
+
                             else:
                                 pass
         except Exception as e:
@@ -170,7 +176,7 @@ class OSCMode(PyshaMode):
                             values.append(None)
                     instrument_state[instrument_short_name].append(values)
                 state.update(instrument_state)
-            print(state)
+
             json.dump(state, open(self.osc_mode_filename, "w"))  # Save to file
         except Exception as e:
             print("Exception in osc_mode save_state")
