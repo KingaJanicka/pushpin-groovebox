@@ -641,7 +641,8 @@ class PyshaApp(object):
                     client.send_message(address, value)
                 # print("adress", address, value)
         except Exception as e:
-            print("Exception in app.py send_osc", e)
+            print("Exception in app.py send_osc")
+            traceback.print_exc()
 
     def send_osc_multi(self, commands, instrument_short_name=None):
         for command in commands:
@@ -946,7 +947,7 @@ class PyshaApp(object):
                 print(stderr)
 
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             print("Waiting 2 seconds for device to become available and trying again...")
             await asyncio.sleep(2)
             await self.get_pipewire_config()

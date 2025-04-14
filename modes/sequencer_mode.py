@@ -8,6 +8,7 @@ import os
 import sys
 import time
 import json
+import traceback
 from user_interface.display_utils import show_text
 from osc_controls import (
     OSCControl,
@@ -135,7 +136,7 @@ class SequencerMode(MelodicMode):
                         control.value = dump[instrument_short_name][track_name][idx]
         except Exception as e:
             print("Exception in trig_edit load_state")
-            print(e)
+            traceback.print_exc()
 
     def save_state(self):
         # Saves seq state
@@ -169,7 +170,7 @@ class SequencerMode(MelodicMode):
                         ] = control.value
         except Exception as e:
             print("Error in saving scale_edit state")
-            print(e)
+            traceback.print_exc()
         # Saves scale edit menu
         try:
             json.dump(
@@ -177,7 +178,7 @@ class SequencerMode(MelodicMode):
             )  # Save to file
         except Exception as e:
             print("Exception in trig_edit save_state")
-            print(e)
+            traceback.print_exc()
 
         # Saves Trig edit state
         self.app.trig_edit_mode.save_state()
@@ -501,7 +502,7 @@ class SequencerMode(MelodicMode):
                     self.update_pads()
                 self.app.trig_edit_mode.update_button_colours()
             except Exception as e:
-                print(e)
+                traceback.print_exc()
 
         except Exception as e:
-            print(e)
+            traceback.print_exc()

@@ -13,6 +13,7 @@ from osc_controls import (
 from glob import glob
 from user_interface.display_utils import show_text
 from pathlib import Path
+import traceback
 import logging
 from definitions import TRACK_NAMES
 
@@ -391,14 +392,14 @@ class TrigEditMode(definitions.PyshaMode):
                 self.state = dump
         except Exception as e:
             print("Exception in trig_edit load_state")
-            print(e)
+            traceback.print_exc()
 
     def save_state(self):
         try:
             json.dump(self.state, open(self.trig_edit_filename, "w"))  # Save to file
         except Exception as e:
             print("Exception in trig_edit save_state")
-            print(e)
+            traceback.print_exc()
 
     def send_message(self, *args):
         # self.log_out.debug(args)
@@ -483,7 +484,7 @@ class TrigEditMode(definitions.PyshaMode):
                         offset += 1
                 except Exception as e:
                     print("Exception in trig_edit_mode.update_display()")
-                    print(e)
+                    traceback.print_exc()
                     pass
 
     def on_button_pressed(self, button_name):
@@ -532,7 +533,7 @@ class TrigEditMode(definitions.PyshaMode):
                 self.update_button_colours()
             except Exception as e:
                 print("Exception in on_button_presed in trig_edit_mode")
-                print(e)
+                traceback.print_exc()
                 pass
 
     def update_button_colours(self):
@@ -608,7 +609,7 @@ class TrigEditMode(definitions.PyshaMode):
                         self.update_button_colours()
                 except Exception as e:
                     print("Error in on_encoder_rotated in TrigEditMode")
-                    print(e)
+                    traceback.print_exc()
         except ValueError:
             pass  # Encoder not in list
 

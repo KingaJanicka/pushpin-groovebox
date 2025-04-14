@@ -3,6 +3,7 @@ import isobar as iso
 import random
 import json
 import os
+import traceback
 from pythonosc.udp_client import SimpleUDPClient
 
 default_number_of_steps = 64
@@ -108,7 +109,7 @@ class Sequencer(object):
                 self.aux_4 = dump["aux_4"]
         except Exception as e:
             print("Exception in seq load_state")
-            print(e)
+            traceback.print_exc()
 
     def save_state(self):
         try:
@@ -129,7 +130,7 @@ class Sequencer(object):
             )  # Save to file
         except Exception as e:
             print("Exception in seq save_state")
-            print(e)
+            traceback.print_exc()
 
     def seq_playhead_update(self):
         self.playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01))
@@ -376,7 +377,8 @@ class Sequencer(object):
                 )
                 print("Note for track", self.name, " fired")
         except Exception as e:
-            print("Error in evaluate_and_play_notes, ", e)
+            print("Error in evaluate_and_play_notes")
+            traceback.print_exc()
 
     def update_notes(self):
         for idx, note in enumerate(self.note):

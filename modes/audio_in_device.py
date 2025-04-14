@@ -7,6 +7,7 @@ from osc_controls import (
 import push2_python
 import logging
 import asyncio
+import traceback
 from definitions import PyshaMode
 from engine import connectPipewireSourceToPipewireDest
 from engine import disconnectPipewireSourceFromPipewireDest
@@ -311,7 +312,8 @@ class AudioInDevice(PyshaMode):
                 )
                 self.controls.append(menu)
             except Exception as e:
-                print(e)
+                print("Exception in update in audio_in_device")
+                traceback.print_exc()
 
 
     async def select(self):
@@ -551,8 +553,8 @@ class AudioInDevice(PyshaMode):
                 self.app.queue.append(connectPipewireSourceToPipewireDest(duplex_out_R, dest_R))
                 print("end of try ")
             except Exception as e:
-                print("Error in connect_ports_duplex")
-                print(e)
+                print("Error in connect_ports_duplex in audio_in_device")
+                traceback.print_exc()
             # connectPipewireSourceToPipewireDest()
       
 

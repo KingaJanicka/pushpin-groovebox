@@ -161,7 +161,8 @@ class OSCMode(PyshaMode):
                 # if file does not exist, create one
                 self.save_state()
         except Exception as e:
-            print("Exception in trig_edit load_state:", e)
+            print("Exception in trig_edit load_state")
+            traceback.print_exc()
 
     def save_state(self):
         try:
@@ -179,6 +180,8 @@ class OSCMode(PyshaMode):
                     for control in device.controls:
                         if hasattr(control, "value"):
                             values.append(control.value)
+                        if hasattr(control, "name") and control.name == "Group":
+                            print("Group save")
                         else:
                             values.append(None)
                     instrument_state[instrument_short_name].append(values)
@@ -189,7 +192,7 @@ class OSCMode(PyshaMode):
             print("saved osc_mode state")
         except Exception as e:
             print("Exception in osc_mode save_state")
-            print(e)
+            traceback.print_exc()
 
 
 
@@ -528,5 +531,6 @@ class OSCMode(PyshaMode):
                 pass
                 # current_device.on_encoder_rotated(encoder_name)
         except Exception as err:
-            print(err)
+            print("Exception in on_encoder_touched in osc_mode")
+            traceback.print_exc()
             pass  # Encoder not in list
