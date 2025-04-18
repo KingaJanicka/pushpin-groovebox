@@ -10,6 +10,22 @@ from pathlib import Path
 from modes.osc_instrument import OSCInstrument
 from ratelimit import RateLimitException
 import traceback
+import numbers
+
+import sys
+import struct
+import xml.dom.minidom
+
+from osc_controls import (
+    OSCControl,
+    ControlSpacer,
+    OSCControlMacro,
+    OSCGroup,
+    OSCControlSwitch,
+    OSCControlMenu,
+    OSCMenuItem,
+)
+
 logger = logging.getLogger("osc_mode")
 
 
@@ -136,27 +152,47 @@ class OSCMode(PyshaMode):
                 ) in self.get_all_distinct_instrument_short_names_helper():
                     devices = self.get_instrument_devices(instrument_short_name)
                     
+                    # Unpacking patch
+                    path = self.app.preset_selection_mode.get_preset_path_for_instrument(instrument_short_name)
+                    patch = path + ".fxp"
+                    with open(patch, mode='rb') as patchFile:
+                        patchContent = patchFile.read()
+
+                    patchHeader = struct.unpack("<4siiiiiii", patchContent[60:92])
+                    xmlsize = patchHeader[1]
+                    # print("Patch Header Values: {0}".format(patchHeader))
+                    xmlct = patchContent[92:(92 + xmlsize)].decode('utf-8')
+
+                    dom = xml.dom.minidom.parseString(xmlct)
+                    pretty_xml_as_string = dom.toprettyxml()
+                    
+
                     # Getting the right device for slot
                     for device_index, device in enumerate(devices):
                         # Replaces the control values with state
                         values = []
                         for control_index, control in enumerate(device.controls):
                             state_value = state[instrument_short_name][device_index][control_index]
-                            if hasattr(control, "value"):
+                            
+
+                            if isinstance(control, OSCControl) or isinstance(control, OSCControlMenu):
                                 # Update state of the devices and send OSC message
-                                if control.value != state_value:
-                                    control.value = float(state[instrument_short_name][device_index][control_index])
-                                    self.app.send_osc(control.address, float(control.value), instrument_short_name)
-                            if control.name == "Group" or control.name == "Menu":
-                                control.select()
-                            if control.name == "Switch":
-                                print(state_value)
-                                # TODO: This isn't working right 
+                                if control.value != state_value and isinstance(state_value, numbers.Number):
+                                    if hasattr(control, "address") and control.address != None:
+                                        control.value = float(state[instrument_short_name][device_index][control_index])
+                                        self.app.send_osc(control.address, float(control.value), instrument_short_name)
+                            elif isinstance(control, OSCGroup):
+                                # control.select()
+                                pass
+                            elif isinstance(control, OSCControlSwitch):
                                 # Nested items need more care with saving their state
+                                control.value = state_value[0]
                                 active_group = control.get_active_group()
-                                active_group.value = state_value
+                                for idx, active_group_control in enumerate(active_group.controls):
+                                    active_group_control.value = state_value[idx + 1]
+                                    self.app.send_osc(active_group_control.address, int(state_value[idx + 1]), instrument_short_name)
                                 active_group.select()
-                                
+                                    
             else:
                 # if file does not exist, create one
                 self.save_state()
@@ -178,10 +214,17 @@ class OSCMode(PyshaMode):
                     # Appending the control values to the state list
                     values = []
                     for control in device.controls:
-                        if hasattr(control, "value"):
+                        if isinstance(control, OSCControl) or isinstance(control, OSCControlMenu):
                             values.append(control.value)
-                        if hasattr(control, "name") and control.name == "Group":
-                            print("Group save")
+                        elif isinstance(control, OSCControlSwitch):
+                            nested_values = []
+                            nested_values.append(control.value)
+                            active_group = control.get_active_group()
+                            for nested_control in active_group.controls:
+                                nested_values.append(nested_control.value)
+                            # print(control.label, nested_values)
+                            values.append(nested_values)
+                            # print("Group save")
                         else:
                             values.append(None)
                     instrument_state[instrument_short_name].append(values)

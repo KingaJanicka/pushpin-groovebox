@@ -127,6 +127,13 @@ class PresetSelectionMode(definitions.PyshaMode):
     def get_current_instrument_short_name_helper(self):
         return self.app.instrument_selection_mode.get_current_instrument_short_name()
 
+    def get_preset_path_for_instrument(self, instrument_shortname):
+        preset_tuple = self.last_pad_in_column_pressed[instrument_shortname]
+        preset_index = preset_tuple[0]
+        preset = self.presets[instrument_shortname][preset_index]
+        path = self.get_preset_path(preset)
+        return preset
+
     def remove_preset(self, preset_number, bank_number):
         instrument_short_name = (
             self.app.instrument_selection_mode.get_current_instrument_short_name()
