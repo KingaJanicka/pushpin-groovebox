@@ -17,6 +17,7 @@ from modes.instrument_selection_mode import InstrumentSelectionMode
 from modes.rhythmic_mode import RhythmicMode
 from modes.slice_notes_mode import SliceNotesMode
 from modes.sequencer_mode import SequencerMode
+from modes.metro_sequencer_mode import MetroSequencerMode
 from modes.settings_mode import SettingsMode
 from modes.main_controls_mode import MainControlsMode
 from modes.midi_cc_mode import MIDICCMode
@@ -134,6 +135,9 @@ class PyshaApp(object):
             self, settings=settings
         )  # Must be initialized after instrument selection mode so it gets info about loaded instruments
         self.sequencer_mode = SequencerMode(
+            self, settings=settings, send_osc_func=self.send_osc
+        )
+        self.metro_sequencer_mode = MetroSequencerMode(
             self, settings=settings, send_osc_func=self.send_osc
         ) # Must be initialized after instrument selection mode so it gets info about loaded instruments
         self.osc_mode = OSCMode(
@@ -340,7 +344,7 @@ class PyshaApp(object):
                     self.set_mode_for_xor_group(self.melodic_mode)
 
     def toggle_melodic_rhythmic_slice_modes(self):
-        if self.is_mode_active(self.sequencer_mode):
+        if self.is_mode_active(self.metro_sequencer_mode):
             self.set_rhythmic_mode()
         elif self.is_mode_active(self.rhythmic_mode):
             self.set_slice_notes_mode()
@@ -348,6 +352,8 @@ class PyshaApp(object):
             self.set_melodic_mode()
         elif self.is_mode_active(self.melodic_mode) or self.is_mode_active(self.mute_mode):
             self.set_sequencer_mode()
+        elif self.is_mode_active(self.sequencer_mode):
+            self.set_metro_sequencer_mode()
         else:
             # If none of melodic or rhythmic or slice modes were active, enable melodic by default
             self.set_melodic_mode()
@@ -364,6 +370,10 @@ class PyshaApp(object):
     def set_sequencer_mode(self):
         # pass
         self.set_mode_for_xor_group(self.sequencer_mode)
+
+    def set_metro_sequencer_mode(self):
+        # pass
+        self.set_mode_for_xor_group(self.metro_sequencer_mode)
 
     def set_mute_mode(self):
         self.set_mode_for_xor_group(self.mute_mode)
@@ -812,6 +822,7 @@ class PyshaApp(object):
                     mode.update_display(ctx, w, h)
             # Makes seq submenus always draw on top of other modes
             self.sequencer_mode.update_display(ctx, w, h)
+            self.metro_sequencer_mode.update_display(ctx, w, h)
 
             # Show any notifications that should be shown
             if self.notification_text is not None:
@@ -866,6 +877,7 @@ class PyshaApp(object):
     async def run_loop(self):
         print("Loading State ...")
         self.sequencer_mode.load_state()
+        self.metro_sequencer_mode.load_state()
         print("Pysha is running...")
         while True:
             before_draw_time = time.time()
