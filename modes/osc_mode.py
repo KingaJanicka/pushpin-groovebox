@@ -165,7 +165,7 @@ class OSCMode(PyshaMode):
 
                     dom = xml.dom.minidom.parseString(xmlct)
                     pretty_xml_as_string = dom.toprettyxml()
-                    
+                    # print(pretty_xml_as_string)
 
                     # Getting the right device for slot
                     for device_index, device in enumerate(devices):
