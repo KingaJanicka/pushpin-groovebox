@@ -377,10 +377,13 @@ class MetroSequencerMode(MelodicMode):
         idx_j = pad_ij[1]
         idx_n = pad_n - 36
         self.steps_held.append(idx_n)
+
         # If a pad is off, turn it on
         if seq_pad_state[idx_i][idx_j] == False:
+            # Turn off all other pads in the column
+            for x in range(7):
+                seq_pad_state[x][idx_j] = False
             seq_pad_state[idx_i][idx_j] = True
-            self.app.pads_need_update = True
 
         # If it's on, save the time and cont in on_pad_released
         elif seq_pad_state[idx_i][idx_j] == True:
