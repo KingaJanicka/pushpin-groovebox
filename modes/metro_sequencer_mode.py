@@ -74,6 +74,7 @@ class MetroSequencerMode(MelodicMode):
     scale_edit_controls = []
     metro_seq_pad_state = {}
     steps_held = []
+    rachets = {}
 
     def initialize(self, settings):
         super().initialize(settings)
@@ -88,6 +89,64 @@ class MetroSequencerMode(MelodicMode):
                 self.send_osc_func,
                 self.app,
             )
+            self.rachets[instrument_short_name] = [
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+                False,
+            ]
             self.instrument_scale_edit_controls[instrument_short_name] = {}
             self.metro_seq_pad_state[instrument_short_name] = {}
             for track_name in TRACK_NAMES:
@@ -224,14 +283,14 @@ class MetroSequencerMode(MelodicMode):
 
     def pad_ij_to_midi_note(self, pad_ij):
         return self.sequencer_pad_matrix[pad_ij[0]][pad_ij[1]]
-    
+
     def index_to_pad_ij(self, index):
         pad_j = index % 8
         pad_i = 7 - int(index / 8)
         pad_ij = [pad_i, pad_j]
         return pad_ij
 
-    def ij_to_index(self, i,j):
+    def ij_to_index(self, i, j):
         idx = self.sequencer_pad_matrix[i][j] - 36
         return idx
 
@@ -346,8 +405,15 @@ class MetroSequencerMode(MelodicMode):
 
                     # Set pad colours for on/off states of the seq
                     if seq_pad_state[i][j] is True:
-                        button_colors[idx] = TRACK_COLORS[self.selected_track]
-                                
+                        # If rachet is on display yellow steps
+                        
+                        if self.rachets[instrument_name][j] == True:
+                            button_colors[idx] = definitions.YELLOW
+
+                        # If not display standard blue gates
+                        else:
+                            button_colors[idx] = TRACK_COLORS[self.selected_track]
+
                     if seq_pad_state[i][j] == "Off":
                         button_colors[idx] = definitions.OFF_BTN_COLOR
 
@@ -358,7 +424,7 @@ class MetroSequencerMode(MelodicMode):
                         button_colors[idx] = definitions.BLACK
 
             # Draw the playhead
-            
+
             # makes the values into a multi-dimensional array
             button_colors_array = []
 
@@ -389,12 +455,11 @@ class MetroSequencerMode(MelodicMode):
         idx_i = idx_ij[0]
         idx_j = idx_ij[1]
 
-
         # Pitch track
         if self.selected_track == "gate_1":
-            
+
             # One pad
-            if len(self.steps_held) < 2 :
+            if len(self.steps_held) < 2:
                 # print("Single pad")
                 # If a pad is off, turn it on
                 if seq_pad_state[idx_i][idx_j] == False:
@@ -407,7 +472,7 @@ class MetroSequencerMode(MelodicMode):
                 elif seq_pad_state[idx_i][idx_j] == True:
                     self.pads_press_time[idx_n] = time.time()
                     # call func to show lock here
-            
+
             # Two pads
             if len(self.steps_held) > 1:
                 # print("two pads")
@@ -415,52 +480,56 @@ class MetroSequencerMode(MelodicMode):
                 step_a_ij = self.index_to_pad_ij(step_a_idx)
                 step_a_i = step_a_ij[0]
                 step_a_j = step_a_ij[1]
-                
+
                 step_b_idx = self.steps_held[-2]
                 step_b_ij = self.index_to_pad_ij(step_b_idx)
                 step_b_i = step_b_ij[0]
                 step_b_j = step_b_ij[1]
-                
-                
+
                 # check pad_i for both to see if they're adjecent
                 if abs(step_a_i - step_b_i) == 1:
-                    
+
                     # If either pad if off turn both on
-                    if seq_pad_state[step_a_i][step_a_j] == True or seq_pad_state[step_b_i][step_b_j] == True: 
-                        
+                    if (
+                        seq_pad_state[step_a_i][step_a_j] == True
+                        or seq_pad_state[step_b_i][step_b_j] == True
+                    ):
+
                         # Turn off all other pads in the column
                         for x in range(8):
                             seq_pad_state[x][idx_j] = False
-                        
+
                         # Turn on target pads
                         seq_pad_state[step_a_i][step_a_j] = True
                         seq_pad_state[step_b_i][step_b_j] = True
-                        
+
                     # if both are on save time and cont in on_pad_released
-                    elif seq_pad_state[step_a_i][step_a_j] == True and seq_pad_state[step_b_i][step_b_j] == True: 
+                    elif (
+                        seq_pad_state[step_a_i][step_a_j] == True
+                        and seq_pad_state[step_b_i][step_b_j] == True
+                    ):
                         self.pads_press_time[step_a_idx] = time.time()
                         self.pads_press_time[step_b_idx] = time.time()
-                
+
                 # if they're not adjecent turn on just the latest one
                 if abs(step_a_i - step_b_i) > 1:
-                    
+
                     if seq_pad_state[step_a_i][step_a_j] == False:
                         # Turn off all other pads in the column
                         for x in range(8):
                             seq_pad_state[x][idx_j] = False
-                        
+
                         # Turn on target pads
-                        seq_pad_state[step_a_i][step_a_j] = True    
-                    
+                        seq_pad_state[step_a_i][step_a_j] = True
+
                     # If it's on save time and cont in on_pad_released
                     elif seq_pad_state[step_a_i][step_a_j] == False:
                         self.pads_press_time[step_a_idx] = time.time()
-                self.app.pads_need_update = True           
+                self.app.pads_need_update = True
 
-        
         # Octaves track
         elif self.selected_track == "pitch_1":
-            if len(self.steps_held) < 2 :
+            if len(self.steps_held) < 2:
                 # If a pad is off, turn it on
                 if seq_pad_state[idx_i][idx_j] == False:
                     # Turn off all other pads in the column
@@ -475,15 +544,32 @@ class MetroSequencerMode(MelodicMode):
 
         # Gates track
         elif self.selected_track == "trig_mute_1":
-            if len(self.steps_held) < 2 :
+            if len(self.steps_held) < 2:
+                instrument_shortname = self.get_current_instrument_short_name_helper()
+                rachet_state = self.rachets[instrument_shortname]
+
                 # If it's on, save the time and cont in on_pad_released
-                if seq_pad_state[idx_i][idx_j] == True or seq_pad_state[idx_i][idx_j] == "Tie":
+                if (
+                    seq_pad_state[idx_i][idx_j] == True
+                    or seq_pad_state[idx_i][idx_j] == "Tie"
+                ):
                     self.pads_press_time[idx_n] = time.time()
                     return
                     # call func to show lock here
-                    
+
                 # For chaning height of the stack
-                if seq_pad_state[idx_i][idx_j] != True and self.button_1_4_pressed == True:
+                if (
+                    seq_pad_state[idx_i][idx_j] != True
+                    and self.button_1_4_pressed == True
+                ):
+
+                    # Sets rachet state for the column
+                    if self.button_1_4t_pressed == True:
+                        rachet_state[idx_j] = True
+
+                    if self.button_1_4t_pressed == False:
+                        rachet_state[idx_j] = False
+                    
                     # Turn all pads above step black, below grey
                     for x in range(8):
                         if x < idx_i:
@@ -492,10 +578,13 @@ class MetroSequencerMode(MelodicMode):
                             seq_pad_state[x][idx_j] = True
                         if x > idx_i:
                             seq_pad_state[x][idx_j] = "Off"
-                
+
                 # For normal step edit
-                if seq_pad_state[idx_i][idx_j] != True and self.button_1_4_pressed == False:
-                    
+                if (
+                    seq_pad_state[idx_i][idx_j] != True
+                    and self.button_1_4_pressed == False
+                ):
+
                     # Turn pad on
                     if seq_pad_state[idx_i][idx_j] != False:
                         # for inputing a tie (green pad)
@@ -504,10 +593,9 @@ class MetroSequencerMode(MelodicMode):
                         # Normal step
                         else:
                             seq_pad_state[idx_i][idx_j] = True
-                  
 
-        else:                
-                    # If a pad is off, turn it on
+        else:
+            # If a pad is off, turn it on
             if seq_pad_state[idx_i][idx_j] == False:
                 # Turn off all other pads in the column
                 for x in range(8):
@@ -518,7 +606,7 @@ class MetroSequencerMode(MelodicMode):
             elif seq_pad_state[idx_i][idx_j] == True:
                 self.pads_press_time[idx_n] = time.time()
                 # call func to show lock here
-        
+
         self.app.pads_need_update = True
 
     def on_pad_released(self, pad_n, pad_ij, velocity):
@@ -529,19 +617,19 @@ class MetroSequencerMode(MelodicMode):
         seq_pad_state = pad_state[self.selected_track]
         idx_i = pad_ij[0]
         idx_j = pad_ij[1]
-        idx_n = pad_n - 36 
+        idx_n = pad_n - 36
         epoch_time = time.time()
         press_time = epoch_time - self.pads_press_time[idx_n]
 
         if self.selected_track == "gate_1" or self.selected_track == "pitch_1":
             pass
-        
-        elif self.selected_track == "trig_mute_1":    
+
+        elif self.selected_track == "trig_mute_1":
             # Short Press - turn the pad off, reset the timer
             if (
                 press_time <= self.pad_quick_press_time
                 and self.pads_press_time[idx_n] != False
-                ):
+            ):
                 seq_pad_state[idx_i][idx_j] = "Off"
                 self.pads_press_time[idx_n] = False
 
@@ -580,10 +668,10 @@ class MetroSequencerMode(MelodicMode):
 
         elif button_name == push2_constants.BUTTON_1_8:
             self.button_1_8_pressed = True
-            
+
         elif button_name == push2_constants.BUTTON_1_4T:
             self.button_1_4t_pressed = True
-            
+
         elif button_name == push2_constants.BUTTON_1_4:
             self.button_1_4_pressed = True
 
@@ -615,16 +703,14 @@ class MetroSequencerMode(MelodicMode):
     def on_button_released(self, button_name):
         if button_name == push2_constants.BUTTON_1_8:
             self.button_1_8_pressed = False
-            
+
         elif button_name == push2_constants.BUTTON_1_4T:
             self.button_1_4t_pressed = False
-            
+
         elif button_name == push2_constants.BUTTON_1_4:
             self.button_1_4_pressed = False
         else:
             super().on_button_released(button_name)
-    
-    
 
     def on_encoder_rotated(self, encoder_name, increment):
         try:
