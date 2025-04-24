@@ -546,8 +546,23 @@ class MetroSequencerMode(MelodicMode):
         elif self.selected_track == "trig_mute_1":
             if len(self.steps_held) < 2:
                 instrument_shortname = self.get_current_instrument_short_name_helper()
+                
+                # TODO: bug with rachet state logic, needs an empty pad to engage
                 rachet_state = self.rachets[instrument_shortname]
 
+                # Make sure pads and right buttons are held,
+                # Set rachets on or off
+                if len(self.steps_held) != 0: 
+                    
+                    # Sets rachet state for the column
+                    if self.button_1_4t_pressed == True and self.button_1_4_pressed == True:
+                        rachet_state[idx_j] = True
+
+                    elif self.button_1_4t_pressed == False and self.button_1_4_pressed == True:
+                        rachet_state[idx_j] = False
+                        
+                self.app.pads_need_update = True
+                
                 # If it's on, save the time and cont in on_pad_released
                 if (
                     seq_pad_state[idx_i][idx_j] == True
@@ -563,13 +578,6 @@ class MetroSequencerMode(MelodicMode):
                     and self.button_1_4_pressed == True
                 ):
 
-                    # Sets rachet state for the column
-                    if self.button_1_4t_pressed == True:
-                        rachet_state[idx_j] = True
-
-                    if self.button_1_4t_pressed == False:
-                        rachet_state[idx_j] = False
-                    
                     # Turn all pads above step black, below grey
                     for x in range(8):
                         if x < idx_i:
@@ -577,7 +585,12 @@ class MetroSequencerMode(MelodicMode):
                         if x == idx_i:
                             seq_pad_state[x][idx_j] = True
                         if x > idx_i:
-                            seq_pad_state[x][idx_j] = "Off"
+                            # Makes sure we always have pads in off state
+                            # While not overriding current state
+                            if seq_pad_state[x][idx_j] == False:
+                                seq_pad_state[x][idx_j] = "Off"
+                            else:
+                                pass
 
                 # For normal step edit
                 if (
