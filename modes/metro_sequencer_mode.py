@@ -461,15 +461,14 @@ class MetroSequencerMode(MelodicMode):
             # One pad
             if len(self.steps_held) < 2:
                 # print("Single pad")
+                # Turn off all other pads in the column
+                for x in range(8):
+                    seq_pad_state[x][idx_j] = False
                 # If a pad is off, turn it on
-                if seq_pad_state[idx_i][idx_j] == False:
-                    # Turn off all other pads in the column
-                    for x in range(8):
-                        seq_pad_state[x][idx_j] = False
-                    seq_pad_state[idx_i][idx_j] = True
+                seq_pad_state[idx_i][idx_j] = True
 
                 # If it's on, save the time and cont in on_pad_released
-                elif seq_pad_state[idx_i][idx_j] == True:
+                if seq_pad_state[idx_i][idx_j] == True:
                     self.pads_press_time[idx_n] = time.time()
                     # call func to show lock here
 
