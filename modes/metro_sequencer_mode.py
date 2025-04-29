@@ -1,7 +1,7 @@
 import definitions
 from controllers import push2_constants
 import push2_python
-from sequencer.sequencer import Sequencer
+from sequencer.sequencer_metro import SequencerMetro
 from modes.melodic_mode import MelodicMode
 import isobar as iso
 import os
@@ -16,19 +16,19 @@ from osc_controls import (
     OSCControlSwitch,
     OSCGroup,
 )
-from definitions import TRACK_NAMES
+from definitions import TRACK_NAMES_METRO
 
 EMPTY_PATTERN = []
 
 TRACK_COLORS = {
-    "gate_1": definitions.GREEN,
-    "pitch_1": definitions.ORANGE,
-    "trig_mute_1": definitions.TURQUOISE,
-    "accent_1": definitions.RED,
-    "aux_1": definitions.YELLOW,
-    "aux_2": definitions.CYAN,
-    "aux_3": definitions.CYAN,
-    "aux_4": definitions.CYAN,
+    TRACK_NAMES_METRO[0]: definitions.GREEN,
+    TRACK_NAMES_METRO[1]: definitions.ORANGE,
+    TRACK_NAMES_METRO[2]: definitions.TURQUOISE,
+    TRACK_NAMES_METRO[3]: definitions.RED,
+    TRACK_NAMES_METRO[4]: definitions.YELLOW,
+    TRACK_NAMES_METRO[5]: definitions.CYAN,
+    TRACK_NAMES_METRO[6]: definitions.CYAN,
+    TRACK_NAMES_METRO[7]: definitions.CYAN,
 }
 
 track_button_names = [
@@ -65,7 +65,7 @@ class MetroSequencerMode(MelodicMode):
     tempo = 120
     show_scale_menu = False
     timeline = iso.Timeline(tempo, output_device=iso.DummyOutputDevice())
-    selected_track = "gate_1"
+    selected_track = TRACK_NAMES_METRO[0]
     scale_menu_filename = "scale_menu.json"
     pads_press_time = [False] * 64
     pad_quick_press_time = 0.400
@@ -81,7 +81,7 @@ class MetroSequencerMode(MelodicMode):
         for (
             instrument_short_name
         ) in self.get_all_distinct_instrument_short_names_helper():
-            self.instrument_sequencers[instrument_short_name] = Sequencer(
+            self.instrument_sequencers[instrument_short_name] = SequencerMetro(
                 instrument_short_name,
                 self.timeline,
                 self.sequencer_on_tick,
@@ -149,7 +149,7 @@ class MetroSequencerMode(MelodicMode):
             ]
             self.instrument_scale_edit_controls[instrument_short_name] = {}
             self.metro_seq_pad_state[instrument_short_name] = {}
-            for track_name in TRACK_NAMES:
+            for track_name in TRACK_NAMES_METRO:
                 menu = []
 
                 len = OSCControl(
@@ -176,7 +176,7 @@ class MetroSequencerMode(MelodicMode):
                     [False, False, False, False, False, False, False, False],
                     [False, False, False, False, False, False, False, False],
                     [False, False, False, False, False, False, False, False],
-                    [False, False, False, False, False, False, False, False],
+                    [True, True, True, True, True, True, True, True],
                 ]
 
     def load_state(self):
@@ -201,7 +201,7 @@ class MetroSequencerMode(MelodicMode):
             for (
                 instrument_short_name
             ) in self.get_all_distinct_instrument_short_names_helper():
-                for track_name in TRACK_NAMES:
+                for track_name in TRACK_NAMES_METRO:
                     for idx, control in enumerate(
                         self.instrument_scale_edit_controls[instrument_short_name][
                             track_name
@@ -223,7 +223,7 @@ class MetroSequencerMode(MelodicMode):
                 self.instrument_sequencers[instrument_short_name].save_state()
                 scale_edit_state[instrument_short_name] = {}
                 # Populates the temp scale_edit_state array with current state
-                for track_name in TRACK_NAMES:
+                for track_name in TRACK_NAMES_METRO:
                     scale_edit_state[instrument_short_name][track_name] = [
                         None,
                         None,
@@ -330,12 +330,22 @@ class MetroSequencerMode(MelodicMode):
             / 8
         )
 
-        self.selected_instrument = TRACK_NAMES[0]
+        self.selected_instrument = TRACK_NAMES_METRO[0]
 
         device = self.app.osc_mode.get_current_instrument_device()
         device.disable_controls = self.disable_controls
         # print(self.selected_instrument)
         # print(self.app.osc_mode.get_current_instrument_osc_address_sections())
+
+    def set_pitch_for_column(self, i):
+        
+        # Get pitch pads value
+        # get octave
+        
+        # pitch + 12*octave
+        # set pitch in batches of eight to cover for the up to 8 tall gate stacks
+        
+        pass
 
     def update_display(self, ctx, w, h):
         if self.show_scale_menu == True:
@@ -456,7 +466,7 @@ class MetroSequencerMode(MelodicMode):
         idx_j = idx_ij[1]
 
         # Pitch track
-        if self.selected_track == "gate_1":
+        if self.selected_track == TRACK_NAMES_METRO[0]:
 
             # One pad
             if len(self.steps_held) < 2:
@@ -527,7 +537,7 @@ class MetroSequencerMode(MelodicMode):
                 self.app.pads_need_update = True
 
         # Octaves track
-        elif self.selected_track == "pitch_1":
+        elif self.selected_track == TRACK_NAMES_METRO[1]:
             if len(self.steps_held) < 2:
                 # If a pad is off, turn it on
                 if seq_pad_state[idx_i][idx_j] == False:
@@ -542,7 +552,7 @@ class MetroSequencerMode(MelodicMode):
                     # call func to show lock here
 
         # Gates track
-        elif self.selected_track == "trig_mute_1":
+        elif self.selected_track == TRACK_NAMES_METRO[2]:
             if len(self.steps_held) < 2:
                 instrument_shortname = self.get_current_instrument_short_name_helper()
                 
@@ -633,10 +643,10 @@ class MetroSequencerMode(MelodicMode):
         epoch_time = time.time()
         press_time = epoch_time - self.pads_press_time[idx_n]
 
-        if self.selected_track == "gate_1" or self.selected_track == "pitch_1":
+        if self.selected_track == TRACK_NAMES_METRO[0] or self.selected_track == TRACK_NAMES_METRO[1]:
             pass
 
-        elif self.selected_track == "trig_mute_1":
+        elif self.selected_track == TRACK_NAMES_METRO[2]:
             # Short Press - turn the pad off, reset the timer
             if (
                 press_time <= self.pad_quick_press_time
@@ -673,7 +683,7 @@ class MetroSequencerMode(MelodicMode):
         ]
         if button_name in track_button_names:
             idx = track_button_names.index(button_name)
-            self.selected_track = TRACK_NAMES[idx]
+            self.selected_track = TRACK_NAMES_METRO[idx]
             self.app.trig_edit_mode.update_state()
             self.app.buttons_need_update = True
             self.app.pads_need_update = True
@@ -695,7 +705,7 @@ class MetroSequencerMode(MelodicMode):
             pass
         elif button_name == push2_constants.BUTTON_DELETE:
 
-            self.selected_track = TRACK_NAMES[6]
+            self.selected_track = TRACK_NAMES_METRO[6]
         elif button_name == push2_constants.BUTTON_PLAY:
             if self.timeline_is_playing == False:
                 self.start_timeline()

@@ -129,6 +129,18 @@ TRACK_NAMES = [
     "aux_4",
 ]
 
+TRACK_NAMES_METRO = [
+    "gate_1",
+    "pitch_1",
+    "trig_mute_1",
+    "accent_1",
+    "aux_1",
+    "aux_2",
+    "aux_3",
+    "aux_4",
+]
+
+
 class PyshaMode(object):
     """ """
 

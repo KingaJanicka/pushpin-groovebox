@@ -135,15 +135,7 @@ class Sequencer(object):
     def seq_playhead_update(self):
         self.playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01))
         self.update_notes()
-        is_metro_mode_selected = self.app.is_mode_active(self.app.metro_sequencer_mode)
-        
-        if is_metro_mode_selected:
-            self.evaluate_metro_sequencer()
-        else:
-            self.evaluate_and_play_notes()
-
-    def evaluate_metro_sequencer(self):
-        pass
+        self.evaluate_and_play_notes()
 
     def evaluate_and_play_notes(self):
         try:
