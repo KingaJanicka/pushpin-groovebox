@@ -168,6 +168,7 @@ class SequencerMetro(object):
     def set_state(self, lane, index, value):
         # print(f"lane: {lane} index: {index} value: {value}")
         self.update_notes()
+        lane = lane[0]
         if lane == TRACK_NAMES_METRO[0]:
             self.pitch[index] = value
         elif lane == TRACK_NAMES_METRO[1]:

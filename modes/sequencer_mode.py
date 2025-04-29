@@ -124,18 +124,19 @@ class SequencerMode(MelodicMode):
             dump = None
             if os.path.exists(self.scale_menu_filename):
                 dump = json.load(open(self.scale_menu_filename))
-            for (
-                instrument_short_name
-            ) in self.get_all_distinct_instrument_short_names_helper():
-                for track_name in TRACK_NAMES:
-                    for idx, control in enumerate(
-                        self.instrument_scale_edit_controls[instrument_short_name][
-                            track_name
-                        ]
-                    ):
-                        control.value = dump[instrument_short_name][track_name][idx]
+                for (
+                    instrument_short_name
+                ) in self.get_all_distinct_instrument_short_names_helper():
+                    for track_name in TRACK_NAMES:
+                        for idx, control in enumerate(
+                            self.instrument_scale_edit_controls[instrument_short_name][
+                                track_name
+                            ]
+                        ):
+                            print(control, instrument_short_name, track_name)
+                            control.value = dump[instrument_short_name][track_name][idx]
         except Exception as e:
-            print("Exception in trig_edit load_state")
+            print("Exception in sequencer_mode, load_state")
             traceback.print_exc()
 
     def save_state(self):
