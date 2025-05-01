@@ -28,6 +28,7 @@ class SequencerMetro(object):
     midi_out_device = None
     midi_in_name = None
     midi_in_device = None
+    index = None
 
     def __init__(
         self, instrument_name, timeline, tick_callback, playhead, send_osc_func, app
@@ -42,6 +43,7 @@ class SequencerMetro(object):
                 )
 
         self.app = app
+        self.step_index = 0
         self.show_locks = False
         self.steps_held = []
         self.name = instrument_name
@@ -81,6 +83,24 @@ class SequencerMetro(object):
             }
         )
 
+    def get_track_by_name(self, name):
+        if name == TRACK_NAMES_METRO[0]:
+            return self.pitch
+        elif name == TRACK_NAMES_METRO[1]:
+            return self.octave
+        elif name == TRACK_NAMES_METRO[2]:
+            return self.gate
+        elif name == TRACK_NAMES_METRO[3]:
+            return self.mutes_skips
+        elif name == TRACK_NAMES_METRO[4]:
+            return self.aux_1
+        elif name == TRACK_NAMES_METRO[5]:
+            return self.aux_2
+        elif name == TRACK_NAMES_METRO[6]:
+            return self.aux_3
+        elif name == TRACK_NAMES_METRO[7]:
+            return self.aux_4
+        
     def load_state(self):
         try:
             if os.path.exists(self.seq_filename):
@@ -95,12 +115,15 @@ class SequencerMetro(object):
                 self.aux_2 = dump[TRACK_NAMES_METRO[5]]
                 self.aux_3 = dump[TRACK_NAMES_METRO[6]]
                 self.aux_4 = dump[TRACK_NAMES_METRO[7]]
+                
+                self.app.metro_sequencer_mode.update_pads_to_seq_state()
         except Exception as e:
             print("Exception in seq load_state")
             traceback.print_exc()
 
     def save_state(self):
         try:
+            # pass
             sequencer_state = {
                 "locks": self.locks,
                 "note": self.note,
@@ -122,12 +145,40 @@ class SequencerMetro(object):
 
     def seq_playhead_update(self):
         self.playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01))
-        self.update_notes()
+        # self.update_notes()
         self.evaluate_and_play_notes()
+        
+        if self.name == "Pushpin 0":
+            self.increment_index()
+
+    def increment_index(self):
+        for gate_index, step in enumerate(self.gate):
+            
+            if gate_index > self.step_index and self.gate[gate_index] != False:
+                self.step_index == gate_index % 64
+                return
+            else:
+                pass
+            
+        
+        # if self.gate[idx_incr] == True or self.gate[idx_incr] == 'Off' or self.gate[idx_incr] == 'Tie':
+            # self.index = idx_incr
+        # elif self.gate[idx_incr] == False:
+            # self.index = idx_incr
+            # self.increment_index()
+        
+
 
     def evaluate_and_play_notes(self):
         try:
-            pass
+            
+            if self.gate[self.step_index] == True:
+                gate = 1
+                note = self.note[self.step_index] + self.octave[self.step_index] * 12
+                amplitude = 127
+                self.local_timeline.schedule(
+                        {"note": note, "gate": gate, "amplitude": amplitude}, count=1
+                    )
         except Exception as e:
             print("Error in evaluate_and_play_notes")
             traceback.print_exc()

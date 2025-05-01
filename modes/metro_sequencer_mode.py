@@ -66,7 +66,7 @@ class MetroSequencerMode(MelodicMode):
     show_scale_menu = False
     timeline = iso.Timeline(tempo, output_device=iso.DummyOutputDevice())
     selected_track = TRACK_NAMES_METRO[0]
-    scale_menu_filename = "scale_menu.json"
+    scale_menu_filename = "scale_menu_metro.json"
     pads_press_time = [False] * 64
     pad_quick_press_time = 0.400
     disable_controls = False
@@ -179,88 +179,120 @@ class MetroSequencerMode(MelodicMode):
                     [True, True, True, True, True, True, True, True],
                 ]
 
+    def update_pads_to_seq_state(self):
+        # TODO: add cases for pitch and octaves
+        for (
+            instrument_short_name
+        ) in self.get_all_distinct_instrument_short_names_helper():
+            seq = self.instrument_sequencers[instrument_short_name]
+            # For gates
+            
+            # this loop updates all the gate tracks
+            gate_track_name = TRACK_NAMES_METRO[2]
+            gate_seq_track = seq.get_track_by_name(gate_track_name)
+            gate_pad_state = self.metro_seq_pad_state[instrument_short_name][gate_track_name]
+            for step_idx, step in enumerate(gate_seq_track):
+                step_x = int(step_idx / 8)
+                step_y = 7 - step_idx % 8    
+                gate_pad_state[step_y][step_x] = step
+                
+            
+            # this updates all the octave tracks
+            octave_track_name = TRACK_NAMES_METRO[1]
+            octave_seq_track = seq.get_track_by_name(octave_track_name)
+            octave_pad_state = self.metro_seq_pad_state[instrument_short_name][octave_track_name]
+            
+            for idx in range(8):
+                octave_val = octave_seq_track[idx * 8]
+                for y in range(8):
+                    if octave_val == y: 
+                        octave_pad_state[7 - y][idx] = True
+                    else:
+                        octave_pad_state[7 - y][idx] = False
+            self.update_pads()
+            self.app.pads_need_update = True
     def load_state(self):
-        pass
-        # # Loads seq state
-        # for (
-        #     instrument_short_name
-        # ) in self.get_all_distinct_instrument_short_names_helper():
-        #     self.instrument_sequencers[instrument_short_name].load_state()
+        # pass
+        # Loads seq state
+        for (
+            instrument_short_name
+        ) in self.get_all_distinct_instrument_short_names_helper():
+            self.instrument_sequencers[instrument_short_name].load_state()
 
-        # # Loads Trig edit state
-        # self.app.trig_edit_mode.load_state()
+        # Loads Trig edit state
+        self.app.trig_edit_mode.load_state()
 
-        # # Loads Osc mode state
-        # self.app.osc_mode.load_state()
+        # Loads Osc mode state
+        self.app.osc_mode.load_state()
 
-        # # Loads scale edit menu
-        # try:
-        #     # TODO: Bug here
-        #     dump = None
-        #     if os.path.exists(self.scale_menu_filename):
-        #         dump = json.load(open(self.scale_menu_filename))
-        #     for (
-        #         instrument_short_name
-        #     ) in self.get_all_distinct_instrument_short_names_helper():
-        #         for track_name in TRACK_NAMES_METRO:
-        #             for idx, control in enumerate(
-        #                 self.instrument_scale_edit_controls[instrument_short_name][
-        #                     track_name
-        #                 ]
-        #             ):
-        #                 control.value = dump[instrument_short_name][track_name][idx]
-        # except Exception as e:
-        #     print("Exception in trig_edit load_state")
-        #     traceback.print_exc()
+        # Loads scale edit menu
+        try:
+            # TODO: Bug here
+            dump = None
+            if os.path.exists(self.scale_menu_filename):
+                dump = json.load(open(self.scale_menu_filename))
+            for (
+                instrument_short_name
+            ) in self.get_all_distinct_instrument_short_names_helper():
+                for track_name in TRACK_NAMES_METRO:
+                    for idx, control in enumerate(
+                        self.instrument_scale_edit_controls[instrument_short_name][
+                            track_name
+                        ]
+                    ):
+                        control.value = dump[instrument_short_name][track_name][idx]
+        except Exception as e:
+            print("Exception in trig_edit load_state")
+            traceback.print_exc()
 
     def save_state(self):
-        pass
-        # # Saves seq state
-        # scale_edit_state = {}
-        # try:
-        #     for (
-        #         instrument_short_name
-        #     ) in self.get_all_distinct_instrument_short_names_helper():
+        # pass
+        # Saves seq state
+        scale_edit_state = {}
+        try:
+            for (
+                instrument_short_name
+            ) in self.get_all_distinct_instrument_short_names_helper():
 
-        #         self.instrument_sequencers[instrument_short_name].save_state()
-        #         scale_edit_state[instrument_short_name] = {}
-        #         # Populates the temp scale_edit_state array with current state
-        #         for track_name in TRACK_NAMES_METRO:
-        #             scale_edit_state[instrument_short_name][track_name] = [
-        #                 None,
-        #                 None,
-        #                 None,
-        #                 None,
-        #                 None,
-        #                 None,
-        #                 None,
-        #                 None,
-        #             ]
-        #             for index, control in enumerate(
-        #                 self.instrument_scale_edit_controls[instrument_short_name][
-        #                     track_name
-        #                 ]
-        #             ):
-        #                 scale_edit_state[instrument_short_name][track_name][
-        #                     index
-        #                 ] = control.value
-        # except Exception as e:
-        #     print("Error in saving scale_edit state")
-        #     traceback.print_exc()
-        # # Saves scale edit menu
-        # try:
-        #     json.dump(
-        #         scale_edit_state, open(self.scale_menu_filename, "w")
-        #     )  # Save to file
-        # except Exception as e:
-        #     print("Exception in trig_edit save_state")
-        #     traceback.print_exc()
+                self.instrument_sequencers[instrument_short_name].save_state()
+                scale_edit_state[instrument_short_name] = {}
+                # Populates the temp scale_edit_state array with current state
+                for track_name in TRACK_NAMES_METRO:
+                    scale_edit_state[instrument_short_name][track_name] = [
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                    ]
+                    for index, control in enumerate(
+                        self.instrument_scale_edit_controls[instrument_short_name][
+                            track_name
+                        ]
+                    ):
+                        scale_edit_state[instrument_short_name][track_name][
+                            index
+                        ] = control.value
+        except Exception as e:
+            print("Error in saving scale_edit state")
+            traceback.print_exc()
+        # Saves scale edit menu
+        try:
+            json.dump(
+                scale_edit_state, open(self.scale_menu_filename, "w")
+            )  # Save to file
+        except Exception as e:
+            print("Exception in trig_edit save_state")
+            traceback.print_exc()
 
-        # # Saves Trig edit state
-        # self.app.trig_edit_mode.save_state()
+        # Saves Trig edit state
+        self.app.trig_edit_mode.save_state()
 
-        # # Saves Osc mode state
-        # self.app.osc_mode.save_state()
+        # Saves Osc mode state
+        self.app.osc_mode.save_state()
 
     def start_timeline(self):
         for (
@@ -562,6 +594,9 @@ class MetroSequencerMode(MelodicMode):
                 elif seq_pad_state[idx_i][idx_j] == True:
                     self.pads_press_time[idx_n] = time.time()
                     # call func to show lock here
+                # Set the oct values
+                for x in range(8):
+                    seq.set_state([TRACK_NAMES_METRO[1]], idx_j*8 + x, 7- idx_i)
 
         # Gates track
         elif self.selected_track == TRACK_NAMES_METRO[2]:
@@ -627,7 +662,12 @@ class MetroSequencerMode(MelodicMode):
                         # Normal step
                         else:
                             seq_pad_state[idx_i][idx_j] = True
-
+                            
+                # sets pad state
+                for idx_i, i in enumerate(seq_pad_state):
+                    for idx_j, j in enumerate(i):
+                        seq.set_state([TRACK_NAMES_METRO[2]], idx_j*8 + 7 - idx_i, j)
+                        
         else:
             # If a pad is off, turn it on
             if seq_pad_state[idx_i][idx_j] == False:
@@ -654,6 +694,7 @@ class MetroSequencerMode(MelodicMode):
         idx_n = pad_n - 36
         epoch_time = time.time()
         press_time = epoch_time - self.pads_press_time[idx_n]
+        seq = self.instrument_sequencers[self.get_current_instrument_short_name_helper()]
 
         if self.selected_track == TRACK_NAMES_METRO[0] or self.selected_track == TRACK_NAMES_METRO[1]:
             pass
@@ -666,6 +707,11 @@ class MetroSequencerMode(MelodicMode):
             ):
                 seq_pad_state[idx_i][idx_j] = "Off"
                 self.pads_press_time[idx_n] = False
+                
+                # sets pad state
+                for idx_i, i in enumerate(seq_pad_state):
+                    for idx_j, j in enumerate(i):
+                        seq.set_state([TRACK_NAMES_METRO[2]], idx_j*8 + 7 - idx_i, j)
 
             # Long Press - keep the pad on, trigger a lock preview
             elif press_time > self.pad_quick_press_time:
@@ -714,6 +760,9 @@ class MetroSequencerMode(MelodicMode):
             or button_name == push2_constants.BUTTON_OCTAVE_DOWN
         ):
             # Don't react to octave up/down buttons as these are not used in rhythm mode
+            
+            seq = self.instrument_sequencers[self.get_current_instrument_short_name_helper()]
+            print(seq.gate)
             pass
         elif button_name == push2_constants.BUTTON_DELETE:
 

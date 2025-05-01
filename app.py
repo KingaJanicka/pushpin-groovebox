@@ -876,8 +876,8 @@ class PyshaApp(object):
 
     async def run_loop(self):
         print("Loading State ...")
-        self.sequencer_mode.load_state()
         self.metro_sequencer_mode.load_state()
+        self.sequencer_mode.load_state()
         print("Pysha is running...")
         while True:
             before_draw_time = time.time()

@@ -232,7 +232,7 @@ class OSCMode(PyshaMode):
 
             json.dump(state, open(self.osc_mode_filename, "w"))  # Save to file
             self.state = state
-            print("saved osc_mode state")
+            # print("saved osc_mode state")
         except Exception as e:
             print("Exception in osc_mode save_state")
             traceback.print_exc()
