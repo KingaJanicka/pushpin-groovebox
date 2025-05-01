@@ -185,17 +185,34 @@ class MetroSequencerMode(MelodicMode):
             instrument_short_name
         ) in self.get_all_distinct_instrument_short_names_helper():
             seq = self.instrument_sequencers[instrument_short_name]
-            # For gates
             
-            # this loop updates all the gate tracks
-            gate_track_name = TRACK_NAMES_METRO[2]
-            gate_seq_track = seq.get_track_by_name(gate_track_name)
-            gate_pad_state = self.metro_seq_pad_state[instrument_short_name][gate_track_name]
-            for step_idx, step in enumerate(gate_seq_track):
-                step_x = int(step_idx / 8)
-                step_y = 7 - step_idx % 8    
-                gate_pad_state[step_y][step_x] = step
+            # this updates all the pitch tracks
+            pitch_track_name = TRACK_NAMES_METRO[0]
+            pitch_seq_track = seq.get_track_by_name(pitch_track_name)
+            pitch_pad_state = self.metro_seq_pad_state[instrument_short_name][pitch_track_name]
+            
+            for idx in range(8):
+                pitch_val = pitch_seq_track[idx * 8]
                 
+                # for single pads
+                if pitch_val in self.major_scale:
+                    pitch_val_idx = self.major_scale.index(pitch_val)
+                    for y in range(8):
+                        if pitch_val_idx == y: 
+                            pitch_pad_state[7 - y][idx] = True
+                        else:
+                            pitch_pad_state[7 - y][idx] = False
+                
+                # for double pads
+                else:
+                    # Turn off all pads, turn on the two we need
+                    pitch_val_idx = self.major_scale.index(pitch_val - 1)
+                    for y in range(8):
+                        pitch_pad_state[7-y][idx] = False
+                    pitch_pad_state[7 - pitch_val_idx][idx] = True
+                    pitch_pad_state[6 - pitch_val_idx][idx] = True
+                            
+                        
             
             # this updates all the octave tracks
             octave_track_name = TRACK_NAMES_METRO[1]
@@ -209,6 +226,16 @@ class MetroSequencerMode(MelodicMode):
                         octave_pad_state[7 - y][idx] = True
                     else:
                         octave_pad_state[7 - y][idx] = False
+            
+            # this loop updates all the gate tracks
+            gate_track_name = TRACK_NAMES_METRO[2]
+            gate_seq_track = seq.get_track_by_name(gate_track_name)
+            gate_pad_state = self.metro_seq_pad_state[instrument_short_name][gate_track_name]
+            for step_idx, step in enumerate(gate_seq_track):
+                step_x = int(step_idx / 8)
+                step_y = 7 - step_idx % 8    
+                gate_pad_state[step_y][step_x] = step
+                
             self.update_pads()
             self.app.pads_need_update = True
     def load_state(self):
