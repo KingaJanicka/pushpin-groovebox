@@ -146,42 +146,46 @@ class SequencerMetro(object):
     def seq_playhead_update(self):
         self.playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01))
         # self.update_notes()
-        self.evaluate_and_play_notes()
         
         if self.name == "Pushpin 0":
+            self.evaluate_and_play_notes()
             self.increment_index()
 
-    def increment_index(self):
-        for gate_index, step in enumerate(self.gate):
-            
-            if gate_index > self.step_index and self.gate[gate_index] != False:
-                self.step_index == gate_index % 64
-                return
-            else:
-                pass
-            
+    def increment_index(self, index = None):
         
-        # if self.gate[idx_incr] == True or self.gate[idx_incr] == 'Off' or self.gate[idx_incr] == 'Tie':
-            # self.index = idx_incr
-        # elif self.gate[idx_incr] == False:
-            # self.index = idx_incr
-            # self.increment_index()
+        current_index = index if index != None else self.step_index
+        next_step_index = (current_index + 1) % 64
+        
+        if self.gate[next_step_index] != False:
+            self.step_index = next_step_index
+            self.app.metro_sequencer_mode.update_pads()
+        else:
+            self.increment_index(index=next_step_index)
+        
+
+        
         
 
 
     def evaluate_and_play_notes(self):
         try:
-            
             if self.gate[self.step_index] == True:
+                print("eval notes")    
                 gate = 1
-                note = self.note[self.step_index] + self.octave[self.step_index] * 12
+                note = self.note[self.step_index] if self.note[self.step_index] != None else 0 
+                
+                octave = self.octave[self.step_index] * 12 if self.octave[self.step_index] != None else 0 
+                note_and_octave = note + octave
                 amplitude = 127
+                
                 self.local_timeline.schedule(
-                        {"note": note, "gate": gate, "amplitude": amplitude}, count=1
+                        {"note": note_and_octave, "gate": 0.5, "amplitude": 127}, count=1
                     )
+                print("after eval")
         except Exception as e:
             print("Error in evaluate_and_play_notes")
             traceback.print_exc()
+
 
     def update_notes(self):
         for idx, note in enumerate(self.note):

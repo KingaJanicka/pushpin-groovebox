@@ -467,6 +467,16 @@ class MetroSequencerMode(MelodicMode):
                 instrument_name
             ][self.selected_track]
             track_length = selected_track_controls[0]
+            
+            seq = self.instrument_sequencers[instrument_name]
+            
+            gate_idx = seq.step_index
+            gate_idx_x = int(gate_idx / 8)
+            gate_idx_y = 7 - gate_idx % 8    
+            
+            # pitch_and_oct_idx = 
+            
+            
             for i, value in enumerate(seq_pad_state):
                 # Gets the entire row
                 for j, value in enumerate(value):
@@ -485,6 +495,9 @@ class MetroSequencerMode(MelodicMode):
                         else:
                             button_colors[idx] = TRACK_COLORS[self.selected_track]
 
+                    if self.selected_track != TRACK_NAMES_METRO[2] and (idx % 8) == gate_idx_x:
+                        button_colors[idx] = definitions.PINK
+                    
                     if seq_pad_state[i][j] == "Off":
                         button_colors[idx] = definitions.OFF_BTN_COLOR
 
@@ -493,9 +506,11 @@ class MetroSequencerMode(MelodicMode):
 
                     if seq_pad_state[i][j] is False:
                         button_colors[idx] = definitions.BLACK
+                    
 
-            # Draw the playhead
-
+            if self.selected_track == TRACK_NAMES_METRO[2]:
+                # Draw the playhead
+                button_colors[gate_idx_y * 8 + gate_idx_x] = definitions.PINK
             # makes the values into a multi-dimensional array
             button_colors_array = []
 

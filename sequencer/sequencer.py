@@ -134,8 +134,8 @@ class Sequencer(object):
 
     def seq_playhead_update(self):
         self.playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01))
-        self.update_notes()
-        self.evaluate_and_play_notes()
+        # self.update_notes()
+        # self.evaluate_and_play_notes()
 
     def evaluate_and_play_notes(self):
         try:
