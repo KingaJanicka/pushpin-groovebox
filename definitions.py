@@ -140,6 +140,8 @@ TRACK_NAMES_METRO = [
     "aux_4",
 ]
 
+DEFAULT_GLOBAL_TEMPO = 120
+
 
 class PyshaMode(object):
     """ """

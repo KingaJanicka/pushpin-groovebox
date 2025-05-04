@@ -141,7 +141,7 @@ class OSCDevice(PyshaMode):
         
 
         instrument_shortname = self.app.osc_mode.get_current_instrument_short_name_helper()
-        instrument = self.app.osc_mode.instruments[instrument_shortname]
+        instrument = self.app.instruments[instrument_shortname]
 
         await asyncio.sleep(0.1)
         for cmd in self.init:

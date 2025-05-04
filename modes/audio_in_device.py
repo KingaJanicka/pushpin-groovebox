@@ -236,7 +236,7 @@ class AudioInDevice(PyshaMode):
             }],
         }
 
-        for instrument in self.app.osc_mode.instruments.values():
+        for instrument in self.app.instruments.values():
             # print(client["info"]["props"]["object.serial"])
             # dest_instrument = self.get_instrument_for_pid(
             #     client["info"]["props"]["object.serial"]
@@ -623,7 +623,7 @@ class AudioInDevice(PyshaMode):
                 return item
 
     def get_instrument_for_pid(self, pid):
-        instruments = self.app.osc_mode.instruments
+        instruments = self.app.instruments
         external = self.app.external_instruments
         for instrument in instruments.values():
             if instrument.engine.PID == pid:

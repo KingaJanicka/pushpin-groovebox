@@ -31,10 +31,10 @@ class SequencerMetro(object):
     index = None
 
     def __init__(
-        self, instrument_name, timeline, tick_callback, playhead, send_osc_func, app
+        self, instrument, tick_callback, playhead, send_osc_func, global_timeline, app
     ):
         self.locks = {}
-        self.seq_filename = f"seq_metro_{instrument_name}.json"
+        self.seq_filename = f"seq_metro_{instrument.name}.json"
         for key in TRACK_NAMES_METRO:
             self.locks[key] = []
             for x in range(default_number_of_steps):
@@ -46,7 +46,7 @@ class SequencerMetro(object):
         self.step_index = 0
         self.show_locks = False
         self.steps_held = []
-        self.name = instrument_name
+        self.name = instrument.name
         self.note = [None] * default_number_of_steps
         self.pitch = [False] * default_number_of_steps
         self.octave = [False] * default_number_of_steps
@@ -58,22 +58,20 @@ class SequencerMetro(object):
         self.aux_4 = [False] * default_number_of_steps
         self.playhead = playhead
         self.send_osc_func = send_osc_func
-        self.timeline = timeline
+        self.timeline = global_timeline
         for item in iso.io.midi.get_midi_input_names():
             if item.startswith(self.name) == True:
                 self.midi_in_name = item
 
         self.note_pattern = iso.PSeq(self.note)
-        self.midi_in_device = iso.MidiInputDevice(device_name=self.midi_in_name)
-        self.midi_out_device = iso.MidiOutputDevice(
-            device_name=f"{self.name} metro sequencer", send_clock=True, virtual=True
-        )
-        # TODO: had to remove the input device from here for this to work
-        self.local_timeline = iso.Timeline(
-            tempo=120, output_device=self.midi_out_device
-        )
+        
+        self.local_timeline = instrument.timeline
+        self.midi_in_device = instrument.midi_in_device
+        self.midi_in_name = instrument.midi_in_name
+        self.midi_out_device = instrument.midi_out_device
+        
         # We should use track.update() to update the sequencers to match the pad state
-        self.playhead_track = timeline.schedule(
+        self.playhead_track = instrument.timeline.schedule(
             {
                 "action": lambda: (
                     tick_callback(self.name, len(self.pitch)),

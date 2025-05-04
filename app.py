@@ -29,12 +29,16 @@ from modes.menu_mode import MenuMode
 from modes.mute_mode import MuteMode
 from user_interface.display_utils import show_notification
 from modes.external_instrument import ExternalInstrument
+from definitions import DEFAULT_GLOBAL_TEMPO
+
 # logging.basicConfig(level=logging.DEBUG)
 # logging.getLogger().setLevel(level=logging.DEBUG)
 
 
 class PyshaApp(object):
-
+    # global state
+    instruments = {}
+    tempo = DEFAULT_GLOBAL_TEMPO
     # midi
     midi_out = None
     available_midi_out_device_names = []
@@ -118,7 +122,6 @@ class PyshaApp(object):
             self, settings=settings
         )
 
-
         self.main_controls_mode = MainControlsMode(self, settings=settings)
         self.active_modes.append(self.main_controls_mode)
 
@@ -131,18 +134,23 @@ class PyshaApp(object):
 
         self.preset_selection_mode = PresetSelectionMode(self, settings=settings)
         self.trig_edit_mode = TrigEditMode(self, settings=settings)
+        
+        # Must be initialized after instrument selection mode so it gets info about loaded instruments
         self.midi_cc_mode = MIDICCMode(
             self, settings=settings
-        )  # Must be initialized after instrument selection mode so it gets info about loaded instruments
+        )  
+        
+        # Must be initialized after instrument selection mode so it gets info about loaded instruments
+        self.osc_mode = OSCMode(
+            self, settings=settings
+        )
+        
         self.sequencer_mode = SequencerMode(
             self, settings=settings, send_osc_func=self.send_osc
         )
         self.metro_sequencer_mode = MetroSequencerMode(
             self, settings=settings, send_osc_func=self.send_osc
-        ) # Must be initialized after instrument selection mode so it gets info about loaded instruments
-        self.osc_mode = OSCMode(
-            self, settings=settings
-        )
+        ) 
         self.active_modes += [self.instrument_selection_mode, self.osc_mode]
         self.instrument_selection_mode.select_instrument(
             self.instrument_selection_mode.selected_instrument
@@ -636,14 +644,14 @@ class PyshaApp(object):
         try:
             if instrument_short_name is not None:
                 # This is for the sequencer
-                client = self.osc_mode.instruments[instrument_short_name].osc.get(
+                client = self.instruments[instrument_short_name].osc.get(
                     "client", None
                 )
                 if client:
                     client.send_message(address, value)
             else:
                 # This is for wiggling knobs
-                client = self.osc_mode.instruments[
+                client = self.instruments[
                     self.instrument_selection_mode.get_current_instrument_short_name()
                 ].get("client", None)
 
@@ -670,9 +678,9 @@ class PyshaApp(object):
                 None,
             )
             if instrument:
-                instance = self.osc_mode.instruments.get(instrument["instrument_short_name"], None)
-                if instance.midi_port:
-                    instance.midi_port.send(msg)
+                instance = self.instruments.get(instrument["instrument_short_name"], None)
+                if instance.midi_in_device:
+                    instance.midi_in_device.midi.send(msg)
             # This will rule out sysex and other "strange" messages that don't have channel info
             # if (
             #     self.midi_in_channel == -1 or msg.channel == self.midi_in_channel

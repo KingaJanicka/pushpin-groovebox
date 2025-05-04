@@ -64,7 +64,7 @@ class MetroSequencerMode(MelodicMode):
     instrument_sequencers = {}
     tempo = 120
     show_scale_menu = False
-    timeline = iso.Timeline(tempo, output_device=iso.DummyOutputDevice())
+    global_timeline = iso.Timeline(tempo, output_device=iso.DummyOutputDevice())
     selected_track = TRACK_NAMES_METRO[0]
     scale_menu_filename = "scale_menu_metro.json"
     pads_press_time = [False] * 64
@@ -82,11 +82,11 @@ class MetroSequencerMode(MelodicMode):
             instrument_short_name
         ) in self.get_all_distinct_instrument_short_names_helper():
             self.instrument_sequencers[instrument_short_name] = SequencerMetro(
-                instrument_short_name,
-                self.timeline,
+                self.app.instruments[instrument_short_name],
                 self.sequencer_on_tick,
                 self.playhead,
                 self.send_osc_func,
+                self.global_timeline,
                 self.app,
             )
             self.rachets[instrument_short_name] = [
@@ -329,7 +329,7 @@ class MetroSequencerMode(MelodicMode):
                 instrument_short_name
             ].local_timeline.background()
 
-        self.timeline.background()
+        self.global_timeline.background()
 
     def stop_timeline(self):
         for (
@@ -337,7 +337,7 @@ class MetroSequencerMode(MelodicMode):
         ) in self.get_all_distinct_instrument_short_names_helper():
             self.instrument_sequencers[instrument_short_name].local_timeline.stop()
 
-        self.timeline.stop()
+        self.global_timeline.stop()
 
     def get_settings_to_save(self):
         return {}

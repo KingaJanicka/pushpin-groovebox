@@ -7,7 +7,7 @@ from definitions import PyshaMode
 from user_interface.display_utils import show_text
 from glob import glob
 from pathlib import Path
-from modes.osc_instrument import OSCInstrument
+from modes.instrument import Instrument
 from ratelimit import RateLimitException
 import traceback
 import numbers
@@ -52,7 +52,6 @@ class OSCMode(PyshaMode):
         push2_python.constants.BUTTON_LOWER_ROW_8,
     ]
 
-    instruments = {}
     current_device_index_and_page = [0, 0]
     instrument_page = 0
     state = {}
@@ -132,7 +131,7 @@ class OSCMode(PyshaMode):
                 )
             )
 
-            self.instruments[instrument_short_name] = OSCInstrument(
+            self.app.instruments[instrument_short_name] = Instrument(
                 instrument_short_name,
                 instrument_definition,
                 device_definitions,
@@ -240,8 +239,8 @@ class OSCMode(PyshaMode):
 
 
     def close_transports(self):
-        for instrument in self.instruments:
-            self.instruments[instrument].close_transports()
+        for instrument in self.app.instruments:
+            self.app.instruments[instrument].close_transports()
 
     def get_all_distinct_instrument_short_names_helper(self):
         return (
@@ -256,7 +255,7 @@ class OSCMode(PyshaMode):
 
     def get_current_instrument_devices(self):
         instrument_shortname = self.get_current_instrument_short_name_helper()
-        instrument = self.instruments.get(instrument_shortname, None)
+        instrument = self.app.instruments.get(instrument_shortname, None)
 
         devices = []
 
@@ -277,7 +276,7 @@ class OSCMode(PyshaMode):
         return devices
 
     def get_instrument_devices(self, instrument_short_name):
-        instrument = self.instruments.get(instrument_short_name, None)
+        instrument = self.app.instruments.get(instrument_short_name, None)
 
         devices = []
 
@@ -299,7 +298,7 @@ class OSCMode(PyshaMode):
 
     def get_current_instrument_page_devices(self):
         instrument_shortname = self.get_current_instrument_short_name_helper()
-        instrument = self.instruments.get(instrument_shortname, None)
+        instrument = self.app.instruments.get(instrument_shortname, None)
 
         devices = []
         devices_modulation = []
@@ -324,13 +323,13 @@ class OSCMode(PyshaMode):
             return devices_modulation
 
     def query_devices(self):
-        self.instruments[self.get_current_instrument_short_name_helper()].query_slots()
+        self.app.instruments[self.get_current_instrument_short_name_helper()].query_slots()
         # devices = self.get_current_instrument_devices()
         # for device in devices:
         #     device.query()
 
     def get_current_instrument(self):
-        instrument = self.instruments[self.get_current_instrument_short_name_helper()]
+        instrument = self.app.instruments[self.get_current_instrument_short_name_helper()]
         if instrument:
             return instrument
 
@@ -348,7 +347,7 @@ class OSCMode(PyshaMode):
         instrument_shortname = (
             self.app.osc_mode.get_current_instrument_short_name_helper()
         )
-        instrument = self.app.osc_mode.instruments.get(instrument_shortname, None)
+        instrument = self.app.instruments.get(instrument_shortname, None)
         current_device = self.app.osc_mode.get_current_instrument_device()
         current_device_slot = current_device.slot
 

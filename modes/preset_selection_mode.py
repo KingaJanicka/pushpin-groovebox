@@ -513,7 +513,7 @@ class PresetSelectionMode(definitions.PyshaMode):
             pass  # Encoder not in list
 
     def send_osc(self, *args, instrument_shortname=None):
-        instrument = self.app.osc_mode.instruments.get(
+        instrument = self.app.instruments.get(
             instrument_shortname or self.app.osc_mode.get_current_instrument_short_name_helper(), None
         )
         if instrument:
