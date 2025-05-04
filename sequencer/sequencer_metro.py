@@ -66,7 +66,7 @@ class SequencerMetro(object):
         self.note_pattern = iso.PSeq(self.note)
         self.midi_in_device = iso.MidiInputDevice(device_name=self.midi_in_name)
         self.midi_out_device = iso.MidiOutputDevice(
-            device_name=f"{self.name} sequencer", send_clock=True, virtual=True
+            device_name=f"{self.name} metro sequencer", send_clock=True, virtual=True
         )
         # TODO: had to remove the input device from here for this to work
         self.local_timeline = iso.Timeline(
@@ -147,9 +147,9 @@ class SequencerMetro(object):
         self.playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01))
         # self.update_notes()
         
-        if self.name == "Pushpin 0":
-            self.evaluate_and_play_notes()
-            self.increment_index()
+        # if self.name == "Pushpin 0":
+        self.evaluate_and_play_notes()
+        self.increment_index()
 
     def increment_index(self, index = None):
         
@@ -162,26 +162,20 @@ class SequencerMetro(object):
         else:
             self.increment_index(index=next_step_index)
         
-
         
-        
-
-
     def evaluate_and_play_notes(self):
         try:
             if self.gate[self.step_index] == True:
-                print("eval notes")    
                 gate = 1
                 note = self.note[self.step_index] if self.note[self.step_index] != None else 0 
                 
                 octave = self.octave[self.step_index] * 12 if self.octave[self.step_index] != None else 0 
                 note_and_octave = note + octave
                 amplitude = 127
-                
+                # sending notes but we are not getting sound (???)
                 self.local_timeline.schedule(
                         {"note": note_and_octave, "gate": 0.5, "amplitude": 127}, count=1
                     )
-                print("after eval")
         except Exception as e:
             print("Error in evaluate_and_play_notes")
             traceback.print_exc()
