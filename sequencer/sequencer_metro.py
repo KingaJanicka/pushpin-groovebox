@@ -145,9 +145,8 @@ class SequencerMetro(object):
         self.playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01))
         # self.update_notes()
         
-        if self.name == "Pushpin 0":
-            self.evaluate_and_play_notes()
-            self.increment_index()
+        self.evaluate_and_play_notes()
+        self.increment_index()
 
     def increment_index(self, index = None):
         
@@ -163,14 +162,18 @@ class SequencerMetro(object):
         
     def evaluate_and_play_notes(self):
         try:
-            if self.gate[self.step_index] == True:
+            gate_track_active = self.app.mute_mode.tracks_active[self.name][
+                "gate_1"
+            ]
+            
+            if self.gate[self.step_index] == True and gate_track_active == True:
                 gate = 1
                 pitch = self.pitch[self.step_index] if self.pitch[self.step_index] != None else 0 
                 octave = self.octave[self.step_index] * 12 if self.octave[self.step_index] != None else 0 
             
                 pitch_and_octave = pitch + octave
                 amplitude = 127
-                # sending notes but we are not getting sound (???)
+                
                 self.local_timeline.schedule(
                         {"note": pitch_and_octave, "gate": 0.1, "amplitude": 127}, count=1
                     )
