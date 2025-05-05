@@ -461,68 +461,69 @@ class PyshaApp(object):
             print("Not receiving from any MIDI input")
 
     def init_midi_out(self, device_name=None):
-        #TODO:: Does this do anything?
-        print("Configuring MIDI out to {}...".format(device_name))
-        self.available_midi_out_device_names = [
-            name
-            for name in mido.get_output_names()
-            if "Ableton Push" not in name
-            and "RtMidi" not in name
-            and "Through" not in name
-        ]
-        self.available_midi_out_device_names += [
-            "Pushpin 0",
-            "Pushpin 1",
-            "Pushpin 2",
-            "Pushpin 3",
-            "Pushpin 4",
-            "Pushpin 5",
-            "Pushpin 6",
-            "Pushpin 7",
-        ]
-        virtual_device_names = [
-            "Pushpin 0",
-            "Pushpin 1",
-            "Pushpin 2",
-            "Pushpin 3",
-            "Pushpin 4",
-            "Pushpin 5",
-            "Pushpin 6",
-            "Pushpin 7",
-        ]
-        if device_name is not None:
-            try:
-                full_name = [
-                    name
-                    for name in self.available_midi_out_device_names
-                    if device_name in name
-                ][0]
-            except IndexError:
-                full_name = None
-            if full_name is not None:
-                try:
-                    if full_name in virtual_device_names:
-                        self.midi_out = mido.open_output(full_name, virtual=True)
-                    else:
-                        self.midi_out = mido.open_output(full_name)
-                    print('Will send MIDI to "{0}"'.format(full_name))
-                except IOError:
-                    print(
-                        'Could not connect to MIDI output port "{0}"\nAvailable device names:'.format(
-                            full_name
-                        )
-                    )
-                    for name in self.available_midi_out_device_names:
-                        print(" - {0}".format(name))
-            else:
-                print("No available device name found for {}".format(device_name))
-        else:
-            if self.midi_out is not None:
-                self.midi_out.close()
-                self.midi_out = None
+        pass
+        # #TODO:: Does this do anything?
+        # print("Configuring MIDI out to {}...".format(device_name))
+        # self.available_midi_out_device_names = [
+        #     name
+        #     for name in mido.get_output_names()
+        #     if "Ableton Push" not in name
+        #     and "RtMidi" not in name
+        #     and "Through" not in name
+        # ]
+        # self.available_midi_out_device_names += [
+        #     "Pushpin 0",
+        #     "Pushpin 1",
+        #     "Pushpin 2",
+        #     "Pushpin 3",
+        #     "Pushpin 4",
+        #     "Pushpin 5",
+        #     "Pushpin 6",
+        #     "Pushpin 7",
+        # ]
+        # virtual_device_names = [
+        #     "Pushpin 0",
+        #     "Pushpin 1",
+        #     "Pushpin 2",
+        #     "Pushpin 3",
+        #     "Pushpin 4",
+        #     "Pushpin 5",
+        #     "Pushpin 6",
+        #     "Pushpin 7",
+        # ]
+        # if device_name is not None:
+        #     try:
+        #         full_name = [
+        #             name
+        #             for name in self.available_midi_out_device_names
+        #             if device_name in name
+        #         ][0]
+        #     except IndexError:
+        #         full_name = None
+        #     if full_name is not None:
+        #         try:
+        #             if full_name in virtual_device_names:
+        #                 self.midi_out = mido.open_output(full_name, virtual=True)
+        #             else:
+        #                 self.midi_out = mido.open_output(full_name)
+        #             print('Will send MIDI to "{0}"'.format(full_name))
+        #         except IOError:
+        #             print(
+        #                 'Could not connect to MIDI output port "{0}"\nAvailable device names:'.format(
+        #                     full_name
+        #                 )
+        #             )
+        #             for name in self.available_midi_out_device_names:
+        #                 print(" - {0}".format(name))
+        #     else:
+        #         print("No available device name found for {}".format(device_name))
+        # else:
+        #     if self.midi_out is not None:
+        #         self.midi_out.close()
+        #         self.midi_out = None
 
-        if self.midi_out is None:
-            print("Won't send MIDI to any device")
+        # if self.midi_out is None:
+        #     print("Won't send MIDI to any device")
 
     def init_notes_midi_in(self, device_name=None):
         print("Configuring notes MIDI in to {}...".format(device_name))
@@ -680,7 +681,7 @@ class PyshaApp(object):
             if instrument:
                 instance = self.instruments.get(instrument["instrument_short_name"], None)
                 if instance.midi_in_device:
-                    instance.midi_in_device.midi.send(msg)
+                    instance.midi_in_device.send(msg)
             # This will rule out sysex and other "strange" messages that don't have channel info
             # if (
             #     self.midi_in_channel == -1 or msg.channel == self.midi_in_channel
@@ -1120,8 +1121,8 @@ async def main():
     # Initialise OSC sockets
     loop = asyncio.get_event_loop()
 
-    for instrument in app.osc_mode.instruments:
-        await app.osc_mode.instruments[instrument].start(loop)
+    for instrument in app.instruments:
+        await app.instruments[instrument].start(loop)
 
     for instrument in app.external_instruments:
         await instrument.start(loop)
@@ -1136,13 +1137,13 @@ async def main():
     
     #Querry controls to update initial state
 
-    for instrument in app.osc_mode.instruments:
-        await app.osc_mode.instruments[instrument].engine.configure_pipewire()
+    for instrument in app.instruments:
+        await app.instruments[instrument].engine.configure_pipewire()
         await asyncio.sleep(0.1)
-        app.osc_mode.instruments[instrument].query_all_controls()
-        app.osc_mode.instruments[instrument].query_devices()
+        app.instruments[instrument].query_all_controls()
+        app.instruments[instrument].query_devices()
         
-        app.queue.append(app.osc_mode.instruments[instrument].init_devices())
+        app.queue.append(app.instruments[instrument].init_devices())
         
 
     for instrument in app.external_instruments:

@@ -66,7 +66,7 @@ class SequencerMetro(object):
         self.note_pattern = iso.PSeq(self.note)
         
         self.local_timeline = instrument.timeline
-        self.midi_in_device = instrument.midi_in_device
+        self.midi_in_device = instrument.midi_out_device
         self.midi_in_name = instrument.midi_in_name
         self.midi_out_device = instrument.midi_out_device
         
@@ -145,9 +145,9 @@ class SequencerMetro(object):
         self.playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01))
         # self.update_notes()
         
-        # if self.name == "Pushpin 0":
-        self.evaluate_and_play_notes()
-        self.increment_index()
+        if self.name == "Pushpin 0":
+            self.evaluate_and_play_notes()
+            self.increment_index()
 
     def increment_index(self, index = None):
         
@@ -165,14 +165,14 @@ class SequencerMetro(object):
         try:
             if self.gate[self.step_index] == True:
                 gate = 1
-                note = self.note[self.step_index] if self.note[self.step_index] != None else 0 
-                
+                pitch = self.pitch[self.step_index] if self.pitch[self.step_index] != None else 0 
                 octave = self.octave[self.step_index] * 12 if self.octave[self.step_index] != None else 0 
-                note_and_octave = note + octave
+            
+                pitch_and_octave = pitch + octave
                 amplitude = 127
                 # sending notes but we are not getting sound (???)
                 self.local_timeline.schedule(
-                        {"note": note_and_octave, "gate": 0.5, "amplitude": 127}, count=1
+                        {"note": pitch_and_octave, "gate": 0.1, "amplitude": 127}, count=1
                     )
         except Exception as e:
             print("Error in evaluate_and_play_notes")
