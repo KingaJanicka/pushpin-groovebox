@@ -3,6 +3,7 @@ import isobar as iso
 import random
 import json
 import os
+import traceback
 from pythonosc.udp_client import SimpleUDPClient
 
 default_number_of_steps = 64
@@ -51,6 +52,7 @@ class Sequencer(object):
                 self.locks[key].append(
                     [None, None, None, None, None, None, None, None, None]
                 )
+
         self.app = app
         self.show_locks = False
         self.steps_held = []
@@ -107,7 +109,7 @@ class Sequencer(object):
                 self.aux_4 = dump["aux_4"]
         except Exception as e:
             print("Exception in seq load_state")
-            print(e)
+            traceback.print_exc()
 
     def save_state(self):
         try:
@@ -128,12 +130,12 @@ class Sequencer(object):
             )  # Save to file
         except Exception as e:
             print("Exception in seq save_state")
-            print(e)
+            traceback.print_exc()
 
     def seq_playhead_update(self):
         self.playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01))
-        self.update_notes()
-        self.evaluate_and_play_notes()
+        # self.update_notes()
+        # self.evaluate_and_play_notes()
 
     def evaluate_and_play_notes(self):
         try:
@@ -253,7 +255,7 @@ class Sequencer(object):
             # Mute track stuff
             trig_mute_track_len = instrument_scale_edit_controls["trig_mute_1"][0].value
             trig_mute_step = self.playhead % int(trig_mute_track_len)
-            trig_mute_trig_menu_locks = self.locks["trig_mute_1"][trig_mute_step]
+            trig_mute_trig_menu_locks = self.locks[instrument_name]["trig_edit_mode"]["trig_mute_1"][trig_mute_step]
             trig_mute_prob = (
                 True if instrument_state["trig_mute_1"][4] >= random.random() else False
             )
@@ -375,7 +377,8 @@ class Sequencer(object):
                 )
                 print("Note for track", self.name, " fired")
         except Exception as e:
-            print("Error in evaluate_and_play_notes, ", e)
+            print("Error in evaluate_and_play_notes")
+            traceback.print_exc()
 
     def update_notes(self):
         for idx, note in enumerate(self.note):

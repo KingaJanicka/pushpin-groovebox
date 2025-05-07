@@ -129,6 +129,20 @@ TRACK_NAMES = [
     "aux_4",
 ]
 
+TRACK_NAMES_METRO = [
+    "pitch",
+    "octave",
+    "gate",
+    "accent_1",
+    "aux_1",
+    "aux_2",
+    "aux_3",
+    "aux_4",
+]
+
+DEFAULT_GLOBAL_TEMPO = 120
+
+
 class PyshaMode(object):
     """ """
 

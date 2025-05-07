@@ -1,6 +1,6 @@
 from abc import ABC
 import asyncio
-
+import traceback
 import sys
 import json
 from signal import SIGINT
@@ -219,7 +219,8 @@ class Engine(ABC):
                         instrument_nodes.append(node)
             return instrument_nodes
         except Exception as e:
-            print(e)
+            print("Exception in get_instrument_nodes in engine.py")
+            traceback.print_exc()
 
     async def get_instrument_duplex_node(self):
         nodes = filter(
@@ -468,7 +469,7 @@ async def connectPipewireSourceToPipewireDest(source_id, dest_id):
         )
     except Exception as e:
         print("Error in connectPipewireSourceToPipewireDest")
-        print(e)
+        traceback.print_exc()
     stdout, stderr = await proc.communicate()
 
     if stdout:
@@ -488,7 +489,7 @@ async def disconnectPipewireSourceFromPipewireDest(source_id, dest_id):
         )
     except Exception as e:
         print("Error in disconnectPipewireSourceToPipewireDest")
-        print(e)
+        traceback.print_exc()
     stdout, stderr = await proc.communicate()
 
     if stdout:
@@ -508,7 +509,7 @@ async def disconnectPipewireLink(link_id):
         )
     except Exception as e:
         print("Error in disconnectPipewireSourceToPipewireDest")
-        print(e)
+        traceback.print_exc()
     stdout, stderr = await proc.communicate()
 
     if stdout:

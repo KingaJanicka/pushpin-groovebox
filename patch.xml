@@ -1,0 +1,629 @@
+<?xml version="1.0" ?>
+<patch revision="22">
+        <meta name="Init Saw" category="Templates" comment="" author="Surge Synth Team" license="Licensed under the maximally permissive CC0 license">
+                <tags/>
+        </meta>
+        <parameters>
+                <volume_FX1 type="2" value="1.00000000000000"/>
+                <volume_FX2 type="2" value="1.00000000000000"/>
+                <volume_FX3 type="2" value="1.00000000000000"/>
+                <volume_FX4 type="2" value="1.00000000000000"/>
+                <volume type="2" value="-2.02574539184570"/>
+                <scene_active type="0" value="0"/>
+                <scenemode type="0" value="0"/>
+                <splitkey type="0" value="60"/>
+                <fx_disable type="0" value="0"/>
+                <polylimit type="0" value="16"/>
+                <fx_bypass type="0" value="0"/>
+                <a_octave type="0" value="0"/>
+                <a_pitch type="2" value="0.00000000000000" extend_range="0"/>
+                <a_portamento type="2" value="-8.00000000000000" porta_const_rate="0" porta_gliss="0" porta_retrigger="0" porta_curve="0"/>
+                <a_osc1_type type="0" value="0"/>
+                <a_osc1_octave type="0" value="0"/>
+                <a_osc1_pitch type="2" value="0.00000000000000" extend_range="0"/>
+                <a_osc1_param0 type="2" value="0.00000000000000"/>
+                <a_osc1_param1 type="2" value="0.50000000000000" extend_range="1"/>
+                <a_osc1_param2 type="2" value="0.50000000000000"/>
+                <a_osc1_param3 type="2" value="0.00000000000000"/>
+                <a_osc1_param4 type="2" value="0.00000000000000"/>
+                <a_osc1_param5 type="2" value="0.10000000149012" extend_range="0"/>
+                <a_osc1_param6 type="0" value="1"/>
+                <a_osc1_keytrack type="0" value="1"/>
+                <a_osc1_retrigger type="0" value="0"/>
+                <a_osc2_type type="0" value="0"/>
+                <a_osc2_octave type="0" value="0"/>
+                <a_osc2_pitch type="2" value="0.00000000000000" extend_range="0"/>
+                <a_osc2_param0 type="2" value="0.00000000000000"/>
+                <a_osc2_param1 type="2" value="0.50000000000000"/>
+                <a_osc2_param2 type="2" value="0.50000000000000"/>
+                <a_osc2_param3 type="2" value="0.00000000000000"/>
+                <a_osc2_param4 type="2" value="0.00000000000000"/>
+                <a_osc2_param5 type="2" value="0.10000000149012" extend_range="0"/>
+                <a_osc2_param6 type="0" value="1"/>
+                <a_osc2_keytrack type="0" value="1"/>
+                <a_osc2_retrigger type="0" value="0"/>
+                <a_osc3_type type="0" value="0"/>
+                <a_osc3_octave type="0" value="0"/>
+                <a_osc3_pitch type="2" value="0.00000000000000" extend_range="0"/>
+                <a_osc3_param0 type="2" value="0.00000000000000"/>
+                <a_osc3_param1 type="2" value="0.50000000000000"/>
+                <a_osc3_param2 type="2" value="0.50000000000000"/>
+                <a_osc3_param3 type="2" value="0.00000000000000"/>
+                <a_osc3_param4 type="2" value="0.00000000000000"/>
+                <a_osc3_param5 type="2" value="0.10000000149012" extend_range="0"/>
+                <a_osc3_param6 type="0" value="1"/>
+                <a_osc3_keytrack type="0" value="1"/>
+                <a_osc3_retrigger type="0" value="0"/>
+                <a_polymode type="0" value="0"/>
+                <a_fm_switch type="0" value="0"/>
+                <a_fm_depth type="2" value="-24.00000000000000"/>
+                <a_drift type="2" value="0.00000000000000" extend_range="1"/>
+                <a_noisecol type="2" value="0.00000000000000" deform_type="0"/>
+                <a_ktrkroot type="0" value="60"/>
+                <a_volume type="2" value="0.89089900255203" deactivated="0"/>
+                <a_pan type="2" value="0.00000000000000"/>
+                <a_pan2 type="2" value="1.00000000000000"/>
+                <a_send_fx_1 type="2" value="0.00000000000000"/>
+                <a_send_fx_2 type="2" value="0.00000000000000"/>
+                <a_send_fx_3 type="2" value="0.00000000000000"/>
+                <a_send_fx_4 type="2" value="0.00000000000000"/>
+                <a_level_o1 type="2" value="1.00000000000000"/>
+                <a_mute_o1 type="0" value="0"/>
+                <a_solo_o1 type="0" value="0"/>
+                <a_route_o1 type="0" value="1"/>
+                <a_level_o2 type="2" value="1.00000000000000"/>
+                <a_mute_o2 type="0" value="1"/>
+                <a_solo_o2 type="0" value="0"/>
+                <a_route_o2 type="0" value="1"/>
+                <a_level_o3 type="2" value="1.00000000000000"/>
+                <a_mute_o3 type="0" value="1"/>
+                <a_solo_o3 type="0" value="0"/>
+                <a_route_o3 type="0" value="1"/>
+                <a_level_ring12 type="2" value="1.00000000000000" deform_type="0"/>
+                <a_mute_ring12 type="0" value="1"/>
+                <a_solo_ring12 type="0" value="0"/>
+                <a_route_ring12 type="0" value="1"/>
+                <a_level_ring23 type="2" value="1.00000000000000" deform_type="0"/>
+                <a_mute_ring23 type="0" value="1"/>
+                <a_solo_ring23 type="0" value="0"/>
+                <a_route_ring23 type="0" value="1"/>
+                <a_level_noise type="2" value="1.00000000000000"/>
+                <a_mute_noise type="0" value="1"/>
+                <a_solo_noise type="0" value="0"/>
+                <a_route_noise type="0" value="1"/>
+                <a_level_pfg type="2" value="0.00000000000000"/>
+                <a_pbrange_up type="0" value="2" extend_range="0"/>
+                <a_pbrange_dn type="0" value="2" extend_range="0"/>
+                <a_vca_level type="2" value="0.00000000000000"/>
+                <a_vca_velsense type="2" value="0.00000000000000"/>
+                <a_feedback type="2" value="0.00000000000000" extend_range="0" deform_type="0"/>
+                <a_fb_config type="0" value="7"/>
+                <a_f_balance type="2" value="0.00000000000000"/>
+                <a_lowcut type="2" value="-72.00000000000000" deactivated="0" deform_type="0"/>
+                <a_ws_type type="0" value="0" deactivated="0"/>
+                <a_ws_drive type="2" value="0.00000000000000" extend_range="0"/>
+                <a_filter1_type type="0" value="0" deactivated="0"/>
+                <a_filter1_subtype type="0" value="0"/>
+                <a_filter1_cutoff type="2" value="3.00000000000000" extend_range="0"/>
+                <a_filter1_resonance type="2" value="0.00000000000000"/>
+                <a_filter1_envmod type="2" value="0.00000000000000"/>
+                <a_filter1_keytrack type="2" value="0.00000000000000"/>
+                <a_filter2_type type="0" value="0" deactivated="0"/>
+                <a_filter2_subtype type="0" value="0"/>
+                <a_filter2_cutoff type="2" value="3.00000000000000" extend_range="0"/>
+                <a_f2_cf_is_offset type="0" value="0"/>
+                <a_filter2_resonance type="2" value="0.00000000000000"/>
+                <a_f2_link_resonance type="0" value="0"/>
+                <a_filter2_envmod type="2" value="0.00000000000000"/>
+                <a_filter2_keytrack type="2" value="0.00000000000000"/>
+                <a_env1_attack type="2" value="-8.00000000000000"/>
+                <a_env1_attack_shape type="0" value="1"/>
+                <a_env1_decay type="2" value="-2.00000000000000"/>
+                <a_env1_decay_shape type="0" value="1"/>
+                <a_env1_sustain type="2" value="1.00000000000000"/>
+                <a_env1_release type="2" value="-5.00000000000000"/>
+                <a_env1_release_shape type="0" value="2"/>
+                <a_env1_mode type="0" value="0"/>
+                <a_env2_attack type="2" value="-8.00000000000000"/>
+                <a_env2_attack_shape type="0" value="1"/>
+                <a_env2_decay type="2" value="-2.00000000000000"/>
+                <a_env2_decay_shape type="0" value="1"/>
+                <a_env2_sustain type="2" value="1.00000000000000"/>
+                <a_env2_release type="2" value="-5.00000000000000"/>
+                <a_env2_release_shape type="0" value="2"/>
+                <a_env2_mode type="0" value="0"/>
+                <a_lfo0_shape type="0" value="0"/>
+                <a_lfo0_rate type="2" value="0.00000000000000" deactivated="0"/>
+                <a_lfo0_phase type="2" value="0.00000000000000" extend_range="0"/>
+                <a_lfo0_magnitude type="2" value="1.00000000000000" extend_range="0"/>
+                <a_lfo0_deform type="2" value="0.00000000000000" deform_type="0"/>
+                <a_lfo0_trigmode type="0" value="1"/>
+                <a_lfo0_unipolar type="0" value="0"/>
+                <a_lfo0_delay type="2" value="-8.00000000000000" deactivated="0"/>
+                <a_lfo0_attack type="2" value="-8.00000000000000"/>
+                <a_lfo0_hold type="2" value="-8.00000000000000"/>
+                <a_lfo0_decay type="2" value="0.00000000000000"/>
+                <a_lfo0_sustain type="2" value="1.00000000000000"/>
+                <a_lfo0_release type="2" value="5.00000000000000"/>
+                <a_lfo1_shape type="0" value="0"/>
+                <a_lfo1_rate type="2" value="0.00000000000000" deactivated="0"/>
+                <a_lfo1_phase type="2" value="0.00000000000000" extend_range="0"/>
+                <a_lfo1_magnitude type="2" value="1.00000000000000" extend_range="0"/>
+                <a_lfo1_deform type="2" value="0.00000000000000" deform_type="0"/>
+                <a_lfo1_trigmode type="0" value="1"/>
+                <a_lfo1_unipolar type="0" value="0"/>
+                <a_lfo1_delay type="2" value="-8.00000000000000" deactivated="0"/>
+                <a_lfo1_attack type="2" value="-8.00000000000000"/>
+                <a_lfo1_hold type="2" value="-8.00000000000000"/>
+                <a_lfo1_decay type="2" value="0.00000000000000"/>
+                <a_lfo1_sustain type="2" value="1.00000000000000"/>
+                <a_lfo1_release type="2" value="5.00000000000000"/>
+                <a_lfo2_shape type="0" value="0"/>
+                <a_lfo2_rate type="2" value="0.00000000000000" deactivated="0"/>
+                <a_lfo2_phase type="2" value="0.00000000000000" extend_range="0"/>
+                <a_lfo2_magnitude type="2" value="1.00000000000000" extend_range="0"/>
+                <a_lfo2_deform type="2" value="0.00000000000000" deform_type="0"/>
+                <a_lfo2_trigmode type="0" value="1"/>
+                <a_lfo2_unipolar type="0" value="0"/>
+                <a_lfo2_delay type="2" value="-8.00000000000000" deactivated="0"/>
+                <a_lfo2_attack type="2" value="-8.00000000000000"/>
+                <a_lfo2_hold type="2" value="-8.00000000000000"/>
+                <a_lfo2_decay type="2" value="0.00000000000000"/>
+                <a_lfo2_sustain type="2" value="1.00000000000000"/>
+                <a_lfo2_release type="2" value="5.00000000000000"/>
+                <a_lfo3_shape type="0" value="0"/>
+                <a_lfo3_rate type="2" value="0.00000000000000" deactivated="0"/>
+                <a_lfo3_phase type="2" value="0.00000000000000" extend_range="0"/>
+                <a_lfo3_magnitude type="2" value="1.00000000000000" extend_range="0"/>
+                <a_lfo3_deform type="2" value="0.00000000000000" deform_type="0"/>
+                <a_lfo3_trigmode type="0" value="1"/>
+                <a_lfo3_unipolar type="0" value="0"/>
+                <a_lfo3_delay type="2" value="-8.00000000000000" deactivated="0"/>
+                <a_lfo3_attack type="2" value="-8.00000000000000"/>
+                <a_lfo3_hold type="2" value="-8.00000000000000"/>
+                <a_lfo3_decay type="2" value="0.00000000000000"/>
+                <a_lfo3_sustain type="2" value="1.00000000000000"/>
+                <a_lfo3_release type="2" value="5.00000000000000"/>
+                <a_lfo4_shape type="0" value="0"/>
+                <a_lfo4_rate type="2" value="0.00000000000000" deactivated="0"/>
+                <a_lfo4_phase type="2" value="0.00000000000000" extend_range="0"/>
+                <a_lfo4_magnitude type="2" value="1.00000000000000" extend_range="0"/>
+                <a_lfo4_deform type="2" value="0.00000000000000" deform_type="0"/>
+                <a_lfo4_trigmode type="0" value="1"/>
+                <a_lfo4_unipolar type="0" value="0"/>
+                <a_lfo4_delay type="2" value="-8.00000000000000" deactivated="0"/>
+                <a_lfo4_attack type="2" value="-8.00000000000000"/>
+                <a_lfo4_hold type="2" value="-8.00000000000000"/>
+                <a_lfo4_decay type="2" value="0.00000000000000"/>
+                <a_lfo4_sustain type="2" value="1.00000000000000"/>
+                <a_lfo4_release type="2" value="5.00000000000000"/>
+                <a_lfo5_shape type="0" value="0"/>
+                <a_lfo5_rate type="2" value="0.00000000000000" deactivated="0"/>
+                <a_lfo5_phase type="2" value="0.00000000000000" extend_range="0"/>
+                <a_lfo5_magnitude type="2" value="1.00000000000000" extend_range="0"/>
+                <a_lfo5_deform type="2" value="0.00000000000000" deform_type="0"/>
+                <a_lfo5_trigmode type="0" value="1"/>
+                <a_lfo5_unipolar type="0" value="0"/>
+                <a_lfo5_delay type="2" value="-8.00000000000000" deactivated="0"/>
+                <a_lfo5_attack type="2" value="-8.00000000000000"/>
+                <a_lfo5_hold type="2" value="-8.00000000000000"/>
+                <a_lfo5_decay type="2" value="0.00000000000000"/>
+                <a_lfo5_sustain type="2" value="1.00000000000000"/>
+                <a_lfo5_release type="2" value="5.00000000000000"/>
+                <a_lfo6_shape type="0" value="0"/>
+                <a_lfo6_rate type="2" value="0.00000000000000" deactivated="0"/>
+                <a_lfo6_phase type="2" value="0.00000000000000" extend_range="0"/>
+                <a_lfo6_magnitude type="2" value="1.00000000000000" extend_range="0"/>
+                <a_lfo6_deform type="2" value="0.00000000000000" deform_type="0"/>
+                <a_lfo6_trigmode type="0" value="1"/>
+                <a_lfo6_unipolar type="0" value="0"/>
+                <a_lfo6_delay type="2" value="-8.00000000000000" deactivated="0"/>
+                <a_lfo6_attack type="2" value="-8.00000000000000"/>
+                <a_lfo6_hold type="2" value="-8.00000000000000"/>
+                <a_lfo6_decay type="2" value="0.00000000000000"/>
+                <a_lfo6_sustain type="2" value="1.00000000000000"/>
+                <a_lfo6_release type="2" value="5.00000000000000"/>
+                <a_lfo7_shape type="0" value="0"/>
+                <a_lfo7_rate type="2" value="0.00000000000000" deactivated="0"/>
+                <a_lfo7_phase type="2" value="0.00000000000000" extend_range="0"/>
+                <a_lfo7_magnitude type="2" value="1.00000000000000" extend_range="0"/>
+                <a_lfo7_deform type="2" value="0.00000000000000" deform_type="0"/>
+                <a_lfo7_trigmode type="0" value="1"/>
+                <a_lfo7_unipolar type="0" value="0"/>
+                <a_lfo7_delay type="2" value="-8.00000000000000" deactivated="0"/>
+                <a_lfo7_attack type="2" value="-8.00000000000000"/>
+                <a_lfo7_hold type="2" value="-8.00000000000000"/>
+                <a_lfo7_decay type="2" value="0.00000000000000"/>
+                <a_lfo7_sustain type="2" value="1.00000000000000"/>
+                <a_lfo7_release type="2" value="5.00000000000000"/>
+                <a_lfo8_shape type="0" value="0"/>
+                <a_lfo8_rate type="2" value="0.00000000000000" deactivated="0"/>
+                <a_lfo8_phase type="2" value="0.00000000000000" extend_range="0"/>
+                <a_lfo8_magnitude type="2" value="1.00000000000000" extend_range="0"/>
+                <a_lfo8_deform type="2" value="0.00000000000000" deform_type="0"/>
+                <a_lfo8_trigmode type="0" value="1"/>
+                <a_lfo8_unipolar type="0" value="0"/>
+                <a_lfo8_delay type="2" value="-8.00000000000000" deactivated="0"/>
+                <a_lfo8_attack type="2" value="-8.00000000000000"/>
+                <a_lfo8_hold type="2" value="-8.00000000000000"/>
+                <a_lfo8_decay type="2" value="0.00000000000000"/>
+                <a_lfo8_sustain type="2" value="1.00000000000000"/>
+                <a_lfo8_release type="2" value="5.00000000000000"/>
+                <a_lfo9_shape type="0" value="0"/>
+                <a_lfo9_rate type="2" value="0.00000000000000" deactivated="0"/>
+                <a_lfo9_phase type="2" value="0.00000000000000" extend_range="0"/>
+                <a_lfo9_magnitude type="2" value="1.00000000000000" extend_range="0"/>
+                <a_lfo9_deform type="2" value="0.00000000000000" deform_type="0"/>
+                <a_lfo9_trigmode type="0" value="1"/>
+                <a_lfo9_unipolar type="0" value="0"/>
+                <a_lfo9_delay type="2" value="-8.00000000000000" deactivated="0"/>
+                <a_lfo9_attack type="2" value="-8.00000000000000"/>
+                <a_lfo9_hold type="2" value="-8.00000000000000"/>
+                <a_lfo9_decay type="2" value="0.00000000000000"/>
+                <a_lfo9_sustain type="2" value="1.00000000000000"/>
+                <a_lfo9_release type="2" value="5.00000000000000"/>
+                <a_lfo10_shape type="0" value="0"/>
+                <a_lfo10_rate type="2" value="0.00000000000000" deactivated="0"/>
+                <a_lfo10_phase type="2" value="0.00000000000000" extend_range="0"/>
+                <a_lfo10_magnitude type="2" value="1.00000000000000" extend_range="0"/>
+                <a_lfo10_deform type="2" value="0.00000000000000" deform_type="0"/>
+                <a_lfo10_trigmode type="0" value="1"/>
+                <a_lfo10_unipolar type="0" value="0"/>
+                <a_lfo10_delay type="2" value="-8.00000000000000" deactivated="0"/>
+                <a_lfo10_attack type="2" value="-8.00000000000000"/>
+                <a_lfo10_hold type="2" value="-8.00000000000000"/>
+                <a_lfo10_decay type="2" value="0.00000000000000"/>
+                <a_lfo10_sustain type="2" value="1.00000000000000"/>
+                <a_lfo10_release type="2" value="5.00000000000000"/>
+                <a_lfo11_shape type="0" value="0"/>
+                <a_lfo11_rate type="2" value="0.00000000000000" deactivated="0"/>
+                <a_lfo11_phase type="2" value="0.00000000000000" extend_range="0"/>
+                <a_lfo11_magnitude type="2" value="1.00000000000000" extend_range="0"/>
+                <a_lfo11_deform type="2" value="0.00000000000000" deform_type="0"/>
+                <a_lfo11_trigmode type="0" value="1"/>
+                <a_lfo11_unipolar type="0" value="0"/>
+                <a_lfo11_delay type="2" value="-8.00000000000000" deactivated="0"/>
+                <a_lfo11_attack type="2" value="-8.00000000000000"/>
+                <a_lfo11_hold type="2" value="-8.00000000000000"/>
+                <a_lfo11_decay type="2" value="0.00000000000000"/>
+                <a_lfo11_sustain type="2" value="1.00000000000000"/>
+                <a_lfo11_release type="2" value="5.00000000000000"/>
+                <b_octave type="0" value="0"/>
+                <b_pitch type="2" value="0.00000000000000" extend_range="0"/>
+                <b_portamento type="2" value="-8.00000000000000" porta_const_rate="0" porta_gliss="0" porta_retrigger="0" porta_curve="0"/>
+                <b_osc1_type type="0" value="0"/>
+                <b_osc1_octave type="0" value="0"/>
+                <b_osc1_pitch type="2" value="0.00000000000000" extend_range="0"/>
+                <b_osc1_param0 type="2" value="0.00000000000000"/>
+                <b_osc1_param1 type="2" value="0.50000000000000" extend_range="1"/>
+                <b_osc1_param2 type="2" value="0.50000000000000"/>
+                <b_osc1_param3 type="2" value="0.00000000000000"/>
+                <b_osc1_param4 type="2" value="0.00000000000000"/>
+                <b_osc1_param5 type="2" value="0.10000000149012" extend_range="0"/>
+                <b_osc1_param6 type="0" value="1"/>
+                <b_osc1_keytrack type="0" value="1"/>
+                <b_osc1_retrigger type="0" value="0"/>
+                <b_osc2_type type="0" value="0"/>
+                <b_osc2_octave type="0" value="0"/>
+                <b_osc2_pitch type="2" value="0.00000000000000" extend_range="0"/>
+                <b_osc2_param0 type="2" value="0.00000000000000"/>
+                <b_osc2_param1 type="2" value="0.50000000000000"/>
+                <b_osc2_param2 type="2" value="0.50000000000000"/>
+                <b_osc2_param3 type="2" value="0.00000000000000"/>
+                <b_osc2_param4 type="2" value="0.00000000000000"/>
+                <b_osc2_param5 type="2" value="0.10000000149012" extend_range="0"/>
+                <b_osc2_param6 type="0" value="1"/>
+                <b_osc2_keytrack type="0" value="1"/>
+                <b_osc2_retrigger type="0" value="0"/>
+                <b_osc3_type type="0" value="0"/>
+                <b_osc3_octave type="0" value="0"/>
+                <b_osc3_pitch type="2" value="0.00000000000000" extend_range="0"/>
+                <b_osc3_param0 type="2" value="0.00000000000000"/>
+                <b_osc3_param1 type="2" value="0.50000000000000"/>
+                <b_osc3_param2 type="2" value="0.50000000000000"/>
+                <b_osc3_param3 type="2" value="0.00000000000000"/>
+                <b_osc3_param4 type="2" value="0.00000000000000"/>
+                <b_osc3_param5 type="2" value="0.10000000149012" extend_range="0"/>
+                <b_osc3_param6 type="0" value="1"/>
+                <b_osc3_keytrack type="0" value="1"/>
+                <b_osc3_retrigger type="0" value="0"/>
+                <b_polymode type="0" value="0"/>
+                <b_fm_switch type="0" value="0"/>
+                <b_fm_depth type="2" value="-24.00000000000000"/>
+                <b_drift type="2" value="0.00000000000000" extend_range="1"/>
+                <b_noisecol type="2" value="0.00000000000000" deform_type="0"/>
+                <b_ktrkroot type="0" value="60"/>
+                <b_volume type="2" value="0.89089900255203" deactivated="0"/>
+                <b_pan type="2" value="0.00000000000000"/>
+                <b_pan2 type="2" value="1.00000000000000"/>
+                <b_send_fx_1 type="2" value="0.00000000000000"/>
+                <b_send_fx_2 type="2" value="0.00000000000000"/>
+                <b_send_fx_3 type="2" value="0.00000000000000"/>
+                <b_send_fx_4 type="2" value="0.00000000000000"/>
+                <b_level_o1 type="2" value="1.00000000000000"/>
+                <b_mute_o1 type="0" value="0"/>
+                <b_solo_o1 type="0" value="0"/>
+                <b_route_o1 type="0" value="1"/>
+                <b_level_o2 type="2" value="1.00000000000000"/>
+                <b_mute_o2 type="0" value="1"/>
+                <b_solo_o2 type="0" value="0"/>
+                <b_route_o2 type="0" value="1"/>
+                <b_level_o3 type="2" value="1.00000000000000"/>
+                <b_mute_o3 type="0" value="1"/>
+                <b_solo_o3 type="0" value="0"/>
+                <b_route_o3 type="0" value="1"/>
+                <b_level_ring12 type="2" value="1.00000000000000" deform_type="0"/>
+                <b_mute_ring12 type="0" value="1"/>
+                <b_solo_ring12 type="0" value="0"/>
+                <b_route_ring12 type="0" value="1"/>
+                <b_level_ring23 type="2" value="1.00000000000000" deform_type="0"/>
+                <b_mute_ring23 type="0" value="1"/>
+                <b_solo_ring23 type="0" value="0"/>
+                <b_route_ring23 type="0" value="1"/>
+                <b_level_noise type="2" value="1.00000000000000"/>
+                <b_mute_noise type="0" value="1"/>
+                <b_solo_noise type="0" value="0"/>
+                <b_route_noise type="0" value="1"/>
+                <b_level_pfg type="2" value="0.00000000000000"/>
+                <b_pbrange_up type="0" value="2" extend_range="0"/>
+                <b_pbrange_dn type="0" value="2" extend_range="0"/>
+                <b_vca_level type="2" value="0.00000000000000"/>
+                <b_vca_velsense type="2" value="0.00000000000000"/>
+                <b_feedback type="2" value="0.00000000000000" extend_range="0" deform_type="0"/>
+                <b_fb_config type="0" value="7"/>
+                <b_f_balance type="2" value="0.00000000000000"/>
+                <b_lowcut type="2" value="-72.00000000000000" deactivated="0" deform_type="0"/>
+                <b_ws_type type="0" value="0" deactivated="0"/>
+                <b_ws_drive type="2" value="0.00000000000000" extend_range="0"/>
+                <b_filter1_type type="0" value="0" deactivated="0"/>
+                <b_filter1_subtype type="0" value="0"/>
+                <b_filter1_cutoff type="2" value="3.00000000000000" extend_range="0"/>
+                <b_filter1_resonance type="2" value="0.00000000000000"/>
+                <b_filter1_envmod type="2" value="0.00000000000000"/>
+                <b_filter1_keytrack type="2" value="0.00000000000000"/>
+                <b_filter2_type type="0" value="0" deactivated="0"/>
+                <b_filter2_subtype type="0" value="0"/>
+                <b_filter2_cutoff type="2" value="3.00000000000000" extend_range="0"/>
+                <b_f2_cf_is_offset type="0" value="0"/>
+                <b_filter2_resonance type="2" value="0.00000000000000"/>
+                <b_f2_link_resonance type="0" value="0"/>
+                <b_filter2_envmod type="2" value="0.00000000000000"/>
+                <b_filter2_keytrack type="2" value="0.00000000000000"/>
+                <b_env1_attack type="2" value="-8.00000000000000"/>
+                <b_env1_attack_shape type="0" value="1"/>
+                <b_env1_decay type="2" value="-2.00000000000000"/>
+                <b_env1_decay_shape type="0" value="1"/>
+                <b_env1_sustain type="2" value="1.00000000000000"/>
+                <b_env1_release type="2" value="-5.00000000000000"/>
+                <b_env1_release_shape type="0" value="2"/>
+                <b_env1_mode type="0" value="0"/>
+                <b_env2_attack type="2" value="-8.00000000000000"/>
+                <b_env2_attack_shape type="0" value="1"/>
+                <b_env2_decay type="2" value="-2.00000000000000"/>
+                <b_env2_decay_shape type="0" value="1"/>
+                <b_env2_sustain type="2" value="1.00000000000000"/>
+                <b_env2_release type="2" value="-5.00000000000000"/>
+                <b_env2_release_shape type="0" value="2"/>
+                <b_env2_mode type="0" value="0"/>
+                <b_lfo0_shape type="0" value="0"/>
+                <b_lfo0_rate type="2" value="0.00000000000000" deactivated="0"/>
+                <b_lfo0_phase type="2" value="0.00000000000000" extend_range="0"/>
+                <b_lfo0_magnitude type="2" value="1.00000000000000" extend_range="0"/>
+                <b_lfo0_deform type="2" value="0.00000000000000" deform_type="0"/>
+                <b_lfo0_trigmode type="0" value="1"/>
+                <b_lfo0_unipolar type="0" value="0"/>
+                <b_lfo0_delay type="2" value="-8.00000000000000" deactivated="0"/>
+                <b_lfo0_attack type="2" value="-8.00000000000000"/>
+                <b_lfo0_hold type="2" value="-8.00000000000000"/>
+                <b_lfo0_decay type="2" value="0.00000000000000"/>
+                <b_lfo0_sustain type="2" value="1.00000000000000"/>
+                <b_lfo0_release type="2" value="5.00000000000000"/>
+                <b_lfo1_shape type="0" value="0"/>
+                <b_lfo1_rate type="2" value="0.00000000000000" deactivated="0"/>
+                <b_lfo1_phase type="2" value="0.00000000000000" extend_range="0"/>
+                <b_lfo1_magnitude type="2" value="1.00000000000000" extend_range="0"/>
+                <b_lfo1_deform type="2" value="0.00000000000000" deform_type="0"/>
+                <b_lfo1_trigmode type="0" value="1"/>
+                <b_lfo1_unipolar type="0" value="0"/>
+                <b_lfo1_delay type="2" value="-8.00000000000000" deactivated="0"/>
+                <b_lfo1_attack type="2" value="-8.00000000000000"/>
+                <b_lfo1_hold type="2" value="-8.00000000000000"/>
+                <b_lfo1_decay type="2" value="0.00000000000000"/>
+                <b_lfo1_sustain type="2" value="1.00000000000000"/>
+                <b_lfo1_release type="2" value="5.00000000000000"/>
+                <b_lfo2_shape type="0" value="0"/>
+                <b_lfo2_rate type="2" value="0.00000000000000" deactivated="0"/>
+                <b_lfo2_phase type="2" value="0.00000000000000" extend_range="0"/>
+                <b_lfo2_magnitude type="2" value="1.00000000000000" extend_range="0"/>
+                <b_lfo2_deform type="2" value="0.00000000000000" deform_type="0"/>
+                <b_lfo2_trigmode type="0" value="1"/>
+                <b_lfo2_unipolar type="0" value="0"/>
+                <b_lfo2_delay type="2" value="-8.00000000000000" deactivated="0"/>
+                <b_lfo2_attack type="2" value="-8.00000000000000"/>
+                <b_lfo2_hold type="2" value="-8.00000000000000"/>
+                <b_lfo2_decay type="2" value="0.00000000000000"/>
+                <b_lfo2_sustain type="2" value="1.00000000000000"/>
+                <b_lfo2_release type="2" value="5.00000000000000"/>
+                <b_lfo3_shape type="0" value="0"/>
+                <b_lfo3_rate type="2" value="0.00000000000000" deactivated="0"/>
+                <b_lfo3_phase type="2" value="0.00000000000000" extend_range="0"/>
+                <b_lfo3_magnitude type="2" value="1.00000000000000" extend_range="0"/>
+                <b_lfo3_deform type="2" value="0.00000000000000" deform_type="0"/>
+                <b_lfo3_trigmode type="0" value="1"/>
+                <b_lfo3_unipolar type="0" value="0"/>
+                <b_lfo3_delay type="2" value="-8.00000000000000" deactivated="0"/>
+                <b_lfo3_attack type="2" value="-8.00000000000000"/>
+                <b_lfo3_hold type="2" value="-8.00000000000000"/>
+                <b_lfo3_decay type="2" value="0.00000000000000"/>
+                <b_lfo3_sustain type="2" value="1.00000000000000"/>
+                <b_lfo3_release type="2" value="5.00000000000000"/>
+                <b_lfo4_shape type="0" value="0"/>
+                <b_lfo4_rate type="2" value="0.00000000000000" deactivated="0"/>
+                <b_lfo4_phase type="2" value="0.00000000000000" extend_range="0"/>
+                <b_lfo4_magnitude type="2" value="1.00000000000000" extend_range="0"/>
+                <b_lfo4_deform type="2" value="0.00000000000000" deform_type="0"/>
+                <b_lfo4_trigmode type="0" value="1"/>
+                <b_lfo4_unipolar type="0" value="0"/>
+                <b_lfo4_delay type="2" value="-8.00000000000000" deactivated="0"/>
+                <b_lfo4_attack type="2" value="-8.00000000000000"/>
+                <b_lfo4_hold type="2" value="-8.00000000000000"/>
+                <b_lfo4_decay type="2" value="0.00000000000000"/>
+                <b_lfo4_sustain type="2" value="1.00000000000000"/>
+                <b_lfo4_release type="2" value="5.00000000000000"/>
+                <b_lfo5_shape type="0" value="0"/>
+                <b_lfo5_rate type="2" value="0.00000000000000" deactivated="0"/>
+                <b_lfo5_phase type="2" value="0.00000000000000" extend_range="0"/>
+                <b_lfo5_magnitude type="2" value="1.00000000000000" extend_range="0"/>
+                <b_lfo5_deform type="2" value="0.00000000000000" deform_type="0"/>
+                <b_lfo5_trigmode type="0" value="1"/>
+                <b_lfo5_unipolar type="0" value="0"/>
+                <b_lfo5_delay type="2" value="-8.00000000000000" deactivated="0"/>
+                <b_lfo5_attack type="2" value="-8.00000000000000"/>
+                <b_lfo5_hold type="2" value="-8.00000000000000"/>
+                <b_lfo5_decay type="2" value="0.00000000000000"/>
+                <b_lfo5_sustain type="2" value="1.00000000000000"/>
+                <b_lfo5_release type="2" value="5.00000000000000"/>
+                <b_lfo6_shape type="0" value="0"/>
+                <b_lfo6_rate type="2" value="0.00000000000000" deactivated="0"/>
+                <b_lfo6_phase type="2" value="0.00000000000000" extend_range="0"/>
+                <b_lfo6_magnitude type="2" value="1.00000000000000" extend_range="0"/>
+                <b_lfo6_deform type="2" value="0.00000000000000" deform_type="0"/>
+                <b_lfo6_trigmode type="0" value="1"/>
+                <b_lfo6_unipolar type="0" value="0"/>
+                <b_lfo6_delay type="2" value="-8.00000000000000" deactivated="0"/>
+                <b_lfo6_attack type="2" value="-8.00000000000000"/>
+                <b_lfo6_hold type="2" value="-8.00000000000000"/>
+                <b_lfo6_decay type="2" value="0.00000000000000"/>
+                <b_lfo6_sustain type="2" value="1.00000000000000"/>
+                <b_lfo6_release type="2" value="5.00000000000000"/>
+                <b_lfo7_shape type="0" value="0"/>
+                <b_lfo7_rate type="2" value="0.00000000000000" deactivated="0"/>
+                <b_lfo7_phase type="2" value="0.00000000000000" extend_range="0"/>
+                <b_lfo7_magnitude type="2" value="1.00000000000000" extend_range="0"/>
+                <b_lfo7_deform type="2" value="0.00000000000000" deform_type="0"/>
+                <b_lfo7_trigmode type="0" value="1"/>
+                <b_lfo7_unipolar type="0" value="0"/>
+                <b_lfo7_delay type="2" value="-8.00000000000000" deactivated="0"/>
+                <b_lfo7_attack type="2" value="-8.00000000000000"/>
+                <b_lfo7_hold type="2" value="-8.00000000000000"/>
+                <b_lfo7_decay type="2" value="0.00000000000000"/>
+                <b_lfo7_sustain type="2" value="1.00000000000000"/>
+                <b_lfo7_release type="2" value="5.00000000000000"/>
+                <b_lfo8_shape type="0" value="0"/>
+                <b_lfo8_rate type="2" value="0.00000000000000" deactivated="0"/>
+                <b_lfo8_phase type="2" value="0.00000000000000" extend_range="0"/>
+                <b_lfo8_magnitude type="2" value="1.00000000000000" extend_range="0"/>
+                <b_lfo8_deform type="2" value="0.00000000000000" deform_type="0"/>
+                <b_lfo8_trigmode type="0" value="1"/>
+                <b_lfo8_unipolar type="0" value="0"/>
+                <b_lfo8_delay type="2" value="-8.00000000000000" deactivated="0"/>
+                <b_lfo8_attack type="2" value="-8.00000000000000"/>
+                <b_lfo8_hold type="2" value="-8.00000000000000"/>
+                <b_lfo8_decay type="2" value="0.00000000000000"/>
+                <b_lfo8_sustain type="2" value="1.00000000000000"/>
+                <b_lfo8_release type="2" value="5.00000000000000"/>
+                <b_lfo9_shape type="0" value="0"/>
+                <b_lfo9_rate type="2" value="0.00000000000000" deactivated="0"/>
+                <b_lfo9_phase type="2" value="0.00000000000000" extend_range="0"/>
+                <b_lfo9_magnitude type="2" value="1.00000000000000" extend_range="0"/>
+                <b_lfo9_deform type="2" value="0.00000000000000" deform_type="0"/>
+                <b_lfo9_trigmode type="0" value="1"/>
+                <b_lfo9_unipolar type="0" value="0"/>
+                <b_lfo9_delay type="2" value="-8.00000000000000" deactivated="0"/>
+                <b_lfo9_attack type="2" value="-8.00000000000000"/>
+                <b_lfo9_hold type="2" value="-8.00000000000000"/>
+                <b_lfo9_decay type="2" value="0.00000000000000"/>
+                <b_lfo9_sustain type="2" value="1.00000000000000"/>
+                <b_lfo9_release type="2" value="5.00000000000000"/>
+                <b_lfo10_shape type="0" value="0"/>
+                <b_lfo10_rate type="2" value="0.00000000000000" deactivated="0"/>
+                <b_lfo10_phase type="2" value="0.00000000000000" extend_range="0"/>
+                <b_lfo10_magnitude type="2" value="1.00000000000000" extend_range="0"/>
+                <b_lfo10_deform type="2" value="0.00000000000000" deform_type="0"/>
+                <b_lfo10_trigmode type="0" value="1"/>
+                <b_lfo10_unipolar type="0" value="0"/>
+                <b_lfo10_delay type="2" value="-8.00000000000000" deactivated="0"/>
+                <b_lfo10_attack type="2" value="-8.00000000000000"/>
+                <b_lfo10_hold type="2" value="-8.00000000000000"/>
+                <b_lfo10_decay type="2" value="0.00000000000000"/>
+                <b_lfo10_sustain type="2" value="1.00000000000000"/>
+                <b_lfo10_release type="2" value="5.00000000000000"/>
+                <b_lfo11_shape type="0" value="0"/>
+                <b_lfo11_rate type="2" value="0.00000000000000" deactivated="0"/>
+                <b_lfo11_phase type="2" value="0.00000000000000" extend_range="0"/>
+                <b_lfo11_magnitude type="2" value="1.00000000000000" extend_range="0"/>
+                <b_lfo11_deform type="2" value="0.00000000000000" deform_type="0"/>
+                <b_lfo11_trigmode type="0" value="1"/>
+                <b_lfo11_unipolar type="0" value="0"/>
+                <b_lfo11_delay type="2" value="-8.00000000000000" deactivated="0"/>
+                <b_lfo11_attack type="2" value="-8.00000000000000"/>
+                <b_lfo11_hold type="2" value="-8.00000000000000"/>
+                <b_lfo11_decay type="2" value="0.00000000000000"/>
+                <b_lfo11_sustain type="2" value="1.00000000000000"/>
+                <b_lfo11_release type="2" value="5.00000000000000"/>
+                <character type="0" value="1"/>
+        </parameters>
+        <nonparamconfig>
+                <monoVoicePrority_0 v="1"/>
+                <monoVoicePrority_1 v="1"/>
+                <monoVoiceEnvelope_0 v="0"/>
+                <monoVoiceEnvelope_1 v="0"/>
+                <polyVoiceRepeatedKeyMode_0 v="0"/>
+                <polyVoiceRepeatedKeyMode_1 v="0"/>
+                <hardclipmodes global="1" sc0="1" sc1="1"/>
+                <tuningApplicationMode v="1"/>
+        </nonparamconfig>
+        <extraoscdata>
+                <osc_extra_sc0_osc0 scene="0" osc="0" extra_n="0"/>
+                <osc_extra_sc0_osc1 scene="0" osc="1" extra_n="0"/>
+                <osc_extra_sc0_osc2 scene="0" osc="2" extra_n="0"/>
+                <osc_extra_sc1_osc0 scene="1" osc="0" extra_n="0"/>
+                <osc_extra_sc1_osc1 scene="1" osc="1" extra_n="0"/>
+                <osc_extra_sc1_osc2 scene="1" osc="2" extra_n="0"/>
+        </extraoscdata>
+        <stepsequences/>
+        <msegs/>
+        <formulae/>
+        <extralfo>
+                <lfo scene="0" i="0" extraAmplitude="0"/>
+                <lfo scene="0" i="1" extraAmplitude="0"/>
+                <lfo scene="0" i="2" extraAmplitude="0"/>
+                <lfo scene="0" i="3" extraAmplitude="0"/>
+                <lfo scene="0" i="4" extraAmplitude="0"/>
+                <lfo scene="0" i="5" extraAmplitude="0"/>
+                <lfo scene="0" i="6" extraAmplitude="0"/>
+                <lfo scene="0" i="7" extraAmplitude="0"/>
+                <lfo scene="0" i="8" extraAmplitude="0"/>
+                <lfo scene="0" i="9" extraAmplitude="0"/>
+                <lfo scene="0" i="10" extraAmplitude="0"/>
+                <lfo scene="0" i="11" extraAmplitude="0"/>
+                <lfo scene="1" i="0" extraAmplitude="0"/>
+                <lfo scene="1" i="1" extraAmplitude="0"/>
+                <lfo scene="1" i="2" extraAmplitude="0"/>
+                <lfo scene="1" i="3" extraAmplitude="0"/>
+                <lfo scene="1" i="4" extraAmplitude="0"/>
+                <lfo scene="1" i="5" extraAmplitude="0"/>
+                <lfo scene="1" i="6" extraAmplitude="0"/>
+                <lfo scene="1" i="7" extraAmplitude="0"/>
+                <lfo scene="1" i="8" extraAmplitude="0"/>
+                <lfo scene="1" i="9" extraAmplitude="0"/>
+                <lfo scene="1" i="10" extraAmplitude="0"/>
+                <lfo scene="1" i="11" extraAmplitude="0"/>
+        </extralfo>
+        <customcontroller>
+                <entry i="0" bipolar="0" v="0.00000000000000" label="-"/>
+                <entry i="1" bipolar="0" v="0.00000000000000" label="-"/>
+                <entry i="2" bipolar="0" v="0.00000000000000" label="-"/>
+                <entry i="3" bipolar="0" v="0.00000000000000" label="-"/>
+                <entry i="4" bipolar="0" v="0.00000000000000" label="-"/>
+                <entry i="5" bipolar="0" v="0.00000000000000" label="-"/>
+                <entry i="6" bipolar="0" v="0.00000000000000" label="-"/>
+                <entry i="7" bipolar="0" v="0.00000000000000" label="-"/>
+        </customcontroller>
+        <lfobanklabels/>
+        <modwheel s0="0" s1="0"/>
+        <compatability>
+                <correctlyTunedCombFilter v="1"/>
+        </compatability>
+        <dawExtraState populated="0"/>
+</patch>

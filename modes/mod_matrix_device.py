@@ -3,6 +3,7 @@ from user_interface.display_utils import show_text
 import push2_python
 import logging
 import definitions
+import traceback
 from ratelimit import limits
 import asyncio
 
@@ -350,21 +351,21 @@ class ModMatrixDevice(definitions.PyshaMode):
         except IndexError:
             pass
         except Exception as e:
-            print(e)
+            traceback.print_exc()
 
         try:
             next_label = list[selected_idx + 1]["label"] or EMPTY_STRING
         except IndexError:
             pass
         except Exception as e:
-            print(e)
+            traceback.print_exc()
 
         try:
             next_next_label = list[selected_idx + 2]["label"] or EMPTY_STRING
         except IndexError:
             pass
         except Exception as e:
-            print(e)
+            traceback.print_exc()
 
         # Prev Prev device
         show_text(
@@ -439,21 +440,21 @@ class ModMatrixDevice(definitions.PyshaMode):
         except IndexError:
             pass
         except Exception as e:
-            print(e)
+            traceback.print_exc()
 
         try:
             next_label = list[selected_idx + 1].label or EMPTY_STRING
         except IndexError:
             pass
         except Exception as e:
-            print(e)
+            traceback.print_exc()
 
         try:
             next_next_label = list[selected_idx + 2].label or EMPTY_STRING
         except IndexError:
             pass
         except Exception as e:
-            print(e)
+            traceback.print_exc()
 
         # Prev Prev device
         show_text(
@@ -607,7 +608,7 @@ class ModMatrixDevice(definitions.PyshaMode):
             except IndexError:
                 pass
             except Exception as e:
-                print(e)
+                traceback.print_exc()
 
         if selected_idx - 1 >= 0:
             try:
@@ -615,27 +616,27 @@ class ModMatrixDevice(definitions.PyshaMode):
             except IndexError:
                 pass
             except Exception as e:
-                print(e)
+                traceback.print_exc()
         try:
             sel_label = self.get_mod_src_label(list[selected_idx][0])
         except IndexError:
             pass
         except Exception as e:
-            print(e)
+            traceback.print_exc()
 
         try:
             next_label = self.get_mod_src_label(list[selected_idx + 1][0])
         except IndexError:
             pass
         except Exception as e:
-            print(e)
+            traceback.print_exc()
 
         try:
             next_next_label = self.get_mod_src_label(list[selected_idx + 2][0])
         except IndexError:
             pass
         except Exception as e:
-            print(e)
+            traceback.print_exc()
 
         # Prev Prev device
         show_text(
@@ -705,7 +706,7 @@ class ModMatrixDevice(definitions.PyshaMode):
             except IndexError:
                 pass
             except Exception as e:
-                print(e)
+                traceback.print_exc()
 
         if selected_idx - 1 >= 0:
             try:
@@ -713,26 +714,26 @@ class ModMatrixDevice(definitions.PyshaMode):
             except IndexError:
                 pass
             except Exception as e:
-                print(e)
+                traceback.print_exc()
 
         try:
             sel_label = self.get_mod_dest_label(list[selected_idx][1])
         except IndexError:
             pass
         except Exception as e:
-            print(e)
+            traceback.print_exc()
         try:
             next_label = self.get_mod_dest_label(list[selected_idx + 1][1])
         except IndexError:
             pass
         except Exception as e:
-            print(e)
+            traceback.print_exc()
         try:
             next_next_label = self.get_mod_dest_label(list[selected_idx + 2][1])
         except IndexError:
             pass
         except Exception as e:
-            print(e)
+            traceback.print_exc()
 
         # Prev Prev device
         show_text(
@@ -813,21 +814,21 @@ class ModMatrixDevice(definitions.PyshaMode):
         except IndexError:
             pass
         except Exception as e:
-            print(e)
+            traceback.print_exc()
 
         try:
             next_label = str(round(list[selected_idx + 1][2], 2))
         except IndexError:
             pass
         except Exception as e:
-            print(e)
+            traceback.print_exc()
 
         try:
             next_next_label = str(round(list[selected_idx + 2][2], 2))
         except IndexError:
             pass
         except Exception as e:
-            print(e)
+            traceback.print_exc()
 
         # Prev Prev device
         show_text(

@@ -1,5 +1,6 @@
 import asyncio
 import json
+import traceback
 
 async def getAllClients():
     proc = await asyncio.create_subprocess_shell(
@@ -16,7 +17,7 @@ async def getAllClients():
         try:
             data = json.loads(stdout.decode().strip())
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             print(stdout.decode().strip())
             #calling again because we got trash json
             print("recursive getAllClients")
@@ -38,7 +39,7 @@ async def getAllNodes():
         try:
             data = json.loads(stdout.decode().strip())
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             # print(stdout)
     return data
 
@@ -58,7 +59,7 @@ async def getAllPorts():
         try:
             data = json.loads(stdout.decode().strip())
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             # print(stdout)
     return data
 

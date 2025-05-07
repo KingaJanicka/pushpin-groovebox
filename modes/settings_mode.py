@@ -4,6 +4,7 @@ import time
 import os
 import sys
 import psutil
+import traceback
 
 from user_interface.display_utils import show_title, show_value, draw_text_at
 
@@ -777,7 +778,7 @@ def restart_program():
         for handler in p.get_open_files() + p.connections():
             os.close(handler.fd)
     except Exception as e:
-        print(e)
+        traceback.print_exc()
     python = sys.executable
     os.execl(python, python, *sys.argv)
 

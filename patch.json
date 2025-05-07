@@ -1,0 +1,2018 @@
+{
+	"patch": {
+		"meta": {
+			"tags": "",
+			"_name": "Init Saw",
+			"_category": "Templates",
+			"_comment": "",
+			"_author": "Surge Synth Team",
+			"_license": "Licensed under the maximally permissive CC0 license"
+		},
+		"parameters": {
+			"volume_FX1": {
+                "osc": "fx/send/1/return",
+				"_type": "2",
+				"_value": "1.00000000000000"
+			},
+			"volume_FX2": {
+                "osc": "fx/send/2/return",
+				"_type": "2",
+				"_value": "1.00000000000000"
+			},
+			"volume_FX3": {
+                "osc": "fx/send/3/return",
+				"_type": "2",
+				"_value": "1.00000000000000"
+			},
+			"volume_FX4": {
+                "osc": "fx/send/4/return",
+				"_type": "2",
+				"_value": "1.00000000000000"
+			},
+			"volume": {
+                "osc": "global/volume",
+				"_type": "2",
+				"_value": "-2.02574539184570"
+			},
+			"scene_active": {
+                "osc": "global/active_scene",
+				"_type": "0",
+				"_value": "0"
+			},
+			"scenemode": {
+                "osc": "global/scene_mode",
+				"_type": "0",
+				"_value": "0"
+			},
+			"splitkey": {
+                "osc":"global/split_point",
+				"_type": "0",
+				"_value": "60"
+			},
+			"fx_disable": {
+                "osc": "hidden/fx_disable",
+				"_type": "0",
+				"_value": "0"
+			},
+            "fx1_type":{"osc":"fx/a/1/type"},
+            "fx1_p0":{"osc":"fx/a/1/param1"},
+            "fx1_p1":{"osc":"fx/a/1/param2"},
+            "fx1_p2":{"osc":"fx/a/1/param3"},
+            "fx1_p3":{"osc":"fx/a/1/param4"},
+            "fx1_p4":{"osc":"fx/a/1/param5"},
+            "fx1_p5":{"osc":"fx/a/1/param6"},
+            "fx1_p6":{"osc":"fx/a/1/param7"},
+            "fx1_p7":{"osc":"fx/a/1/param8"},
+            "fx1_p8":{"osc":"fx/a/1/param9"},
+            "fx1_p9":{"osc":"fx/a/1/param10"},
+            "fx1_p10":{"osc":"fx/a/1/param11"},
+            "fx1_p11":{"osc":"fx/a/1/param12"},
+
+            "fx2_type":{"osc":"fx/a/2/type"},
+            "fx2_p0":{"osc":"fx/a/2/param1"},
+            "fx2_p1":{"osc":"fx/a/2/param2"},
+            "fx2_p2":{"osc":"fx/a/2/param3"},
+            "fx2_p3":{"osc":"fx/a/2/param4"},
+            "fx2_p4":{"osc":"fx/a/2/param5"},
+            "fx2_p5":{"osc":"fx/a/2/param6"},
+            "fx2_p6":{"osc":"fx/a/2/param7"},
+            "fx2_p7":{"osc":"fx/a/2/param8"},
+            "fx2_p8":{"osc":"fx/a/2/param9"},
+            "fx2_p9":{"osc":"fx/a/2/param10"},
+            "fx2_p10":{"osc":"fx/a/2/param11"},
+            "fx2_p11":{"osc":"fx/a/2/param12"},
+
+            "fx3_type":{"osc":"fx/b/1/type"},
+            "fx3_p0":{"osc":"fx/b/1/param1"},
+            "fx3_p1":{"osc":"fx/b/1/param2"},
+            "fx3_p2":{"osc":"fx/b/1/param3"},
+            "fx3_p3":{"osc":"fx/b/1/param4"},
+            "fx3_p4":{"osc":"fx/b/1/param5"},
+            "fx3_p5":{"osc":"fx/b/1/param6"},
+            "fx3_p6":{"osc":"fx/b/1/param7"},
+            "fx3_p7":{"osc":"fx/b/1/param8"},
+            "fx3_p8":{"osc":"fx/b/1/param9"},
+            "fx3_p9":{"osc":"fx/b/1/param10"},
+            "fx3_p10":{"osc":"fx/b/1/param11"},
+            "fx3_p11":{"osc":"fx/b/1/param12"},
+
+            "fx4_type":{"osc":"fx/b/2/type"},
+            "fx4_p0":{"osc":"fx/b/2/param1"},
+            "fx4_p1":{"osc":"fx/b/2/param2"},
+            "fx4_p2":{"osc":"fx/b/2/param3"},
+            "fx4_p3":{"osc":"fx/b/2/param4"},
+            "fx4_p4":{"osc":"fx/b/2/param5"},
+            "fx4_p5":{"osc":"fx/b/2/param6"},
+            "fx4_p6":{"osc":"fx/b/2/param7"},
+            "fx4_p7":{"osc":"fx/b/2/param8"},
+            "fx4_p8":{"osc":"fx/b/2/param9"},
+            "fx4_p9":{"osc":"fx/b/2/param10"},
+            "fx4_p10":{"osc":"fx/b/2/param11"},
+            "fx4_p11":{"osc":"fx/b/2/param12"},
+
+            "fx5_type":{"osc":"fx/send/1/type"},
+            "fx5_p0":{"osc":"fx/send/1/param1"},
+            "fx5_p1":{"osc":"fx/send/1/param2"},
+            "fx5_p2":{"osc":"fx/send/1/param3"},
+            "fx5_p3":{"osc":"fx/send/1/param4"},
+            "fx5_p4":{"osc":"fx/send/1/param5"},
+            "fx5_p5":{"osc":"fx/send/1/param6"},
+            "fx5_p6":{"osc":"fx/send/1/param7"},
+            "fx5_p7":{"osc":"fx/send/1/param8"},
+            "fx5_p8":{"osc":"fx/send/1/param9"},
+            "fx5_p9":{"osc":"fx/send/1/param10"},
+            "fx5_p10":{"osc":"fx/send/1/param11"},
+            "fx5_p11":{"osc":"fx/send/1/param12"},
+
+            "fx6_type":{"osc":"fx/send/2/type"},
+            "fx6_p0":{"osc":"fx/send/2/param1"},
+            "fx6_p1":{"osc":"fx/send/2/param2"},
+            "fx6_p2":{"osc":"fx/send/2/param3"},
+            "fx6_p3":{"osc":"fx/send/2/param4"},
+            "fx6_p4":{"osc":"fx/send/2/param5"},
+            "fx6_p5":{"osc":"fx/send/2/param6"},
+            "fx6_p6":{"osc":"fx/send/2/param7"},
+            "fx6_p7":{"osc":"fx/send/2/param8"},
+            "fx6_p8":{"osc":"fx/send/2/param9"},
+            "fx6_p9":{"osc":"fx/send/2/param10"},
+            "fx6_p10":{"osc":"fx/send/2/param11"},
+            "fx6_p11":{"osc":"fx/send/2/param12"},
+
+            "fx7_type":{"osc":"fx/global/1/type"},
+            "fx7_p0":{"osc":"fx/global/1/param1"},
+            "fx7_p1":{"osc":"fx/global/1/param2"},
+            "fx7_p2":{"osc":"fx/global/1/param3"},
+            "fx7_p3":{"osc":"fx/global/1/param4"},
+            "fx7_p4":{"osc":"fx/global/1/param5"},
+            "fx7_p5":{"osc":"fx/global/1/param6"},
+            "fx7_p6":{"osc":"fx/global/1/param7"},
+            "fx7_p7":{"osc":"fx/global/1/param8"},
+            "fx7_p8":{"osc":"fx/global/1/param9"},
+            "fx7_p9":{"osc":"fx/global/1/param10"},
+            "fx7_p10":{"osc":"fx/global/1/param11"},
+            "fx7_p11":{"osc":"fx/global/1/param12"},
+
+            "fx8_type":{"osc":"fx/global/2/type"},
+            "fx8_p0":{"osc":"fx/global/2/param1"},
+            "fx8_p1":{"osc":"fx/global/2/param2"},
+            "fx8_p2":{"osc":"fx/global/2/param3"},
+            "fx8_p3":{"osc":"fx/global/2/param4"},
+            "fx8_p4":{"osc":"fx/global/2/param5"},
+            "fx8_p5":{"osc":"fx/global/2/param6"},
+            "fx8_p6":{"osc":"fx/global/2/param7"},
+            "fx8_p7":{"osc":"fx/global/2/param8"},
+            "fx8_p8":{"osc":"fx/global/2/param9"},
+            "fx8_p9":{"osc":"fx/global/2/param10"},
+            "fx8_p10":{"osc":"fx/global/2/param11"},
+            "fx8_p11":{"osc":"fx/global/2/param12"},
+
+
+            "fx9_type":{"osc":"fx/a/3/type"},
+            "fx9_p0":{"osc":"fx/a/3/param1"},
+            "fx9_p1":{"osc":"fx/a/3/param2"},
+            "fx9_p2":{"osc":"fx/a/3/param3"},
+            "fx9_p3":{"osc":"fx/a/3/param4"},
+            "fx9_p4":{"osc":"fx/a/3/param5"},
+            "fx9_p5":{"osc":"fx/a/3/param6"},
+            "fx9_p6":{"osc":"fx/a/3/param7"},
+            "fx9_p7":{"osc":"fx/a/3/param8"},
+            "fx9_p8":{"osc":"fx/a/3/param9"},
+            "fx9_p9":{"osc":"fx/a/3/param10"},
+            "fx9_p10":{"osc":"fx/a/3/param11"},
+            "fx9_p11":{"osc":"fx/a/3/param12"},
+
+            "fx10_type":{"osc":"fx/a/4/type"},
+            "fx10_p0":{"osc":"fx/a/4/param1"},
+            "fx10_p1":{"osc":"fx/a/4/param2"},
+            "fx10_p2":{"osc":"fx/a/4/param3"},
+            "fx10_p3":{"osc":"fx/a/4/param4"},
+            "fx10_p4":{"osc":"fx/a/4/param5"},
+            "fx10_p5":{"osc":"fx/a/4/param6"},
+            "fx10_p6":{"osc":"fx/a/4/param7"},
+            "fx10_p7":{"osc":"fx/a/4/param8"},
+            "fx10_p8":{"osc":"fx/a/4/param9"},
+            "fx10_p9":{"osc":"fx/a/4/param10"},
+            "fx10_p10":{"osc":"fx/a/4/param11"},
+            "fx10_p11":{"osc":"fx/a/4/param12"},
+
+            "fx11_type":{"osc":"fx/b/3/type"},
+            "fx11_p0":{"osc":"fx/b/3/param1"},
+            "fx11_p1":{"osc":"fx/b/3/param2"},
+            "fx11_p2":{"osc":"fx/b/3/param3"},
+            "fx11_p3":{"osc":"fx/b/3/param4"},
+            "fx11_p4":{"osc":"fx/b/3/param5"},
+            "fx11_p5":{"osc":"fx/b/3/param6"},
+            "fx11_p6":{"osc":"fx/b/3/param7"},
+            "fx11_p7":{"osc":"fx/b/3/param8"},
+            "fx11_p8":{"osc":"fx/b/3/param9"},
+            "fx11_p9":{"osc":"fx/b/3/param10"},
+            "fx11_p10":{"osc":"fx/b/3/param11"},
+            "fx11_p11":{"osc":"fx/b/3/param12"},
+
+            "fx12_type":{"osc":"fx/b/4/type"},
+            "fx12_p0":{"osc":"fx/b/4/param1"},
+            "fx12_p1":{"osc":"fx/b/4/param2"},
+            "fx12_p2":{"osc":"fx/b/4/param3"},
+            "fx12_p3":{"osc":"fx/b/4/param4"},
+            "fx12_p4":{"osc":"fx/b/4/param5"},
+            "fx12_p5":{"osc":"fx/b/4/param6"},
+            "fx12_p6":{"osc":"fx/b/4/param7"},
+            "fx12_p7":{"osc":"fx/b/4/param8"},
+            "fx12_p8":{"osc":"fx/b/4/param9"},
+            "fx12_p9":{"osc":"fx/b/4/param10"},
+            "fx12_p10":{"osc":"fx/b/4/param11"},
+            "fx12_p11":{"osc":"fx/b/4/param12"},
+
+            "fx13_type":{"osc":"fx/send/3/type"},
+            "fx13_p0":{"osc":"fx/send/3/param1"},
+            "fx13_p1":{"osc":"fx/send/3/param2"},
+            "fx13_p2":{"osc":"fx/send/3/param3"},
+            "fx13_p3":{"osc":"fx/send/3/param4"},
+            "fx13_p4":{"osc":"fx/send/3/param5"},
+            "fx13_p5":{"osc":"fx/send/3/param6"},
+            "fx13_p6":{"osc":"fx/send/3/param7"},
+            "fx13_p7":{"osc":"fx/send/3/param8"},
+            "fx13_p8":{"osc":"fx/send/3/param9"},
+            "fx13_p9":{"osc":"fx/send/3/param10"},
+            "fx13_p10":{"osc":"fx/send/3/param11"},
+            "fx13_p11":{"osc":"fx/send/3/param12"},
+
+            "fx14_type":{"osc":"fx/send/4/type"},
+            "fx14_p0":{"osc":"fx/send/4/param1"},
+            "fx14_p1":{"osc":"fx/send/4/param2"},
+            "fx14_p2":{"osc":"fx/send/4/param3"},
+            "fx14_p3":{"osc":"fx/send/4/param4"},
+            "fx14_p4":{"osc":"fx/send/4/param5"},
+            "fx14_p5":{"osc":"fx/send/4/param6"},
+            "fx14_p6":{"osc":"fx/send/4/param7"},
+            "fx14_p7":{"osc":"fx/send/4/param8"},
+            "fx14_p8":{"osc":"fx/send/4/param9"},
+            "fx14_p9":{"osc":"fx/send/4/param10"},
+            "fx14_p10":{"osc":"fx/send/4/param11"},
+            "fx14_p11":{"osc":"fx/send/4/param12"},
+
+            "fx15_type":{"osc":"fx/global/3/type"},
+            "fx15_p0":{"osc":"fx/global/3/param1"},
+            "fx15_p1":{"osc":"fx/global/3/param2"},
+            "fx15_p2":{"osc":"fx/global/3/param3"},
+            "fx15_p3":{"osc":"fx/global/3/param4"},
+            "fx15_p4":{"osc":"fx/global/3/param5"},
+            "fx15_p5":{"osc":"fx/global/3/param6"},
+            "fx15_p6":{"osc":"fx/global/3/param7"},
+            "fx15_p7":{"osc":"fx/global/3/param8"},
+            "fx15_p8":{"osc":"fx/global/3/param9"},
+            "fx15_p9":{"osc":"fx/global/3/param10"},
+            "fx15_p10":{"osc":"fx/global/3/param11"},
+            "fx15_p11":{"osc":"fx/global/3/param12"},
+
+            "fx16_type":{"osc":"fx/global/4/type"},
+            "fx16_p0":{"osc":"fx/global/4/param1"},
+            "fx16_p1":{"osc":"fx/global/4/param2"},
+            "fx16_p2":{"osc":"fx/global/4/param3"},
+            "fx16_p3":{"osc":"fx/global/4/param4"},
+            "fx16_p4":{"osc":"fx/global/4/param5"},
+            "fx16_p5":{"osc":"fx/global/4/param6"},
+            "fx16_p6":{"osc":"fx/global/4/param7"},
+            "fx16_p7":{"osc":"fx/global/4/param8"},
+            "fx16_p8":{"osc":"fx/global/4/param9"},
+            "fx16_p9":{"osc":"fx/global/4/param10"},
+            "fx16_p10":{"osc":"fx/global/4/param11"},
+            "fx16_p11":{"osc":"fx/global/4/param12"},
+
+
+
+			"polylimit": {
+                "osc": "global/polyphony_limit",
+				"_type": "0",
+				"_value": "16"
+			},
+			"fx_bypass": {
+                "osc": "fx/chain_bypass",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_octave": {
+                "osc": "a/octave",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_pitch": {
+                "osc": "a/pitch",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_extend_range": "0"
+			},
+			"a_portamento": {
+                "osc": "a/portamento",
+				"_type": "2",
+				"_value": "-8.00000000000000",
+				"_porta_const_rate": "0",
+				"_porta_gliss": "0",
+				"_porta_retrigger": "0",
+				"_porta_curve": "0"
+			},
+			"a_osc1_type": {
+                "osc": "a/osc/1/type",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_osc1_octave": {
+                "osc": "a/osc/1/octave",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_osc1_pitch": {
+                "osc": "a/osc/1/pitch",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_extend_range": "0"
+			},
+			"a_osc1_param0": {
+                "osc": "a/osc/1/param0",
+				"_type": "2",
+				"_value": "0.00000000000000"
+			},
+			"a_osc1_param1": {
+                "osc": "a/osc/1/param1",
+				"_type": "2",
+				"_value": "0.50000000000000",
+				"_extend_range": "1"
+			},
+			"a_osc1_param2": {
+                "osc": "a/osc/1/param2",
+				"_type": "2",
+				"_value": "0.50000000000000"
+			},
+			"a_osc1_param3": {
+                "osc": "a/osc/1/param3",
+				"_type": "2",
+				"_value": "0.00000000000000"
+			},
+			"a_osc1_param4": {
+                "osc": "a/osc/1/param4",
+				"_type": "2",
+				"_value": "0.00000000000000"
+			},
+			"a_osc1_param5": {
+                "osc": "a/osc/1/param5",
+				"_type": "2",
+				"_value": "0.10000000149012",
+				"_extend_range": "0"
+			},
+			"a_osc1_param6": {
+                "osc": "a/osc/1/param6",
+				"_type": "0",
+				"_value": "1"
+			},
+			"a_osc1_keytrack": {
+                "osc": "a/osc/1/keytrack",
+				"_type": "0",
+				"_value": "1"
+			},
+			"a_osc1_retrigger": {
+                "osc": "a/osc/1/retrigger",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_osc2_type": {
+                "osc": "a/osc/2/type",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_osc2_octave": {
+                "osc": "a/osc/2/octave",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_osc2_pitch": {
+                "osc": "a/osc/2/pitch",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_extend_range": "0"
+			},
+			"a_osc2_param0": {
+                "osc": "a/osc/2/param0",
+				"_type": "2",
+				"_value": "0.00000000000000"
+			},
+			"a_osc2_param1": {
+                "osc": "a/osc/2/param1",
+				"_type": "2",
+				"_value": "0.50000000000000"
+			},
+			"a_osc2_param2": {
+                "osc": "a/osc/2/param2",
+				"_type": "2",
+				"_value": "0.50000000000000"
+			},
+			"a_osc2_param3": {
+                "osc": "a/osc/2/param3",
+				"_type": "2",
+				"_value": "0.00000000000000"
+			},
+			"a_osc2_param4": {
+                "osc": "a/osc/2/param4",
+				"_type": "2",
+				"_value": "0.00000000000000"
+			},
+			"a_osc2_param5": {
+                "osc": "a/osc/2/param5",
+				"_type": "2",
+				"_value": "0.10000000149012",
+				"_extend_range": "0"
+			},
+			"a_osc2_param6": {
+                "osc": "a/osc/2/param6",
+				"_type": "0",
+				"_value": "1"
+			},
+			"a_osc2_keytrack": {
+                "osc": "a/osc/2/keytrack",
+				"_type": "0",
+				"_value": "1"
+			},
+			"a_osc2_retrigger": {
+                "osc": "a/osc/2/retrigger",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_osc3_type": {
+                "osc": "a/osc/3/type",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_osc3_octave": {
+                "osc": "a/osc/3/octave",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_osc3_pitch": {
+                "osc": "a/osc/3/pitch",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_extend_range": "0"
+			},
+			"a_osc3_param0": {
+                "osc": "a/osc/3/param0",
+				"_type": "2",
+				"_value": "0.00000000000000"
+			},
+			"a_osc3_param1": {
+                "osc": "a/osc/3/param1",
+				"_type": "2",
+				"_value": "0.50000000000000"
+			},
+			"a_osc3_param2": {
+                "osc": "a/osc/3/param2",
+				"_type": "2",
+				"_value": "0.50000000000000"
+			},
+			"a_osc3_param3": {
+                "osc": "a/osc/3/param3",
+				"_type": "2",
+				"_value": "0.00000000000000"
+			},
+			"a_osc3_param4": {
+                "osc": "a/osc/3/param4",
+				"_type": "2",
+				"_value": "0.00000000000000"
+			},
+			"a_osc3_param5": {
+                "osc": "a/osc/3/param5",
+				"_type": "2",
+				"_value": "0.10000000149012",
+				"_extend_range": "0"
+			},
+			"a_osc3_param6": {
+                "osc": "a/osc/3/param6",
+				"_type": "0",
+				"_value": "1"
+			},
+			"a_osc3_keytrack": {
+                "osc": "a/osc/3/keytrack",
+				"_type": "0",
+				"_value": "1"
+			},
+			"a_osc3_retrigger": {
+                "osc": "a/osc/3/retrigger",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_polymode": {
+                "osc": "a/play_mode",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_fm_switch": {
+                "osc": "a/osc/fm_routing",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_fm_depth": {
+                "osc": "a/osc/fm_depth",
+				"_type": "2",
+				"_value": "-24.00000000000000"
+			},
+			"a_drift": {
+                "osc": "a/osc/drift",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_extend_range": "1"
+			},
+			"a_noisecol": {
+                "osc": "a/mixer/noise/color",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_deform_type": "0"
+			},
+			"a_ktrkroot": {
+                "osc": "a/filter/keytrack_root",
+				"_type": "0",
+				"_value": "60"
+			},
+			"a_volume": {
+                "osc": "a/amp/volume",
+				"_type": "2",
+				"_value": "0.89089900255203",
+				"_deactivated": "0"
+			},
+			"a_pan": {
+                "osc": "a/amp/pan",
+				"_type": "2",
+				"_value": "0.00000000000000"
+			},
+			"a_pan2": {
+                "osc": "a/amp/width",
+				"_type": "2",
+				"_value": "1.00000000000000"
+			},
+			"a_send_fx_1": {
+                "osc":"a/send/1/level",
+				"_type": "2",
+				"_value": "0.00000000000000"
+			},
+			"a_send_fx_2": {
+                "osc":"a/send/2/level",
+				"_type": "2",
+				"_value": "0.00000000000000"
+			},
+			"a_send_fx_3": {
+                "osc":"a/send/3/level",
+				"_type": "2",
+				"_value": "0.00000000000000"
+			},
+			"a_send_fx_4": {
+                "osc":"a/send/4/level",
+				"_type": "2",
+				"_value": "0.00000000000000"
+			},
+			"a_level_o1": {
+                "osc": "a/mixer/osc1/volume",
+				"_type": "2",
+				"_value": "1.00000000000000"
+			},
+			"a_mute_o1": {
+                "osc": "a/mixer/osc1/mute",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_solo_o1": {
+                "osc": "a/mixer/osc1/solo",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_route_o1": {
+                "osc": "a/mixer/osc1/route",
+				"_type": "0",
+				"_value": "1"
+			},
+			"a_level_o2": {
+                "osc": "a/mixer/osc2/volume",
+				"_type": "2",
+				"_value": "1.00000000000000"
+			},
+			"a_mute_o2": {
+                "osc": "a/mixer/osc2/mute",
+				"_type": "0",
+				"_value": "1"
+			},
+			"a_solo_o2": {
+                "osc": "a/mixer/osc2/solo",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_route_o2": {
+                "osc": "a/mixer/osc2/route",
+				"_type": "0",
+				"_value": "1"
+			},
+			"a_level_o3": {
+                "osc": "a/mixer/osc3/volume",
+				"_type": "2",
+				"_value": "1.00000000000000"
+			},
+			"a_mute_o3": {
+                "osc": "a/mixer/osc3/mute",
+				"_type": "0",
+				"_value": "1"
+			},
+			"a_solo_o3": {
+                "osc": "a/mixer/osc3/solo",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_route_o3": {
+                "osc": "a/mixer/osc3/route",
+				"_type": "0",
+				"_value": "1"
+			},
+			"a_level_ring12": {
+                "osc": "a/mixer/rm1x2/volume",
+				"_type": "2",
+				"_value": "1.00000000000000",
+				"_deform_type": "0"
+			},
+			"a_mute_ring12": {
+                "osc": "a/mixer/rm1x2/mute",
+				"_type": "0",
+				"_value": "1"
+			},
+			"a_solo_ring12": {
+                "osc": "a/mixer/rm1x2/solo",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_route_ring12": {
+                "osc": "a/mixer/rm1x2/route",
+				"_type": "0",
+				"_value": "1"
+			},
+			"a_level_ring23": {
+                "osc": "a/mixer/rm2x3/volume",
+				"_type": "2",
+				"_value": "1.00000000000000",
+				"_deform_type": "0"
+			},
+			"a_mute_ring23": {
+                "osc": "a/mixer/rm2x3/mute",
+				"_type": "0",
+				"_value": "1"
+			},
+			"a_solo_ring23": {
+                "osc": "a/mixer/rm2x3/solo",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_route_ring23": {
+                "osc": "a/mixer/rm2x3/route",
+				"_type": "0",
+				"_value": "1"
+			},
+			"a_level_noise": {
+                "osc": "a/mixer/noise/volume",
+				"_type": "2",
+				"_value": "1.00000000000000"
+			},
+			"a_mute_noise": {
+                "osc": "a/mixer/noise/mute",
+				"_type": "0",
+				"_value": "1"
+			},
+			"a_solo_noise": {
+                "osc": "a/mixer/noise/solo",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_route_noise": {
+                "osc": "a/mixer/noise/route",
+				"_type": "0",
+				"_value": "1"
+			},
+			"a_level_pfg": {
+                "osc": "a/mixer/prefilter_gain",
+				"_type": "2",
+				"_value": "0.00000000000000"
+			},
+			"a_pbrange_up": {
+                "osc":"pitchbend_up",
+				"_type": "0",
+				"_value": "2",
+				"_extend_range": "0"
+			},
+			"a_pbrange_dn": {
+                "osc": "pitchbend_down",
+				"_type": "0",
+				"_value": "2",
+				"_extend_range": "0"
+			},
+			"a_vca_level": {
+                "osc": "a/amp/gain",
+				"_type": "2",
+				"_value": "0.00000000000000"
+			},
+			"a_vca_velsense": {
+                "osc": "a/amp/vel_to_gain",
+				"_type": "2",
+				"_value": "0.00000000000000"
+			},
+			"a_feedback": {
+                "osc": "a/filter/feedback",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_extend_range": "0",
+				"_deform_type": "0"
+			},
+			"a_fb_config": {
+                "osc": "a/filter/config",
+				"_type": "0",
+				"_value": "7"
+			},
+			"a_f_balance": {
+                "osc": "a/filter/balance",
+				"_type": "2",
+				"_value": "0.00000000000000"
+			},
+			"a_lowcut": {
+                "osc": "a/highpass",
+				"_type": "2",
+				"_value": "-72.00000000000000",
+				"_deactivated": "0",
+				"_deform_type": "0"
+			},
+			"a_ws_type": {
+                "osc": "a/waveshaper/type", 
+				"_type": "0",
+				"_value": "0",
+				"_deactivated": "0"
+			},
+			"a_ws_drive": {
+                "osc": "a/waveshaper/drive",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_extend_range": "0"
+			},
+			"a_filter1_type": {
+                "osc": "a/filter/1/type",
+				"_type": "0",
+				"_value": "0",
+				"_deactivated": "0"
+			},
+			"a_filter1_subtype": {
+                "osc": "a/filter/1/subtype",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_filter1_cutoff": {
+                "osc": "a/filter/1/cutoff",
+				"_type": "2",
+				"_value": "3.00000000000000",
+				"_extend_range": "0"
+			},
+			"a_filter1_resonance": {
+                "osc": "a/filter/1/resonance",
+				"_type": "2",
+				"_value": "0.00000000000000"
+			},
+			"a_filter1_envmod": {
+                "osc": "a/filter/1/feg_amount",
+				"_type": "2",
+				"_value": "0.00000000000000"
+			},
+			"a_filter1_keytrack": {
+                "osc": "a/filter/1/keytrack",
+				"_type": "2",
+				"_value": "0.00000000000000"
+			},
+			"a_filter2_type": {
+                "osc": "a/filter/2/type",
+				"_type": "0",
+				"_value": "0",
+				"_deactivated": "0"
+			},
+			"a_filter2_subtype": {
+                "osc": "a/filter/2/subtype",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_filter2_cutoff": {
+                "osc": "a/filter/2/cutoff",
+				"_type": "2",
+				"_value": "3.00000000000000",
+				"_extend_range": "0"
+			},
+			"a_f2_cf_is_offset": {
+                "osc": "a/filter/2/offset_mode",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_filter2_resonance": {
+                "osc": "a/filter/2/resonance",
+				"_type": "2",
+				"_value": "0.00000000000000"
+			},
+			"a_f2_link_resonance": {
+                "osc": "a/filter/2/link_resonance",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_filter2_envmod": {
+                "osc": "a/filter/2/feg_amount",
+				"_type": "2",
+				"_value": "0.00000000000000"
+			},
+			"a_filter2_keytrack": {
+                "osc": "a/filter/2/keytrack",
+				"_type": "2",
+				"_value": "0.00000000000000"
+			},
+			"a_env1_attack": {
+                "osc": "a/feg/attack",
+				"_type": "2",
+				"_value": "-8.00000000000000"
+			},
+			"a_env1_attack_shape": {
+                "osc": "a/feg/attack_shape",
+				"_type": "0",
+				"_value": "1"
+			},
+			"a_env1_decay": {
+                "osc": "a/feg/decay",
+				"_type": "2",
+				"_value": "-2.00000000000000"
+			},
+			"a_env1_decay_shape": {
+                "osc": "a/feg/decay_shape",
+				"_type": "0",
+				"_value": "1"
+			},
+			"a_env1_sustain": {
+                "osc": "a/feg/sustain",
+				"_type": "2",
+				"_value": "1.00000000000000"
+			},
+			"a_env1_release": {
+                "osc": "a/feg/release",
+				"_type": "2",
+				"_value": "-5.00000000000000"
+			},
+			"a_env1_release_shape": {
+                "osc": "a/feg/release_shape",
+				"_type": "0",
+				"_value": "2"
+			},
+			"a_env1_mode": {
+                "osc": "a/feg/mode",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_env2_attack": {
+                "osc": "a/aeg/attack",
+				"_type": "2",
+				"_value": "-8.00000000000000"
+			},
+			"a_env2_attack_shape": {
+                "osc": "a/aeg/attack_shape",
+				"_type": "0",
+				"_value": "1"
+			},
+			"a_env2_decay": {
+                "osc": "a/aeg/decay",
+				"_type": "2",
+				"_value": "-2.00000000000000"
+			},
+			"a_env2_decay_shape": {
+                "osc": "a/aeg/decay_shape",
+				"_type": "0",
+				"_value": "1"
+			},
+			"a_env2_sustain": {
+                "osc": "a/aeg/sustain",
+				"_type": "2",
+				"_value": "1.00000000000000"
+			},
+			"a_env2_release": {
+                "osc": "a/aeg/release",
+				"_type": "2",
+				"_value": "-5.00000000000000"
+			},
+			"a_env2_release_shape": {
+                "osc": "a/aeg/release_shape",
+				"_type": "0",
+				"_value": "2"
+			},
+			"a_env2_mode": {
+                "osc": "a/aeg/mode",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_lfo0_shape": {
+                "osc": "a/vlfo/1/type",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_lfo0_rate": {
+                "osc": "a/vlfo/1/rate",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_deactivated": "0"
+			},
+			"a_lfo0_phase": {
+                "osc": "a/vlfo/1/phase",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_extend_range": "0"
+			},
+			"a_lfo0_magnitude": {
+                "osc": "a/vlfo/1/amplitude",
+				"_type": "2",
+				"_value": "1.00000000000000",
+				"_extend_range": "0"
+			},
+			"a_lfo0_deform": {
+                "osc": "a/vlfo/1/deform",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_deform_type": "0"
+			},
+			"a_lfo0_trigmode": {
+                "osc": "a/vlfo/1/trigger_mode",
+				"_type": "0",
+				"_value": "1"
+			},
+			"a_lfo0_unipolar": {
+                "osc": "a/vlfo/1/unipolar",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_lfo0_delay": {
+                "osc": "a/vlfo/1/eg/delay",
+				"_type": "2",
+				"_value": "-8.00000000000000",
+				"_deactivated": "0"
+			},
+			"a_lfo0_attack": {
+                "osc": "a/vlfo/1/eg/attack",
+				"_type": "2",
+				"_value": "-8.00000000000000"
+			},
+			"a_lfo0_hold": {
+                "osc": "a/vlfo/1/eg/hold",
+				"_type": "2",
+				"_value": "-8.00000000000000"
+			},
+			"a_lfo0_decay": {
+                "osc": "a/vlfo/1/eg/decay",
+				"_type": "2",
+				"_value": "0.00000000000000"
+			},
+			"a_lfo0_sustain": {
+                "osc": "a/vlfo/1/eg/sustain",
+				"_type": "2",
+				"_value": "1.00000000000000"
+			},
+			"a_lfo0_release": {
+                "osc": "a/vlfo/1/eg/release",
+				"_type": "2",
+				"_value": "5.00000000000000"
+			},
+			"a_lfo1_shape": {
+                "osc": "a/vlfo/2/type",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_lfo1_rate": {
+                "osc": "a/vlfo/2/rate",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_deactivated": "0"
+			},
+			"a_lfo1_phase": {
+                "osc": "a/vlfo/2/phase",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_extend_range": "0"
+			},
+			"a_lfo1_magnitude": {
+                "osc": "a/vlfo/2/amplitude",
+				"_type": "2",
+				"_value": "1.00000000000000",
+				"_extend_range": "0"
+			},
+			"a_lfo1_deform": {
+                "osc": "a/vlfo/2/deform",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_deform_type": "0"
+			},
+			"a_lfo1_trigmode": {
+                "osc": "a/vlfo/2/trigger_mode",
+				"_type": "0",
+				"_value": "1"
+			},
+			"a_lfo1_unipolar": {
+                "osc": "a/vlfo/2/unipolar",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_lfo1_delay": {
+                "osc": "a/vlfo/2/eg/delay",
+				"_type": "2",
+				"_value": "-8.00000000000000",
+				"_deactivated": "0"
+			},
+			"a_lfo1_attack": {
+                "osc": "a/vlfo/2/eg/attack",
+				"_type": "2",
+				"_value": "-8.00000000000000"
+			},
+			"a_lfo1_hold": {
+                "osc": "a/vlfo/2/eg/hold",
+				"_type": "2",
+				"_value": "-8.00000000000000"
+			},
+			"a_lfo1_decay": {
+                "osc": "a/vlfo/2/eg/decay",
+				"_type": "2",
+				"_value": "0.00000000000000"
+			},
+			"a_lfo1_sustain": {
+                "osc": "a/vlfo/2/eg/sustain",
+				"_type": "2",
+				"_value": "1.00000000000000"
+			},
+			"a_lfo1_release": {
+                "osc": "a/vlfo/2/eg/release",
+				"_type": "2",
+				"_value": "5.00000000000000"
+			},
+			"a_lfo2_shape": {
+                "osc": "a/vlfo/3/type",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_lfo2_rate": {
+                "osc": "a/vlfo/3/rate",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_deactivated": "0"
+			},
+			"a_lfo2_phase": {
+                "osc": "a/vlfo/3/phase",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_extend_range": "0"
+			},
+			"a_lfo2_magnitude": {
+                "osc": "a/vlfo/3/amplitude",
+				"_type": "2",
+				"_value": "1.00000000000000",
+				"_extend_range": "0"
+			},
+			"a_lfo2_deform": {
+                "osc": "a/vlfo/3/deform",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_deform_type": "0"
+			},
+			"a_lfo2_trigmode": {
+                "osc": "a/vlfo/3/trigger_mode",
+				"_type": "0",
+				"_value": "1"
+			},
+			"a_lfo2_unipolar": {
+                "osc": "a/vlfo/3/unipolar",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_lfo2_delay": {
+                "osc": "a/vlfo/3/eg/delay",
+				"_type": "2",
+				"_value": "-8.00000000000000",
+				"_deactivated": "0"
+			},
+			"a_lfo2_attack": {
+                "osc": "a/vlfo/3/eg/attack",
+				"_type": "2",
+				"_value": "-8.00000000000000"
+			},
+			"a_lfo2_hold": {
+                "osc": "a/vlfo/3/eg/hold",
+				"_type": "2",
+				"_value": "-8.00000000000000"
+			},
+			"a_lfo2_decay": {
+                "osc": "a/vlfo/3/eg/decay",
+				"_type": "2",
+				"_value": "0.00000000000000"
+			},
+			"a_lfo2_sustain": {
+                "osc": "a/vlfo/3/eg/sustain",
+				"_type": "2",
+				"_value": "1.00000000000000"
+			},
+			"a_lfo2_release": {
+                "osc": "a/vlfo/3/eg/release",
+				"_type": "2",
+				"_value": "5.00000000000000"
+			},
+
+			"a_lfo3_shape": {
+                "osc": "a/vlfo/4/type",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_lfo3_rate": {
+                "osc": "a/vlfo/4/rate",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_deactivated": "0"
+			},
+			"a_lfo3_phase": {
+                "osc": "a/vlfo/4/phase",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_extend_range": "0"
+			},
+			"a_lfo3_magnitude": {
+                "osc": "a/vlfo/4/amplitude",
+				"_type": "2",
+				"_value": "1.00000000000000",
+				"_extend_range": "0"
+			},
+			"a_lfo3_deform": {
+                "osc": "a/vlfo/4/deform",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_deform_type": "0"
+			},
+			"a_lfo3_trigmode": {
+                "osc": "a/vlfo/4/trigger_mode",
+				"_type": "0",
+				"_value": "1"
+			},
+			"a_lfo3_unipolar": {
+                "osc": "a/vlfo/4/unipolar",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_lfo3_delay": {
+                "osc": "a/vlfo/4/eg/delay",
+				"_type": "2",
+				"_value": "-8.00000000000000",
+				"_deactivated": "0"
+			},
+			"a_lfo3_attack": {
+                "osc": "a/vlfo/4/eg/attack",
+				"_type": "2",
+				"_value": "-8.00000000000000"
+			},
+			"a_lfo3_hold": {
+                "osc": "a/vlfo/4/eg/hold",
+				"_type": "2",
+				"_value": "-8.00000000000000"
+			},
+			"a_lfo3_decay": {
+                "osc": "a/vlfo/4/eg/decay",
+				"_type": "2",
+				"_value": "0.00000000000000"
+			},
+			"a_lfo3_sustain": {
+                "osc": "a/vlfo/4/eg/sustain",
+				"_type": "2",
+				"_value": "1.00000000000000"
+			},
+			"a_lfo3_release": {
+                "osc": "a/vlfo/4/eg/release",
+				"_type": "2",
+				"_value": "5.00000000000000"
+			},
+
+            "a_lfo4_shape": {
+                "osc": "a/vlfo/5/type",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_lfo4_rate": {
+                "osc": "a/vlfo/5/rate",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_deactivated": "0"
+			},
+			"a_lfo4_phase": {
+                "osc": "a/vlfo/5/phase",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_extend_range": "0"
+			},
+			"a_lfo4_magnitude": {
+                "osc": "a/vlfo/5/amplitude",
+				"_type": "2",
+				"_value": "1.00000000000000",
+				"_extend_range": "0"
+			},
+			"a_lfo4_deform": {
+                "osc": "a/vlfo/5/deform",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_deform_type": "0"
+			},
+			"a_lfo4_trigmode": {
+                "osc": "a/vlfo/5/trigger_mode",
+				"_type": "0",
+				"_value": "1"
+			},
+			"a_lfo4_unipolar": {
+                "osc": "a/vlfo/5/unipolar",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_lfo4_delay": {
+                "osc": "a/vlfo/5/eg/delay",
+				"_type": "2",
+				"_value": "-8.00000000000000",
+				"_deactivated": "0"
+			},
+			"a_lfo4_attack": {
+                "osc": "a/vlfo/5/eg/attack",
+				"_type": "2",
+				"_value": "-8.00000000000000"
+			},
+			"a_lfo4_hold": {
+                "osc": "a/vlfo/5/eg/hold",
+				"_type": "2",
+				"_value": "-8.00000000000000"
+			},
+			"a_lfo4_decay": {
+                "osc": "a/vlfo/5/eg/decay",
+				"_type": "2",
+				"_value": "0.00000000000000"
+			},
+			"a_lfo4_sustain": {
+                "osc": "a/vlfo/5/eg/sustain",
+				"_type": "2",
+				"_value": "1.00000000000000"
+			},
+			"a_lfo4_release": {
+                "osc": "a/vlfo/5/eg/release",
+				"_type": "2",
+				"_value": "5.00000000000000"
+			},
+
+            "a_lfo5_shape": {
+                "osc": "a/vlfo/6/type",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_lfo5_rate": {
+                "osc": "a/vlfo/6/rate",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_deactivated": "0"
+			},
+			"a_lfo5_phase": {
+                "osc": "a/vlfo/6/phase",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_extend_range": "0"
+			},
+			"a_lfo5_magnitude": {
+                "osc": "a/vlfo/6/amplitude",
+				"_type": "2",
+				"_value": "1.00000000000000",
+				"_extend_range": "0"
+			},
+			"a_lfo5_deform": {
+                "osc": "a/vlfo/6/deform",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_deform_type": "0"
+			},
+			"a_lfo5_trigmode": {
+                "osc": "a/vlfo/6/trigger_mode",
+				"_type": "0",
+				"_value": "1"
+			},
+			"a_lfo5_unipolar": {
+                "osc": "a/vlfo/6/unipolar",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_lfo5_delay": {
+                "osc": "a/vlfo/6/eg/delay",
+				"_type": "2",
+				"_value": "-8.00000000000000",
+				"_deactivated": "0"
+			},
+			"a_lfo5_attack": {
+                "osc": "a/vlfo/6/eg/attack",
+				"_type": "2",
+				"_value": "-8.00000000000000"
+			},
+			"a_lfo5_hold": {
+                "osc": "a/vlfo/6/eg/hold",
+				"_type": "2",
+				"_value": "-8.00000000000000"
+			},
+			"a_lfo5_decay": {
+                "osc": "a/vlfo/6/eg/decay",
+				"_type": "2",
+				"_value": "0.00000000000000"
+			},
+			"a_lfo5_sustain": {
+                "osc": "a/vlfo/6/eg/sustain",
+				"_type": "2",
+				"_value": "1.00000000000000"
+			},
+			"a_lfo5_release": {
+                "osc": "a/vlfo/6/eg/release",
+				"_type": "2",
+				"_value": "5.00000000000000"
+			},
+
+            "a_lfo6_shape": {
+                "osc": "a/slfo/1/type",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_lfo6_rate": {
+                "osc": "a/slfo/1/rate",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_deactivated": "0"
+			},
+			"a_lfo6_phase": {
+                "osc": "a/slfo/1/phase",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_extend_range": "0"
+			},
+			"a_lfo6_magnitude": {
+                "osc": "a/slfo/1/amplitude",
+				"_type": "2",
+				"_value": "1.00000000000000",
+				"_extend_range": "0"
+			},
+			"a_lfo6_deform": {
+                "osc": "a/slfo/1/deform",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_deform_type": "0"
+			},
+			"a_lfo6_trigmode": {
+                "osc": "a/slfo/1/trigger_mode",
+				"_type": "0",
+				"_value": "1"
+			},
+			"a_lfo6_unipolar": {
+                "osc": "a/slfo/1/unipolar",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_lfo6_delay": {
+                "osc": "a/slfo/1/eg/delay",
+				"_type": "2",
+				"_value": "-8.00000000000000",
+				"_deactivated": "0"
+			},
+			"a_lfo6_attack": {
+                "osc": "a/slfo/1/eg/attack",
+				"_type": "2",
+				"_value": "-8.00000000000000"
+			},
+			"a_lfo6_hold": {
+                "osc": "a/slfo/1/eg/hold",
+				"_type": "2",
+				"_value": "-8.00000000000000"
+			},
+			"a_lfo6_decay": {
+                "osc": "a/slfo/1/eg/decay",
+				"_type": "2",
+				"_value": "0.00000000000000"
+			},
+			"a_lfo6_sustain": {
+                "osc": "a/slfo/1/eg/sustain",
+				"_type": "2",
+				"_value": "1.00000000000000"
+			},
+			"a_lfo6_release": {
+                "osc": "a/slfo/1/eg/release",
+				"_type": "2",
+				"_value": "5.00000000000000"
+			},
+            "a_lfo7_shape": {
+                "osc": "a/slfo/2/type",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_lfo7_rate": {
+                "osc": "a/slfo/2/rate",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_deactivated": "0"
+			},
+			"a_lfo7_phase": {
+                "osc": "a/slfo/2/phase",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_extend_range": "0"
+			},
+			"a_lfo7_magnitude": {
+                "osc": "a/slfo/2/amplitude",
+				"_type": "2",
+				"_value": "1.00000000000000",
+				"_extend_range": "0"
+			},
+			"a_lfo7_deform": {
+                "osc": "a/slfo/2/deform",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_deform_type": "0"
+			},
+			"a_lfo7_trigmode": {
+                "osc": "a/slfo/2/trigger_mode",
+				"_type": "0",
+				"_value": "1"
+			},
+			"a_lfo7_unipolar": {
+                "osc": "a/slfo/2/unipolar",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_lfo7_delay": {
+                "osc": "a/slfo/2/eg/delay",
+				"_type": "2",
+				"_value": "-8.00000000000000",
+				"_deactivated": "0"
+			},
+			"a_lfo7_attack": {
+                "osc": "a/slfo/2/eg/attack",
+				"_type": "2",
+				"_value": "-8.00000000000000"
+			},
+			"a_lfo7_hold": {
+                "osc": "a/slfo/2/eg/hold",
+				"_type": "2",
+				"_value": "-8.00000000000000"
+			},
+			"a_lfo7_decay": {
+                "osc": "a/slfo/2/eg/decay",
+				"_type": "2",
+				"_value": "0.00000000000000"
+			},
+			"a_lfo7_sustain": {
+                "osc": "a/slfo/2/eg/sustain",
+				"_type": "2",
+				"_value": "1.00000000000000"
+			},
+			"a_lfo7_release": {
+                "osc": "a/slfo/2/eg/release",
+				"_type": "2",
+				"_value": "5.00000000000000"
+			},
+            "a_lfo8_shape": {
+                "osc": "a/slfo/3/type",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_lfo8_rate": {
+                "osc": "a/slfo/3/rate",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_deactivated": "0"
+			},
+			"a_lfo8_phase": {
+                "osc": "a/slfo/3/phase",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_extend_range": "0"
+			},
+			"a_lfo8_magnitude": {
+                "osc": "a/slfo/3/amplitude",
+				"_type": "2",
+				"_value": "1.00000000000000",
+				"_extend_range": "0"
+			},
+			"a_lfo8_deform": {
+                "osc": "a/slfo/3/deform",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_deform_type": "0"
+			},
+			"a_lfo8_trigmode": {
+                "osc": "a/slfo/3/trigger_mode",
+				"_type": "0",
+				"_value": "1"
+			},
+			"a_lfo8_unipolar": {
+                "osc": "a/slfo/3/unipolar",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_lfo8_delay": {
+                "osc": "a/slfo/3/eg/delay",
+				"_type": "2",
+				"_value": "-8.00000000000000",
+				"_deactivated": "0"
+			},
+			"a_lfo8_attack": {
+                "osc": "a/slfo/3/eg/attack",
+				"_type": "2",
+				"_value": "-8.00000000000000"
+			},
+			"a_lfo8_hold": {
+                "osc": "a/slfo/3/eg/hold",
+				"_type": "2",
+				"_value": "-8.00000000000000"
+			},
+			"a_lfo8_decay": {
+                "osc": "a/slfo/3/eg/decay",
+				"_type": "2",
+				"_value": "0.00000000000000"
+			},
+			"a_lfo8_sustain": {
+                "osc": "a/slfo/3/eg/sustain",
+				"_type": "2",
+				"_value": "1.00000000000000"
+			},
+			"a_lfo8_release": {
+                "osc": "a/slfo/3/eg/release",
+				"_type": "2",
+				"_value": "5.00000000000000"
+			},
+
+            "a_lfo9_shape": {
+                "osc": "a/slfo/4/type",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_lfo9_rate": {
+                "osc": "a/slfo/4/rate",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_deactivated": "0"
+			},
+			"a_lfo9_phase": {
+                "osc": "a/slfo/4/phase",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_extend_range": "0"
+			},
+			"a_lfo9_magnitude": {
+                "osc": "a/slfo/4/amplitude",
+				"_type": "2",
+				"_value": "1.00000000000000",
+				"_extend_range": "0"
+			},
+			"a_lfo9_deform": {
+                "osc": "a/slfo/4/deform",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_deform_type": "0"
+			},
+			"a_lfo9_trigmode": {
+                "osc": "a/slfo/4/trigger_mode",
+				"_type": "0",
+				"_value": "1"
+			},
+			"a_lfo9_unipolar": {
+                "osc": "a/slfo/4/unipolar",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_lfo9_delay": {
+                "osc": "a/slfo/4/eg/delay",
+				"_type": "2",
+				"_value": "-8.00000000000000",
+				"_deactivated": "0"
+			},
+			"a_lfo9_attack": {
+                "osc": "a/slfo/4/eg/attack",
+				"_type": "2",
+				"_value": "-8.00000000000000"
+			},
+			"a_lfo9_hold": {
+                "osc": "a/slfo/4/eg/hold",
+				"_type": "2",
+				"_value": "-8.00000000000000"
+			},
+			"a_lfo9_decay": {
+                "osc": "a/slfo/4/eg/decay",
+				"_type": "2",
+				"_value": "0.00000000000000"
+			},
+			"a_lfo9_sustain": {
+                "osc": "a/slfo/4/eg/sustain",
+				"_type": "2",
+				"_value": "1.00000000000000"
+			},
+			"a_lfo9_release": {
+                "osc": "a/slfo/4/eg/release",
+				"_type": "2",
+				"_value": "5.00000000000000"
+			},
+
+            "a_lfo10_shape": {
+                "osc": "a/slfo/5/type",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_lfo10_rate": {
+                "osc": "a/slfo/5/rate",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_deactivated": "0"
+			},
+			"a_lfo10_phase": {
+                "osc": "a/slfo/5/phase",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_extend_range": "0"
+			},
+			"a_lfo10_magnitude": {
+                "osc": "a/slfo/5/amplitude",
+				"_type": "2",
+				"_value": "1.00000000000000",
+				"_extend_range": "0"
+			},
+			"a_lfo10_deform": {
+                "osc": "a/slfo/5/deform",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_deform_type": "0"
+			},
+			"a_lfo10_trigmode": {
+                "osc": "a/slfo/5/trigger_mode",
+				"_type": "0",
+				"_value": "1"
+			},
+			"a_lfo10_unipolar": {
+                "osc": "a/slfo/5/unipolar",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_lfo10_delay": {
+                "osc": "a/slfo/5/eg/delay",
+				"_type": "2",
+				"_value": "-8.00000000000000",
+				"_deactivated": "0"
+			},
+			"a_lfo10_attack": {
+                "osc": "a/slfo/5/eg/attack",
+				"_type": "2",
+				"_value": "-8.00000000000000"
+			},
+			"a_lfo10_hold": {
+                "osc": "a/slfo/5/eg/hold",
+				"_type": "2",
+				"_value": "-8.00000000000000"
+			},
+			"a_lfo10_decay": {
+                "osc": "a/slfo/5/eg/decay",
+				"_type": "2",
+				"_value": "0.00000000000000"
+			},
+			"a_lfo10_sustain": {
+                "osc": "a/slfo/5/eg/sustain",
+				"_type": "2",
+				"_value": "1.00000000000000"
+			},
+			"a_lfo10_release": {
+                "osc": "a/slfo/5/eg/release",
+				"_type": "2",
+				"_value": "5.00000000000000"
+			},
+
+
+            "a_lfo11_shape": {
+                "osc": "a/slfo/6/type",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_lfo11_rate": {
+                "osc": "a/slfo/6/rate",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_deactivated": "0"
+			},
+			"a_lfo11_phase": {
+                "osc": "a/slfo/6/phase",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_extend_range": "0"
+			},
+			"a_lfo11_magnitude": {
+                "osc": "a/slfo/6/amplitude",
+				"_type": "2",
+				"_value": "1.00000000000000",
+				"_extend_range": "0"
+			},
+			"a_lfo11_deform": {
+                "osc": "a/slfo/6/deform",
+				"_type": "2",
+				"_value": "0.00000000000000",
+				"_deform_type": "0"
+			},
+			"a_lfo11_trigmode": {
+                "osc": "a/slfo/6/trigger_mode",
+				"_type": "0",
+				"_value": "1"
+			},
+			"a_lfo11_unipolar": {
+                "osc": "a/slfo/6/unipolar",
+				"_type": "0",
+				"_value": "0"
+			},
+			"a_lfo11_delay": {
+                "osc": "a/slfo/6/eg/delay",
+				"_type": "2",
+				"_value": "-8.00000000000000",
+				"_deactivated": "0"
+			},
+			"a_lfo11_attack": {
+                "osc": "a/slfo/6/eg/attack",
+				"_type": "2",
+				"_value": "-8.00000000000000"
+			},
+			"a_lfo11_hold": {
+                "osc": "a/slfo/6/eg/hold",
+				"_type": "2",
+				"_value": "-8.00000000000000"
+			},
+			"a_lfo11_decay": {
+                "osc": "a/slfo/6/eg/decay",
+				"_type": "2",
+				"_value": "0.00000000000000"
+			},
+			"a_lfo11_sustain": {
+                "osc": "a/slfo/6/eg/sustain",
+				"_type": "2",
+				"_value": "1.00000000000000"
+			},
+			"a_lfo11_release": {
+                "osc": "a/slfo/6/eg/release",
+				"_type": "2",
+				"_value": "5.00000000000000"
+			},
+
+
+			"character": {
+                "osc": "global/character",
+				"_type": "0",
+				"_value": "1"
+			}
+		},
+		"nonparamconfig": {
+			"monoVoicePrority_0": {
+				"_v": "1"
+			},
+			"monoVoicePrority_1": {
+				"_v": "1"
+			},
+			"monoVoiceEnvelope_0": {
+				"_v": "0"
+			},
+			"monoVoiceEnvelope_1": {
+				"_v": "0"
+			},
+			"polyVoiceRepeatedKeyMode_0": {
+				"_v": "0"
+			},
+			"polyVoiceRepeatedKeyMode_1": {
+				"_v": "0"
+			},
+			"hardclipmodes": {
+				"_global": "1",
+				"_sc0": "1",
+				"_sc1": "1"
+			},
+			"tuningApplicationMode": {
+				"_v": "1"
+			}
+		},
+		"extraoscdata": {
+			"osc_extra_sc0_osc0": {
+				"_scene": "0",
+				"_osc": "0",
+				"_extra_n": "0"
+			},
+			"osc_extra_sc0_osc1": {
+				"_scene": "0",
+				"_osc": "1",
+				"_extra_n": "0"
+			},
+			"osc_extra_sc0_osc2": {
+				"_scene": "0",
+				"_osc": "2",
+				"_extra_n": "0"
+			},
+			"osc_extra_sc1_osc0": {
+				"_scene": "1",
+				"_osc": "0",
+				"_extra_n": "0"
+			},
+			"osc_extra_sc1_osc1": {
+				"_scene": "1",
+				"_osc": "1",
+				"_extra_n": "0"
+			},
+			"osc_extra_sc1_osc2": {
+				"_scene": "1",
+				"_osc": "2",
+				"_extra_n": "0"
+			}
+		},
+		"stepsequences": "",
+		"msegs": "",
+		"formulae": "",
+		"extralfo": {
+			"lfo": [
+				{
+					"_scene": "0",
+					"_i": "0",
+					"_extraAmplitude": "0"
+				},
+				{
+					"_scene": "0",
+					"_i": "1",
+					"_extraAmplitude": "0"
+				},
+				{
+					"_scene": "0",
+					"_i": "2",
+					"_extraAmplitude": "0"
+				},
+				{
+					"_scene": "0",
+					"_i": "3",
+					"_extraAmplitude": "0"
+				},
+				{
+					"_scene": "0",
+					"_i": "4",
+					"_extraAmplitude": "0"
+				},
+				{
+					"_scene": "0",
+					"_i": "5",
+					"_extraAmplitude": "0"
+				},
+				{
+					"_scene": "0",
+					"_i": "6",
+					"_extraAmplitude": "0"
+				},
+				{
+					"_scene": "0",
+					"_i": "7",
+					"_extraAmplitude": "0"
+				},
+				{
+					"_scene": "0",
+					"_i": "8",
+					"_extraAmplitude": "0"
+				},
+				{
+					"_scene": "0",
+					"_i": "9",
+					"_extraAmplitude": "0"
+				},
+				{
+					"_scene": "0",
+					"_i": "10",
+					"_extraAmplitude": "0"
+				},
+				{
+					"_scene": "0",
+					"_i": "11",
+					"_extraAmplitude": "0"
+				},
+				{
+					"_scene": "1",
+					"_i": "0",
+					"_extraAmplitude": "0"
+				},
+				{
+					"_scene": "1",
+					"_i": "1",
+					"_extraAmplitude": "0"
+				},
+				{
+					"_scene": "1",
+					"_i": "2",
+					"_extraAmplitude": "0"
+				},
+				{
+					"_scene": "1",
+					"_i": "3",
+					"_extraAmplitude": "0"
+				},
+				{
+					"_scene": "1",
+					"_i": "4",
+					"_extraAmplitude": "0"
+				},
+				{
+					"_scene": "1",
+					"_i": "5",
+					"_extraAmplitude": "0"
+				},
+				{
+					"_scene": "1",
+					"_i": "6",
+					"_extraAmplitude": "0"
+				},
+				{
+					"_scene": "1",
+					"_i": "7",
+					"_extraAmplitude": "0"
+				},
+				{
+					"_scene": "1",
+					"_i": "8",
+					"_extraAmplitude": "0"
+				},
+				{
+					"_scene": "1",
+					"_i": "9",
+					"_extraAmplitude": "0"
+				},
+				{
+					"_scene": "1",
+					"_i": "10",
+					"_extraAmplitude": "0"
+				},
+				{
+					"_scene": "1",
+					"_i": "11",
+					"_extraAmplitude": "0"
+				}
+			]
+		},
+		"customcontroller": {
+			"entry": [
+				{
+					"_i": "0",
+					"_bipolar": "0",
+					"_v": "0.00000000000000",
+					"_label": "-"
+				},
+				{
+					"_i": "1",
+					"_bipolar": "0",
+					"_v": "0.00000000000000",
+					"_label": "-"
+				},
+				{
+					"_i": "2",
+					"_bipolar": "0",
+					"_v": "0.00000000000000",
+					"_label": "-"
+				},
+				{
+					"_i": "3",
+					"_bipolar": "0",
+					"_v": "0.00000000000000",
+					"_label": "-"
+				},
+				{
+					"_i": "4",
+					"_bipolar": "0",
+					"_v": "0.00000000000000",
+					"_label": "-"
+				},
+				{
+					"_i": "5",
+					"_bipolar": "0",
+					"_v": "0.00000000000000",
+					"_label": "-"
+				},
+				{
+					"_i": "6",
+					"_bipolar": "0",
+					"_v": "0.00000000000000",
+					"_label": "-"
+				},
+				{
+					"_i": "7",
+					"_bipolar": "0",
+					"_v": "0.00000000000000",
+					"_label": "-"
+				}
+			]
+		},
+		"lfobanklabels": "",
+		"modwheel": {
+			"_s0": "0",
+			"_s1": "0"
+		},
+		"compatability": {
+			"correctlyTunedCombFilter": {
+				"_v": "1"
+			}
+		},
+		"dawExtraState": {
+			"_populated": "0"
+		},
+		"_revision": "22"
+	}
+}

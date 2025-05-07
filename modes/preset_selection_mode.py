@@ -2,6 +2,7 @@ import definitions
 import push2_python
 import os
 import json
+import traceback
 from glob import glob
 from user_interface.display_utils import show_text
 from pathlib import Path
@@ -125,6 +126,13 @@ class PresetSelectionMode(definitions.PyshaMode):
 
     def get_current_instrument_short_name_helper(self):
         return self.app.instrument_selection_mode.get_current_instrument_short_name()
+
+    def get_preset_path_for_instrument(self, instrument_shortname):
+        preset_tuple = self.last_pad_in_column_pressed[instrument_shortname]
+        preset_index = preset_tuple[0]
+        preset = self.presets[instrument_shortname][preset_index]
+        path = self.get_preset_path(preset)
+        return preset
 
     def remove_preset(self, preset_number, bank_number):
         instrument_short_name = (
@@ -447,7 +455,7 @@ class PresetSelectionMode(definitions.PyshaMode):
             print(
                 f"ERROR in preset_selection_mode set_knob_positions() at {preset_address}"
             )
-            print(e)
+            traceback.print_exc()
 
     def on_button_pressed(self, button_name):
         if button_name in [
@@ -505,7 +513,7 @@ class PresetSelectionMode(definitions.PyshaMode):
             pass  # Encoder not in list
 
     def send_osc(self, *args, instrument_shortname=None):
-        instrument = self.app.osc_mode.instruments.get(
+        instrument = self.app.instruments.get(
             instrument_shortname or self.app.osc_mode.get_current_instrument_short_name_helper(), None
         )
         if instrument:

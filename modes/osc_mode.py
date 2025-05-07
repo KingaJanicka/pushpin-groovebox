@@ -7,9 +7,24 @@ from definitions import PyshaMode
 from user_interface.display_utils import show_text
 from glob import glob
 from pathlib import Path
-from modes.osc_instrument import OSCInstrument
+from modes.instrument import Instrument
 from ratelimit import RateLimitException
 import traceback
+import numbers
+
+import sys
+import struct
+import xml.dom.minidom
+
+from osc_controls import (
+    OSCControl,
+    ControlSpacer,
+    OSCControlMacro,
+    OSCGroup,
+    OSCControlSwitch,
+    OSCControlMenu,
+    OSCMenuItem,
+)
 
 logger = logging.getLogger("osc_mode")
 
@@ -37,12 +52,12 @@ class OSCMode(PyshaMode):
         push2_python.constants.BUTTON_LOWER_ROW_8,
     ]
 
-    instruments = {}
     current_device_index_and_page = [0, 0]
     instrument_page = 0
+    state = {}
     transports = []
     cli_needs_update = False
-
+    osc_mode_filename = "osc_mode.json"
     def initialize(self, settings=None):
         device_names = [
             Path(device_file).stem
@@ -116,7 +131,7 @@ class OSCMode(PyshaMode):
                 )
             )
 
-            self.instruments[instrument_short_name] = OSCInstrument(
+            self.app.instruments[instrument_short_name] = Instrument(
                 instrument_short_name,
                 instrument_definition,
                 device_definitions,
@@ -124,10 +139,108 @@ class OSCMode(PyshaMode):
                 app=self.app,
             )
 
+    def load_state(self):
+        try:
+            print("Loading Osc_mode state")
+            if os.path.exists(self.osc_mode_filename):
+                dump = json.load(open(self.osc_mode_filename))
+                state = dump
+                self.state = dump
+                for (
+                instrument_short_name
+                ) in self.get_all_distinct_instrument_short_names_helper():
+                    devices = self.get_instrument_devices(instrument_short_name)
+                    
+                    # Unpacking patch
+                    path = self.app.preset_selection_mode.get_preset_path_for_instrument(instrument_short_name)
+                    patch = path + ".fxp"
+                    with open(patch, mode='rb') as patchFile:
+                        patchContent = patchFile.read()
+
+                    patchHeader = struct.unpack("<4siiiiiii", patchContent[60:92])
+                    xmlsize = patchHeader[1]
+                    # print("Patch Header Values: {0}".format(patchHeader))
+                    xmlct = patchContent[92:(92 + xmlsize)].decode('utf-8')
+
+                    dom = xml.dom.minidom.parseString(xmlct)
+                    pretty_xml_as_string = dom.toprettyxml()
+                    # print(pretty_xml_as_string)
+
+                    # Getting the right device for slot
+                    for device_index, device in enumerate(devices):
+                        # Replaces the control values with state
+                        values = []
+                        for control_index, control in enumerate(device.controls):
+                            state_value = state[instrument_short_name][device_index][control_index]
+                            
+
+                            if isinstance(control, OSCControl) or isinstance(control, OSCControlMenu):
+                                # Update state of the devices and send OSC message
+                                if control.value != state_value and isinstance(state_value, numbers.Number):
+                                    if hasattr(control, "address") and control.address != None:
+                                        control.value = float(state[instrument_short_name][device_index][control_index])
+                                        self.app.send_osc(control.address, float(control.value), instrument_short_name)
+                            elif isinstance(control, OSCGroup):
+                                # control.select()
+                                pass
+                            elif isinstance(control, OSCControlSwitch):
+                                # Nested items need more care with saving their state
+                                control.value = state_value[0]
+                                active_group = control.get_active_group()
+                                for idx, active_group_control in enumerate(active_group.controls):
+                                    active_group_control.value = state_value[idx + 1]
+                                    self.app.send_osc(active_group_control.address, int(state_value[idx + 1]), instrument_short_name)
+                                active_group.select()
+                                    
+            else:
+                # if file does not exist, create one
+                self.save_state()
+        except Exception as e:
+            print("Exception in trig_edit load_state")
+            traceback.print_exc()
+
+    def save_state(self):
+        try:
+            state = {}
+            for (
+            instrument_short_name
+            ) in self.get_all_distinct_instrument_short_names_helper():
+                devices = self.get_instrument_devices(instrument_short_name)
+                instrument_state = {instrument_short_name: []}
+                # TODO: This breaks with Switches
+                # Getting the right device for slot
+                for index, device in enumerate(devices):
+                    # Appending the control values to the state list
+                    values = []
+                    for control in device.controls:
+                        if isinstance(control, OSCControl) or isinstance(control, OSCControlMenu):
+                            values.append(control.value)
+                        elif isinstance(control, OSCControlSwitch):
+                            nested_values = []
+                            nested_values.append(control.value)
+                            active_group = control.get_active_group()
+                            for nested_control in active_group.controls:
+                                nested_values.append(nested_control.value)
+                            # print(control.label, nested_values)
+                            values.append(nested_values)
+                            # print("Group save")
+                        else:
+                            values.append(None)
+                    instrument_state[instrument_short_name].append(values)
+                state.update(instrument_state)
+
+            json.dump(state, open(self.osc_mode_filename, "w"))  # Save to file
+            self.state = state
+            # print("saved osc_mode state")
+        except Exception as e:
+            print("Exception in osc_mode save_state")
+            traceback.print_exc()
+
+
 
     def close_transports(self):
-        for instrument in self.instruments:
-            self.instruments[instrument].close_transports()
+        for instrument in self.app.instruments:
+            self.app.instruments[instrument].close_transports()
 
     def get_all_distinct_instrument_short_names_helper(self):
         return (
@@ -142,7 +255,28 @@ class OSCMode(PyshaMode):
 
     def get_current_instrument_devices(self):
         instrument_shortname = self.get_current_instrument_short_name_helper()
-        instrument = self.instruments.get(instrument_shortname, None)
+        instrument = self.app.instruments.get(instrument_shortname, None)
+
+        devices = []
+
+        for slot_idx, slot_devices in enumerate(instrument.devices):
+            for device in slot_devices:
+                if slot_idx == 2 or slot_idx == 3 or slot_idx == 4:
+                    devices.append(device)
+                elif 8 <= slot_idx <= 15:
+                    devices.append(device)
+                else:
+                    slot = instrument.slots[slot_idx]
+                    for init in device.init:
+                        if init["address"] == slot["address"] and int(
+                            init["value"]
+                        ) == float(slot["value"]):
+                            devices.append(device)
+
+        return devices
+
+    def get_instrument_devices(self, instrument_short_name):
+        instrument = self.app.instruments.get(instrument_short_name, None)
 
         devices = []
 
@@ -164,7 +298,7 @@ class OSCMode(PyshaMode):
 
     def get_current_instrument_page_devices(self):
         instrument_shortname = self.get_current_instrument_short_name_helper()
-        instrument = self.instruments.get(instrument_shortname, None)
+        instrument = self.app.instruments.get(instrument_shortname, None)
 
         devices = []
         devices_modulation = []
@@ -189,13 +323,13 @@ class OSCMode(PyshaMode):
             return devices_modulation
 
     def query_devices(self):
-        self.instruments[self.get_current_instrument_short_name_helper()].query_slots()
+        self.app.instruments[self.get_current_instrument_short_name_helper()].query_slots()
         # devices = self.get_current_instrument_devices()
         # for device in devices:
         #     device.query()
 
     def get_current_instrument(self):
-        instrument = self.instruments[self.get_current_instrument_short_name_helper()]
+        instrument = self.app.instruments[self.get_current_instrument_short_name_helper()]
         if instrument:
             return instrument
 
@@ -213,7 +347,7 @@ class OSCMode(PyshaMode):
         instrument_shortname = (
             self.app.osc_mode.get_current_instrument_short_name_helper()
         )
-        instrument = self.app.osc_mode.instruments.get(instrument_shortname, None)
+        instrument = self.app.instruments.get(instrument_shortname, None)
         current_device = self.app.osc_mode.get_current_instrument_device()
         current_device_slot = current_device.slot
 
@@ -439,5 +573,6 @@ class OSCMode(PyshaMode):
                 pass
                 # current_device.on_encoder_rotated(encoder_name)
         except Exception as err:
-            print(err)
+            print("Exception in on_encoder_touched in osc_mode")
+            traceback.print_exc()
             pass  # Encoder not in list

@@ -1,6 +1,7 @@
 import logging
 import engine
 import mido
+import isobar as iso
 from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.osc_server import AsyncIOOSCUDPServer
 from pythonosc.dispatcher import Dispatcher
@@ -11,11 +12,12 @@ from definitions import PyshaMode
 import asyncio
 logger = logging.getLogger("osc_instrument")
 # logger.setLevel(level=logging.DEBUG)
+from time import sleep
 
-
-class OSCInstrument(PyshaMode):
+class Instrument(PyshaMode):
     engine = None
-    
+    timeline = None
+
     def __init__(
         self,
         instrument_short_name,
@@ -25,6 +27,7 @@ class OSCInstrument(PyshaMode):
         app,
         **kwargs
     ):
+        self.app = app
         self.transports = []
         self.devices = []
         self.instrument_nodes = []
@@ -53,20 +56,35 @@ class OSCInstrument(PyshaMode):
         self.log_in = logger.getChild(f"in-{self.osc_in_port}")
         self.log_out = logger.getChild(f"out-{self.osc_out_port}")
 
-        self.midi_port = mido.open_output(
-            instrument_definition["instrument_short_name"],
-            client_name=instrument_definition["instrument_short_name"],
-        )
+        # this is vestigal and I think only has anything to do with external midi being sent
+        # TODO remove and replace with Isobar midi in????
+        self.midi_in_name = f'{instrument_definition["instrument_short_name"]}'
+        self.midi_out_name = f'{instrument_definition["instrument_short_name"]}'
 
+        # self.midi_in_device = mido.open_output(
+        #     self.midi_in_name,
+        #     client_name=self.midi_in_name,
+        # )
         
-        midi_device_idx = [f'{instrument_definition["instrument_short_name"]} sequencer' in input_name for input_name in mido.get_input_names()].index(
+        # self.midi_in_device = iso.MidiInputDevice(device_name=self.midi_in_name)
+        self.midi_out_device = iso.MidiOutputDevice(
+            device_name=self.midi_out_name, send_clock=True, virtual=True
+        )
+        self.midi_in_device = self.midi_out_device
+
+        midi_out_idx = [self.midi_in_name in output for output in iso.get_midi_input_names()].index(
             True
         )
-        print("MIDI", midi_device_idx, mido.get_input_names()[midi_device_idx])
+        
+        self.timeline = iso.Timeline(
+            self.app.tempo, 
+            output_device=self.midi_out_device
+        )
+        
+        print("MIDI", midi_out_idx, mido.get_input_names()[midi_out_idx])
         if kwargs.get("engine", "surge-xt-cli") == "surge-xt-cli":
-            self.engine = engine.SurgeXTEngine(app, midi_device_idx=midi_device_idx, instrument_definition=instrument_definition)
-
-            
+            self.engine = engine.SurgeXTEngine(app, midi_device_idx=midi_out_idx, instrument_definition=instrument_definition)
+                   
         client = None
         server = None
         dispatcher = Dispatcher()

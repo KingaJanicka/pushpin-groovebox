@@ -17,6 +17,7 @@ from modes.instrument_selection_mode import InstrumentSelectionMode
 from modes.rhythmic_mode import RhythmicMode
 from modes.slice_notes_mode import SliceNotesMode
 from modes.sequencer_mode import SequencerMode
+from modes.metro_sequencer_mode import MetroSequencerMode
 from modes.settings_mode import SettingsMode
 from modes.main_controls_mode import MainControlsMode
 from modes.midi_cc_mode import MIDICCMode
@@ -28,12 +29,16 @@ from modes.menu_mode import MenuMode
 from modes.mute_mode import MuteMode
 from user_interface.display_utils import show_notification
 from modes.external_instrument import ExternalInstrument
+from definitions import DEFAULT_GLOBAL_TEMPO
+
 # logging.basicConfig(level=logging.DEBUG)
 # logging.getLogger().setLevel(level=logging.DEBUG)
 
 
 class PyshaApp(object):
-
+    # global state
+    instruments = {}
+    tempo = DEFAULT_GLOBAL_TEMPO
     # midi
     midi_out = None
     available_midi_out_device_names = []
@@ -117,7 +122,6 @@ class PyshaApp(object):
             self, settings=settings
         )
 
-
         self.main_controls_mode = MainControlsMode(self, settings=settings)
         self.active_modes.append(self.main_controls_mode)
 
@@ -130,15 +134,23 @@ class PyshaApp(object):
 
         self.preset_selection_mode = PresetSelectionMode(self, settings=settings)
         self.trig_edit_mode = TrigEditMode(self, settings=settings)
+        
+        # Must be initialized after instrument selection mode so it gets info about loaded instruments
         self.midi_cc_mode = MIDICCMode(
             self, settings=settings
-        )  # Must be initialized after instrument selection mode so it gets info about loaded instruments
-        self.sequencer_mode = SequencerMode(
-            self, settings=settings, send_osc_func=self.send_osc
-        ) # Must be initialized after instrument selection mode so it gets info about loaded instruments
+        )  
+        
+        # Must be initialized after instrument selection mode so it gets info about loaded instruments
         self.osc_mode = OSCMode(
             self, settings=settings
         )
+        
+        self.sequencer_mode = SequencerMode(
+            self, settings=settings, send_osc_func=self.send_osc
+        )
+        self.metro_sequencer_mode = MetroSequencerMode(
+            self, settings=settings, send_osc_func=self.send_osc
+        ) 
         self.active_modes += [self.instrument_selection_mode, self.osc_mode]
         self.instrument_selection_mode.select_instrument(
             self.instrument_selection_mode.selected_instrument
@@ -153,7 +165,7 @@ class PyshaApp(object):
             "midi_channel": 9
             }
         self.external_instruments = [ExternalInstrument(self, 'Overwitch', overwitch_def)]
-
+        
     def get_all_modes(self):
         return [
             getattr(self, element)
@@ -340,7 +352,7 @@ class PyshaApp(object):
                     self.set_mode_for_xor_group(self.melodic_mode)
 
     def toggle_melodic_rhythmic_slice_modes(self):
-        if self.is_mode_active(self.sequencer_mode):
+        if self.is_mode_active(self.metro_sequencer_mode):
             self.set_rhythmic_mode()
         elif self.is_mode_active(self.rhythmic_mode):
             self.set_slice_notes_mode()
@@ -348,6 +360,8 @@ class PyshaApp(object):
             self.set_melodic_mode()
         elif self.is_mode_active(self.melodic_mode) or self.is_mode_active(self.mute_mode):
             self.set_sequencer_mode()
+        elif self.is_mode_active(self.sequencer_mode):
+            self.set_metro_sequencer_mode()
         else:
             # If none of melodic or rhythmic or slice modes were active, enable melodic by default
             self.set_melodic_mode()
@@ -364,6 +378,10 @@ class PyshaApp(object):
     def set_sequencer_mode(self):
         # pass
         self.set_mode_for_xor_group(self.sequencer_mode)
+
+    def set_metro_sequencer_mode(self):
+        # pass
+        self.set_mode_for_xor_group(self.metro_sequencer_mode)
 
     def set_mute_mode(self):
         self.set_mode_for_xor_group(self.mute_mode)
@@ -443,68 +461,69 @@ class PyshaApp(object):
             print("Not receiving from any MIDI input")
 
     def init_midi_out(self, device_name=None):
-        #TODO:: Does this do anything?
-        print("Configuring MIDI out to {}...".format(device_name))
-        self.available_midi_out_device_names = [
-            name
-            for name in mido.get_output_names()
-            if "Ableton Push" not in name
-            and "RtMidi" not in name
-            and "Through" not in name
-        ]
-        self.available_midi_out_device_names += [
-            "Pushpin 0",
-            "Pushpin 1",
-            "Pushpin 2",
-            "Pushpin 3",
-            "Pushpin 4",
-            "Pushpin 5",
-            "Pushpin 6",
-            "Pushpin 7",
-        ]
-        virtual_device_names = [
-            "Pushpin 0",
-            "Pushpin 1",
-            "Pushpin 2",
-            "Pushpin 3",
-            "Pushpin 4",
-            "Pushpin 5",
-            "Pushpin 6",
-            "Pushpin 7",
-        ]
-        if device_name is not None:
-            try:
-                full_name = [
-                    name
-                    for name in self.available_midi_out_device_names
-                    if device_name in name
-                ][0]
-            except IndexError:
-                full_name = None
-            if full_name is not None:
-                try:
-                    if full_name in virtual_device_names:
-                        self.midi_out = mido.open_output(full_name, virtual=True)
-                    else:
-                        self.midi_out = mido.open_output(full_name)
-                    print('Will send MIDI to "{0}"'.format(full_name))
-                except IOError:
-                    print(
-                        'Could not connect to MIDI output port "{0}"\nAvailable device names:'.format(
-                            full_name
-                        )
-                    )
-                    for name in self.available_midi_out_device_names:
-                        print(" - {0}".format(name))
-            else:
-                print("No available device name found for {}".format(device_name))
-        else:
-            if self.midi_out is not None:
-                self.midi_out.close()
-                self.midi_out = None
+        pass
+        # #TODO:: Does this do anything?
+        # print("Configuring MIDI out to {}...".format(device_name))
+        # self.available_midi_out_device_names = [
+        #     name
+        #     for name in mido.get_output_names()
+        #     if "Ableton Push" not in name
+        #     and "RtMidi" not in name
+        #     and "Through" not in name
+        # ]
+        # self.available_midi_out_device_names += [
+        #     "Pushpin 0",
+        #     "Pushpin 1",
+        #     "Pushpin 2",
+        #     "Pushpin 3",
+        #     "Pushpin 4",
+        #     "Pushpin 5",
+        #     "Pushpin 6",
+        #     "Pushpin 7",
+        # ]
+        # virtual_device_names = [
+        #     "Pushpin 0",
+        #     "Pushpin 1",
+        #     "Pushpin 2",
+        #     "Pushpin 3",
+        #     "Pushpin 4",
+        #     "Pushpin 5",
+        #     "Pushpin 6",
+        #     "Pushpin 7",
+        # ]
+        # if device_name is not None:
+        #     try:
+        #         full_name = [
+        #             name
+        #             for name in self.available_midi_out_device_names
+        #             if device_name in name
+        #         ][0]
+        #     except IndexError:
+        #         full_name = None
+        #     if full_name is not None:
+        #         try:
+        #             if full_name in virtual_device_names:
+        #                 self.midi_out = mido.open_output(full_name, virtual=True)
+        #             else:
+        #                 self.midi_out = mido.open_output(full_name)
+        #             print('Will send MIDI to "{0}"'.format(full_name))
+        #         except IOError:
+        #             print(
+        #                 'Could not connect to MIDI output port "{0}"\nAvailable device names:'.format(
+        #                     full_name
+        #                 )
+        #             )
+        #             for name in self.available_midi_out_device_names:
+        #                 print(" - {0}".format(name))
+        #     else:
+        #         print("No available device name found for {}".format(device_name))
+        # else:
+        #     if self.midi_out is not None:
+        #         self.midi_out.close()
+        #         self.midi_out = None
 
-        if self.midi_out is None:
-            print("Won't send MIDI to any device")
+        # if self.midi_out is None:
+        #     print("Won't send MIDI to any device")
 
     def init_notes_midi_in(self, device_name=None):
         print("Configuring notes MIDI in to {}...".format(device_name))
@@ -622,22 +641,27 @@ class PyshaApp(object):
         #     self.instrument_selection_mode.get_current_instrument_short_name(),
         #     "SEND OSC",
         # )
-        if instrument_short_name is not None:
-            # This is for the sequencer
-            client = self.osc_mode.instruments[instrument_short_name].osc.get(
-                "client", None
-            )
-            if client:
-                client.send_message(address, value)
-        else:
-            # This is for wiggling knobs
-            client = self.osc_mode.instruments[
-                self.instrument_selection_mode.get_current_instrument_short_name()
-            ].get("client", None)
+        # print("App.py send_osc", address, value, instrument_short_name)
+        try:
+            if instrument_short_name is not None:
+                # This is for the sequencer
+                client = self.instruments[instrument_short_name].osc.get(
+                    "client", None
+                )
+                if client:
+                    client.send_message(address, value)
+            else:
+                # This is for wiggling knobs
+                client = self.instruments[
+                    self.instrument_selection_mode.get_current_instrument_short_name()
+                ].get("client", None)
 
-            if client:
-                client.send_message(address, value)
-            # print("adress", address, value)
+                if client:
+                    client.send_message(address, value)
+                # print("adress", address, value)
+        except Exception as e:
+            print("Exception in app.py send_osc")
+            traceback.print_exc()
 
     def send_osc_multi(self, commands, instrument_short_name=None):
         for command in commands:
@@ -655,9 +679,9 @@ class PyshaApp(object):
                 None,
             )
             if instrument:
-                instance = self.osc_mode.instruments.get(instrument["instrument_short_name"], None)
-                if instance.midi_port:
-                    instance.midi_port.send(msg)
+                instance = self.instruments.get(instrument["instrument_short_name"], None)
+                if instance.midi_in_device:
+                    instance.midi_in_device.send(msg)
             # This will rule out sysex and other "strange" messages that don't have channel info
             # if (
             #     self.midi_in_channel == -1 or msg.channel == self.midi_in_channel
@@ -807,6 +831,7 @@ class PyshaApp(object):
                     mode.update_display(ctx, w, h)
             # Makes seq submenus always draw on top of other modes
             self.sequencer_mode.update_display(ctx, w, h)
+            self.metro_sequencer_mode.update_display(ctx, w, h)
 
             # Show any notifications that should be shown
             if self.notification_text is not None:
@@ -859,8 +884,10 @@ class PyshaApp(object):
 
 
     async def run_loop(self):
+        print("Loading State ...")
+        self.metro_sequencer_mode.load_state()
+        self.sequencer_mode.load_state()
         print("Pysha is running...")
-
         while True:
             before_draw_time = time.time()
 
@@ -941,7 +968,7 @@ class PyshaApp(object):
                 print(stderr)
 
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             print("Waiting 2 seconds for device to become available and trying again...")
             await asyncio.sleep(2)
             await self.get_pipewire_config()
@@ -1094,8 +1121,8 @@ async def main():
     # Initialise OSC sockets
     loop = asyncio.get_event_loop()
 
-    for instrument in app.osc_mode.instruments:
-        await app.osc_mode.instruments[instrument].start(loop)
+    for instrument in app.instruments:
+        await app.instruments[instrument].start(loop)
 
     for instrument in app.external_instruments:
         await instrument.start(loop)
@@ -1110,13 +1137,13 @@ async def main():
     
     #Querry controls to update initial state
 
-    for instrument in app.osc_mode.instruments:
-        await app.osc_mode.instruments[instrument].engine.configure_pipewire()
+    for instrument in app.instruments:
+        await app.instruments[instrument].engine.configure_pipewire()
         await asyncio.sleep(0.1)
-        app.osc_mode.instruments[instrument].query_all_controls()
-        app.osc_mode.instruments[instrument].query_devices()
+        app.instruments[instrument].query_all_controls()
+        app.instruments[instrument].query_devices()
         
-        app.queue.append(app.osc_mode.instruments[instrument].init_devices())
+        app.queue.append(app.instruments[instrument].init_devices())
         
 
     for instrument in app.external_instruments:
