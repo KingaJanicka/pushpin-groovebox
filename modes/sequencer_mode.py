@@ -133,7 +133,6 @@ class SequencerMode(MelodicMode):
                                 track_name
                             ]
                         ):
-                            print(control, instrument_short_name, track_name)
                             control.value = dump[instrument_short_name][track_name][idx]
         except Exception as e:
             print("Exception in sequencer_mode, load_state")
