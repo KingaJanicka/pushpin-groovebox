@@ -132,8 +132,8 @@ TRACK_NAMES = [
 TRACK_NAMES_METRO = [
     "pitch",
     "octave",
+    "velocity",
     "gate",
-    "accent_1",
     "aux_1",
     "aux_2",
     "aux_3",

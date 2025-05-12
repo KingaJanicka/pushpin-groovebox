@@ -50,12 +50,12 @@ class SequencerMetro(object):
         self.note = [None] * default_number_of_steps
         self.pitch = [False] * default_number_of_steps
         self.octave = [False] * default_number_of_steps
+        self.velocity = [False] * default_number_of_steps
         self.gate = [False] * default_number_of_steps
         self.mutes_skips = [False] * default_number_of_steps
         self.aux_1 = [False] * default_number_of_steps
         self.aux_2 = [False] * default_number_of_steps
         self.aux_3 = [False] * default_number_of_steps
-        self.aux_4 = [False] * default_number_of_steps
         self.playhead = playhead
         self.send_osc_func = send_osc_func
         self.timeline = global_timeline
@@ -87,17 +87,17 @@ class SequencerMetro(object):
         elif name == TRACK_NAMES_METRO[1]:
             return self.octave
         elif name == TRACK_NAMES_METRO[2]:
-            return self.gate
+            return self.velocity
         elif name == TRACK_NAMES_METRO[3]:
-            return self.mutes_skips
+            return self.gate
         elif name == TRACK_NAMES_METRO[4]:
-            return self.aux_1
+            return self.mutes_skips
         elif name == TRACK_NAMES_METRO[5]:
-            return self.aux_2
+            return self.aux_1
         elif name == TRACK_NAMES_METRO[6]:
-            return self.aux_3
+            return self.aux_2
         elif name == TRACK_NAMES_METRO[7]:
-            return self.aux_4
+            return self.aux_3
         
     def load_state(self):
         try:
@@ -107,12 +107,12 @@ class SequencerMetro(object):
                 self.note = dump["note"]
                 self.pitch = dump[TRACK_NAMES_METRO[0]]
                 self.octave = dump[TRACK_NAMES_METRO[1]]
-                self.gate = dump[TRACK_NAMES_METRO[2]]
-                self.mutes_skips = dump[TRACK_NAMES_METRO[3]]
-                self.aux_1 = dump[TRACK_NAMES_METRO[4]]
-                self.aux_2 = dump[TRACK_NAMES_METRO[5]]
-                self.aux_3 = dump[TRACK_NAMES_METRO[6]]
-                self.aux_4 = dump[TRACK_NAMES_METRO[7]]
+                self.aux_4 = dump[TRACK_NAMES_METRO[2]]
+                self.gate = dump[TRACK_NAMES_METRO[3]]
+                self.mutes_skips = dump[TRACK_NAMES_METRO[4]]
+                self.aux_1 = dump[TRACK_NAMES_METRO[5]]
+                self.aux_2 = dump[TRACK_NAMES_METRO[6]]
+                self.aux_3 = dump[TRACK_NAMES_METRO[7]]
                 
                 self.app.metro_sequencer_mode.update_pads_to_seq_state()
         except Exception as e:
@@ -127,12 +127,12 @@ class SequencerMetro(object):
                 "note": self.note,
                 TRACK_NAMES_METRO[0]: self.pitch,
                 TRACK_NAMES_METRO[1]: self.octave,
-                TRACK_NAMES_METRO[2]: self.gate,
-                TRACK_NAMES_METRO[3]: self.mutes_skips,
-                TRACK_NAMES_METRO[4]: self.aux_1,
-                TRACK_NAMES_METRO[5]: self.aux_2,
-                TRACK_NAMES_METRO[6]: self.aux_3,
-                TRACK_NAMES_METRO[7]: self.aux_4,
+                TRACK_NAMES_METRO[2]: self.velocity,
+                TRACK_NAMES_METRO[3]: self.gate,
+                TRACK_NAMES_METRO[4]: self.mutes_skips,
+                TRACK_NAMES_METRO[5]: self.aux_1,
+                TRACK_NAMES_METRO[6]: self.aux_2,
+                TRACK_NAMES_METRO[7]: self.aux_3,
             }
             json.dump(
                 sequencer_state, open(self.seq_filename, "w")
@@ -172,10 +172,9 @@ class SequencerMetro(object):
                 octave = self.octave[self.step_index] * 12 if self.octave[self.step_index] != None else 0 
             
                 pitch_and_octave = pitch + octave
-                amplitude = 127
-                
+                velocity = ((self.velocity[self.step_index] + 1) * 16 - 1) if self.velocity[self.step_index] != None else 1 
                 self.local_timeline.schedule(
-                        {"note": pitch_and_octave, "gate": 0.1, "amplitude": 127}, count=1
+                        {"note": pitch_and_octave, "gate": 0.1, "amplitude": velocity}, count=1
                     )
         except Exception as e:
             print("Error in evaluate_and_play_notes")
@@ -196,17 +195,17 @@ class SequencerMetro(object):
         elif lane == TRACK_NAMES_METRO[1]:
             return self.octave
         elif lane == TRACK_NAMES_METRO[2]:
-            return self.gate
+            return self.velocity
         elif lane == TRACK_NAMES_METRO[3]:
-            return self.mutes_skips
+            return self.gate
         elif lane == TRACK_NAMES_METRO[4]:
-            return self.aux_1
+            return self.mutes_skips
         elif lane == TRACK_NAMES_METRO[5]:
-            return self.aux_2
+            return self.aux_1
         elif lane == TRACK_NAMES_METRO[6]:
-            return self.aux_3
+            return self.aux_2
         elif lane == TRACK_NAMES_METRO[7]:
-            return self.aux_4
+            return self.aux_3
 
     def get_current_instrument_short_name_helper(self):
         return self.app.instrument_selection_mode.get_current_instrument_short_name()
@@ -224,17 +223,17 @@ class SequencerMetro(object):
         elif lane == TRACK_NAMES_METRO[1]:
             self.octave[index] = value
         elif lane == TRACK_NAMES_METRO[2]:
-            self.gate[index] = value
+            self.velocity[index] = value
         elif lane == TRACK_NAMES_METRO[3]:
-            self.mutes_skips[index] = value
+            self.gate[index] = value
         elif lane == TRACK_NAMES_METRO[4]:
-            self.aux_1[index] = value
+            self.mutes_skips[index] = value
         elif lane == TRACK_NAMES_METRO[5]:
-            self.aux_2[index] = value
+            self.aux_1[index] = value
         elif lane == TRACK_NAMES_METRO[6]:
-            self.aux_3[index] = value
+            self.aux_2[index] = value
         elif lane == TRACK_NAMES_METRO[7]:
-            self.aux_4[index] = value
+            self.aux_3[index] = value
 
     def set_lock_state(self, index, parameter_idx, value):
         # print(f"Set_lock_state: index {index}, param_idx {parameter_idx}, value {value}")

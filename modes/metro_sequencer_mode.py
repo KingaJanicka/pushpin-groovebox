@@ -23,9 +23,9 @@ EMPTY_PATTERN = []
 TRACK_COLORS = {
     TRACK_NAMES_METRO[0]: definitions.GREEN,
     TRACK_NAMES_METRO[1]: definitions.ORANGE,
-    TRACK_NAMES_METRO[2]: definitions.TURQUOISE,
-    TRACK_NAMES_METRO[3]: definitions.RED,
-    TRACK_NAMES_METRO[4]: definitions.YELLOW,
+    TRACK_NAMES_METRO[2]: definitions.YELLOW,
+    TRACK_NAMES_METRO[3]: definitions.TURQUOISE,
+    TRACK_NAMES_METRO[4]: definitions.RED,
     TRACK_NAMES_METRO[5]: definitions.CYAN,
     TRACK_NAMES_METRO[6]: definitions.CYAN,
     TRACK_NAMES_METRO[7]: definitions.CYAN,
@@ -226,9 +226,22 @@ class MetroSequencerMode(MelodicMode):
                         octave_pad_state[7 - y][idx] = True
                     else:
                         octave_pad_state[7 - y][idx] = False
+                        
+            # this updates all the velocity tracks
+            velocity_track_name = TRACK_NAMES_METRO[2]
+            velocity_seq_track = seq.get_track_by_name(velocity_track_name)
+            velocity_pad_state = self.metro_seq_pad_state[instrument_short_name][velocity_track_name]
+            
+            for idx in range(8):
+                vel_val = velocity_seq_track[idx * 8]
+                for y in range(8):
+                    if vel_val == y: 
+                        velocity_pad_state[7 - y][idx] = True
+                    else:
+                        velocity_pad_state[7 - y][idx] = False
             
             # this loop updates all the gate tracks
-            gate_track_name = TRACK_NAMES_METRO[2]
+            gate_track_name = TRACK_NAMES_METRO[3]
             gate_seq_track = seq.get_track_by_name(gate_track_name)
             gate_pad_state = self.metro_seq_pad_state[instrument_short_name][gate_track_name]
             for step_idx, step in enumerate(gate_seq_track):
@@ -495,7 +508,7 @@ class MetroSequencerMode(MelodicMode):
                         else:
                             button_colors[idx] = TRACK_COLORS[self.selected_track]
 
-                    if self.selected_track != TRACK_NAMES_METRO[2] and (idx % 8) == gate_idx_x:
+                    if self.selected_track != TRACK_NAMES_METRO[3] and (idx % 8) == gate_idx_x:
                         button_colors[idx] = definitions.PINK
                     
                     if seq_pad_state[i][j] == "Off":
@@ -508,7 +521,7 @@ class MetroSequencerMode(MelodicMode):
                         button_colors[idx] = definitions.BLACK
                     
 
-            if self.selected_track == TRACK_NAMES_METRO[2]:
+            if self.selected_track == TRACK_NAMES_METRO[3]:
                 # Draw the playhead
                 button_colors[gate_idx_y * 8 + gate_idx_x] = definitions.PINK
             # makes the values into a multi-dimensional array
@@ -639,9 +652,27 @@ class MetroSequencerMode(MelodicMode):
                 # Set the oct values
                 for x in range(8):
                     seq.set_state([TRACK_NAMES_METRO[1]], idx_j*8 + x, 7- idx_i)
+                    
+        # Vel track
+        elif self.selected_track == TRACK_NAMES_METRO[2]:
+            if len(self.steps_held) < 2:
+                # If a pad is off, turn it on
+                if seq_pad_state[idx_i][idx_j] == False:
+                    # Turn off all other pads in the column
+                    for x in range(8):
+                        seq_pad_state[x][idx_j] = False
+                    seq_pad_state[idx_i][idx_j] = True
+
+                # If it's on, save the time and cont in on_pad_released
+                elif seq_pad_state[idx_i][idx_j] == True:
+                    self.pads_press_time[idx_n] = time.time()
+                    # call func to show lock here
+                # Set the oct values
+                for x in range(8):
+                    seq.set_state([TRACK_NAMES_METRO[2]], idx_j*8 + x, 7- idx_i)
 
         # Gates track
-        elif self.selected_track == TRACK_NAMES_METRO[2]:
+        elif self.selected_track == TRACK_NAMES_METRO[3]:
             if len(self.steps_held) < 2:
                 instrument_shortname = self.get_current_instrument_short_name_helper()
                 
@@ -708,7 +739,7 @@ class MetroSequencerMode(MelodicMode):
                 # sets pad state
                 for idx_i, i in enumerate(seq_pad_state):
                     for idx_j, j in enumerate(i):
-                        seq.set_state([TRACK_NAMES_METRO[2]], idx_j*8 + 7 - idx_i, j)
+                        seq.set_state([TRACK_NAMES_METRO[3]], idx_j*8 + 7 - idx_i, j)
                         
         else:
             # If a pad is off, turn it on
@@ -738,10 +769,10 @@ class MetroSequencerMode(MelodicMode):
         press_time = epoch_time - self.pads_press_time[idx_n]
         seq = self.instrument_sequencers[self.get_current_instrument_short_name_helper()]
 
-        if self.selected_track == TRACK_NAMES_METRO[0] or self.selected_track == TRACK_NAMES_METRO[1]:
+        if self.selected_track == TRACK_NAMES_METRO[0] or self.selected_track == TRACK_NAMES_METRO[1] or self.selected_track == TRACK_NAMES_METRO[2]:
             pass
 
-        elif self.selected_track == TRACK_NAMES_METRO[2]:
+        elif self.selected_track == TRACK_NAMES_METRO[3]:
             # Short Press - turn the pad off, reset the timer
             if (
                 press_time <= self.pad_quick_press_time
@@ -753,7 +784,7 @@ class MetroSequencerMode(MelodicMode):
                 # sets pad state
                 for idx_i, i in enumerate(seq_pad_state):
                     for idx_j, j in enumerate(i):
-                        seq.set_state([TRACK_NAMES_METRO[2]], idx_j*8 + 7 - idx_i, j)
+                        seq.set_state([TRACK_NAMES_METRO[3]], idx_j*8 + 7 - idx_i, j)
 
             # Long Press - keep the pad on, trigger a lock preview
             elif press_time > self.pad_quick_press_time:
