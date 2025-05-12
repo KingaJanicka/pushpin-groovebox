@@ -166,15 +166,21 @@ class SequencerMetro(object):
                 "gate_1"
             ]
             
-            if self.gate[self.step_index] == True and gate_track_active == True:
+            if self.gate[self.step_index] != "Off" and gate_track_active == True:
                 gate = 1
                 pitch = self.pitch[self.step_index] if self.pitch[self.step_index] != None else 0 
                 octave = self.octave[self.step_index] * 12 if self.octave[self.step_index] != None else 0 
             
                 pitch_and_octave = pitch + octave
                 velocity = ((self.velocity[self.step_index] + 1) * 16 - 1) if self.velocity[self.step_index] != None else 1 
+                gate = None
+                
+                if self.gate[self.step_index+1] == "Tie":
+                    gate = 1
+                else:
+                    gate = 0.1
                 self.local_timeline.schedule(
-                        {"note": pitch_and_octave, "gate": 0.1, "amplitude": velocity}, count=1
+                        {"note": pitch_and_octave, "gate": gate, "amplitude": velocity}, count=1
                     )
         except Exception as e:
             print("Error in evaluate_and_play_notes")
