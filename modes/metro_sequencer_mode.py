@@ -37,7 +37,7 @@ track_button_names = [
     push2_python.constants.BUTTON_1_16T,
     push2_python.constants.BUTTON_1_16,
     push2_python.constants.BUTTON_1_8T,
-    # push2_python.constants.BUTTON_1_8,
+    push2_python.constants.BUTTON_1_8,
     # push2_python.constants.BUTTON_1_4T,
     # push2_python.constants.BUTTON_1_4,
 ]
@@ -815,6 +815,7 @@ class MetroSequencerMode(MelodicMode):
         if button_name in track_button_names:
             idx = track_button_names.index(button_name)
             self.selected_track = TRACK_NAMES_METRO[idx]
+            print(self.selected_track)
             self.app.trig_edit_mode.update_state()
             self.app.buttons_need_update = True
             self.app.pads_need_update = True

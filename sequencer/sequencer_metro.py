@@ -188,17 +188,18 @@ class SequencerMetro(object):
                 pitch_and_octave = pitch + octave
                 velocity = ((self.velocity[self.step_index] + 1) * 16 - 1) if self.velocity[self.step_index] != None else 1 
                 gate = None
+                gate_len = self.app.trig_edit_mode.controls[3].value
                 
                 self.increment_next_step_index(index=self.step_index)
                 next_step_index = self.next_step_index
                 
                 if self.gate[next_step_index] == "Tie":
-                    gate = 1
+                    gate = 0.3
                 else:
-                    gate = 0.1
-                    self.local_timeline.schedule(
-                        {"note": pitch_and_octave, "gate": gate, "amplitude": velocity}, count=1
-                    )
+                    gate = 0.25 * gate_len
+                self.local_timeline.schedule(
+                    {"note": pitch_and_octave, "gate": gate, "amplitude": velocity}, count=1
+                )
         except Exception as e:
             print("Error in evaluate_and_play_notes")
             traceback.print_exc()
