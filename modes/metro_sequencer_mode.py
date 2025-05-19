@@ -248,9 +248,20 @@ class MetroSequencerMode(MelodicMode):
                 step_x = int(step_idx / 8)
                 step_y = 7 - step_idx % 8    
                 gate_pad_state[step_y][step_x] = step
+            
+            # this loop updates all the mutes/skips tracks
+            mute_skip_track_name = TRACK_NAMES_METRO[4]
+            mute_skip_seq_track = seq.get_track_by_name(mute_skip_track_name)
+            mute_skip_pad_state = self.metro_seq_pad_state[instrument_short_name][mute_skip_track_name]
+            for step_idx, step in enumerate(mute_skip_seq_track):
+                step_x = int(step_idx / 8)
+                step_y = 7 - step_idx % 8    
+                mute_skip_pad_state[step_y][step_x] = step
+            
                 
             self.update_pads()
             self.app.pads_need_update = True
+    
     def load_state(self):
         # pass
         # Loads seq state
@@ -740,6 +751,20 @@ class MetroSequencerMode(MelodicMode):
                 for idx_i, i in enumerate(seq_pad_state):
                     for idx_j, j in enumerate(i):
                         seq.set_state([TRACK_NAMES_METRO[3]], idx_j*8 + 7 - idx_i, j)
+             
+        elif self.selected_track == TRACK_NAMES_METRO[4]:
+            # If a pad is off, turn it on
+            if seq_pad_state[idx_i][idx_j] == False:
+                # Turn off all other pads in the column
+                # for x in range(8):
+                seq.set_state([TRACK_NAMES_METRO[4]], idx_j*8 + 7- idx_i, True)
+                seq_pad_state[idx_i][idx_j] = True
+
+            # If it's on, save the time and cont in on_pad_released
+            elif seq_pad_state[idx_i][idx_j] == True:
+                self.pads_press_time[idx_n] = time.time()
+                # call func to show lock here
+        
                         
         else:
             # If a pad is off, turn it on
@@ -747,6 +772,7 @@ class MetroSequencerMode(MelodicMode):
                 # Turn off all other pads in the column
                 for x in range(8):
                     seq_pad_state[x][idx_j] = False
+                    seq.set_state([TRACK_NAMES_METRO[4]], idx_j*8 + x, 7- idx_i)
                 seq_pad_state[idx_i][idx_j] = True
 
             # If it's on, save the time and cont in on_pad_released
@@ -790,6 +816,23 @@ class MetroSequencerMode(MelodicMode):
             elif press_time > self.pad_quick_press_time:
                 pass
                 # seq.set_state(self.selected_track, idx, False
+
+        elif self.selected_track == TRACK_NAMES_METRO[4]:
+            # Short press - turn pad off, reset timer
+            if (
+                press_time <= self.pad_quick_press_time
+                and self.pads_press_time[idx_n] != False
+            ):
+                seq_pad_state[idx_i][idx_j] = False
+                self.pads_press_time[idx_n] = False
+                seq.set_state([TRACK_NAMES_METRO[4]], idx_j*8 + 7- idx_i,False)
+
+            # Long Press - keep the pad on, trigger a lock preview
+            elif press_time > self.pad_quick_press_time:
+                pass
+                # seq.set_state(self.selected_track, idx, False
+
+        
         else:
             # Short press - turn pad off, reset timer
             if (
@@ -815,7 +858,6 @@ class MetroSequencerMode(MelodicMode):
         if button_name in track_button_names:
             idx = track_button_names.index(button_name)
             self.selected_track = TRACK_NAMES_METRO[idx]
-            print(self.selected_track)
             self.app.trig_edit_mode.update_state()
             self.app.buttons_need_update = True
             self.app.pads_need_update = True
