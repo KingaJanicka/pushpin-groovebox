@@ -45,7 +45,7 @@ class SequencerMetro(object):
         self.app = app
         self.step_index = 0
         self.show_locks = False
-        self.next_step_index = None
+        self.next_step_index = 1
         self.steps_held = []
         self.name = instrument.name
         self.note = [None] * default_number_of_steps
@@ -154,7 +154,11 @@ class SequencerMetro(object):
         current_index = index if index != None else self.step_index
         next_step_index = (current_index + 1) % 64
         
-        if self.gate[next_step_index] != False:
+        
+        column = int(next_step_index / 8)
+        skips_idx = column*8
+        
+        if self.gate[next_step_index] != False and self.mutes_skips[skips_idx] != True:
             self.step_index = next_step_index
             self.app.metro_sequencer_mode.update_pads()
             return
@@ -165,7 +169,10 @@ class SequencerMetro(object):
         current_index = index if index != None else self.step_index
         next_step_index = (current_index + 1) % 64
         
-        if self.gate[next_step_index] != False:
+        column = int(next_step_index / 8)
+        skips_idx = column*8
+        
+        if self.gate[next_step_index] != False and self.mutes_skips[skips_idx] != True:
             self.next_step_index = next_step_index
             return 
         
@@ -181,6 +188,8 @@ class SequencerMetro(object):
             ]
             
             if self.gate[self.step_index] != "Off" and gate_track_active == True:
+                
+                
                 gate = 1
                 pitch = self.pitch[self.step_index] if self.pitch[self.step_index] != None else 0 
                 octave = self.octave[self.step_index] * 12 if self.octave[self.step_index] != None else 0 
@@ -190,6 +199,9 @@ class SequencerMetro(object):
                 gate = None
                 gate_len = self.app.trig_edit_mode.controls[3].value
                 
+                column = int(self.step_index / 8)
+                mutes_idx = column*8+1
+                
                 self.increment_next_step_index(index=self.step_index)
                 next_step_index = self.next_step_index
                 
@@ -197,9 +209,14 @@ class SequencerMetro(object):
                     gate = 0.3
                 else:
                     gate = 0.25 * gate_len
-                self.local_timeline.schedule(
-                    {"note": pitch_and_octave, "gate": gate, "amplitude": velocity}, count=1
-                )
+            
+            
+            
+                if self.mutes_skips[mutes_idx] != True:
+            
+                    self.local_timeline.schedule(
+                        {"note": pitch_and_octave, "gate": gate, "amplitude": velocity}, count=1
+                    )
         except Exception as e:
             print("Error in evaluate_and_play_notes")
             traceback.print_exc()
