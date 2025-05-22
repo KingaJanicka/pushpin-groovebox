@@ -4,8 +4,11 @@ import random
 import json
 import os
 import traceback
+import random
 from pythonosc.udp_client import SimpleUDPClient
 from definitions import TRACK_NAMES_METRO
+
+
 default_number_of_steps = 64
 
 class SequencerMetro(object):
@@ -202,6 +205,14 @@ class SequencerMetro(object):
                 column = int(self.step_index / 8)
                 mutes_idx = column*8+1
                 
+                
+                prob = None
+    
+                # checking columns for the True statement
+                for x in range(7):
+                    if self.mutes_skips[mutes_idx + x] == True:
+                        prob = x
+                        
                 self.increment_next_step_index(index=self.step_index)
                 next_step_index = self.next_step_index
                 
@@ -211,8 +222,8 @@ class SequencerMetro(object):
                     gate = 0.25 * gate_len
             
             
-            
-                if self.mutes_skips[mutes_idx] != True:
+
+                if prob >= random.randint(1, 6):
             
                     self.local_timeline.schedule(
                         {"note": pitch_and_octave, "gate": gate, "amplitude": velocity}, count=1
