@@ -753,20 +753,15 @@ class MetroSequencerMode(MelodicMode):
                         seq.set_state([TRACK_NAMES_METRO[3]], idx_j*8 + 7 - idx_i, j)
              
         elif self.selected_track == TRACK_NAMES_METRO[4]:
-            # If a pad is off, turn it on
-            print(idx_i, idx_j)
+            # If a pad is off
             if seq_pad_state[idx_i][idx_j] == False:
-                # Turn off all other pads in the column
-                # for x in range(8):
                 
-
+                # for skips
                 if idx_i == 7: 
-                    print("skips branch")
                     seq.set_state([TRACK_NAMES_METRO[4]], idx_j*8 + 7- idx_i, True)
                     seq_pad_state[idx_i][idx_j] = True
                 # for probability
                 else:
-                    print("mutes branch")
                     for x in range(7):
                         seq.set_state([TRACK_NAMES_METRO[4]], idx_j*8 + 7- x, False)
                         seq_pad_state[x][idx_j] = False
