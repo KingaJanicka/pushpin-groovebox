@@ -165,9 +165,7 @@ class MetroSequencerMode(MelodicMode):
                 )
                 len.value = 64
                 menu.append(len)
-                self.instrument_scale_edit_controls[instrument_short_name][
-                    track_name
-                ] = menu
+                self.instrument_scale_edit_controls[instrument_short_name] = menu
                 self.metro_seq_pad_state[instrument_short_name][track_name] = [
                     [False, False, False, False, False, False, False, False],
                     [False, False, False, False, False, False, False, False],
@@ -287,11 +285,9 @@ class MetroSequencerMode(MelodicMode):
             ) in self.get_all_distinct_instrument_short_names_helper():
                 for track_name in TRACK_NAMES_METRO:
                     for idx, control in enumerate(
-                        self.instrument_scale_edit_controls[instrument_short_name][
-                            track_name
-                        ]
+                        self.instrument_scale_edit_controls[instrument_short_name]
                     ):
-                        control.value = dump[instrument_short_name][track_name][idx]
+                        control.value = dump[instrument_short_name][idx]
         except Exception as e:
             print("Exception in trig_edit load_state")
             traceback.print_exc()
@@ -308,25 +304,20 @@ class MetroSequencerMode(MelodicMode):
                 self.instrument_sequencers[instrument_short_name].save_state()
                 scale_edit_state[instrument_short_name] = {}
                 # Populates the temp scale_edit_state array with current state
-                for track_name in TRACK_NAMES_METRO:
-                    scale_edit_state[instrument_short_name][track_name] = [
-                        None,
-                        None,
-                        None,
-                        None,
-                        None,
-                        None,
-                        None,
-                        None,
-                    ]
-                    for index, control in enumerate(
-                        self.instrument_scale_edit_controls[instrument_short_name][
-                            track_name
-                        ]
-                    ):
-                        scale_edit_state[instrument_short_name][track_name][
-                            index
-                        ] = control.value
+                scale_edit_state[instrument_short_name] = [
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                ]
+                for index, control in enumerate(
+                    self.instrument_scale_edit_controls[instrument_short_name]
+                ):
+                    scale_edit_state[instrument_short_name][index] = control.value
         except Exception as e:
             print("Error in saving scale_edit state")
             traceback.print_exc()
@@ -436,10 +427,8 @@ class MetroSequencerMode(MelodicMode):
         if self.show_scale_menu == True:
             background_colour = self.get_current_instrument_color_helper()
             instrument_name = self.get_current_instrument_short_name_helper()
-            track_name = self.selected_track
-            track_controls = self.instrument_scale_edit_controls[instrument_name][
-                track_name
-            ]
+            controls = self.instrument_scale_edit_controls[instrument_name]
+        
             # ctx.save()
             ctx.move_to(0, 0)
             ctx.line_to(0, 135)
@@ -449,7 +438,7 @@ class MetroSequencerMode(MelodicMode):
             ctx.close_path()
             ctx.fill_preserve()
             offset = 0
-            for control in track_controls:
+            for control in controls:
                 control.draw(ctx, offset)
                 offset += 1
 
@@ -466,19 +455,6 @@ class MetroSequencerMode(MelodicMode):
                 center_horizontally=True,
                 rectangle_padding=1,
             )
-            show_text(
-                ctx,
-                2,
-                20,
-                track_name,
-                height=30,
-                font_color=definitions.WHITE,
-                background_color=background_colour,
-                font_size_percentage=0.8,
-                center_vertically=True,
-                center_horizontally=True,
-                rectangle_padding=1,
-            )
             # ctx.restore()
 
     def update_pads(self):
@@ -487,10 +463,10 @@ class MetroSequencerMode(MelodicMode):
             pad_state = self.metro_seq_pad_state[instrument_name]
             seq_pad_state = pad_state[self.selected_track]
             button_colors = [definitions.OFF_BTN_COLOR] * 64
-            selected_track_controls = self.instrument_scale_edit_controls[
+            selected_scale_controls = self.instrument_scale_edit_controls[
                 instrument_name
-            ][self.selected_track]
-            track_length = selected_track_controls[0]
+            ]
+            track_length = 64
             
             seq = self.instrument_sequencers[instrument_name]
             
@@ -970,12 +946,11 @@ class MetroSequencerMode(MelodicMode):
                 if self.show_scale_menu == True:
                     # Update scale menu controls
                     instrument_name = self.get_current_instrument_short_name_helper()
-                    track_name = self.selected_track
-                    track_controls = self.instrument_scale_edit_controls[
+                    controls = self.instrument_scale_edit_controls[
                         instrument_name
-                    ][track_name]
+                    ]
 
-                    control = track_controls[encoder_idx]
+                    control = controls[encoder_idx]
                     min = control.min if hasattr(control, "min") else 0
                     max = control.max if hasattr(control, "max") else len(control.items)
                     range = max - min
