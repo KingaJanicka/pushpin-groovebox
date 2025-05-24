@@ -47,6 +47,7 @@ class SequencerMetro(object):
 
         self.app = app
         self.step_index = 0
+        self.step_count = 0
         self.show_locks = False
         self.next_step_index = 1
         self.steps_held = []
@@ -146,8 +147,18 @@ class SequencerMetro(object):
             traceback.print_exc()
 
     def seq_playhead_update(self):
+        # Playhead is off by one
+        
         self.playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01))
         # self.update_notes()
+        
+        controls = self.app.metro_sequencer_mode.instrument_scale_edit_controls[self.name]
+        
+        pattern_len = controls[0].value
+        
+        
+        if int(pattern_len) < self.step_count:
+            self.reset_index()
         
         self.evaluate_and_play_notes()
         self.increment_index()
@@ -164,6 +175,7 @@ class SequencerMetro(object):
         if self.gate[next_step_index] != False and self.mutes_skips[skips_idx] != True:
             self.step_index = next_step_index
             self.app.metro_sequencer_mode.update_pads()
+            self.step_count += 1 
             return
         else:
             self.increment_index(index=next_step_index)
@@ -182,7 +194,10 @@ class SequencerMetro(object):
         else:
             self.increment_next_step_index(index=next_step_index)
         
-        
+    def reset_index(self):
+        self.step_index = 0
+        self.step_count = 0
+        self.next_step_index = 1
         
     def evaluate_and_play_notes(self):
         try:

@@ -944,6 +944,8 @@ class MetroSequencerMode(MelodicMode):
                             seq.set_lock_state(idx, encoder_idx, value)
                             return
                 if self.show_scale_menu == True:
+                    # TODO: this will edit things underneath the controls in metro_seq
+                    # I thought I fixed this?
                     # Update scale menu controls
                     instrument_name = self.get_current_instrument_short_name_helper()
                     controls = self.instrument_scale_edit_controls[
