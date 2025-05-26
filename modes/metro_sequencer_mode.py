@@ -948,9 +948,7 @@ class MetroSequencerMode(MelodicMode):
                     # I thought I fixed this?
                     # Update scale menu controls
                     instrument_name = self.get_current_instrument_short_name_helper()
-                    controls = self.instrument_scale_edit_controls[
-                        instrument_name
-                    ]
+                    controls = self.instrument_scale_edit_controls[instrument_name]
 
                     control = controls[encoder_idx]
                     min = control.min if hasattr(control, "min") else 0

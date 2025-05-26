@@ -679,7 +679,7 @@ class AudioInDevice(PyshaMode):
                 push2_python.constants.ENCODER_TRACK7_ENCODER,
                 push2_python.constants.ENCODER_TRACK8_ENCODER,
             ].index(encoder_name)
-            if self.app.sequencer_mode.disable_controls == False:
+            if self.app.sequencer_mode.disable_controls == False and self.app.metro_sequencer_mode.disable_controls == False:
                 visible_controls = self.get_visible_controls()
                 control = visible_controls[encoder_idx]
                 control.update_value(increment)

@@ -582,9 +582,9 @@ class TrigEditMode(definitions.PyshaMode):
             seq = self.app.sequencer_mode.instrument_sequencers[
                 self.get_current_instrument_short_name_helper()
             ]
-            disable_controls = self.app.sequencer_mode.disable_controls
-            if len(seq.steps_held) != 0 or disable_controls == True:
-                pass
+            if len(seq.steps_held) != 0:
+                if self.app.sequencer_mode.disable_controls == False and self.app.metro_sequencer_mode.disable_controls == False:
+                    pass
             else:
                 control = self.controls[encoder_idx]
 

@@ -507,27 +507,29 @@ class OSCMode(PyshaMode):
         show_prev, show_next = selected_device.get_next_prev_pages()
         _, current_page = self.get_current_instrument_device_and_page()
 
-        if button_name in self.upper_row_button_names and self.app.sequencer_mode.show_scale_menu != True:
-            current_instrument_devices = self.get_current_instrument_page_devices()
-            _, current_page = self.get_current_instrument_device_and_page()
+        if button_name in self.upper_row_button_names:
+            if self.app.sequencer_mode.show_scale_menu != True:
+                if self.app.metro_sequencer_mode.show_scale_menu != True:
+                    current_instrument_devices = self.get_current_instrument_page_devices()
+                    _, current_page = self.get_current_instrument_device_and_page()
 
-            idx = self.upper_row_button_names.index(button_name)
-            if idx < len(current_instrument_devices):
-                new_device = current_instrument_devices[idx]
-                # Stay on the same device page if new instrument, otherwise go to next page
+                    idx = self.upper_row_button_names.index(button_name)
+                    if idx < len(current_instrument_devices):
+                        new_device = current_instrument_devices[idx]
+                        # Stay on the same device page if new instrument, otherwise go to next page
 
-                new_page = (
-                    0
-                    if new_device != selected_device
-                    else (
-                        current_page - 1
-                        if show_prev
-                        else current_page + 1 if show_next else 0
-                    )
-                )
+                        new_page = (
+                            0
+                            if new_device != selected_device
+                            else (
+                                current_page - 1
+                                if show_prev
+                                else current_page + 1 if show_next else 0
+                            )
+                        )
 
-                self.update_current_device_page(idx, new_page=new_page)
-            return True
+                        self.update_current_device_page(idx, new_page=new_page)
+                    return True
         elif button_name in self.lower_row_button_names:
             self.update_current_device_page(new_page=0)  # Reset page on new instrument
         elif button_name in [
