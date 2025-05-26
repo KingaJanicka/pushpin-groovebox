@@ -157,7 +157,7 @@ class MetroSequencerMode(MelodicMode):
                         "$type": "control-range",
                         "label": "Steps",
                         "address": f"/",
-                        "min": 0,
+                        "min": 2,
                         "max": 64,
                     },
                     self.get_current_instrument_color_helper,

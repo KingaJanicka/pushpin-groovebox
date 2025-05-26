@@ -48,6 +48,7 @@ class SequencerMetro(object):
         self.app = app
         self.step_index = 0
         self.step_count = 0
+        self.prev_step_index = 0
         self.show_locks = False
         self.next_step_index = 1
         self.steps_held = []
@@ -147,21 +148,23 @@ class SequencerMetro(object):
             traceback.print_exc()
 
     def seq_playhead_update(self):
-        # Playhead is off by one
-        
+        #TODO: Playhead is off by one??
+        # self.increment_previous_step_index()
         self.playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01))
         # self.update_notes()
         
         controls = self.app.metro_sequencer_mode.instrument_scale_edit_controls[self.name]
         
         pattern_len = controls[0].value
-        
-        
-        if int(pattern_len) < self.step_count:
-            self.reset_index()
+
         
         self.evaluate_and_play_notes()
         self.increment_index()
+        
+        if int(pattern_len -1) < self.step_count:
+            
+            self.reset_index()
+        self.step_count += 1 
 
     def increment_index(self, index = None):
         
@@ -175,7 +178,6 @@ class SequencerMetro(object):
         if self.gate[next_step_index] != False and self.mutes_skips[skips_idx] != True:
             self.step_index = next_step_index
             self.app.metro_sequencer_mode.update_pads()
-            self.step_count += 1 
             return
         else:
             self.increment_index(index=next_step_index)
@@ -193,6 +195,20 @@ class SequencerMetro(object):
         
         else:
             self.increment_next_step_index(index=next_step_index)
+            
+    def increment_previous_step_index(self, index = None):
+        current_index = index if index != None else self.step_index
+        prev_step_index = (current_index - 1) % 64
+        column = int(prev_step_index / 8)
+        skips_idx = column*8
+        
+    
+        if self.gate[prev_step_index] != False and self.mutes_skips[skips_idx] != True:
+            self.prev_step_index = prev_step_index
+            return 
+        
+        else:
+            self.get_previous_active_step(index=prev_step_index)
         
     def reset_index(self):
         self.step_index = 0
