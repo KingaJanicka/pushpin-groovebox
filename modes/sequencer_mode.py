@@ -216,8 +216,7 @@ class SequencerMode(MelodicMode):
 
     def sequencer_on_tick(self, instrument_name, length):
         # if seq is active
-        seq_mode = self.app.sequencer_mode
-        if self.app.is_mode_active(seq_mode):
+        if self.app.is_mode_active(self.app.sequencer_mode):
             self.update_pads()
             self.app.trig_edit_mode.update_button_colours()
         if self.get_current_instrument_short_name_helper() == instrument_name:

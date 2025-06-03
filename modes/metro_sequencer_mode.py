@@ -464,8 +464,8 @@ class MetroSequencerMode(MelodicMode):
 
     def sequencer_on_tick(self, instrument_name, length):
         # if seq is active
-        seq_mode = self.app.sequencer_mode
-        if self.app.is_mode_active(seq_mode):
+        
+        if self.app.is_mode_active(self.app.metro_sequencer_mode):
             self.update_pads()
             self.app.trig_edit_mode.update_button_colours()
         if self.get_current_instrument_short_name_helper() == instrument_name:
@@ -759,15 +759,30 @@ class MetroSequencerMode(MelodicMode):
                     seq_pad_state[idx_i][idx_j] == True
                     or seq_pad_state[idx_i][idx_j] == "Tie"
                 ):
-                    self.pads_press_time[idx_n] = time.time()
-                    return
+                    if self.button_1_4t_pressed == True and seq_pad_state[idx_i][idx_j] != "Tie":
+                        seq_pad_state[idx_i][idx_j] = "Tie"
+                    else:                        
+                        self.pads_press_time[idx_n] = time.time()
+                        return
                     # call func to show lock here
 
-                # For chaning height of the stack
+
+                # For normal step edit
                 if (
                     seq_pad_state[idx_i][idx_j] != True
-                    and self.button_1_4_pressed == True
                 ):
+
+                    # Turn pad on
+                    if seq_pad_state[idx_i][idx_j] != False:
+                        # for inputing a tie (green pad)
+                        if self.button_1_4t_pressed == True:
+                            seq_pad_state[idx_i][idx_j] = "Tie"
+                        # Normal step
+                        else:
+                            seq_pad_state[idx_i][idx_j] = True
+                            
+                # For chaning height of the stack
+                if (self.button_1_4_pressed == True):
 
                     # Turn all pads above step black, below grey
                     for x in range(8):
@@ -782,22 +797,6 @@ class MetroSequencerMode(MelodicMode):
                                 seq_pad_state[x][idx_j] = "Off"
                             else:
                                 pass
-
-                # For normal step edit
-                if (
-                    seq_pad_state[idx_i][idx_j] != True
-                    and self.button_1_4_pressed == False
-                ):
-
-                    # Turn pad on
-                    if seq_pad_state[idx_i][idx_j] != False:
-                        # for inputing a tie (green pad)
-                        if self.button_1_4t_pressed == True:
-                            seq_pad_state[idx_i][idx_j] = "Tie"
-                        # Normal step
-                        else:
-                            seq_pad_state[idx_i][idx_j] = True
-                            
                 # sets pad state
                 for idx_i, i in enumerate(seq_pad_state):
                     for idx_j, j in enumerate(i):
