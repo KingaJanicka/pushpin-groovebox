@@ -214,6 +214,7 @@ class PyshaApp(object):
             self.menu_mode.activate()
 
     # TODO: preset sel/trig edit get wonky when switching from one to another
+    # One triggering needs to shut down another
 
     def toggle_preset_selection_mode(self):
         if self.is_mode_active(self.preset_selection_mode):
@@ -462,7 +463,6 @@ class PyshaApp(object):
 
     def init_midi_out(self, device_name=None):
         pass
-        # #TODO:: Does this do anything?
         # print("Configuring MIDI out to {}...".format(device_name))
         # self.available_midi_out_device_names = [
         #     name

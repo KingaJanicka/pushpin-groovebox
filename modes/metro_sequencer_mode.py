@@ -151,11 +151,101 @@ class MetroSequencerMode(MelodicMode):
             self.metro_seq_pad_state[instrument_short_name] = {}
             for track_name in TRACK_NAMES_METRO:
                 menu = []
+                param_1 = OSCControl(
+                    {
+                        "$type": "control-range",
+                        "label": "Gate Len",
+                        "address": f"/",
+                        "min": 0,
+                        "max": 1,
+                    },
+                    self.get_current_instrument_color_helper,
+                    None,
+                )
+                menu.append(param_1)
+                
+                
+                param_2 = OSCControl(
+                    {
+                        "$type": "control-range",
+                        "label": "Param 2",
+                        "address": f"/",
+                        "min": 2,
+                        "max": 64,
+                    },
+                    self.get_current_instrument_color_helper,
+                    None,
+                )
+                menu.append(param_2)
 
+
+                param_3 = OSCControl(
+                    {
+                        "$type": "control-range",
+                        "label": "Param 3",
+                        "address": f"/",
+                        "min": 2,
+                        "max": 64,
+                    },
+                    self.get_current_instrument_color_helper,
+                    None,
+                )
+                menu.append(param_3)
+
+                param_4 = OSCControl(
+                    {
+                        "$type": "control-range",
+                        "label": "Param 4",
+                        "address": f"/",
+                        "min": 2,
+                        "max": 64,
+                    },
+                    self.get_current_instrument_color_helper,
+                    None,
+                )
+                menu.append(param_4)
+
+                param_5 = OSCControl(
+                    {
+                        "$type": "control-range",
+                        "label": "Param 5",
+                        "address": f"/",
+                        "min": 2,
+                        "max": 64,
+                    },
+                    self.get_current_instrument_color_helper,
+                    None,
+                )
+                menu.append(param_5)
+                param_6 = OSCControl(
+                    {
+                        "$type": "control-range",
+                        "label": "Param 6",
+                        "address": f"/",
+                        "min": 2,
+                        "max": 64,
+                    },
+                    self.get_current_instrument_color_helper,
+                    None,
+                )
+                menu.append(param_6)
+                seq_scale = OSCControl(
+                    {
+                        "$type": "control-range",
+                        "label": "Seq Time Scale",
+                        "address": f"/",
+                        "min": 1,
+                        "max": 32,
+                    },
+                    self.get_current_instrument_color_helper,
+                    None,
+                )
+                seq_scale.value = 2
+                menu.append(seq_scale)
                 len = OSCControl(
                     {
                         "$type": "control-range",
-                        "label": "Steps",
+                        "label": "Seq Steps",
                         "address": f"/",
                         "min": 2,
                         "max": 64,
@@ -178,7 +268,6 @@ class MetroSequencerMode(MelodicMode):
                 ]
 
     def update_pads_to_seq_state(self):
-        # TODO: add cases for pitch and octaves
         for (
             instrument_short_name
         ) in self.get_all_distinct_instrument_short_names_helper():
@@ -276,7 +365,6 @@ class MetroSequencerMode(MelodicMode):
 
         # Loads scale edit menu
         try:
-            # TODO: Bug here
             dump = None
             if os.path.exists(self.scale_menu_filename):
                 dump = json.load(open(self.scale_menu_filename))
@@ -442,19 +530,6 @@ class MetroSequencerMode(MelodicMode):
                 control.draw(ctx, offset)
                 offset += 1
 
-            show_text(
-                ctx,
-                1,
-                20,
-                instrument_name,
-                height=30,
-                font_color=definitions.WHITE,
-                background_color=background_colour,
-                font_size_percentage=0.8,
-                center_vertically=True,
-                center_horizontally=True,
-                rectangle_padding=1,
-            )
             # ctx.restore()
 
     def update_pads(self):
@@ -767,7 +842,6 @@ class MetroSequencerMode(MelodicMode):
         self.app.pads_need_update = True
 
     def on_pad_released(self, pad_n, pad_ij, velocity):
-        # TODO: add different release handling for different tracks
         pad_state = self.metro_seq_pad_state[
             self.get_current_instrument_short_name_helper()
         ]
@@ -862,7 +936,6 @@ class MetroSequencerMode(MelodicMode):
             # Don't react to octave up/down buttons as these are not used in rhythm mode
             
             seq = self.instrument_sequencers[self.get_current_instrument_short_name_helper()]
-            print(seq.gate)
             pass
         elif button_name == push2_constants.BUTTON_DELETE:
 
@@ -944,8 +1017,6 @@ class MetroSequencerMode(MelodicMode):
                             seq.set_lock_state(idx, encoder_idx, value)
                             return
                 if self.show_scale_menu == True:
-                    # TODO: this will edit things underneath the controls in metro_seq
-                    # I thought I fixed this?
                     # Update scale menu controls
                     instrument_name = self.get_current_instrument_short_name_helper()
                     controls = self.instrument_scale_edit_controls[instrument_name]

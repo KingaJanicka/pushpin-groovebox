@@ -52,6 +52,7 @@ class SequencerMetro(object):
         self.show_locks = False
         self.next_step_index = 1
         self.steps_held = []
+        self.scale_count = 1
         self.name = instrument.name
         self.note = [None] * default_number_of_steps
         self.pitch = [False] * default_number_of_steps
@@ -83,7 +84,7 @@ class SequencerMetro(object):
                     tick_callback(self.name, len(self.pitch)),
                     self.seq_playhead_update(),
                 ),
-                "duration": 0.25,
+                "duration": 0.125,
             }
         )
 
@@ -148,23 +149,29 @@ class SequencerMetro(object):
             traceback.print_exc()
 
     def seq_playhead_update(self):
-        #TODO: Playhead is off by one??
         # self.increment_previous_step_index()
         self.playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01))
         # self.update_notes()
         
+        
         controls = self.app.metro_sequencer_mode.instrument_scale_edit_controls[self.name]
         
-        pattern_len = controls[0].value
-
+        pattern_len = controls[7].value
+        seq_time_scale = controls[6].value
         
-        self.evaluate_and_play_notes()
-        self.increment_index()
-        
-        if int(pattern_len -1) < self.step_count:
+        if self.scale_count >= int(seq_time_scale) :
             
-            self.reset_index()
-        self.step_count += 1 
+            self.evaluate_and_play_notes()
+            self.increment_index()
+            
+            if int(pattern_len -1) < self.step_count:
+                
+                self.reset_index()
+            self.step_count += 1 
+            self.scale_count = 1
+            
+        else:
+            self.scale_count += 1
 
     def increment_index(self, index = None):
         
@@ -231,7 +238,10 @@ class SequencerMetro(object):
                 pitch_and_octave = pitch + octave
                 velocity = ((self.velocity[self.step_index] + 1) * 16 - 1) if self.velocity[self.step_index] != None else 1 
                 gate = None
-                gate_len = self.app.trig_edit_mode.controls[3].value
+                
+                # Gate Len needs to scale with speed
+                controls = self.app.metro_sequencer_mode.instrument_scale_edit_controls[self.name]
+                gate_len = controls[0].value
                 
                 column = int(self.step_index / 8)
                 mutes_idx = column*8+1

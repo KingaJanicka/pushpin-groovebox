@@ -120,7 +120,6 @@ class SequencerMode(MelodicMode):
 
         # Loads scale edit menu
         try:
-            # TODO: Bug here
             dump = None
             if os.path.exists(self.scale_menu_filename):
                 dump = json.load(open(self.scale_menu_filename))

@@ -170,6 +170,7 @@ class OSCMode(PyshaMode):
                     for device_index, device in enumerate(devices):
                         # Replaces the control values with state
                         values = []
+                        # TODO: This breaks with our current state model
                         for control_index, control in enumerate(device.controls):
                             state_value = state[instrument_short_name][device_index][control_index]
                             
@@ -385,8 +386,7 @@ class OSCMode(PyshaMode):
     def update_current_instrument_page(self, new_device=None, new_instrument_page=None):
         # TODO: Make this page switching work with more instrument pages
         # if for some reason someone wants more than 16 devices
-        # TODO: Not sure how I feel about the query here
-
+        
         # Only pages when you're not trying to pick a new device
         if self.app.is_mode_active(self.app.menu_mode) == False:
             self.instrument_page = new_instrument_page

@@ -65,8 +65,9 @@ class MenuMode(PyshaMode):
         self.app.osc_mode.current_device_index_and_page[1] = 0
         instrument = self.app.osc_mode.get_current_instrument()
         # print("called q slots")
-        # TODO: I have no clue why the fricity frick this sleep needs to be here
-        # TODO: But it does and the FX switching will lag behind one selection if not
+        # TODO: This needs to be revised with state rewrite
+        # old: I have no clue why the fricity frick this sleep needs to be here
+        # old: But it does and the FX switching will lag behind one selection if not
         time.sleep(0.2)
         instrument.query_slots()
 

@@ -298,7 +298,8 @@ class OSCControl(object):
         value, *rest = args
         self.log.debug((address, value))
         self.value = value
-        # TODO: this human readable string doesn't change with knob movements, querry fixes it but makes it glitchy
+        
+        # this human readable string doesn't change with knob movements, querry fixes it but makes it glitchy
         # self.string = string
 
     def update_value(self, increment, **kwargs):
@@ -423,7 +424,7 @@ class OSCControlMacro(object):
         self.log.debug((address, value))
 
         self.value = scale_value(value)
-        ###TODO: Find by index
+        # Find by index
 
 
 class OSCControlSwitch(object):
@@ -507,7 +508,8 @@ class OSCControlSwitch(object):
         if int(self.value) <= len(self.groups) - 1:
             return self.groups[
                 int(self.value)
-            ]  # TODO: nasty but enables less-twitchy knobs, prob needs fixing
+            ]  
+            # TODO: nasty but enables less-twitchy knobs, prob needs fixing
 
     def set_state(self, address, *args):
         self.log.debug((address, args))
@@ -854,7 +856,7 @@ class OSCControlMenu(object):
 
 class OSCMenuItem(object):
     name = "Menu Item"
-    #TODO: Switching those menu items is really thrashy, prob a feedback look with osc
+    #TODO This needs to be updated along with state refresh
     def __init__(self, config, get_color_func=None, send_osc_func=None):
         if config.get("$type", None) != "menu-item":
             raise Exception("Invalid config passed to new OSCMenuItem")

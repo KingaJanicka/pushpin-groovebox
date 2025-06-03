@@ -407,7 +407,6 @@ class TrigEditMode(definitions.PyshaMode):
         pass
 
     def activate(self):
-        # TODO: this does seem rather slow
         self.is_active = True
         self.update_button_colours()
         self.current_page = 0

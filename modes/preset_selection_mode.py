@@ -419,9 +419,6 @@ class PresetSelectionMode(definitions.PyshaMode):
         )
 
     def set_knob_postions(self):
-        # TODO: This funciton is not working corretly really
-        # Presets won't draw correctly when switching instrumnents, some won't draw at all
-        # Needs to set all knobs not just one
         instrument_short_name = (
             self.app.instrument_selection_mode.get_current_instrument_short_name()
         )
