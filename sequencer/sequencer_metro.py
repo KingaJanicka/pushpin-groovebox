@@ -265,9 +265,6 @@ class SequencerMetro(object):
             
             
                 if prob >= random.randint(1, 6):
-                # TODO: This seems offset by 8st? compared to the Melodic Mode pads
-                # I am pretty certain this sends correct notes
-                # Could be an issue with performance??
                     self.local_timeline.schedule(
                         {"note": pitch_and_octave, "gate": gate, "amplitude": velocity}, count=1
                     )

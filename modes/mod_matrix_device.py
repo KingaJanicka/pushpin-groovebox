@@ -6,6 +6,7 @@ import definitions
 import traceback
 from ratelimit import limits
 import asyncio
+import time
 
 logger = logging.getLogger("mod_matrix_device")
 # logger.setLevel(level=logging.DEBUG)
@@ -174,16 +175,17 @@ class ModMatrixDevice(definitions.PyshaMode):
             if new_mapping in self.mod_matrix_mappings:
                 return
             else:
-                print("added mapping")
+                # print("added mapping")
                 self.mod_matrix_mappings.append(new_mapping)
         else: self.mod_matrix_mappings.append(new_mapping)
         # print(self.mod_matrix_mappings)
 
 
     def select(self):
-        self.snap_knobs_to_mod_matrix()
         self.query_all_mods()
+        time.sleep(0.1)
         self.is_active = True
+        self.snap_knobs_to_mod_matrix()
 
     def send_message(self, *args):
         self.log_out.debug(args)

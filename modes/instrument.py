@@ -98,7 +98,8 @@ class Instrument(PyshaMode):
         for slot_idx, slot in enumerate(self.slots):
             if slot:
                 # print(f'making a dispatcher for slot {slot["address"]}')
-                dispatcher.map(slot["address"], self.set_slot_state)
+                pass
+                # dispatcher.map(slot["address"], self.set_slot_state)
         for x in range(16):
             self.devices.append([])
 
