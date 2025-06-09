@@ -253,7 +253,6 @@ class SequencerMode(MelodicMode):
         # print(self.app.osc_mode.get_current_instrument_osc_address_sections())
 
     def update_display(self, ctx, w, h):
-        # TODO: Some regressive bug with how this menu is drawn, will not draw the background after the 1st time
         if self.show_scale_menu == True:
             background_colour = self.get_current_instrument_color_helper()
             instrument_name = self.get_current_instrument_short_name_helper()

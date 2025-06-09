@@ -98,8 +98,8 @@ class Instrument(PyshaMode):
         for slot_idx, slot in enumerate(self.slots):
             if slot:
                 # print(f'making a dispatcher for slot {slot["address"]}')
-                pass
-                # dispatcher.map(slot["address"], self.set_slot_state)
+
+                dispatcher.map(slot["address"], self.set_slot_state)
         for x in range(16):
             self.devices.append([])
 
@@ -235,12 +235,15 @@ class Instrument(PyshaMode):
             asyncio.create_task(self.engine.start())
 
     def query_all_params(self):
-        for device in self.devices:
-            device.query_all()
-        # client = self.osc["client"]
-        # if client:
-        #     print(f"Querying all_params on {self.name}")
-        #     client.send_message("/q/all_params", None)
+        # TODO: this is broken
+        # # print(self.devices)
+        # for device in self.devices:
+        #     print(device.label)
+            # device.query_all()
+        client = self.osc["client"]
+        if client:
+            print(f"Querying all_params on {self.name}")
+            client.send_message("/q/all_params", None)
 
     def query_slots(self):
         client = self.osc["client"]

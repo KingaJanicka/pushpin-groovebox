@@ -326,17 +326,18 @@ class PresetSelectionMode(definitions.PyshaMode):
         return True  # Prevent other modes to get this event
 
     def on_pad_released(self, pad_n, pad_ij, velocity):
-        #TODO: select needs to be called here
+        #TODO: select needs to be called here, think this will need to be
+        # revised as we work on the param-locking
         instrument = self.app.osc_mode.get_current_instrument()
         instrument.query_slots()
-        # instrument.query_all_params()
+        instrument.query_all_params()
         # instrument.query_devices()
         devices = self.app.osc_mode.get_current_instrument_devices()
         for device in devices:
             device.query_visible_controls()
             self.app.queue.append(device.select())
         self.update_pads()
-        # print("pad released")
+        print("pad released")
         return True  # Prevent other modes to get this event
 
     def nested_draw(
@@ -419,6 +420,9 @@ class PresetSelectionMode(definitions.PyshaMode):
         )
 
     def set_knob_postions(self):
+        # TODO: This funciton is not working corretly really
+        # Presets won't draw correctly when switching instrumnents, some won't draw at all
+        # Needs to set all knobs not just one
         instrument_short_name = (
             self.app.instrument_selection_mode.get_current_instrument_short_name()
         )

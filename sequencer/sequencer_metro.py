@@ -36,14 +36,13 @@ class SequencerMetro(object):
     def __init__(
         self, instrument, tick_callback, playhead, send_osc_func, global_timeline, app
     ):
-        self.locks = {}
+        self.locks = []
         self.seq_filename = f"seq_metro_{instrument.name}.json"
-        for key in TRACK_NAMES_METRO:
-            self.locks[key] = []
-            for x in range(default_number_of_steps):
-                self.locks[key].append(
-                    [None, None, None, None, None, None, None, None, None]
-                )
+
+        for x in range(default_number_of_steps):
+            self.locks.append(
+                [None, None, None, None, None, None, None, None, None]
+            )
 
         self.app = app
         self.step_index = 0
@@ -330,9 +329,9 @@ class SequencerMetro(object):
     def set_lock_state(self, index, parameter_idx, value):
         # print(f"Set_lock_state: index {index}, param_idx {parameter_idx}, value {value}")
         selected_track = self.app.sequencer_mode.selected_track
-        self.locks[selected_track][index][parameter_idx] = value
+        self.locks[index][parameter_idx] = value
 
     def get_lock_state(self, index, parameter_idx):
         # print(f"Set_lock_state: index {index}, param_idx {parameter_idx}, value {value}")
         selected_track = self.app.sequencer_mode.selected_track
-        return self.locks[selected_track][index][parameter_idx]
+        return self.locks[index][parameter_idx]

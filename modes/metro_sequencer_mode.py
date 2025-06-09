@@ -615,6 +615,8 @@ class MetroSequencerMode(MelodicMode):
         idx_ij = self.index_to_pad_ij(n)
         idx_i = idx_ij[0]
         idx_j = idx_ij[1]
+        print(idx_i, idx_j)
+        seq.steps_held.append(idx_j)
 
         # Pitch track
         if self.selected_track == TRACK_NAMES_METRO[0]:
@@ -635,7 +637,7 @@ class MetroSequencerMode(MelodicMode):
                 # If it's on, save the time and cont in on_pad_released
                 if seq_pad_state[idx_i][idx_j] == True:
                     self.pads_press_time[idx_n] = time.time()
-                    # call func to show lock here
+                    #TODO: call func to show lock here
 
             # Two pads
             if len(self.steps_held) > 1:
@@ -710,7 +712,7 @@ class MetroSequencerMode(MelodicMode):
                 # If it's on, save the time and cont in on_pad_released
                 elif seq_pad_state[idx_i][idx_j] == True:
                     self.pads_press_time[idx_n] = time.time()
-                    # call func to show lock here
+                    #TODO: call func to show lock here
                 # Set the oct values
                 for x in range(8):
                     seq.set_state([TRACK_NAMES_METRO[1]], idx_j*8 + x, 7- idx_i)
@@ -728,7 +730,7 @@ class MetroSequencerMode(MelodicMode):
                 # If it's on, save the time and cont in on_pad_released
                 elif seq_pad_state[idx_i][idx_j] == True:
                     self.pads_press_time[idx_n] = time.time()
-                    # call func to show lock here
+                    #TODO: call func to show lock here
                 # Set the oct values
                 for x in range(8):
                     seq.set_state([TRACK_NAMES_METRO[2]], idx_j*8 + x, 7- idx_i)
@@ -764,7 +766,7 @@ class MetroSequencerMode(MelodicMode):
                     else:                        
                         self.pads_press_time[idx_n] = time.time()
                         return
-                    # call func to show lock here
+                    #TODO: call func to show lock here
 
 
                 # For normal step edit
@@ -821,7 +823,7 @@ class MetroSequencerMode(MelodicMode):
             # If it's on, save the time and cont in on_pad_released
             elif seq_pad_state[idx_i][idx_j] == True:
                 self.pads_press_time[idx_n] = time.time()
-                # call func to show lock here
+                #TODO: call func to show lock here
         
                         
         else:
@@ -836,7 +838,7 @@ class MetroSequencerMode(MelodicMode):
             # If it's on, save the time and cont in on_pad_released
             elif seq_pad_state[idx_i][idx_j] == True:
                 self.pads_press_time[idx_n] = time.time()
-                # call func to show lock here
+                #TODO: call func to show lock here
 
         self.app.pads_need_update = True
 
@@ -851,6 +853,7 @@ class MetroSequencerMode(MelodicMode):
         epoch_time = time.time()
         press_time = epoch_time - self.pads_press_time[idx_n]
         seq = self.instrument_sequencers[self.get_current_instrument_short_name_helper()]
+        seq.steps_held.remove(idx_j)
 
         if self.selected_track == TRACK_NAMES_METRO[0] or self.selected_track == TRACK_NAMES_METRO[1] or self.selected_track == TRACK_NAMES_METRO[2]:
             pass
@@ -885,6 +888,7 @@ class MetroSequencerMode(MelodicMode):
                 seq.set_state([TRACK_NAMES_METRO[4]], idx_j*8 + 7- idx_i,False)
 
             # Long Press - keep the pad on, trigger a lock preview
+            # TODO: trigger a lock preview here
             elif press_time > self.pad_quick_press_time:
                 pass
                 # seq.set_state(self.selected_track, idx, False
