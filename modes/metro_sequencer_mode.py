@@ -615,7 +615,6 @@ class MetroSequencerMode(MelodicMode):
         idx_ij = self.index_to_pad_ij(n)
         idx_i = idx_ij[0]
         idx_j = idx_ij[1]
-        print(idx_i, idx_j)
         seq.steps_held.append(idx_j)
 
         # Pitch track

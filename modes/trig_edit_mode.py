@@ -31,6 +31,7 @@ class TrigEditMode(definitions.PyshaMode):
     current_address = None
     trig_edit_filename = "trig_edit.json"
     is_active = False
+    slot = 16 # Might need to change this back to None
 
     def initialize(self, settings=None, **kwargs):
         self.is_active = False

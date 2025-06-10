@@ -45,11 +45,11 @@ class ModMatrixDevice(definitions.PyshaMode):
         self.delete_mapping_column = 6
         self.scroll_column = 7
         self.page = 0
-        self.slot = None
+        
+        self.slot = 15 # Might need to change this back to None
         self.osc = osc
         self.label = "Mod Matrix"
         self.dispatcher = osc.get("dispatcher", None)
-        self.slot = None
         self.log_in = logger.getChild(f"in-{kwargs['osc_in_port']}")
         self.log_out = logger.getChild(f"out-{kwargs['osc_out_port']}")
         self.init = []

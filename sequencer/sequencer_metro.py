@@ -39,10 +39,13 @@ class SequencerMetro(object):
         self.locks = []
         self.seq_filename = f"seq_metro_{instrument.name}.json"
 
-        for x in range(default_number_of_steps):
-            self.locks.append(
-                [None, None, None, None, None, None, None, None, None]
-            )
+        # stores values per step
+        for step_idx in range(default_number_of_steps):
+            self.locks.append([])
+            for device_idx in range(17):
+                self.locks[step_idx].append(
+                    [None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+                )
 
         self.app = app
         self.step_index = 0
@@ -306,7 +309,9 @@ class SequencerMetro(object):
             self.set_state(lane, index, value)
 
     def set_state(self, lane, index, value):
-        # print(f"lane: {lane} index: {index} value: {value}")
+        # print(f"lane: {lane} index: {index} value: {value}")s
+        
+        # print(device.label, device.slot)
         self.update_notes()
         lane = lane[0]
         if lane == TRACK_NAMES_METRO[0]:
@@ -328,10 +333,32 @@ class SequencerMetro(object):
 
     def set_lock_state(self, index, parameter_idx, value):
         # print(f"Set_lock_state: index {index}, param_idx {parameter_idx}, value {value}")
+        
+        trig_edit_active = self.app.is_mode_active(self.app.trig_edit_mode)
+        device = self.app.osc_mode.get_current_instrument_device()
+        device_idx = None
+        
+        if trig_edit_active == True:
+            device_idx = self.app.trig_edit_mode.slot
+        else:
+            device_idx = device.slot
+            
         selected_track = self.app.sequencer_mode.selected_track
-        self.locks[index][parameter_idx] = value
+        for x in range(8):
+            self.locks[index * 8 + x][device_idx][parameter_idx] = value
+
+
 
     def get_lock_state(self, index, parameter_idx):
-        # print(f"Set_lock_state: index {index}, param_idx {parameter_idx}, value {value}")
+        # print(f"Get_lock_state: index {index}, param_idx {parameter_idx}")
+        trig_edit_active = self.app.is_mode_active(self.app.trig_edit_mode)
+        device = self.app.osc_mode.get_current_instrument_device()
+        device_idx = None
+        
+        if trig_edit_active == True:
+            device_idx = self.app.trig_edit_mode.slot
+        else:
+            device_idx = device.slot
+            
         selected_track = self.app.sequencer_mode.selected_track
-        return self.locks[index][parameter_idx]
+        return self.locks[index * 8][device_idx][parameter_idx]
