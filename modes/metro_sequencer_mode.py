@@ -988,36 +988,44 @@ class MetroSequencerMode(MelodicMode):
             ]
             try:
                 if len(self.steps_held) != 0:
+                    device = None
                     for mode in self.app.active_modes:
+                        # TODO: We will need to modify this code to make locks work with other devices
+                        # TODO: make active page offset the encoder by 8
                         if mode == self.app.trig_edit_mode:
-                            idx = self.steps_held[0]
-                            value = None
+                            device = self.app.trig_edit_mode
+                        else:
+                            device = self.app.osc_mode.get_current_instrument_device()
 
-                            if seq.get_lock_state(idx, encoder_idx) is None:
-                                value = self.app.trig_edit_mode.controls[
-                                    encoder_idx
-                                ].value
+                        
+                    idx = self.steps_held[0]
+                    value = None
 
-                            else:
-                                # calmping to min/max values, scaling
-                                control = self.app.trig_edit_mode.controls[encoder_idx]
-                                lock_value = seq.get_lock_state(idx, encoder_idx)
+                    if seq.get_lock_state(idx, encoder_idx) is None:
+                        value = device.controls[
+                            encoder_idx
+                        ].value
 
-                                min = 0 if hasattr(control, "items") else control.min
-                                max = (
-                                    len(control.items)
-                                    if hasattr(control, "items")
-                                    else control.max
-                                )
-                                range = max - min
-                                incr = increment * range / 100
-                                if min <= (lock_value + incr) <= max:
-                                    value = lock_value + incr
-                                else:
-                                    value = lock_value
+                    else:
+                        # calmping to min/max values, scaling
+                        control = device.controls[encoder_idx]
+                        lock_value = seq.get_lock_state(idx, encoder_idx)
 
-                            seq.set_lock_state(idx, encoder_idx, value)
-                            return
+                        min = 0 if hasattr(control, "items") else control.min
+                        max = (
+                            len(control.items)
+                            if hasattr(control, "items")
+                            else control.max
+                        )
+                        range = max - min
+                        incr = increment * range / 100
+                        if min <= (lock_value + incr) <= max:
+                            value = lock_value + incr
+                        else:
+                            value = lock_value
+
+                    seq.set_lock_state(idx, encoder_idx, value)
+                    return
                 if self.show_scale_menu == True:
                     # Update scale menu controls
                     instrument_name = self.get_current_instrument_short_name_helper()

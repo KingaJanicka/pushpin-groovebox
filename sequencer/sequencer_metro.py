@@ -332,7 +332,6 @@ class SequencerMetro(object):
             self.aux_3[index] = value
 
     def set_lock_state(self, index, parameter_idx, value):
-        # print(f"Set_lock_state: index {index}, param_idx {parameter_idx}, value {value}")
         
         trig_edit_active = self.app.is_mode_active(self.app.trig_edit_mode)
         device = self.app.osc_mode.get_current_instrument_device()
@@ -343,6 +342,7 @@ class SequencerMetro(object):
         else:
             device_idx = device.slot
             
+        # print(f"Set_lock_state: index {index}, device_idx {device_idx}, param_idx {parameter_idx}, value {value}")
         selected_track = self.app.sequencer_mode.selected_track
         for x in range(8):
             self.locks[index * 8 + x][device_idx][parameter_idx] = value
