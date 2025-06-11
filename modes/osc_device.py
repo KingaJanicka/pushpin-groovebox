@@ -194,7 +194,13 @@ class OSCDevice(PyshaMode):
         try:
             for control in all_controls[other_page]:
                 if offset + 1 <= 8:
-                    control.draw_submenu(ctx, offset)
+                
+                    # Draw the lock but only if the lock value is not None and pad is pressed
+                    if step != None and seq.get_lock_state(step, offset) != None:
+                        lock_value = seq.get_lock_state(step, offset)
+                        control.draw_submenu(ctx, offset, draw_lock=draw_lock, lock_value=lock_value)
+                    else:
+                        control.draw_submenu(ctx, offset)
                     offset += 1
         except:
             pass

@@ -241,7 +241,17 @@ class OSCControl(object):
             ctx.restore()
 
 
-    def draw_submenu(self, ctx, x_part):
+    def draw_submenu(self, ctx, x_part, draw_lock=False, lock_value=None):
+        font_color = definitions.WHITE        
+        value = self.value
+        if draw_lock is not False:
+            font_color = definitions.RED
+            if lock_value is not None:
+                value = lock_value
+            else:
+                value = float(0.0)
+        
+        
         margin_top = 95
         line_padding = 4
         line_width = 80
@@ -253,7 +263,7 @@ class OSCControl(object):
             margin_top,
             self.label,
             height=name_height,
-            font_color=definitions.WHITE,
+            font_color=font_color,
             center_horizontally=True,
         )
 
@@ -264,10 +274,10 @@ class OSCControl(object):
             ctx,
             x_part,
             margin_top + name_height,
-            str(round(self.value, 2)),
+            str(round(value, 2)),
             height=val_height,
             font_color=color,
-            margin_left=int(self.value / self.max * line_width * 0.75 + 10),
+            margin_left=int(value / self.max * line_width * 0.75 + 10),
         )
 
         radius = name_height / 2
