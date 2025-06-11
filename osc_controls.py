@@ -70,6 +70,8 @@ class OSCControl(object):
     def draw(self, ctx, x_part, draw_lock=False, lock_value=None):
         font_color = definitions.WHITE        
         value = self.value
+        
+        
         if draw_lock is not False:
             font_color = definitions.RED
             if lock_value is not None:

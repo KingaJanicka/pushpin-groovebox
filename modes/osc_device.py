@@ -166,11 +166,28 @@ class OSCDevice(PyshaMode):
 
     def draw(self, ctx):
         visible_controls = self.get_visible_controls()
+        instrument_name = self.app.metro_sequencer_mode.get_current_instrument_short_name_helper()
+        
+        seq = self.app.metro_sequencer_mode.instrument_sequencers[instrument_name]
+        draw_lock = False
+        step = None
+        state = None
+        if len(seq.steps_held) != 0:
+            draw_lock = True
+            step = seq.steps_held[0]
+
+        
         all_controls = self.pages
         offset = 0
         for control in all_controls[self.page]:
             if offset + 1 <= 8:
-                control.draw(ctx, offset)
+                
+                # Draw the lock but only if the lock value is not None and pad is pressed
+                if step != None and seq.get_lock_state(step, offset) != None:
+                    lock_value = seq.get_lock_state(step, offset)
+                    control.draw(ctx, offset, draw_lock=draw_lock, lock_value=lock_value)
+                else:
+                    control.draw(ctx, offset)
                 offset += 1
         offset = 0
         other_page = (self.page + 1) % 2
