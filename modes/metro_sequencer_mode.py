@@ -616,6 +616,7 @@ class MetroSequencerMode(MelodicMode):
         idx_i = idx_ij[0]
         idx_j = idx_ij[1]
         seq.steps_held.append(idx_j)
+        self.disable_controls = True
 
         # Pitch track
         if self.selected_track == TRACK_NAMES_METRO[0]:
@@ -854,6 +855,7 @@ class MetroSequencerMode(MelodicMode):
         seq = self.instrument_sequencers[self.get_current_instrument_short_name_helper()]
         seq.steps_held.remove(idx_j)
 
+        self.disable_controls = False
         if self.selected_track == TRACK_NAMES_METRO[0] or self.selected_track == TRACK_NAMES_METRO[1] or self.selected_track == TRACK_NAMES_METRO[2]:
             pass
 

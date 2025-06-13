@@ -55,6 +55,7 @@ class SequencerMetro(object):
         self.next_step_index = 1
         self.steps_held = []
         self.scale_count = 1
+        self.controls_to_reset = []
         self.name = instrument.name
         self.note = [None] * default_number_of_steps
         self.pitch = [False] * default_number_of_steps
@@ -155,7 +156,6 @@ class SequencerMetro(object):
         self.playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01))
         # self.update_notes()
         
-        
         controls = self.app.metro_sequencer_mode.instrument_scale_edit_controls[self.name]
         
         pattern_len = controls[7].value
@@ -231,8 +231,11 @@ class SequencerMetro(object):
                 "gate_1"
             ]
             
+            locks = self.locks[self.step_index]
+            
+            instrument = self.app.instruments[self.name]
+            
             if self.gate[self.step_index] != "Off" and gate_track_active == True:
-                
                 
                 gate = 1
                 pitch = self.pitch[self.step_index] if self.pitch[self.step_index] != None else 0 
@@ -265,11 +268,45 @@ class SequencerMetro(object):
                 else:
                     gate = 0.25 * gate_len
             
-            
+                
                 if prob >= random.randint(1, 6):
+                    # We need to reset values that were changed by param locks
+                    for control in self.controls_to_reset:
+                        self.app.send_osc(control.address, float(control.value), self.get_current_instrument_short_name_helper())
+                        
                     self.local_timeline.schedule(
                         {"note": pitch_and_octave, "gate": gate, "amplitude": velocity}, count=1
                     )
+                    self.controls_to_reset.clear()
+            
+            # This sends the param locks, out of the prev if statement
+            # so it triggers even if the gate is off
+            for slot_idx, slot in enumerate(instrument.slots):
+                if slot != None:
+                    for device_idx, device in enumerate(instrument.devices[slot_idx]):
+                        for command in enumerate(device.init):
+                            # TODO: or if slot is 2,3,4 to make sure we're sending on the filter page too
+                            if command[1]["address"] == slot["address"] and command[1]["value"] == slot["value"]:
+                                # we have the right device
+                                # Now we just need to enum the controls and send the values 
+                                for control_idx, control in enumerate(device.controls):
+                                    lock_address = control.address
+                                    lock_value = locks[slot_idx][control_idx]
+                                    if lock_value != None:
+                                        self.app.send_osc(lock_address, lock_value, self.get_current_instrument_short_name_helper())
+                                        self.controls_to_reset.append(control)
+                # This elif branch is for slots that have only one device and therefore
+                # don't have the device address/val in the init
+                elif slot_idx == 2 or slot_idx == 3 or slot_idx == 4:
+                    for device_idx, device in enumerate(instrument.devices[slot_idx]):
+                        # we have the right device
+                        # Now we just need to enum the controls and send the values 
+                        for control_idx, control in enumerate(device.controls):
+                            lock_address = control.address
+                            lock_value = locks[slot_idx][control_idx]
+                            if lock_value != None:
+                                self.app.send_osc(lock_address, lock_value, self.get_current_instrument_short_name_helper())
+                                self.controls_to_reset.append(control)
         except Exception as e:
             print("Error in evaluate_and_play_notes")
             traceback.print_exc()
