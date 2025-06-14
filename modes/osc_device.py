@@ -179,25 +179,27 @@ class OSCDevice(PyshaMode):
         
         all_controls = self.pages
         offset = 0
+        
+        # TODO: Those are broken, subpage does not draw correctly
+        other_page = (self.page + 1) % 2
         for control in all_controls[self.page]:
             if offset + 1 <= 8:
                 
                 # Draw the lock but only if the lock value is not None and pad is pressed
-                if step != None and seq.get_lock_state(step, offset) != None:
-                    lock_value = seq.get_lock_state(step, offset)
+                if step != None and seq.get_lock_state(step, offset + self.page * 8) != None:
+                    lock_value = seq.get_lock_state(step, offset + self.page * 8)
                     control.draw(ctx, offset, draw_lock=draw_lock, lock_value=lock_value)
                 else:
                     control.draw(ctx, offset)
                 offset += 1
         offset = 0
-        other_page = (self.page + 1) % 2
         try:
             for control in all_controls[other_page]:
                 if offset + 1 <= 8:
                 
                     # Draw the lock but only if the lock value is not None and pad is pressed
-                    if step != None and seq.get_lock_state(step, offset) != None:
-                        lock_value = seq.get_lock_state(step, offset)
+                    if step != None and seq.get_lock_state(step, offset+ other_page*8) != None:
+                        lock_value = seq.get_lock_state(step, offset+other_page*8)
                         control.draw_submenu(ctx, offset, draw_lock=draw_lock, lock_value=lock_value)
                     else:
                         control.draw_submenu(ctx, offset)

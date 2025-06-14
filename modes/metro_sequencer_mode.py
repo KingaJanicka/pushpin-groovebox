@@ -1002,16 +1002,17 @@ class MetroSequencerMode(MelodicMode):
                         
                     idx = self.steps_held[0]
                     value = None
-
-                    if seq.get_lock_state(idx, encoder_idx) is None:
+                    page_offset = int(device.page) * 8
+                    if seq.get_lock_state(idx, encoder_idx + page_offset) == None:
+                        print("None branch")
                         value = device.controls[
                             encoder_idx
                         ].value
-
                     else:
+                        print("FART")
                         # calmping to min/max values, scaling
                         control = device.controls[encoder_idx]
-                        lock_value = seq.get_lock_state(idx, encoder_idx)
+                        lock_value = seq.get_lock_state(idx, encoder_idx + page_offset)
 
                         min = 0 if hasattr(control, "items") else control.min
                         max = (
@@ -1021,12 +1022,16 @@ class MetroSequencerMode(MelodicMode):
                         )
                         range = max - min
                         incr = increment * range / 100
+                        if lock_value == None:
+                            lock_value = device.controls[encoder_idx].value
                         if min <= (lock_value + incr) <= max:
+                            print(min, lock_value+incr, max)
                             value = lock_value + incr
                         else:
+                            print("else branch")
                             value = lock_value
-
-                    seq.set_lock_state(idx, encoder_idx, value)
+                    # unindented to cover both branches
+                    seq.set_lock_state(idx, encoder_idx + page_offset, value)
                     return
                 if self.show_scale_menu == True:
                     # Update scale menu controls

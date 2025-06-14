@@ -369,7 +369,6 @@ class SequencerMetro(object):
             self.aux_3[index] = value
 
     def set_lock_state(self, index, parameter_idx, value):
-        
         trig_edit_active = self.app.is_mode_active(self.app.trig_edit_mode)
         device = self.app.osc_mode.get_current_instrument_device()
         device_idx = None
