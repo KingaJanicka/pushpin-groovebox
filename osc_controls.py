@@ -73,11 +73,30 @@ class OSCControl(object):
         
         
         if draw_lock is not False:
-            font_color = definitions.RED
+            # font_color = definitions.RED
+            font_color = self.get_color_func()
             if lock_value is not None:
                 value = lock_value
             else:
                 value = float(0.0)
+            
+            #TODO: this introduces a bug where the submenus don't draw   
+            display_w = push2_python.constants.DISPLAY_LINE_PIXELS
+            x = (display_w // 8) * x_part
+            y = 21
+            x_witdh = 120
+            y_height = 80
+            ctx.move_to(x,y)
+            ctx.line_to(x + x_witdh,y)
+            ctx.line_to(x + x_witdh,y+y_height)
+            ctx.line_to(x, y+y_height)
+            ctx.close_path()
+            ctx.set_source_rgb(*definitions.get_color_rgb_float(definitions.GRAY_DARK))
+            ctx.fill_preserve()
+            # ctx.restore()
+
+        
+        
         
         if self.bipolar == True:
             margin_top = 25
@@ -245,7 +264,7 @@ class OSCControl(object):
         font_color = definitions.WHITE        
         value = self.value
         if draw_lock is not False:
-            font_color = definitions.RED
+            font_color = self.get_color_func()
             if lock_value is not None:
                 value = lock_value
             else:
@@ -586,7 +605,7 @@ class OSCControlSwitch(object):
             font_color=definitions.WHITE,
         )
 
-    def draw_submenu(self, ctx, offset):
+    def draw_submenu(self, ctx, offset, draw_lock=False, lock_value=None):
         margin_top = 95
         val_height = 15
 

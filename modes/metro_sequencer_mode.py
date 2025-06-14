@@ -1004,12 +1004,10 @@ class MetroSequencerMode(MelodicMode):
                     value = None
                     page_offset = int(device.page) * 8
                     if seq.get_lock_state(idx, encoder_idx + page_offset) == None:
-                        print("None branch")
                         value = device.controls[
                             encoder_idx
                         ].value
                     else:
-                        print("FART")
                         # calmping to min/max values, scaling
                         control = device.controls[encoder_idx]
                         lock_value = seq.get_lock_state(idx, encoder_idx + page_offset)
@@ -1025,10 +1023,8 @@ class MetroSequencerMode(MelodicMode):
                         if lock_value == None:
                             lock_value = device.controls[encoder_idx].value
                         if min <= (lock_value + incr) <= max:
-                            print(min, lock_value+incr, max)
                             value = lock_value + incr
                         else:
-                            print("else branch")
                             value = lock_value
                     # unindented to cover both branches
                     seq.set_lock_state(idx, encoder_idx + page_offset, value)
