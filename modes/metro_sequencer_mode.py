@@ -945,8 +945,9 @@ class MetroSequencerMode(MelodicMode):
             seq = self.instrument_sequencers[self.get_current_instrument_short_name_helper()]
             pass
         elif button_name == push2_constants.BUTTON_DELETE:
-
-            self.selected_track = TRACK_NAMES_METRO[6]
+            if len(self.steps_held) != 0:
+                for step in self.steps_held:
+                    seq.clear_all_locks_for_step(step)
         elif button_name == push2_constants.BUTTON_PLAY:
             if self.timeline_is_playing == False:
                 self.start_timeline()

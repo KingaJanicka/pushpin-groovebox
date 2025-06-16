@@ -398,3 +398,11 @@ class SequencerMetro(object):
             
         selected_track = self.app.sequencer_mode.selected_track
         return self.locks[index * 8][device_idx][parameter_idx]
+
+    def clear_all_locks_for_step(self, index):
+        device = self.app.osc_mode.get_current_instrument_device()
+        for x in range(8):
+            for device_idx, device in enumerate(self.locks[index * 8 + x]):
+                for parameter_idx, parameter_value in enumerate(device):
+                    self.locks[index * 8 + x][device_idx][parameter_idx] = None
+            
