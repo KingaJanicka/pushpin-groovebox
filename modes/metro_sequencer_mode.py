@@ -1014,7 +1014,7 @@ class MetroSequencerMode(MelodicMode):
                         ].value
                     else:
                         # calmping to min/max values, scaling
-                        control = device.controls[encoder_idx]
+                        control = device.controls[encoder_idx + page_offset]
                         lock_value = seq.get_lock_state(idx, encoder_idx + page_offset)
 
                         min = 0 if hasattr(control, "items") else control.min
@@ -1026,7 +1026,7 @@ class MetroSequencerMode(MelodicMode):
                         range = max - min
                         incr = increment * range / 100
                         if lock_value == None:
-                            lock_value = device.controls[encoder_idx].value
+                            lock_value = control.value
                         if min <= (lock_value + incr) <= max:
                             value = lock_value + incr
                         else:
