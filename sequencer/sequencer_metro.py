@@ -304,7 +304,7 @@ class SequencerMetro(object):
                         for control_idx, control in enumerate(device.controls):
                             lock_address = control.address
                             lock_value = locks[slot_idx][control_idx]
-                            if lock_value != None:
+                            if lock_value != None and lock_address != None:
                                 self.app.send_osc(lock_address, lock_value, self.get_current_instrument_short_name_helper())
                                 self.controls_to_reset.append(control)
         except Exception as e:

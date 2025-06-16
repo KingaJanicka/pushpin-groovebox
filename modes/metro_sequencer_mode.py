@@ -74,6 +74,9 @@ class MetroSequencerMode(MelodicMode):
     scale_edit_controls = []
     metro_seq_pad_state = {}
     steps_held = []
+    encoders_held = [False, False, False, False, False, False, False, False]
+    encoder_incr_since_held = [False, False, False, False, False, False, False, False]
+    encoder_short_press_time = 400000000
     rachets = {}
     major_scale = [0,2,4,5,7,9,11,12]
     def initialize(self, settings):
@@ -988,6 +991,7 @@ class MetroSequencerMode(MelodicMode):
             seq = self.instrument_sequencers[
                 self.get_current_instrument_short_name_helper()
             ]
+            self.encoder_incr_since_held[encoder_idx] = True
             try:
                 if len(self.steps_held) != 0:
                     device = None
@@ -1053,3 +1057,46 @@ class MetroSequencerMode(MelodicMode):
 
         except Exception as e:
             traceback.print_exc()
+            
+    def on_encoder_touched(self, encoder_name):
+        try:
+            encoder_idx = [
+                push2_python.constants.ENCODER_TRACK1_ENCODER,
+                push2_python.constants.ENCODER_TRACK2_ENCODER,
+                push2_python.constants.ENCODER_TRACK3_ENCODER,
+                push2_python.constants.ENCODER_TRACK4_ENCODER,
+                push2_python.constants.ENCODER_TRACK5_ENCODER,
+                push2_python.constants.ENCODER_TRACK6_ENCODER,
+                push2_python.constants.ENCODER_TRACK7_ENCODER,
+                push2_python.constants.ENCODER_TRACK8_ENCODER,
+            ].index(encoder_name)
+            self.encoders_held[encoder_idx] = time.time_ns()
+        except ValueError:
+            pass
+            
+    def on_encoder_released(self, encoder_name):
+        try:
+            encoder_idx = [
+                push2_python.constants.ENCODER_TRACK1_ENCODER,
+                push2_python.constants.ENCODER_TRACK2_ENCODER,
+                push2_python.constants.ENCODER_TRACK3_ENCODER,
+                push2_python.constants.ENCODER_TRACK4_ENCODER,
+                push2_python.constants.ENCODER_TRACK5_ENCODER,
+                push2_python.constants.ENCODER_TRACK6_ENCODER,
+                push2_python.constants.ENCODER_TRACK7_ENCODER,
+                push2_python.constants.ENCODER_TRACK8_ENCODER,
+            ].index(encoder_name)
+            if time.time_ns() - self.encoders_held[encoder_idx] < self.encoder_short_press_time:
+                if len(self.steps_held) != 0 and self.encoder_incr_since_held[encoder_idx] != True:
+                    for step in self.steps_held:
+                        seq = self.instrument_sequencers[
+                            self.get_current_instrument_short_name_helper()
+                        ]
+
+                        device = self.app.osc_mode.get_current_instrument_device()
+                        seq.set_lock_state(step, encoder_idx + device.page*8, None)
+                        self.encoders_held[encoder_idx] = False
+            
+            self.encoder_incr_since_held[encoder_idx] = False
+        except ValueError:
+            pass

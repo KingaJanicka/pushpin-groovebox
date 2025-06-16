@@ -85,7 +85,7 @@ class OSCControl(object):
             x = (display_w // 8) * x_part
             y = 21
             x_witdh = 120
-            y_height = 80
+            y_height = 72
             ctx.move_to(x,y)
             ctx.line_to(x + x_witdh,y)
             ctx.line_to(x + x_witdh,y+y_height)
