@@ -231,7 +231,6 @@ class SequencerMetro(object):
                 "gate_1"
             ]
             
-            locks = self.locks[self.step_index]
             
             instrument = self.app.instruments[self.name]
             
@@ -279,6 +278,11 @@ class SequencerMetro(object):
                     )
                     self.controls_to_reset.clear()
             
+            
+            # TODO: Sends locks from other tracks on the same instrument?
+            # Generaly pretty glitchy although could just be because
+            # The distro is running slow
+            
             # This sends the param locks, out of the prev if statement
             # so it triggers even if the gate is off
             for slot_idx, slot in enumerate(instrument.slots):
@@ -291,8 +295,9 @@ class SequencerMetro(object):
                                 # Now we just need to enum the controls and send the values 
                                 for control_idx, control in enumerate(device.controls):
                                     lock_address = control.address
-                                    lock_value = locks[slot_idx][control_idx]
+                                    lock_value = self.locks[self.step_index][slot_idx][control_idx]
                                     if lock_value != None:
+                                        # print(lock_address, lock_value)
                                         self.app.send_osc(lock_address, lock_value, self.get_current_instrument_short_name_helper())
                                         self.controls_to_reset.append(control)
                 # This elif branch is for slots that have only one device and therefore
@@ -303,7 +308,7 @@ class SequencerMetro(object):
                         # Now we just need to enum the controls and send the values 
                         for control_idx, control in enumerate(device.controls):
                             lock_address = control.address
-                            lock_value = locks[slot_idx][control_idx]
+                            lock_value = self.locks[self.step_index][slot_idx][control_idx]
                             if lock_value != None and lock_address != None:
                                 self.app.send_osc(lock_address, lock_value, self.get_current_instrument_short_name_helper())
                                 self.controls_to_reset.append(control)
@@ -402,7 +407,7 @@ class SequencerMetro(object):
     def clear_all_locks_for_step(self, index):
         device = self.app.osc_mode.get_current_instrument_device()
         for x in range(8):
-            for device_idx, device in enumerate(self.locks[index * 8 + x]):
-                for parameter_idx, parameter_value in enumerate(device):
+            for device_idx in range(17):
+                for parameter_idx in range(16):
                     self.locks[index * 8 + x][device_idx][parameter_idx] = None
             
