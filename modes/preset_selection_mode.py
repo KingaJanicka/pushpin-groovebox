@@ -328,11 +328,14 @@ class PresetSelectionMode(definitions.PyshaMode):
     def on_pad_released(self, pad_n, pad_ij, velocity):
         #TODO: select needs to be called here, think this will need to be
         # revised as we work on the param-locking
+        # TODO: with the re-write of how devices are handled this is now broken
         instrument = self.app.osc_mode.get_current_instrument()
+        print(instrument.name)
         instrument.query_slots()
         instrument.query_all_params()
-        # instrument.query_devices()
-        devices = self.app.osc_mode.get_current_instrument_devices()
+        instrument.query_devices()
+        instrument.update_current_devices()
+        devices = instrument.devices
         for device in devices:
             device.query_visible_controls()
             self.app.queue.append(device.select())

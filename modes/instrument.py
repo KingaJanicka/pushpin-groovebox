@@ -136,7 +136,7 @@ class Instrument(PyshaMode):
 
             slot_idx = device_definitions[device_name]["slot"]
             self.devices[slot_idx].append(device)
-
+        self.current_devices = []
         print(
             "Loaded {0} devices for instrument {1}".format(
                 sum([len(slot) for slot in self.devices]),
@@ -146,6 +146,34 @@ class Instrument(PyshaMode):
         # Check what's mapped
         # print(dispatcher._map.keys())
         # self.query_all_params()
+
+        self.devices_modulation = []
+        
+        # gets all the modulation devices
+        for slot_idx, slot_devices in enumerate(self.devices):
+            for device in slot_devices:
+                if 8 <= slot_idx <= 15:
+                    self.devices_modulation.append(device)
+
+        self.update_current_devices()
+
+    def update_current_devices(self):
+        updated_devices = []
+        for slot_idx, slot_devices in enumerate(self.devices):
+            for device in slot_devices:
+                if slot_idx == 2 or slot_idx == 3 or slot_idx == 4:
+                    updated_devices.append(device)
+                else:
+                    slot = self.slots[slot_idx]
+                    for init in device.init:
+                        if init["address"] == slot["address"] and int(
+                            init["value"]
+                        ) == float(slot["value"]):
+                            updated_devices.append(device)
+
+        self.current_devices = updated_devices
+    
+
 
     def set_slot_state(self, *resp):
         address, value, *rest = resp
@@ -169,6 +197,7 @@ class Instrument(PyshaMode):
                 if float(slot["value"]) != float(value):
                     slot["value"] = float(value)
                     break
+        self.update_current_devices()
                 
 
     async def init_devices(self):

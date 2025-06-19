@@ -257,71 +257,20 @@ class OSCMode(PyshaMode):
     def get_current_instrument_devices(self):
         instrument_shortname = self.get_current_instrument_short_name_helper()
         instrument = self.app.instruments.get(instrument_shortname, None)
-
-        devices = []
-
-        for slot_idx, slot_devices in enumerate(instrument.devices):
-            for device in slot_devices:
-                if slot_idx == 2 or slot_idx == 3 or slot_idx == 4:
-                    devices.append(device)
-                elif 8 <= slot_idx <= 15:
-                    devices.append(device)
-                else:
-                    slot = instrument.slots[slot_idx]
-                    for init in device.init:
-                        if init["address"] == slot["address"] and int(
-                            init["value"]
-                        ) == float(slot["value"]):
-                            devices.append(device)
-
-        return devices
+        return instrument.current_devices
 
     def get_instrument_devices(self, instrument_short_name):
         instrument = self.app.instruments.get(instrument_short_name, None)
-
-        devices = []
-
-        for slot_idx, slot_devices in enumerate(instrument.devices):
-            for device in slot_devices:
-                if slot_idx == 2 or slot_idx == 3 or slot_idx == 4:
-                    devices.append(device)
-                elif 8 <= slot_idx <= 15:
-                    devices.append(device)
-                else:
-                    slot = instrument.slots[slot_idx]
-                    for init in device.init:
-                        if init["address"] == slot["address"] and int(
-                            init["value"]
-                        ) == float(slot["value"]):
-                            devices.append(device)
-
-        return devices
+        return instrument.current_devices
 
     def get_current_instrument_page_devices(self):
         instrument_shortname = self.get_current_instrument_short_name_helper()
         instrument = self.app.instruments.get(instrument_shortname, None)
 
-        devices = []
-        devices_modulation = []
-
-        for slot_idx, slot_devices in enumerate(instrument.devices):
-            for device in slot_devices:
-                if slot_idx == 2 or slot_idx == 3 or slot_idx == 4:
-                    devices.append(device)
-                elif 8 <= slot_idx <= 15:
-                    devices_modulation.append(device)
-                else:
-                    slot = instrument.slots[slot_idx]
-                    for init in device.init:
-                        if init["address"] == slot["address"] and int(
-                            init["value"]
-                        ) == float(slot["value"]):
-                            devices.append(device)
-
         if self.instrument_page == 0:
-            return devices
+            return instrument.current_devices
         else:
-            return devices_modulation
+            return instrument.devices_modulation
 
     def query_devices(self):
         self.app.instruments[self.get_current_instrument_short_name_helper()].query_slots()
@@ -340,7 +289,6 @@ class OSCMode(PyshaMode):
 
     def get_current_instrument_device_and_page(self):
         device_idx, page = self.current_device_index_and_page
-        
         current_device = self.get_current_instrument_page_devices()[device_idx]
         return (current_device, page)
 

@@ -1,0 +1,8 @@
+Costly functions:
+
+All of the drawing functions?
+osc_server seems to be pretty minimal
+instrument_sel_mode and metro_seq are inside the update_push2_display stack, also pretty minimal compared to the draw calls
+metro_sequencer_mode.py:538(update_pads)
+get_current_instrument_page_devices
+get_current_instrument_device_and_page

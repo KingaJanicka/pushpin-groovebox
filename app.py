@@ -101,7 +101,7 @@ class PyshaApp(object):
 
         self.set_midi_in_channel(settings.get("midi_in_default_channel", 0))
         self.set_midi_out_channel(settings.get("midi_out_default_channel", 0))
-        self.target_frame_rate = settings.get("target_frame_rate", 60)
+        self.target_frame_rate = settings.get("target_frame_rate", 30)
         self.use_push2_display = settings.get("use_push2_display", True)
 
         self.init_midi_in(device_name=settings.get("default_midi_in_device_name", None))
@@ -804,6 +804,7 @@ class PyshaApp(object):
             # "ALSA lib seq_hw.c:466:(snd_seq_hw_open) open /dev/snd/seq failed: Cannot allocate memory" issues.
             # A work around is make the reconnection time bigger, but a better solution should probably be found.
             self.push.set_push2_reconnect_call_interval(2)
+            
         # for y in range(0, 8):
         #     for x in range(0, 8):
         #         self.push.pads.set_pad_color((x, y), color=definitions.OFF_BTN_COLOR)
