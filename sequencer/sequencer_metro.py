@@ -74,14 +74,12 @@ class SequencerMetro(object):
                 self.midi_in_name = item
 
         self.note_pattern = iso.PSeq(self.note)
-        
-        self.local_timeline = instrument.timeline
         self.midi_in_device = instrument.midi_out_device
         self.midi_in_name = instrument.midi_in_name
         self.midi_out_device = instrument.midi_out_device
         
         # We should use track.update() to update the sequencers to match the pad state
-        self.playhead_track = instrument.timeline.schedule(
+        self.playhead_track = self.timeline.schedule(
             {
                 "action": lambda: (
                     tick_callback(self.name, len(self.pitch)),
@@ -273,13 +271,14 @@ class SequencerMetro(object):
                     for control in self.controls_to_reset:
                         self.app.send_osc(control.address, float(control.value), self.get_current_instrument_short_name_helper())
                         
-                    self.local_timeline.schedule(
-                        {"note": pitch_and_octave, "gate": gate, "amplitude": velocity}, count=1
+                    self.timeline.schedule(
+                        {"note": pitch_and_octave, "gate": gate, "amplitude": velocity}, count=1, output_device=self.midi_out_device
                     )
                     self.controls_to_reset.clear()
             
             
             # TODO: Sends locks from other tracks on the same instrument?
+            # Needs optimizing
             # Generaly pretty glitchy although could just be because
             # The distro is running slow
             

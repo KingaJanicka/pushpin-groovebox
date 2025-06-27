@@ -11,6 +11,7 @@ import numpy
 import push2_python
 import asyncio
 import jack
+import isobar as iso
 
 from modes.melodic_mode import MelodicMode
 from modes.instrument_selection_mode import InstrumentSelectionMode
@@ -92,6 +93,7 @@ class PyshaApp(object):
     pipewire = None
     volumes = [ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
     volume_node = None
+    global_timeline = iso.Timeline(tempo, output_device=iso.DummyOutputDevice())
 
     def __init__(self):
         if os.path.exists("settings.json"):
@@ -1145,7 +1147,7 @@ async def main():
         app.instruments[instrument].query_devices()
         
         app.queue.append(app.instruments[instrument].init_devices())
-        
+        app.global_timeline.add_output_device(app.instruments[instrument].midi_out_device)    
 
     for instrument in app.external_instruments:
         await instrument.engine.configure_pipewire()
