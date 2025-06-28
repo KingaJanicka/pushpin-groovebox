@@ -514,7 +514,7 @@ class MetroSequencerMode(MelodicMode):
             ctx.line_to(0, 135)
             ctx.line_to(960, 135)
             ctx.line_to(960, 0)
-            ctx.set_source_rgb(255, 0, 0)
+            ctx.set_source_rgb(0, 0, 0)
             ctx.close_path()
             ctx.fill_preserve()
             offset = 0
@@ -832,7 +832,7 @@ class MetroSequencerMode(MelodicMode):
             elif seq_pad_state[idx_i][idx_j] == True:
                 self.pads_press_time[idx_n] = time.time()
                 #TODO: call func to show lock here
-
+        # self.update_pads()
         self.app.pads_need_update = True
 
     def on_pad_released(self, pad_n, pad_ij, velocity):
@@ -1039,7 +1039,7 @@ class MetroSequencerMode(MelodicMode):
                     if min >= (control.value + incr):
                         control.value = min
                     if max < (control.value + incr):
-                        control.value = max - incr
+                        control.value = max
 
                     self.update_pads()
                 self.app.trig_edit_mode.update_button_colours()
