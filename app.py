@@ -361,9 +361,9 @@ class PyshaApp(object):
             self.set_slice_notes_mode()
         elif self.is_mode_active(self.slice_notes_mode):
             self.set_melodic_mode()
-        elif self.is_mode_active(self.melodic_mode) or self.is_mode_active(self.mute_mode):
+        elif self.is_mode_active(self.melodic_mode):
             self.set_sequencer_mode()
-        elif self.is_mode_active(self.sequencer_mode):
+        elif self.is_mode_active(self.sequencer_mode) or self.is_mode_active(self.mute_mode):
             self.set_metro_sequencer_mode()
         else:
             # If none of melodic or rhythmic or slice modes were active, enable melodic by default

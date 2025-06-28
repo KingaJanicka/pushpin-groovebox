@@ -289,7 +289,8 @@ class OSCMode(PyshaMode):
 
     def get_current_instrument_device_and_page(self):
         device_idx, page = self.current_device_index_and_page
-        current_device = self.get_current_instrument_page_devices()[device_idx]
+        devices = self.get_current_instrument_page_devices()
+        current_device = devices[device_idx]
         return (current_device, page)
 
     def get_current_slot_devices(self):
@@ -494,10 +495,13 @@ class OSCMode(PyshaMode):
             push2_python.constants.BUTTON_LEFT,
             push2_python.constants.BUTTON_RIGHT,
         ]:
+            instrument_shortname = self.get_current_instrument_short_name_helper()
+            instrument = self.app.instruments.get(instrument_shortname, None)
             if button_name == push2_python.constants.BUTTON_LEFT:
                 self.update_current_instrument_page(new_instrument_page=0)
             elif button_name == push2_python.constants.BUTTON_RIGHT:
                 self.update_current_instrument_page(new_instrument_page=1)
+            instrument.update_current_devices()
             return True
 
     def on_encoder_rotated(self, encoder_name, increment):

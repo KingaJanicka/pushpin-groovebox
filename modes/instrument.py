@@ -166,9 +166,7 @@ class Instrument(PyshaMode):
                 else:
                     slot = self.slots[slot_idx]
                     for init in device.init:
-                        if init["address"] == slot["address"] and int(
-                            init["value"]
-                        ) == float(slot["value"]):
+                        if init["address"] == slot["address"] and int(init["value"]) == float(slot["value"]):
                             updated_devices.append(device)
 
         self.current_devices = updated_devices
