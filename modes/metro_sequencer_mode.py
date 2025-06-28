@@ -611,27 +611,14 @@ class MetroSequencerMode(MelodicMode):
         self.disable_controls = True
         # Pitch track
         if self.selected_track == TRACK_NAMES_METRO[0]:
-            # One pad
             pitch_value = None
-            if len(self.steps_held) == 1:
-                # print("Single pad")
-                # Turn off all other pads in the column
-                for x in range(8):
-                    seq_pad_state[x][idx_j] = False
-                # If a pad is off, turn it on
-                seq_pad_state[idx_i][idx_j] = True
-                
-                # Set pitch step according to scale
-                idx = 7 - idx_i
-                pitch_value = self.major_scale[idx]
-                
-                # If it's on, save the time and cont in on_pad_released
-                if seq_pad_state[idx_i][idx_j] == True:
-                    self.pads_press_time[idx_n] = time.time()
-                    #TODO: call func to show lock here
-
-            # Two pads
-            elif len(self.steps_held) == 2:
+            if len(self.steps_held) == 2:
+                step_0_ij = self.index_to_pad_ij(self.steps_held[-1])
+                step_1_ij = self.index_to_pad_ij(self.steps_held[-2])
+            # Two pads, this is so the if only activates when
+            # the two pads are in the same column
+            # for all other cases see else statement
+            if len(self.steps_held) == 2 and step_0_ij[1] == step_1_ij[1]:
                 # print("two pads")
                 step_a_idx = self.steps_held[-1]
                 step_a_ij = self.index_to_pad_ij(step_a_idx)
@@ -686,26 +673,24 @@ class MetroSequencerMode(MelodicMode):
                     elif seq_pad_state[step_a_i][step_a_j] == False:
                         self.pads_press_time[step_a_idx] = time.time()
                 self.app.pads_need_update = True
-            elif len(self.steps_held) < 2:
-                for idx, step in enumerate(self.steps_held):
-                    step_ij = self.index_to_pad_ij(step)
-                    # print("Single pad")
-                    # Turn off all other pads in the column
-                    for x in range(8):
-                        step_ij[x][idx_j] = False
-                    # If a pad is off, turn it on
-                    step_ij[idx_i][idx_j] = True
-                    
-                    # Set pitch step according to scale
-                    idx = 7 - idx_i
-                    pitch_value = self.major_scale[idx]
-                    
-                    # If it's on, save the time and cont in on_pad_released
-                    if step_ij[idx_i][idx_j] == True:
-                        self.pads_press_time[idx_n] = time.time()
-                        #TODO: call func to show lock here
             
-            
+            else:
+                # print("Single pad")
+                # Turn off all other pads in the column
+                for x in range(8):
+                    seq_pad_state[x][idx_j] = False
+                # If a pad is off, turn it on
+                seq_pad_state[idx_i][idx_j] = True
+                
+                # Set pitch step according to scale
+                idx = 7 - idx_i
+                pitch_value = self.major_scale[idx]
+                
+                # If it's on, save the time and cont in on_pad_released
+                if seq_pad_state[idx_i][idx_j] == True:
+                    self.pads_press_time[idx_n] = time.time()
+                    #TODO: call func to show lock here
+
             # Set the pitches
             for x in range(8):
                 seq.set_state([TRACK_NAMES_METRO[0]], idx_j*8 + x, pitch_value)
