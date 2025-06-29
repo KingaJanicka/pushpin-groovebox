@@ -11,6 +11,8 @@ from modes.instrument import Instrument
 from ratelimit import RateLimitException
 import traceback
 import numbers
+import time
+
 
 import sys
 import struct
@@ -266,10 +268,9 @@ class OSCMode(PyshaMode):
     def get_current_instrument_page_devices(self):
         instrument_shortname = self.get_current_instrument_short_name_helper()
         instrument = self.app.instruments.get(instrument_shortname, None)
-
         if self.instrument_page == 0:
             return instrument.current_devices
-        else:
+        elif self.instrument_page == 1:
             return instrument.devices_modulation
 
     def query_devices(self):
@@ -497,6 +498,7 @@ class OSCMode(PyshaMode):
         ]:
             instrument_shortname = self.get_current_instrument_short_name_helper()
             instrument = self.app.instruments.get(instrument_shortname, None)
+            instrument.update_current_devices()
             if button_name == push2_python.constants.BUTTON_LEFT:
                 self.update_current_instrument_page(new_instrument_page=0)
             elif button_name == push2_python.constants.BUTTON_RIGHT:

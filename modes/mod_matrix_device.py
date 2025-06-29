@@ -432,10 +432,15 @@ class ModMatrixDevice(definitions.PyshaMode):
         sel_label = EMPTY_STRING
 
         if selected_idx - 2 >= 0:
-            prev_prev_label = list[selected_idx - 2].label or EMPTY_STRING
-
+            try:
+                prev_prev_label = list[selected_idx - 2].label or EMPTY_STRING
+            except IndexError: 
+                pass
         if selected_idx - 1 >= 0:
-            prev_label = list[selected_idx - 1].label or EMPTY_STRING
+            try:
+                prev_label = list[selected_idx - 1].label or EMPTY_STRING
+            except IndexError:
+                pass
 
         try:
             sel_label = list[selected_idx].label or EMPTY_STRING
