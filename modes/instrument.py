@@ -269,7 +269,7 @@ class Instrument(PyshaMode):
             # device.query_all()
         client = self.osc["client"]
         if client:
-            print(f"Querying all_params on {self.name}")
+            # print(f"Querying all_params on {self.name}")
             client.send_message("/q/all_params", None)
 
     def query_slots(self):

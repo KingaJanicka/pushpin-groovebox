@@ -191,6 +191,7 @@ class PyshaApp(object):
             self.settings_mode.activate()
 
     def toggle_menu_mode(self):
+        previous_mode = self.previously_active_mode_for_xor_group
         # instrument = self.osc_mode.get_current_instrument()
         # instrument.query_slots()
         if self.is_mode_active(self.menu_mode):
@@ -201,9 +202,11 @@ class PyshaApp(object):
                     new_active_modes.append(mode)
 
             self.active_modes = new_active_modes
+            new_active_modes.append(previous_mode)
             self.menu_mode.deactivate()
         else:
             # Activate (replace midi cc and instrument selection mode by ddrm tone selector mode)
+            self.previously_active_mode_for_xor_group = self.active_modes[-1]
             new_active_modes = []
             for mode in self.active_modes:
                 if mode != self.preset_selection_mode:
@@ -219,7 +222,10 @@ class PyshaApp(object):
     # One triggering needs to shut down another
 
     def toggle_preset_selection_mode(self):
+        
+        previous_mode = self.previously_active_mode_for_xor_group
         if self.is_mode_active(self.preset_selection_mode):
+            
             # Deactivate (replace ddrm tone selector mode by midi cc and instrument selection mode)
             new_active_modes = []
             for mode in self.active_modes:
@@ -227,12 +233,13 @@ class PyshaApp(object):
                     new_active_modes.append(mode)
 
             new_active_modes.append(self.osc_mode)
-
+            new_active_modes.append(previous_mode)
             self.active_modes = new_active_modes
             self.osc_mode.activate()
             self.preset_selection_mode.deactivate()
         else:
             # Activate (replace midi cc and instrument selection mode by ddrm tone selector mode)
+            self.previously_active_mode_for_xor_group = self.active_modes[-1]
             new_active_modes = []
             for mode in self.active_modes:
                 if mode != self.menu_mode and mode != self.osc_mode and mode != self.trig_edit_mode:
@@ -248,6 +255,7 @@ class PyshaApp(object):
 
 
     def toggle_trig_edit_mode(self):
+        previous_mode = self.previously_active_mode_for_xor_group
         if self.is_mode_active(self.trig_edit_mode):
             # Deactivate (replace ddrm tone selector mode by midi cc and instrument selection mode)
             new_active_modes = []
@@ -256,12 +264,13 @@ class PyshaApp(object):
                     new_active_modes.append(mode)
 
             new_active_modes.append(self.osc_mode)
-
+            new_active_modes.append(previous_mode)
             self.active_modes = new_active_modes
             self.osc_mode.activate()
             self.trig_edit_mode.deactivate()
         else:
             # Activate (replace midi cc and instrument selection mode by ddrm tone selector mode)
+            self.previously_active_mode_for_xor_group = self.active_modes[-1]
             new_active_modes = []
             for mode in self.active_modes:
                 if mode != self.menu_mode and mode != self.osc_mode and mode != self.preset_selection_mode:
@@ -276,6 +285,7 @@ class PyshaApp(object):
             # print(self.active_modes, "active modes")
 
     def toggle_ddrm_tone_selector_mode(self):
+        previous_mode = self.previously_active_mode_for_xor_group
         if self.is_mode_active(self.ddrm_tone_selector_mode):
             # Deactivate (replace ddrm tone selector mode by midi cc and instrument selection mode)
             new_active_modes = []
@@ -286,11 +296,13 @@ class PyshaApp(object):
                     new_active_modes.append(self.instrument_selection_mode)
                     new_active_modes.append(self.osc_mode)
             self.active_modes = new_active_modes
+            new_active_modes.append(previous_mode)
             self.ddrm_tone_selector_mode.deactivate()
             self.osc_mode.activate()
             self.instrument_selection_mode.activate()
         else:
             # Activate (replace midi cc and instrument selection mode by ddrm tone selector mode)
+            self.previously_active_mode_for_xor_group = self.active_modes[-1]
             new_active_modes = []
             for mode in self.active_modes:
                 if mode != self.instrument_selection_mode and mode != self.osc_mode:
@@ -307,7 +319,6 @@ class PyshaApp(object):
         for the same xor_group, these other modes get deactivated. This also stores a reference to the
         latest active mode for xor_group, so once a mode gets unset, the previously active one can be
         automatically set"""
-
         if not self.is_mode_active(mode_to_set):
 
             # First deactivate all existing modes for that xor group

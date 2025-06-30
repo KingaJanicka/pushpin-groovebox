@@ -937,7 +937,7 @@ class MetroSequencerMode(MelodicMode):
         elif button_name == push2_constants.BUTTON_DELETE:
             if len(self.steps_held) != 0:
                 for step in self.steps_held:
-                    seq.clear_all_locks_for_step(step)
+                    seq.clear_all_locks_for_step(step%8)
         elif button_name == push2_constants.BUTTON_PLAY:
             if self.timeline_is_playing == False:
                 self.start_timeline()
@@ -994,8 +994,7 @@ class MetroSequencerMode(MelodicMode):
                         else:
                             device = self.app.osc_mode.get_current_instrument_device()
 
-                        
-                    idx = self.steps_held[0]
+                    idx = int(self.steps_held[0]%8)
                     value = None
                     page_offset = int(device.page) * 8
                     if seq.get_lock_state(idx, encoder_idx + page_offset) == None:
