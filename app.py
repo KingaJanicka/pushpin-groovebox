@@ -226,7 +226,6 @@ class PyshaApp(object):
         
         previous_mode = self.previously_active_mode_for_xor_group
         if self.is_mode_active(self.preset_selection_mode):
-            print("if")
             # Deactivate (replace ddrm tone selector mode by midi cc and instrument selection mode)
             new_active_modes = []
             for mode in self.active_modes:
@@ -401,6 +400,8 @@ class PyshaApp(object):
         self.set_mode_for_xor_group(self.metro_sequencer_mode)
 
     def set_mute_mode(self):
+        if self.is_mode_active(self.preset_selection_mode):
+            self.toggle_preset_selection_mode()
         self.set_mode_for_xor_group(self.mute_mode)
 
     def set_preset_selection_mode(self):

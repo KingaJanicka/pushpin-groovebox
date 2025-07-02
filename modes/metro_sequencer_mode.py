@@ -436,11 +436,9 @@ class MetroSequencerMode(MelodicMode):
         self.global_timeline.stop()
 
     def activate(self):
-        print("activate")
         self.draw_pads = True
 
     def deactivate(self):
-        print("decativate")
         self.draw_pads = False
         
     def get_settings_to_save(self):
