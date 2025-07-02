@@ -330,17 +330,10 @@ class PresetSelectionMode(definitions.PyshaMode):
         # revised as we work on the param-locking
         # TODO: with the re-write of how devices are handled this is now broken
         instrument = self.app.osc_mode.get_current_instrument()
-        print(instrument.name)
         instrument.query_slots()
-        instrument.query_all_params()
         instrument.query_devices()
         instrument.update_current_devices()
-        devices = instrument.devices
-        for device in devices:
-            device.query_visible_controls()
-            self.app.queue.append(device.select())
         self.update_pads()
-        print("pad released")
         return True  # Prevent other modes to get this event
 
     def nested_draw(
