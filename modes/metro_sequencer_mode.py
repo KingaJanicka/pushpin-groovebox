@@ -70,6 +70,7 @@ class MetroSequencerMode(MelodicMode):
     pads_press_time = [False] * 64
     pad_quick_press_time = 0.400
     disable_controls = False
+    draw_pads = True
     instrument_scale_edit_controls = {}
     scale_edit_controls = []
     metro_seq_pad_state = {}
@@ -434,6 +435,14 @@ class MetroSequencerMode(MelodicMode):
     def stop_timeline(self):
         self.global_timeline.stop()
 
+    def activate(self):
+        print("activate")
+        self.draw_pads = True
+
+    def deactivate(self):
+        print("decativate")
+        self.draw_pads = False
+        
     def get_settings_to_save(self):
         return {}
 
@@ -525,75 +534,76 @@ class MetroSequencerMode(MelodicMode):
             # ctx.restore()
 
     def update_pads(self):
-        try:
-            instrument_name = self.get_current_instrument_short_name_helper()
-            pad_state = self.metro_seq_pad_state[instrument_name]
-            seq_pad_state = pad_state[self.selected_track]
-            button_colors = [definitions.OFF_BTN_COLOR] * 64
-            selected_scale_controls = self.instrument_scale_edit_controls[
-                instrument_name
-            ]
-            track_length = 64
-            
-            seq = self.instrument_sequencers[instrument_name]
-            
-            gate_idx = seq.step_index
-            gate_idx_x = int(gate_idx / 8)
-            gate_idx_y = 7 - gate_idx % 8    
-            
-            # pitch_and_oct_idx = 
-            
-            
-            for i, value in enumerate(seq_pad_state):
-                # Gets the entire row
-                for j, value in enumerate(value):
-                    idx = i * 8 + j
-                    if value:
-                        button_colors[idx] = TRACK_COLORS[self.selected_track]
-
-                    # Set pad colours for on/off states of the seq
-                    if seq_pad_state[i][j] is True:
-                        # If rachet is on display yellow steps
-                        
-                        if self.rachets[instrument_name][j] == True:
-                            button_colors[idx] = definitions.YELLOW
-
-                        # If not display standard blue gates
-                        else:
+        if self.draw_pads == True:
+            try:
+                instrument_name = self.get_current_instrument_short_name_helper()
+                pad_state = self.metro_seq_pad_state[instrument_name]
+                seq_pad_state = pad_state[self.selected_track]
+                button_colors = [definitions.OFF_BTN_COLOR] * 64
+                selected_scale_controls = self.instrument_scale_edit_controls[
+                    instrument_name
+                ]
+                track_length = 64
+                
+                seq = self.instrument_sequencers[instrument_name]
+                
+                gate_idx = seq.step_index
+                gate_idx_x = int(gate_idx / 8)
+                gate_idx_y = 7 - gate_idx % 8    
+                
+                # pitch_and_oct_idx = 
+                
+                
+                for i, value in enumerate(seq_pad_state):
+                    # Gets the entire row
+                    for j, value in enumerate(value):
+                        idx = i * 8 + j
+                        if value:
                             button_colors[idx] = TRACK_COLORS[self.selected_track]
 
-                    if self.selected_track != TRACK_NAMES_METRO[3] and (idx % 8) == gate_idx_x:
-                        button_colors[idx] = definitions.PINK
-                    
-                    if seq_pad_state[i][j] == "Off":
-                        button_colors[idx] = definitions.OFF_BTN_COLOR
+                        # Set pad colours for on/off states of the seq
+                        if seq_pad_state[i][j] is True:
+                            # If rachet is on display yellow steps
+                            
+                            if self.rachets[instrument_name][j] == True:
+                                button_colors[idx] = definitions.YELLOW
 
-                    if seq_pad_state[i][j] == "Tie":
-                        button_colors[idx] = definitions.GREEN_RGB
+                            # If not display standard blue gates
+                            else:
+                                button_colors[idx] = TRACK_COLORS[self.selected_track]
 
-                    if seq_pad_state[i][j] is False:
-                        button_colors[idx] = definitions.BLACK
-                    
+                        if self.selected_track != TRACK_NAMES_METRO[3] and (idx % 8) == gate_idx_x:
+                            button_colors[idx] = definitions.PINK
+                        
+                        if seq_pad_state[i][j] == "Off":
+                            button_colors[idx] = definitions.OFF_BTN_COLOR
 
-            if self.selected_track == TRACK_NAMES_METRO[3]:
-                # Draw the playhead
-                button_colors[gate_idx_y * 8 + gate_idx_x] = definitions.PINK
-            # makes the values into a multi-dimensional array
-            button_colors_array = []
+                        if seq_pad_state[i][j] == "Tie":
+                            button_colors[idx] = definitions.GREEN_RGB
 
-            while button_colors:
-                chunk, button_colors = button_colors[:8], button_colors[8:]
-                button_colors_array.append(chunk)
+                        if seq_pad_state[i][j] is False:
+                            button_colors[idx] = definitions.BLACK
+                        
 
-            self.push.pads.set_pads_color(button_colors_array)
-        except Exception as exception:
-            exception_message = str(exception)
-            exception_type, exception_object, exception_traceback = sys.exc_info()
-            filename = os.path.split(exception_traceback.tb_frame.f_code.co_filename)[1]
+                if self.selected_track == TRACK_NAMES_METRO[3]:
+                    # Draw the playhead
+                    button_colors[gate_idx_y * 8 + gate_idx_x] = definitions.PINK
+                # makes the values into a multi-dimensional array
+                button_colors_array = []
 
-            print(
-                f"{exception_message} {exception_type} {filename}, Line {exception_traceback.tb_lineno}"
-            )
+                while button_colors:
+                    chunk, button_colors = button_colors[:8], button_colors[8:]
+                    button_colors_array.append(chunk)
+
+                self.push.pads.set_pads_color(button_colors_array)
+            except Exception as exception:
+                exception_message = str(exception)
+                exception_type, exception_object, exception_traceback = sys.exc_info()
+                filename = os.path.split(exception_traceback.tb_frame.f_code.co_filename)[1]
+
+                print(
+                    f"{exception_message} {exception_type} {filename}, Line {exception_traceback.tb_lineno}"
+                )
 
     def on_pad_pressed(self, pad_n, pad_ij, velocity):
         pad_state = self.metro_seq_pad_state[
