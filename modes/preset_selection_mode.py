@@ -67,12 +67,22 @@ class PresetSelectionMode(definitions.PyshaMode):
             self.save_presets()
 
     def load_init_presets(self):
+        print("init presets")
+        # TODO:this don't work and I am not sure why
         for item in self.presets:
             self.send_osc(
                 "/patch/load",
                 self.presets[item][0],
                 instrument_shortname=item,
             )
+            
+        for instrument in self.app.instruments:
+            self.app.instruments[instrument].query_slots()
+            self.app.instruments[instrument].query_devices()
+            self.app.instruments[instrument].query_all_params()
+            self.app.instruments[instrument].update_current_devices()
+            
+            
 
     def create_dict_from_paths(self, arr):
         d = dict()

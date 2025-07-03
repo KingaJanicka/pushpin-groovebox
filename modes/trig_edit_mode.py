@@ -518,6 +518,8 @@ class TrigEditMode(definitions.PyshaMode):
                     list = binary_list.copy()
                     while len(list) <= 8:
                         list.append(0)
+                
+                
                 binary_list = list
                 try:
                     button_idx = int(button_name[-1]) - 1

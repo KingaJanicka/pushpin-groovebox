@@ -269,7 +269,7 @@ class SequencerMetro(object):
                 if prob >= random.randint(1, 6):
                     # We need to reset values that were changed by param locks
                     for control in self.controls_to_reset:
-                        self.app.send_osc(control.address, float(control.value), self.get_current_instrument_short_name_helper())
+                        self.app.send_osc(control.address, float(control.value), instrument.name)
                         
                     self.timeline.schedule(
                         {"note": pitch_and_octave, "gate": gate, "amplitude": velocity}, count=1, output_device=self.midi_out_device
@@ -296,8 +296,7 @@ class SequencerMetro(object):
                                     lock_address = control.address
                                     lock_value = self.locks[self.step_index][slot_idx][control_idx]
                                     if lock_value != None:
-                                        # print(lock_address, lock_value)
-                                        self.app.send_osc(lock_address, lock_value, self.get_current_instrument_short_name_helper())
+                                        self.app.send_osc(lock_address, lock_value, instrument.name)
                                         self.controls_to_reset.append(control)
                 # This elif branch is for slots that have only one device and therefore
                 # don't have the device address/val in the init
@@ -309,7 +308,7 @@ class SequencerMetro(object):
                             lock_address = control.address
                             lock_value = self.locks[self.step_index][slot_idx][control_idx]
                             if lock_value != None and lock_address != None:
-                                self.app.send_osc(lock_address, lock_value, self.get_current_instrument_short_name_helper())
+                                self.app.send_osc(lock_address, lock_value, instrument.name)
                                 self.controls_to_reset.append(control)
         except Exception as e:
             print("Error in evaluate_and_play_notes")

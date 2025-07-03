@@ -216,7 +216,6 @@ class PyshaApp(object):
             self.active_modes = new_active_modes
             self.preset_selection_mode.deactivate()
             self.trig_edit_mode.deactivate()
-            self.metro_sequencer_mode.deactivate()
             self.menu_mode.activate()
 
     # TODO: preset sel/trig edit get wonky when switching from one to another
@@ -905,6 +904,8 @@ class PyshaApp(object):
         print("Loading State ...")
         self.metro_sequencer_mode.load_state()
         self.sequencer_mode.load_state()
+        
+        app.preset_selection_mode.load_init_presets()
         print("Pysha is running...")
         while True:
             before_draw_time = time.time()
@@ -1148,7 +1149,6 @@ async def main():
     print("Initialising Pipewire support...")
     await asyncio.sleep(5)
     await app.get_pipewire_config()
-    app.preset_selection_mode.load_init_presets()
     #sets volumes to full in the duplex
     app.get_volume_node()
     app.send_message_cli()
