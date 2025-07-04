@@ -91,7 +91,7 @@ class PyshaApp(object):
     # Pipewire-related
     external_instruments = []
     pipewire = None
-    volumes = [ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+    volumes = [ 0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6]
     volume_node = None
     global_timeline = iso.Timeline(tempo, output_device=iso.DummyOutputDevice())
 
@@ -997,8 +997,11 @@ class PyshaApp(object):
     
     def send_message_cli(self, *args):
         volume_node_id = self.volume_node["id"]
-        cli_string = f"pw-cli s {volume_node_id} Props '{{monitorVolumes: {self.volumes}}}'"
-        self.queue.append(asyncio.create_subprocess_shell(cli_string, stdout=asyncio.subprocess.PIPE))
+        for idx, instrument in enumerate(self.instruments):
+            value = self.volumes[idx]
+            app.send_osc("/param/global/volume", value, instrument_short_name=instrument)
+        # cli_string = f"pw-cli s {volume_node_id} Props '{{monitorVolumes: {self.volumes}}}'"
+        # self.queue.append(asyncio.create_subprocess_shell(cli_string, stdout=asyncio.subprocess.PIPE))
   
 
 # Bind push action handlers with class methods
