@@ -1163,7 +1163,6 @@ async def main():
         
         app.queue.append(app.instruments[instrument].init_devices())
         app.global_timeline.add_output_device(app.instruments[instrument].midi_out_device)    
-
     for instrument in app.external_instruments:
         await instrument.engine.configure_pipewire()
     while True:

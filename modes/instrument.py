@@ -264,7 +264,6 @@ class Instrument(PyshaMode):
     def query_all_params(self):
         # TODO: this is broken
         # # print(self.devices)
-        print("query all",self.name)
         # for device in self.devices:
         #     print(device.label)
             # device.query_all()

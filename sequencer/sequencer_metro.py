@@ -46,7 +46,7 @@ class SequencerMetro(object):
                 self.locks[step_idx].append(
                     [None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
                 )
-
+        
         self.app = app
         self.step_index = 0
         self.step_count = 0
@@ -153,7 +153,6 @@ class SequencerMetro(object):
         # self.increment_previous_step_index()
         self.playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01))
         # self.update_notes()
-        
         controls = self.app.metro_sequencer_mode.instrument_scale_edit_controls[self.name]
         
         pattern_len = controls[7].value

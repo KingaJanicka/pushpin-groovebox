@@ -7,7 +7,7 @@ from glob import glob
 from user_interface.display_utils import show_text
 from pathlib import Path
 import logging
-
+import time
 log = logging.getLogger("preset_selection_mode")
 
 # log.setLevel(level=logging.DEBUG)
@@ -68,20 +68,18 @@ class PresetSelectionMode(definitions.PyshaMode):
 
     def load_init_presets(self):
         print("init presets")
-        # TODO:this don't work and I am not sure why
-        for item in self.presets:
-            self.send_osc(
-                "/patch/load",
-                self.presets[item][0],
-                instrument_shortname=item,
-            )
-            
+        # TODO: Something resets the devices right after they're loaded
+
         for instrument in self.app.instruments:
+            self.send_osc("/patch/load", self.presets[instrument][0], instrument_shortname=instrument)
+            time.sleep(0.1)
+            self.send_osc("/q/all_params", self.presets[instrument][0], instrument_shortname=instrument)
+            time.sleep(0.1)
             self.app.instruments[instrument].query_slots()
             self.app.instruments[instrument].query_devices()
-            self.app.instruments[instrument].query_all_params()
             self.app.instruments[instrument].update_current_devices()
             
+        print("presets init-ed")
             
 
     def create_dict_from_paths(self, arr):
