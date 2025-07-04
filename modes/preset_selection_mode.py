@@ -67,20 +67,23 @@ class PresetSelectionMode(definitions.PyshaMode):
             self.save_presets()
 
     def load_init_presets(self):
-        print("init presets")
         # TODO: Something resets the devices right after they're loaded
-
-        for instrument in self.app.instruments:
-            self.send_osc("/patch/load", self.presets[instrument][0], instrument_shortname=instrument)
+        print("update presets")
+        for idx, instrument in enumerate(self.app.instruments):
+            self.send_osc("/patch/load", self.presets[instrument][1], instrument_shortname=instrument)
             time.sleep(0.1)
-            self.send_osc("/q/all_params", self.presets[instrument][0], instrument_shortname=instrument)
-            time.sleep(0.1)
-            self.app.instruments[instrument].query_slots()
-            self.app.instruments[instrument].query_devices()
-            self.app.instruments[instrument].update_current_devices()
+            self.send_osc("/q/all_params", self.presets[instrument][1], instrument_shortname=instrument)
             
-        print("presets init-ed")
-            
+        
+        #     time.sleep(0.1)
+        #     self.app.instruments[instrument].query_slots()
+        #     self.app.instruments[instrument].query_devices()
+        #     self.app.instruments[instrument].update_current_devices()
+        #     self.on_pad_pressed(pad_ij=[1, idx], pad_n=None, velocity=None)
+        #     self.on_pad_released(pad_ij=[1, idx], pad_n=None, velocity=None)
+        
+        # self.on_pad_pressed(pad_ij=[1, 0], pad_n=None, velocity=None)
+        # self.on_pad_released(pad_ij=[1, 0], pad_n=None, velocity=None)
 
     def create_dict_from_paths(self, arr):
         d = dict()

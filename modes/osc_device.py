@@ -146,7 +146,7 @@ class OSCDevice(PyshaMode):
         await asyncio.sleep(0.1)
         for cmd in self.init:
             self.send_message(cmd["address"], float(cmd["value"]))
-            instrument.set_slot_state(cmd["address"], float(cmd["value"]))
+            # instrument.set_slot_state(cmd["address"], float(cmd["value"]))
             await asyncio.sleep(0.1)
     
 

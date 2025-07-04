@@ -92,7 +92,11 @@ class MainControlsMode(definitions.PyshaMode):
             self.app.buttons_need_update = True
             return True
         elif button_name == MUTE_BUTTON:
-            self.app.set_mute_mode()
+            if self.app.is_mode_active(self.app.mute_mode) != True:
+                self.app.set_mute_mode()
+            else:
+                self.app.set_metro_sequencer_mode()
+            
             self.app.pads_need_update = True
             self.app.buttons_need_update = True
             return True

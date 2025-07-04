@@ -904,8 +904,7 @@ class PyshaApp(object):
         print("Loading State ...")
         self.metro_sequencer_mode.load_state()
         self.sequencer_mode.load_state()
-        
-        app.preset_selection_mode.load_init_presets()
+        self.preset_selection_mode.load_init_presets()
         print("Pysha is running...")
         while True:
             before_draw_time = time.time()
