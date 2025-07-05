@@ -192,6 +192,7 @@ class PyshaApp(object):
 
     def toggle_menu_mode(self):
         previous_mode = self.previously_active_mode_for_xor_group
+        # print("modes:",previous_mode)
         # instrument = self.osc_mode.get_current_instrument()
         # instrument.query_slots()
         if self.is_mode_active(self.menu_mode):
@@ -203,10 +204,14 @@ class PyshaApp(object):
 
             self.active_modes = new_active_modes
             # new_active_modes.append(previous_mode)
+            
             self.menu_mode.deactivate()
         else:
             # Activate (replace midi cc and instrument selection mode by ddrm tone selector mode)
+            # print("activate menu")
+            # print(self.active_modes)
             self.previously_active_mode_for_xor_group = self.active_modes[-1]
+            
             new_active_modes = []
             for mode in self.active_modes:
                 if mode != self.preset_selection_mode:
@@ -321,20 +326,22 @@ class PyshaApp(object):
         latest active mode for xor_group, so once a mode gets unset, the previously active one can be
         automatically set"""
         if not self.is_mode_active(mode_to_set):
-
             # First deactivate all existing modes for that xor group
             new_active_modes = []
             for mode in self.active_modes:
-                if (
-                    mode.xor_group is not None
-                    and mode.xor_group == mode_to_set.xor_group
-                ):
-                    mode.deactivate()
-                    self.previously_active_mode_for_xor_group[mode.xor_group] = (
-                        mode  # Store last mode that was active for the group
-                    )
-                else:
-                    new_active_modes.append(mode)
+                try:
+                    if (
+                        mode.xor_group is not None
+                        and mode.xor_group == mode_to_set.xor_group
+                    ):
+                        mode.deactivate()
+                        self.previously_active_mode_for_xor_group[mode.xor_group] = (
+                            mode  # Store last mode that was active for the group
+                        )
+                    else:
+                        new_active_modes.append(mode)
+                except:
+                    pass
             self.active_modes = new_active_modes
 
             # Now add the mode to set to the active modes list and activate it
@@ -401,7 +408,12 @@ class PyshaApp(object):
     def set_mute_mode(self):
         if self.is_mode_active(self.preset_selection_mode):
             self.toggle_preset_selection_mode()
-        self.set_mode_for_xor_group(self.mute_mode)
+        print("set mute mode")
+        try:
+            self.set_mode_for_xor_group(self.mute_mode)
+        except Exception as e:
+            print(e)
+        print("after XOR")
 
     def set_preset_selection_mode(self):
         self.set_mode_for_xor_group(self.preset_selection_mode)
@@ -998,7 +1010,7 @@ class PyshaApp(object):
     def send_message_cli(self, *args):
         volume_node_id = self.volume_node["id"]
         for idx, instrument in enumerate(self.instruments):
-            value = self.volumes[idx]
+            value = self.volumes[idx *2]
             app.send_osc("/param/global/volume", value, instrument_short_name=instrument)
         # cli_string = f"pw-cli s {volume_node_id} Props '{{monitorVolumes: {self.volumes}}}'"
         # self.queue.append(asyncio.create_subprocess_shell(cli_string, stdout=asyncio.subprocess.PIPE))
