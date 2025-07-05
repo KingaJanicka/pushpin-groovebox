@@ -804,7 +804,8 @@ class MetroSequencerMode(MelodicMode):
             for idx_i, i in enumerate(seq_pad_state):
                 for idx_j, j in enumerate(i):
                     seq.set_state([TRACK_NAMES_METRO[3]], idx_j*8 + 7 - idx_i, j)
-             
+         
+        # Skips track 
         elif self.selected_track == TRACK_NAMES_METRO[4]:
             # If a pad is off
             if seq_pad_state[idx_i][idx_j] == False:
@@ -885,10 +886,14 @@ class MetroSequencerMode(MelodicMode):
                 press_time <= self.pad_quick_press_time
                 and self.pads_press_time[idx_n] != False
             ):
-                seq_pad_state[idx_i][idx_j] = False
+                # The skips need to be able to turn on and off,
+                # But for probablility this would not makes sense
                 self.pads_press_time[idx_n] = False
-                seq.set_state([TRACK_NAMES_METRO[4]], idx_j*8 + 7- idx_i,False)
-
+                if idx_i == 7:
+                    seq_pad_state[idx_i][idx_j] = False
+                    seq.set_state([TRACK_NAMES_METRO[4]], idx_j*8 + 7- idx_i,False)
+                else:
+                    pass
             # Long Press - keep the pad on, trigger a lock preview
             # TODO: trigger a lock preview here
             elif press_time > self.pad_quick_press_time:
