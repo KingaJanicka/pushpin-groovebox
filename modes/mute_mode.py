@@ -15,6 +15,7 @@ from osc_controls import (
 )
 from modes.sequencer_mode import TRACK_COLORS
 from definitions import TRACK_NAMES
+from definitions import TRACK_NAMES_METRO
 
 track_button_names = [
     push2_python.constants.BUTTON_1_32T,
@@ -140,4 +141,12 @@ class MuteMode(MelodicMode):
                             self.tracks_active[instrument_short_name][track_name] = False
         self.app.pads_need_update = True
 
-    
+    def on_button_pressed(self, button_name):
+        if button_name in track_button_names:
+            idx = track_button_names.index(button_name)
+            self.app.metro_sequencer_mode.selected_track = TRACK_NAMES_METRO[idx]
+            self.app.trig_edit_mode.update_state()
+            self.app.buttons_need_update = True
+            self.app.pads_need_update = True
+            self.app.set_metro_sequencer_mode()
+            
