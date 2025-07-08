@@ -88,17 +88,482 @@
 			"max": 16
 		},
 		{
-			"$type": "control-spacer-address",
-			"address": "/wavetable/a/osc/1/id"
-		},
-		{
-			"$type": "control-spacer-address",
-			"address": "/wavetable/a/osc/1/id"
-		},
-		{
-			"$type": "control-spacer-address",
-			"address": "/wavetable/a/osc/1/id"
-		},
+			"$type": "control-switch",
+			"label": "Sh. Cat",
+			"groups": [
+			  {
+				"$type": "group",
+				"label": "Off",
+				"controls": [
+				  {
+					"$type": "control-menu",
+					"items": [
+					  {
+						"$type": "menu-item",
+						"label": "Off",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Off",
+						  "address": "/param/fx/a/1/param3",
+						  "value": 0
+						}
+					  }
+					]
+				  }
+				]
+			  },
+			  {
+				"$type": "group",
+				"label": "Basic",
+				"controls": [
+					{
+						"$type": "control-spacer-address",
+						"address": "/wavetable/a/osc/1/id"
+					},
+					{
+					"$type": "control-menu",
+					"items": [
+					  {
+						"$type": "menu-item",
+						"label": "Sine",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 140
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine HQ",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Med",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 138
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine Oct",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Hard",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 132
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine Oct HQ",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Asymm.",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 139
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine-Saw",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 137
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine-Saw HQ",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 131
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine-Square",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 130
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine-Square HQ",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 136
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Tri-Saw",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 141
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Tri-Saw HQ",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 134
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Tri",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 133
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Tri HQ",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 135
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Tri NES",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 129
+						}
+					  }
+					]
+				  }
+				]
+			  },
+			  {
+				"$type": "group",
+				"label": "Generated",
+				"controls": [
+					{
+						"$type": "control-spacer-address",
+						"address": "/wavetable/a/osc/1/id"
+					},
+					{
+					"$type": "control-menu",
+					"items": [
+					  {
+						"$type": "menu-item",
+						"label": "Sine FM2x",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 12
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine FM2x HQ",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Med",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 53
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine FM3x",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Hard",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 30
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine FM3x HQ",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Asymm.",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 25
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine Half",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 2
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine Half HQ",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 22
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine Inv Pow",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 14
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine Inv Pow HQ",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 28
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine 1 Harm",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 13
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine PD",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 51
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine PD HQ",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 7
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine Pow",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 32
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine Pow HQ",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 24
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine Quant1",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 35
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine Quant2",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 44
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine Quant3",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 60
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine SyncWindow",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 49
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine 2 Harm",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 45
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine Window",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 59
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine WindowFM",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 36
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine WindowHQ",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 6
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine WindowOct",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 21
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine WindowPrime",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 19
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Square ATC",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 10
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sq Window",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 40
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sq WindowHQ",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 31
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sweepy",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 37
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Tri Primary",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 54
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Tri-Sin Shape",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 16
+						}
+					  }
+					]
+				  }
+				]
+			  }
+			]
+		  },
 		{
 			"$type": "control-menu",
 			"items": [
