@@ -439,6 +439,7 @@ class MetroSequencerMode(MelodicMode):
         self.draw_pads = True
 
     def deactivate(self):
+        self.app.steps_held = []
         self.draw_pads = False
         
     def get_settings_to_save(self):
@@ -615,7 +616,7 @@ class MetroSequencerMode(MelodicMode):
         idx_ij = self.index_to_pad_ij(n)
         idx_i = idx_ij[0]
         idx_j = idx_ij[1]
-        seq.steps_held.append(idx_j)
+        self.app.steps_held.append(idx_j)
         self.disable_controls = True
         # Pitch track
         if self.selected_track == TRACK_NAMES_METRO[0]:
@@ -855,7 +856,7 @@ class MetroSequencerMode(MelodicMode):
         epoch_time = time.time()
         press_time = epoch_time - self.pads_press_time[idx_n]
         seq = self.instrument_sequencers[self.get_current_instrument_short_name_helper()]
-        seq.steps_held.remove(idx_j)
+        self.app.steps_held.remove(idx_j)
 
         self.disable_controls = False
         if self.selected_track == TRACK_NAMES_METRO[0] or self.selected_track == TRACK_NAMES_METRO[1] or self.selected_track == TRACK_NAMES_METRO[2]:

@@ -172,9 +172,9 @@ class OSCDevice(PyshaMode):
         draw_lock = False
         step = None
         state = None
-        if len(seq.steps_held) != 0:
+        if len(self.app.steps_held) != 0:
             draw_lock = True
-            step = seq.steps_held[0]
+            step = self.app.steps_held[0]
 
         
         all_controls = self.pages

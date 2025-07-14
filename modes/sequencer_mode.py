@@ -356,7 +356,7 @@ class SequencerMode(MelodicMode):
         seq_pad_state = seq.get_track(self.selected_track)
         idx = pad_n - 36
         idx = pad_ij[0] * 8 + pad_ij[1]
-        seq.steps_held.append(idx)
+        self.app.steps_held.append(idx)
         # If a pad is off, turn it on
         if seq_pad_state[idx] == False:
             seq.set_state(self.selected_track, idx, True)
@@ -388,7 +388,7 @@ class SequencerMode(MelodicMode):
             pass
             # seq.set_state(self.selected_track, idx, False
 
-        seq.steps_held.remove(idx)
+        self.app.steps_held.remove(idx)
         self.save_state()
         self.app.pads_need_update = True
 
@@ -445,10 +445,10 @@ class SequencerMode(MelodicMode):
                 self.get_current_instrument_short_name_helper()
             ]
             try:
-                if len(seq.steps_held) != 0:
+                if len(self.app.steps_held) != 0:
                     for mode in self.app.active_modes:
                         if mode == self.app.trig_edit_mode:
-                            idx = seq.steps_held[0]
+                            idx = self.app.steps_held[0]
                             value = None
 
                             if seq.get_lock_state(idx, encoder_idx) is None:
