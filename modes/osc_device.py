@@ -128,6 +128,10 @@ class OSCDevice(PyshaMode):
             if hasattr(control, "select"):
                 control.select()
 
+    def select_blocking(self):
+        for cmd in self.init:
+            self.send_message(cmd["address"], float(cmd["value"]))
+
     async def select(self):
         # TODO: This should keep values from prev device when switching
         # This state should be set in on_button_pressed in menu_mode

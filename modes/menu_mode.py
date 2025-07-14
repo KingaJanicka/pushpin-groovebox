@@ -200,8 +200,14 @@ class MenuMode(PyshaMode):
 
         elif button_name == push2_constants.BUTTON_ADD_DEVICE:
             selected_device = devices_in_current_slot[self.selected_menu_item_index]
+            print("add device", selected_device.label)
+            
             try:
-                self.app.queue.append(selected_device.select())
+                
+                # Using the blocking select call here
+                # to prevent a data race
+                # self.app.queue.append(selected_device.select())
+                selected_device.select_blocking()
                 devices = self.app.osc_mode.get_current_instrument_devices()
                 for device in devices:
                     if device.label == selected_device.label:
