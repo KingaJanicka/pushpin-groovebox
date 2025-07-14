@@ -75,6 +75,7 @@ class PyshaApp(object):
     previously_active_mode_for_xor_group = {}
     pads_need_update = True
     buttons_need_update = True
+    steps_held=[]
 
     # notifications
     notification_text = None
@@ -408,12 +409,10 @@ class PyshaApp(object):
     def set_mute_mode(self):
         if self.is_mode_active(self.preset_selection_mode):
             self.toggle_preset_selection_mode()
-        print("set mute mode")
         try:
             self.set_mode_for_xor_group(self.mute_mode)
         except Exception as e:
             print(e)
-        print("after XOR")
 
     def set_preset_selection_mode(self):
         self.set_mode_for_xor_group(self.preset_selection_mode)
