@@ -557,8 +557,16 @@ class MetroSequencerMode(MelodicMode):
                     # Gets the entire row
                     for j, value in enumerate(value):
                         idx = i * 8 + j
-                        if value:
-                            button_colors[idx] = TRACK_COLORS[self.selected_track]
+                        lock_index = j*8 + 7-i
+                        locks = seq.locks[lock_index]
+                        draw_lock = False
+                        for device in locks:
+                            for param in device:
+                                if param != None:
+                                    # print("True")
+                                    draw_lock = True
+
+
 
                         # Set pad colours for on/off states of the seq
                         if seq_pad_state[i][j] is True:
@@ -567,9 +575,12 @@ class MetroSequencerMode(MelodicMode):
                             if self.rachets[instrument_name][j] == True:
                                 button_colors[idx] = definitions.YELLOW
 
-                            # If not display standard blue gates
+                            # If not display standard step for the selected track
                             else:
-                                button_colors[idx] = TRACK_COLORS[self.selected_track]
+                                if draw_lock == False:
+                                    button_colors[idx] = TRACK_COLORS[self.selected_track]
+                                else:    
+                                    button_colors[idx] = definitions.WHITE
 
                         if self.selected_track != TRACK_NAMES_METRO[3] and (idx % 8) == gate_idx_x:
                             button_colors[idx] = definitions.PINK
@@ -583,7 +594,6 @@ class MetroSequencerMode(MelodicMode):
                         if seq_pad_state[i][j] is False:
                             button_colors[idx] = definitions.BLACK
                         
-
                 if self.selected_track == TRACK_NAMES_METRO[3]:
                     # Draw the playhead
                     button_colors[gate_idx_y * 8 + gate_idx_x] = definitions.PINK
@@ -915,7 +925,6 @@ class MetroSequencerMode(MelodicMode):
             elif press_time > self.pad_quick_press_time:
                 pass
                 # seq.set_state(self.selected_track, idx, False
-
         self.steps_held.remove(idx_n)
         self.save_state()
         self.app.pads_need_update = True
