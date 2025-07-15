@@ -369,9 +369,23 @@ class OSCMode(PyshaMode):
 
     def update_buttons(self):
         current_device = self.get_current_instrument_device()
+        instrument_name = self.get_current_instrument_short_name_helper()
+        pad_state = self.app.metro_sequencer_mode.metro_seq_pad_state[instrument_name]
+        seq_pad_state = pad_state[self.app.metro_sequencer_mode.selected_track]
+        seq = self.app.metro_sequencer_mode.instrument_sequencers[self.get_current_instrument_short_name_helper()]
+        index = None
+        try:
+            index = self.app.steps_held[0]
+        except:
+            pass
         for count, name in enumerate(self.upper_row_button_names):
             if count < current_device.size:
-                self.push.buttons.set_button_color(name, definitions.WHITE)
+                if index != None:
+                    for value in seq.locks[index*8][count+self.instrument_page]:
+                        if value != None:
+                            self.push.buttons.set_button_color(name, definitions.WHITE)
+                else:
+                    self.push.buttons.set_button_color(name, self.get_current_instrument_color_helper())
             else:
                 self.push.buttons.set_button_color(name, definitions.BLACK)
 

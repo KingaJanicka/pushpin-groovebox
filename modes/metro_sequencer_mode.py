@@ -853,6 +853,7 @@ class MetroSequencerMode(MelodicMode):
                 self.pads_press_time[idx_n] = time.time()
                 #TODO: call func to show lock here
         # self.update_pads()
+        self.app.osc_mode.update_buttons()
         self.app.pads_need_update = True
 
     def on_pad_released(self, pad_n, pad_ij, velocity):
@@ -927,6 +928,7 @@ class MetroSequencerMode(MelodicMode):
                 # seq.set_state(self.selected_track, idx, False
         self.steps_held.remove(idx_n)
         self.save_state()
+        self.app.osc_mode.update_buttons()
         self.app.pads_need_update = True
 
     def on_button_pressed(self, button_name):
