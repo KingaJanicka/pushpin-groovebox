@@ -7,3 +7,6 @@
 [submodule "scripts"]
 	path = scripts
 	url = git@github.com:aendra-rininsland/pushpin-raspberry-pi-images.git
+[submodule "pipewire"]
+	path = pipewire
+	url = https://github.com/retif/pipewire-py
