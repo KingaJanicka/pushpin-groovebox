@@ -160,15 +160,24 @@ class SequencerMetro(object):
         master_seq_time_scale = controls[6].value
         master_pattern_len = controls[7].value
           
-          
-        if self.scale_count == 0:
-            # When note is about to be played check if the next step
-            # Would be over pat_len and if it would be
-            # Reset the sequence before playing
-            if self.step_count + 1 == int(pattern_len):
+        # Same as below but for master counter
+        if self.master_scale_count == 0:
+            self.master_step_count += 1
+            self.master_scale_count = int(master_seq_time_scale)
+        
+        elif self.master_scale_count != 0:
+            self.master_scale_count -= 1
+        
+        if self.master_scale_count == 1:
+            if self.master_step_count == int(master_pattern_len):
+                self.reset_master_index()
                 self.reset_index()
-            else:
-                self.step_count += 1
+                self.scale_count = 0
+                self.next_step_index = 0
+        
+        if self.scale_count == 0:
+            # Play the note, reset the counter for the time scale
+            self.step_count += 1
             self.evaluate_and_play_notes()
             self.scale_count = int(seq_time_scale)
         
@@ -183,26 +192,16 @@ class SequencerMetro(object):
             # The if clause is to make sure we don't go over the bounds with next step
             # And to prevent visual glitches with the playhead
             
-            if self.step_count + 1 == int(pattern_len):
+            if self.step_count == int(pattern_len):
+                self.reset_index()
                 self.next_step_index = 0
             else:
                 self.increment_index()
                 self.increment_next_step_index(index=self.step_index)
 
             
-        # # TODO: some weird off by 1 bug in here
-        # Feels like all sequencers play the note one step too late
-        # # Feels like it's off by one every other go when combined with seq reset?
-        # if int(self.master_scale_count) >= int(master_seq_time_scale) :
-        #     if int(master_pattern_len -1) < int(self.master_step_count):
-        #         self.reset_master_index()
-        #         if self.step_index != 0: 
-        #             self.reset_index()
-        #     self.master_step_count += 1 
-        #     self.master_scale_count = 1
-            
-        # else:
-        #     self.master_scale_count += 1
+    
+
 
     def increment_index(self, index = None):
         
