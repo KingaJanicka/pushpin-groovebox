@@ -174,8 +174,10 @@ class OSCMode(PyshaMode):
                         values = []
                         # TODO: This breaks with our current state model
                         for control_index, control in enumerate(device.controls):
-                            state_value = state[instrument_short_name][device_index][control_index]
-                            
+                            try:    
+                                state_value = state[instrument_short_name][device_index][control_index]
+                            except Exception as e:
+                                print(e)
 
                             if isinstance(control, OSCControl) or isinstance(control, OSCControlMenu):
                                 # Update state of the devices and send OSC message

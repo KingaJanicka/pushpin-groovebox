@@ -50,11 +50,14 @@ class SequencerMetro(object):
         self.app = app
         self.step_index = 0
         self.step_count = 0
+        self.master_step_index = 0
+        self.master_step_count = 0
         self.prev_step_index = 0
         self.show_locks = False
         self.next_step_index = 1
         self.steps_held = []
         self.scale_count = 1
+        self.master_scale_count = 1
         self.controls_to_reset = []
         self.name = instrument.name
         self.note = [None] * default_number_of_steps
@@ -150,27 +153,56 @@ class SequencerMetro(object):
             traceback.print_exc()
 
     def seq_playhead_update(self):
-        # self.increment_previous_step_index()
         self.playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01))
-        # self.update_notes()
         controls = self.app.metro_sequencer_mode.instrument_scale_edit_controls[self.name]
-        
-        pattern_len = controls[7].value
-        seq_time_scale = controls[6].value
-        
-        if self.scale_count >= int(seq_time_scale) :
-            
-            self.evaluate_and_play_notes()
-            self.increment_index()
-            
-            if int(pattern_len -1) < self.step_count:
-                
+        seq_time_scale = controls[4].value
+        pattern_len = controls[5].value
+        master_seq_time_scale = controls[6].value
+        master_pattern_len = controls[7].value
+          
+          
+        if self.scale_count == 0:
+            # When note is about to be played check if the next step
+            # Would be over pat_len and if it would be
+            # Reset the sequence before playing
+            if self.step_count + 1 == int(pattern_len):
                 self.reset_index()
-            self.step_count += 1 
-            self.scale_count = 1
+            else:
+                self.step_count += 1
+            self.evaluate_and_play_notes()
+            self.scale_count = int(seq_time_scale)
+        
+        elif self.scale_count != 0:
+            # This has to do with the time scale setting
+            # This block makes sure we only fire every X 1/32nd notes
+            self.scale_count -= 1
+    
+        
+        if self.scale_count == 1:
+            # Increment right before the note is played, so the visual feedback lines up
+            # The if clause is to make sure we don't go over the bounds with next step
+            # And to prevent visual glitches with the playhead
             
-        else:
-            self.scale_count += 1
+            if self.step_count + 1 == int(pattern_len):
+                self.next_step_index = 0
+            else:
+                self.increment_index()
+                self.increment_next_step_index(index=self.step_index)
+
+            
+        # # TODO: some weird off by 1 bug in here
+        # Feels like all sequencers play the note one step too late
+        # # Feels like it's off by one every other go when combined with seq reset?
+        # if int(self.master_scale_count) >= int(master_seq_time_scale) :
+        #     if int(master_pattern_len -1) < int(self.master_step_count):
+        #         self.reset_master_index()
+        #         if self.step_index != 0: 
+        #             self.reset_index()
+        #     self.master_step_count += 1 
+        #     self.master_scale_count = 1
+            
+        # else:
+        #     self.master_scale_count += 1
 
     def increment_index(self, index = None):
         
@@ -218,10 +250,14 @@ class SequencerMetro(object):
             self.get_previous_active_step(index=prev_step_index)
         
     def reset_index(self):
-        self.step_index = 0
         self.step_count = 0
+        self.step_index = 0
         self.next_step_index = 1
         
+    def reset_master_index(self):
+        self.master_step_index = 0
+        self.master_step_count = 0
+    
     def evaluate_and_play_notes(self):
         try:
             gate_track_active = self.app.mute_mode.tracks_active[self.name][
@@ -256,7 +292,6 @@ class SequencerMetro(object):
                     if self.mutes_skips[mutes_idx + x] == True:
                         prob = x
                         
-                self.increment_next_step_index(index=self.step_index)
                 next_step_index = self.next_step_index
                 
                 if self.gate[next_step_index] == "Tie":

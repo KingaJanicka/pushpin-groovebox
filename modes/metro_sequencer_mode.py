@@ -213,10 +213,10 @@ class MetroSequencerMode(MelodicMode):
                 param_5 = OSCControl(
                     {
                         "$type": "control-range",
-                        "label": "Param 5",
+                        "label": "Seq Time Scale",
                         "address": f"/",
-                        "min": 2,
-                        "max": 64,
+                        "min": 1,
+                        "max": 32,
                     },
                     self.get_current_instrument_color_helper,
                     None,
@@ -225,7 +225,7 @@ class MetroSequencerMode(MelodicMode):
                 param_6 = OSCControl(
                     {
                         "$type": "control-range",
-                        "label": "Param 6",
+                        "label": "Seq Steps",
                         "address": f"/",
                         "min": 2,
                         "max": 64,
@@ -237,7 +237,7 @@ class MetroSequencerMode(MelodicMode):
                 seq_scale = OSCControl(
                     {
                         "$type": "control-range",
-                        "label": "Seq Time Scale",
+                        "label": "Master Time Scale",
                         "address": f"/",
                         "min": 1,
                         "max": 32,
@@ -250,7 +250,7 @@ class MetroSequencerMode(MelodicMode):
                 len = OSCControl(
                     {
                         "$type": "control-range",
-                        "label": "Seq Steps",
+                        "label": "Master Steps",
                         "address": f"/",
                         "min": 2,
                         "max": 64,
@@ -1052,20 +1052,39 @@ class MetroSequencerMode(MelodicMode):
                     return
                 if self.show_scale_menu == True:
                     # Update scale menu controls
-                    instrument_name = self.get_current_instrument_short_name_helper()
-                    controls = self.instrument_scale_edit_controls[instrument_name]
+                    if encoder_idx == 6 or encoder_idx == 7:
+                        for instrument_name in self.instrument_scale_edit_controls:
+                            current_instrument_name = self.get_current_instrument_short_name_helper()
+                            controls = self.instrument_scale_edit_controls[instrument_name]
+                            control = controls[encoder_idx]
+                            current_control = self.instrument_scale_edit_controls[instrument_name][encoder_idx]
+                            min = control.min if hasattr(control, "min") else 0
+                            max = control.max if hasattr(control, "max") else len(control.items)
+                            range = max - min
+                            incr = increment * range / 100
+                            if min < control.value + incr < max:
+                                control.value = current_control.value + incr
+                            if min >= (control.value + incr):
+                                control.value = min
+                            if max < (control.value + incr):
+                                control.value = max
 
-                    control = controls[encoder_idx]
-                    min = control.min if hasattr(control, "min") else 0
-                    max = control.max if hasattr(control, "max") else len(control.items)
-                    range = max - min
-                    incr = increment * range / 100
-                    if min < control.value + incr < max:
-                        control.value = control.value + incr
-                    if min >= (control.value + incr):
-                        control.value = min
-                    if max < (control.value + incr):
-                        control.value = max
+                    
+                    
+                    else:
+                        instrument_name = self.get_current_instrument_short_name_helper()
+                        controls = self.instrument_scale_edit_controls[instrument_name]
+                        control = controls[encoder_idx]
+                        min = control.min if hasattr(control, "min") else 0
+                        max = control.max if hasattr(control, "max") else len(control.items)
+                        range = max - min
+                        incr = increment * range / 100
+                        if min < control.value + incr < max:
+                            control.value = control.value + incr
+                        if min >= (control.value + incr):
+                            control.value = min
+                        if max < (control.value + incr):
+                            control.value = max
 
                     self.update_pads()
                 self.app.trig_edit_mode.update_button_colours()
