@@ -55,7 +55,7 @@ class Sequencer(object):
 
         self.app = app
         self.show_locks = False
-        self.steps_held = []
+        self.app.steps_held = []
         self.name = instrument_name
         self.note = [None] * default_number_of_steps
         self.gate_1 = [False] * default_number_of_steps

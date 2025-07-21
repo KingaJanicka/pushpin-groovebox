@@ -5,7 +5,6 @@ import sys
 import json
 from signal import SIGINT
 
-
 class Engine(ABC):
     app = None
     type = None
@@ -428,7 +427,6 @@ class SurgeXTEngine(Engine):
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
-
         self.PID = self.process.pid
 
         # Sleep 2s to allow Surge boot up

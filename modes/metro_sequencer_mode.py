@@ -437,9 +437,11 @@ class MetroSequencerMode(MelodicMode):
 
     def activate(self):
         self.draw_pads = True
+        self.app.steps_held = []
 
     def deactivate(self):
         self.app.steps_held = []
+        self.show_scale_menu = False
         self.draw_pads = False
         
     def get_settings_to_save(self):
@@ -1011,8 +1013,9 @@ class MetroSequencerMode(MelodicMode):
             ]
             self.encoder_incr_since_held[encoder_idx] = True
             try:
-                if len(self.steps_held) != 0:
+                if len(self.app.steps_held) != 0:
                     device = None
+                    
                     for mode in self.app.active_modes:
                         # TODO: We will need to modify this code to make locks work with other devices
                         # TODO: make active page offset the encoder by 8
@@ -1024,6 +1027,7 @@ class MetroSequencerMode(MelodicMode):
                     idx = int(self.steps_held[0]%8)
                     value = None
                     page_offset = int(device.page) * 8
+                    
                     if seq.get_lock_state(idx, encoder_idx + page_offset) == None:
                         value = device.controls[
                             encoder_idx
@@ -1123,8 +1127,8 @@ class MetroSequencerMode(MelodicMode):
                 push2_python.constants.ENCODER_TRACK8_ENCODER,
             ].index(encoder_name)
             if time.time_ns() - self.encoders_held[encoder_idx] < self.encoder_short_press_time:
-                if len(self.steps_held) != 0 and self.encoder_incr_since_held[encoder_idx] != True:
-                    for step in self.steps_held:
+                if len(self.app.steps_held) != 0 and self.encoder_incr_since_held[encoder_idx] != True:
+                    for step in self.app.steps_held:
                         seq = self.instrument_sequencers[
                             self.get_current_instrument_short_name_helper()
                         ]

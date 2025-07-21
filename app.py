@@ -239,9 +239,9 @@ class PyshaApp(object):
             new_active_modes.append(self.osc_mode)
             # new_active_modes.append(previous_mode)
             self.active_modes = new_active_modes
+            self.preset_selection_mode.deactivate()
             self.osc_mode.activate()
             self.metro_sequencer_mode.activate()
-            self.preset_selection_mode.deactivate()
         else:
             # Activate (replace midi cc and instrument selection mode by ddrm tone selector mode)
             # self.previously_active_mode_for_xor_group = self.active_modes[-1]
