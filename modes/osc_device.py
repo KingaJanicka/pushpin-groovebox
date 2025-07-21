@@ -299,11 +299,7 @@ class OSCDevice(PyshaMode):
                     if len(state) == 0:
                         self.app.osc_mode.load_state()
                     # state[instrument_shortname][self.slot][encoder_idx] = control.value
-                else:
-                    # TODO: Might need to revise
-                    # This fixes a bug where enc roated func wouldn't work for locks
-                    # After a switch from preset_sel_mode
-                    self.app.metro_sequencer_mode.on_encoder_rotated(encoder_name, increment)
+
 
         except ValueError:
             pass  # Encoder not in list

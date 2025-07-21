@@ -200,7 +200,6 @@ class MenuMode(PyshaMode):
 
         elif button_name == push2_constants.BUTTON_ADD_DEVICE:
             selected_device = devices_in_current_slot[self.selected_menu_item_index]
-            print("add device", selected_device.label)
             
             try:
                 

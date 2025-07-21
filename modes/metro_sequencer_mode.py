@@ -1095,6 +1095,9 @@ class MetroSequencerMode(MelodicMode):
                             control.value = max
 
                     self.update_pads()
+                # elif len(self.app.steps_held) == 0 and self.show_scale_menu == False:
+                #     current_device = self.app.instrument_selection_mode.get_current_instrument_device()
+                #     current_device.on_encoder_rotated(encoder_name, increment)
                 self.app.trig_edit_mode.update_button_colours()
             except Exception as e:
                 print(e)
