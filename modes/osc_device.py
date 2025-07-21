@@ -288,10 +288,7 @@ class OSCDevice(PyshaMode):
                     push2_python.constants.ENCODER_TRACK7_ENCODER,
                     push2_python.constants.ENCODER_TRACK8_ENCODER,
                 ].index(encoder_name)
-                print("before if seq disable contr", self.app.sequencer_mode.disable_controls)
-                print("metro disable controls",self.app.metro_sequencer_mode.disable_controls)
                 if self.app.sequencer_mode.disable_controls == False and self.app.metro_sequencer_mode.disable_controls == False:
-                    print("after if")
                     visible_controls = self.get_visible_controls()
                     control = visible_controls[encoder_idx]
                     control.update_value(increment)
@@ -302,7 +299,11 @@ class OSCDevice(PyshaMode):
                     if len(state) == 0:
                         self.app.osc_mode.load_state()
                     # state[instrument_shortname][self.slot][encoder_idx] = control.value
-                    
+                else:
+                    # TODO: Might need to revise
+                    # This fixes a bug where enc roated func wouldn't work for locks
+                    # After a switch from preset_sel_mode
+                    self.app.metro_sequencer_mode.on_encoder_rotated(encoder_name, increment)
 
         except ValueError:
             pass  # Encoder not in list

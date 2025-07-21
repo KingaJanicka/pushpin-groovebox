@@ -436,6 +436,7 @@ class MetroSequencerMode(MelodicMode):
         self.global_timeline.stop()
 
     def activate(self):
+        self.disable_controls = False
         self.draw_pads = True
         self.app.steps_held = []
 
@@ -443,6 +444,9 @@ class MetroSequencerMode(MelodicMode):
         self.app.steps_held = []
         self.show_scale_menu = False
         self.draw_pads = False
+        self.disable_controls = False
+        
+        
         
     def get_settings_to_save(self):
         return {}
@@ -1093,6 +1097,7 @@ class MetroSequencerMode(MelodicMode):
                     self.update_pads()
                 self.app.trig_edit_mode.update_button_colours()
             except Exception as e:
+                print(e)
                 traceback.print_exc()
 
         except Exception as e:
