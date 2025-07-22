@@ -344,6 +344,7 @@ class PresetSelectionMode(definitions.PyshaMode):
         instrument.query_slots()
         instrument.query_devices()
         instrument.update_current_devices()
+        instrument.init_devices_sync()
         self.update_pads()
         return True  # Prevent other modes to get this event
 

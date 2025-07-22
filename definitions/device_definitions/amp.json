@@ -7,33 +7,39 @@
 			"$comment": "enable ringmod",
 			"address": "/param/a/mixer/rm1x2/mute",
 			"value": 0
+		},
+			{
+			"$type": "message",
+			"$comment": "Set vol to zero",
+			"address": "/param/a/mixer/rm1x2/volume",
+			"value": 0
 		}
 	],
 	"controls": [
 		{
 			"$type": "control-range",
-			"label": "Attack",
+			"label": "Amp Attack",
 			"address": "/param/a/aeg/attack",
 			"min": 0,
 			"max": 1
 		},
 		{
 			"$type": "control-range",
-			"label": "Decay",
+			"label": "Amp Decay",
 			"address": "/param/a/aeg/decay",
 			"min": 0,
 			"max": 1
 		},
 		{
 			"$type": "control-range",
-			"label": "Sustain",
+			"label": "Amp Sustain",
 			"address": "/param/a/aeg/sustain",
 			"min": 0,
 			"max": 1
 		},
 		{
 			"$type": "control-range",
-			"label": "Release",
+			"label": "Amp Release",
 			"address": "/param/a/aeg/release",
 			"min": 0,
 			"max": 1

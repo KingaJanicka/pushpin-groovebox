@@ -206,7 +206,7 @@ class MenuMode(PyshaMode):
                 # Using the blocking select call here
                 # to prevent a data race
                 # self.app.queue.append(selected_device.select())
-                selected_device.select_blocking()
+                selected_device.select_sync()
                 devices = self.app.osc_mode.get_current_instrument_devices()
                 for device in devices:
                     if device.label == selected_device.label:

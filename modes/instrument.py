@@ -211,6 +211,19 @@ class Instrument(PyshaMode):
                         ) == float(slot["value"]):
                             await device.select()
 
+    def init_devices_sync(self):
+        for slot_idx, slot_devices in enumerate(self.devices):
+            for device in slot_devices:
+                if slot_idx == 2 or slot_idx == 3 or slot_idx == 4:
+                    device.select_sync()
+                else:
+                    slot = self.slots[slot_idx]
+                    for init in device.init:
+                        if init["address"] == slot["address"] and int(
+                            init["value"]
+                        ) == float(slot["value"]):
+                            device.select_sync()
+
 
 
     def query_devices(self):

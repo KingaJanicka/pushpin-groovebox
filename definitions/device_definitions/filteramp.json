@@ -12,28 +12,28 @@
   "controls": [
     {
       "$type": "control-range",
-      "label": "Attack",
+      "label": "Filt Attack",
       "address": "/param/a/feg/attack",
       "min": 0,
       "max": 1
     },
     {
       "$type": "control-range",
-      "label": "Decay",
+      "label": "Filt Decay",
       "address": "/param/a/feg/decay",
       "min": 0,
       "max": 1
     },
     {
       "$type": "control-range",
-      "label": "Sustain",
+      "label": "Filt Sustain",
       "address": "/param/a/feg/sustain",
       "min": 0,
       "max": 1
     },
     {
       "$type": "control-range",
-      "label": "Release",
+      "label": "Filt Release",
       "address": "/param/a/feg/release",
       "min": 0,
       "max": 1

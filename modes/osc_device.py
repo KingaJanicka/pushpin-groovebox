@@ -128,7 +128,7 @@ class OSCDevice(PyshaMode):
             if hasattr(control, "select"):
                 control.select()
 
-    def select_blocking(self):
+    def select_sync(self):
         for cmd in self.init:
             self.send_message(cmd["address"], float(cmd["value"]))
 

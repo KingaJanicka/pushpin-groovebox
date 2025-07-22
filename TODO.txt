@@ -1,4 +1,3 @@
 twist is broken on osc1
-add octave control
-improve the modulation mappings stuff
+the devices need to be selected twice to have the init call work
 control-menu does not set properly
