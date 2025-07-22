@@ -773,9 +773,24 @@ class MetroSequencerMode(MelodicMode):
                     rachet_state[idx_j] = False
                     
             self.app.pads_need_update = True
-            
+                        # For chaning height of the stack
+            if (self.button_1_4_pressed == True):
+
+                # Turn all pads above step black, below grey
+                for x in range(8):
+                    if x < idx_i:
+                        seq_pad_state[x][idx_j] = False
+                    if x == idx_i:
+                        seq_pad_state[x][idx_j] = True
+                    if x > idx_i:
+                        # Makes sure we always have pads in off state
+                        # While not overriding current state
+                        if seq_pad_state[x][idx_j] == False:
+                            seq_pad_state[x][idx_j] = "Off"
+                        else:
+                            pass
             # If it's on, save the time and cont in on_pad_released
-            if (
+            elif (
                 seq_pad_state[idx_i][idx_j] == True
                 or seq_pad_state[idx_i][idx_j] == "Tie"
             ):
@@ -801,22 +816,7 @@ class MetroSequencerMode(MelodicMode):
                     else:
                         seq_pad_state[idx_i][idx_j] = True
                         
-            # For chaning height of the stack
-            if (self.button_1_4_pressed == True):
 
-                # Turn all pads above step black, below grey
-                for x in range(8):
-                    if x < idx_i:
-                        seq_pad_state[x][idx_j] = False
-                    if x == idx_i:
-                        seq_pad_state[x][idx_j] = True
-                    if x > idx_i:
-                        # Makes sure we always have pads in off state
-                        # While not overriding current state
-                        if seq_pad_state[x][idx_j] == False:
-                            seq_pad_state[x][idx_j] = "Off"
-                        else:
-                            pass
             # sets pad state
             for idx_i, i in enumerate(seq_pad_state):
                 for idx_j, j in enumerate(i):

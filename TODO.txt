@@ -1,3 +1,6 @@
 twist is broken on osc1
-the devices need to be selected twice to have the init call work
 control-menu does not set properly
+
+mode for probablility muting of modulation should be added
+Make it behave like the octave track
+muted at the very bottom, always on at the very top, sometimes on in the middle
