@@ -1,2 +1,4 @@
-Locks seem to break after switching back from preset mode
-the delay needs a switch for time/free
+twist is broken on osc1
+add octave control
+improve the modulation mappings stuff
+control-menu does not set properly
