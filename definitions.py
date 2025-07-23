@@ -135,7 +135,7 @@ TRACK_NAMES_METRO = [
     "velocity",
     "gate",
     "mutes_skips",
-    "aux_2",
+    "lock_scale",
     "aux_3",
     "aux_4",
 ]

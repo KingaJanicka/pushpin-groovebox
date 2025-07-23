@@ -21,7 +21,7 @@ class SequencerMetro(object):
     octave = list()  # int (midi note)
     gate = list()
     mutes_skips = list()
-    aux_1 = list()  # boolean
+    lock_scale = list()  # boolean
     aux_2 = list()  # int
     aux_3 = list()  # int
     aux_4 = list()  # boolean
@@ -66,7 +66,7 @@ class SequencerMetro(object):
         self.velocity = [False] * default_number_of_steps
         self.gate = [False] * default_number_of_steps
         self.mutes_skips = [False] * default_number_of_steps
-        self.aux_1 = [False] * default_number_of_steps
+        self.lock_scale = [False] * default_number_of_steps
         self.aux_2 = [False] * default_number_of_steps
         self.aux_3 = [False] * default_number_of_steps
         self.playhead = playhead
@@ -104,7 +104,7 @@ class SequencerMetro(object):
         elif name == TRACK_NAMES_METRO[4]:
             return self.mutes_skips
         elif name == TRACK_NAMES_METRO[5]:
-            return self.aux_1
+            return self.lock_scale
         elif name == TRACK_NAMES_METRO[6]:
             return self.aux_2
         elif name == TRACK_NAMES_METRO[7]:
@@ -121,7 +121,7 @@ class SequencerMetro(object):
                 self.aux_4 = dump[TRACK_NAMES_METRO[2]]
                 self.gate = dump[TRACK_NAMES_METRO[3]]
                 self.mutes_skips = dump[TRACK_NAMES_METRO[4]]
-                self.aux_1 = dump[TRACK_NAMES_METRO[5]]
+                self.lock_scale = dump[TRACK_NAMES_METRO[5]]
                 self.aux_2 = dump[TRACK_NAMES_METRO[6]]
                 self.aux_3 = dump[TRACK_NAMES_METRO[7]]
                 
@@ -141,7 +141,7 @@ class SequencerMetro(object):
                 TRACK_NAMES_METRO[2]: self.velocity,
                 TRACK_NAMES_METRO[3]: self.gate,
                 TRACK_NAMES_METRO[4]: self.mutes_skips,
-                TRACK_NAMES_METRO[5]: self.aux_1,
+                TRACK_NAMES_METRO[5]: self.lock_scale,
                 TRACK_NAMES_METRO[6]: self.aux_2,
                 TRACK_NAMES_METRO[7]: self.aux_3,
             }
@@ -310,14 +310,16 @@ class SequencerMetro(object):
                     self.controls_to_reset.clear()
             
             
-            # TODO: Sends locks from other tracks on the same instrument?
-            # Needs optimizing
-            # Generaly pretty glitchy although could just be because
-            # The distro is running slow
-            
             # This sends the param locks, out of the prev if statement
             # so it triggers even if the gate is off
             for slot_idx, slot in enumerate(instrument.slots):
+                # get lock_scale value, mult by lock_val
+                lock_scale_value = None
+                if self.lock_scale[self.step_index] == 0:
+                    lock_scale_value = 0
+                else:
+                    lock_scale_value = self.lock_scale[self.step_index] / 7
+                
                 if slot != None:
                     for device_idx, device in enumerate(instrument.devices[slot_idx]):
                         for command in enumerate(device.init):
@@ -329,8 +331,9 @@ class SequencerMetro(object):
                                     lock_address = control.address
                                     lock_value = self.locks[self.step_index][slot_idx][control_idx]
                                     if lock_value != None:
-                                        self.app.send_osc(lock_address, lock_value, instrument.name)
+                                        self.app.send_osc(lock_address, lock_value*lock_scale_value, instrument.name)
                                         self.controls_to_reset.append(control)
+                
                 # This elif branch is for slots that have only one device and therefore
                 # don't have the device address/val in the init
                 elif slot_idx == 2 or slot_idx == 3 or slot_idx == 4:
@@ -341,7 +344,7 @@ class SequencerMetro(object):
                             lock_address = control.address
                             lock_value = self.locks[self.step_index][slot_idx][control_idx]
                             if lock_value != None and lock_address != None:
-                                self.app.send_osc(lock_address, lock_value, instrument.name)
+                                self.app.send_osc(lock_address, lock_value*lock_scale_value, instrument.name)
                                 self.controls_to_reset.append(control)
         except Exception as e:
             print("Error in evaluate_and_play_notes")
@@ -368,7 +371,7 @@ class SequencerMetro(object):
         elif lane == TRACK_NAMES_METRO[4]:
             return self.mutes_skips
         elif lane == TRACK_NAMES_METRO[5]:
-            return self.aux_1
+            return self.lock_scale
         elif lane == TRACK_NAMES_METRO[6]:
             return self.aux_2
         elif lane == TRACK_NAMES_METRO[7]:
@@ -398,7 +401,7 @@ class SequencerMetro(object):
         elif lane == TRACK_NAMES_METRO[4]:
             self.mutes_skips[index] = value
         elif lane == TRACK_NAMES_METRO[5]:
-            self.aux_1[index] = value
+            self.lock_scale[index] = value
         elif lane == TRACK_NAMES_METRO[6]:
             self.aux_2[index] = value
         elif lane == TRACK_NAMES_METRO[7]:

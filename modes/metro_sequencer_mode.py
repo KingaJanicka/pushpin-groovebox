@@ -351,6 +351,20 @@ class MetroSequencerMode(MelodicMode):
                 mute_skip_pad_state[step_y][step_x] = step
             
                 
+            # this updates all the velocity tracks
+            lock_scale_track_name = TRACK_NAMES_METRO[5]
+            lock_scale_seq_track = seq.get_track_by_name(lock_scale_track_name)
+            lock_scale_pad_state = self.metro_seq_pad_state[instrument_short_name][lock_scale_track_name]
+            
+            for idx in range(8):
+                lock_val = lock_scale_seq_track[idx * 8]
+                for y in range(8):
+                    if lock_val == y: 
+                        lock_scale_pad_state[7 - y][idx] = True
+                    else:
+                        lock_scale_pad_state[7 - y][idx] = False
+            
+                
             self.update_pads()
             self.app.pads_need_update = True
     
@@ -844,7 +858,23 @@ class MetroSequencerMode(MelodicMode):
                 self.pads_press_time[idx_n] = time.time()
                 #TODO: call func to show lock here
         
-                        
+        # Plock track
+        elif self.selected_track == TRACK_NAMES_METRO[5]:
+            # If a pad is off, turn it on
+            if seq_pad_state[idx_i][idx_j] == False:
+                # Turn off all other pads in the column
+                for x in range(8):
+                    seq_pad_state[x][idx_j] = False
+                seq_pad_state[idx_i][idx_j] = True
+
+            # If it's on, save the time and cont in on_pad_released
+            elif seq_pad_state[idx_i][idx_j] == True:
+                self.pads_press_time[idx_n] = time.time()
+                #TODO: call func to show lock here
+            # Set the oct values
+            for x in range(8):
+                seq.set_state([TRACK_NAMES_METRO[5]], idx_j*8 + x, 7- idx_i)
+                   
         else:
             # If a pad is off, turn it on
             if seq_pad_state[idx_i][idx_j] == False:
@@ -876,7 +906,7 @@ class MetroSequencerMode(MelodicMode):
         self.app.steps_held.remove(idx_j)
 
         self.disable_controls = False
-        if self.selected_track == TRACK_NAMES_METRO[0] or self.selected_track == TRACK_NAMES_METRO[1] or self.selected_track == TRACK_NAMES_METRO[2]:
+        if self.selected_track == TRACK_NAMES_METRO[0] or self.selected_track == TRACK_NAMES_METRO[1] or self.selected_track == TRACK_NAMES_METRO[2] or self.selected_track == TRACK_NAMES_METRO[5]:
             pass
 
         elif self.selected_track == TRACK_NAMES_METRO[3]:
