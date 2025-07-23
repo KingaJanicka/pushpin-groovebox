@@ -26,7 +26,7 @@ TRACK_COLORS = {
     TRACK_NAMES_METRO[2]: definitions.YELLOW,
     TRACK_NAMES_METRO[3]: definitions.TURQUOISE,
     TRACK_NAMES_METRO[4]: definitions.RED,
-    TRACK_NAMES_METRO[5]: definitions.CYAN,
+    TRACK_NAMES_METRO[5]: definitions.BLUE,
     TRACK_NAMES_METRO[6]: definitions.CYAN,
     TRACK_NAMES_METRO[7]: definitions.CYAN,
 }
