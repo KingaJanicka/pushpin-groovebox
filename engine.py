@@ -9,9 +9,11 @@ class Engine(ABC):
     app = None
     type = None
     PID = None
+    PD_PID = None
     pipewireID = None
     pipewire = None
     process = None
+    pd_process = None
     instrument_nodes = None
     connections = None
     pw_ports = None
@@ -85,6 +87,25 @@ class Engine(ABC):
         # self.connections.append(await self.createLoopback())
         
         pass
+
+    async def start_pd_node(self, file_index = None):
+        await asyncio.sleep(1)
+        self.pd_process = await asyncio.create_subprocess_exec(
+            "pw-jack",
+            "puredata",
+            f"./puredata_nodes/passthrough_{file_index}.pd",
+            "-nogui",
+            "-jack",
+            stdin=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE,
+            # stderr=asyncio.subprocess.PIPE,
+            
+        )
+        
+        self.PD_PID = self.pd_process.pid
+
+        await asyncio.sleep(1)
+
 
     async def configure_pipewire(self):
 

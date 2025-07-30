@@ -97,7 +97,9 @@ class PyshaApp(object):
     volume_node = None
     global_timeline = iso.Timeline(tempo, output_device=iso.DummyOutputDevice())
     pwcli = None
-
+    PD_PID = None
+    pd_process = None
+    
     def __init__(self):
         if os.path.exists("settings.json"):
             settings = json.load(open("settings.json"))
@@ -1008,6 +1010,24 @@ class PyshaApp(object):
         self.volume_node = [node for node in self.pipewire if node['type']  == 'PipeWire:Interface:Node' and node['info']['props']['node.name'] == 'pushpin-volumes'].pop()
         return self.volume_node
     
+    async def start_pd_node(self, file_index = 8):
+        await asyncio.sleep(1)
+        self.pd_process = await asyncio.create_subprocess_exec(
+            "pw-jack",
+            "puredata",
+            f"./puredata_nodes/passthrough_{file_index}.pd",
+            "-nogui"
+            "-jack",
+            stdin=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE,
+            # stderr=asyncio.subprocess.PIPE,
+            
+        )
+        
+        self.PD_PID = self.pd_process.pid
+
+        await asyncio.sleep(1)
+    
     
     
     @limits(calls=1, period=0.01)
@@ -1165,7 +1185,8 @@ async def main():
 
     for instrument in app.external_instruments:
         await instrument.start(loop)
-
+    # Starts the node we use for master volume
+    await app.start_pd_node()
     print("Initialising Pipewire support...")
     await asyncio.sleep(5)
     await app.get_pipewire_config()
@@ -1176,7 +1197,8 @@ async def main():
     
     #Querry controls to update initial state
 
-    for instrument in app.instruments:
+    for index, instrument in enumerate(app.instruments):
+        await app.instruments[instrument].engine.start_pd_node(file_index=index)
         await app.instruments[instrument].engine.configure_pipewire()
         await asyncio.sleep(0.1)
         app.instruments[instrument].query_all_controls()
