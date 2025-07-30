@@ -1007,7 +1007,12 @@ class PyshaApp(object):
             await self.get_pipewire_config()
 
     def get_volume_node(self):
-        self.volume_node = [node for node in self.pipewire if node['type']  == 'PipeWire:Interface:Node' and node['info']['props']['node.name'] == 'pushpin-volumes'].pop()
+        for node in self.pipewire:
+            try:
+                if node["info"]["props"]["application.process.id"] == self.PD_PID:
+                    self.volume_node = node
+            except:
+                pass
         return self.volume_node
     
     async def start_pd_node(self, file_index = 8):

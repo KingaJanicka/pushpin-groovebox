@@ -1,3 +1,5 @@
+The GUI for PD nodes needs to be supressed, IDK why the flag isn't working
+
 twist is broken on osc1
 control-menu does not set properly
 
