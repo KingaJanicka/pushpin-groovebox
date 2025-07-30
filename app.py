@@ -1020,9 +1020,9 @@ class PyshaApp(object):
         self.pd_process = await asyncio.create_subprocess_exec(
             "pw-jack",
             "puredata",
-            f"./puredata_nodes/passthrough_{file_index}.pd",
-            "-nogui"
             "-jack",
+            "-nogui",
+            f"./puredata_nodes/passthrough_{file_index}.pd",
             stdin=asyncio.subprocess.PIPE,
             stdout=asyncio.subprocess.PIPE,
             # stderr=asyncio.subprocess.PIPE,
