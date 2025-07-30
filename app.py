@@ -12,6 +12,7 @@ import push2_python
 import asyncio
 import jack
 import isobar as iso
+from ratelimit import limits
 
 from modes.melodic_mode import MelodicMode
 from modes.instrument_selection_mode import InstrumentSelectionMode
@@ -95,6 +96,7 @@ class PyshaApp(object):
     volumes = [ 0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6]
     volume_node = None
     global_timeline = iso.Timeline(tempo, output_device=iso.DummyOutputDevice())
+    pwcli = None
 
     def __init__(self):
         if os.path.exists("settings.json"):
@@ -1006,13 +1008,18 @@ class PyshaApp(object):
         self.volume_node = [node for node in self.pipewire if node['type']  == 'PipeWire:Interface:Node' and node['info']['props']['node.name'] == 'pushpin-volumes'].pop()
         return self.volume_node
     
+    
+    
+    @limits(calls=1, period=0.01)
     def send_message_cli(self, *args):
         volume_node_id = self.volume_node["id"]
-        for idx, instrument in enumerate(self.instruments):
-            value = self.volumes[idx *2]
-            app.send_osc("/param/global/volume", value, instrument_short_name=instrument)
+        # for idx, instrument in enumerate(self.instruments):
+            # value = self.volumes[idx *2]
+            # app.send_osc("/param/global/volume", value, instrument_short_name=instrument)
         # cli_string = f"pw-cli s {volume_node_id} Props '{{monitorVolumes: {self.volumes}}}'"
-        # self.queue.append(asyncio.create_subprocess_shell(cli_string, stdout=asyncio.subprocess.PIPE))
+        # print(cli_string)
+        # print(f"s {volume_node_id} Props '{{monitorVolumes: {self.volumes}}}'\n")
+        self.pwcli.stdin.write(bytes(f"s {volume_node_id} Props {{\"monitorVolumes\": {self.volumes}}}\n", 'utf-8'))
   
 
 # Bind push action handlers with class methods
@@ -1162,6 +1169,7 @@ async def main():
     print("Initialising Pipewire support...")
     await asyncio.sleep(5)
     await app.get_pipewire_config()
+    app.pwcli = await asyncio.create_subprocess_shell('pw-cli', stdin=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL, stdout=asyncio.subprocess.DEVNULL)
     #sets volumes to full in the duplex
     app.get_volume_node()
     app.send_message_cli()
