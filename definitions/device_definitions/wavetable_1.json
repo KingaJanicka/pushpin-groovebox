@@ -16,9 +16,9 @@
 		},
 		{
 			"$type": "message",
-			"$comment": "Set OCT to zero",
-			"address": "/param/a/osc/1/octave",
-			"value": 0
+			"$comment": "Set routing",
+			"address": "/param/a/osc/fm_routing",
+			"value": 1
 		},
 		{
 			"$type": "message",
@@ -88,17 +88,1588 @@
 			"max": 16
 		},
 		{
-			"$type": "control-spacer-address",
-			"address": "/wavetable/a/osc/1/id"
-		},
-		{
-			"$type": "control-spacer-address",
-			"address": "/wavetable/a/osc/1/id"
-		},
-		{
-			"$type": "control-spacer-address",
-			"address": "/wavetable/a/osc/1/id"
-		},
+			"$type": "control-switch",
+			"label": "Sh. Cat",
+			"groups": [
+			  {
+				"$type": "group",
+				"label": "Off",
+				"controls": [
+				  {
+					"$type": "control-menu",
+					"items": [
+					  {
+						"$type": "menu-item",
+						"label": "Off",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Off",
+						  "address": "/param/fx/a/1/param3",
+						  "value": 0
+						}
+					  }
+					]
+				  }
+				]
+			  },
+			  {
+				"$type": "group",
+				"label": "Basic",
+				"controls": [
+					{
+						"$type": "control-spacer-address",
+						"address": "/wavetable/a/osc/1/id"
+					},
+					{
+					"$type": "control-menu",
+					"items": [
+					  {
+						"$type": "menu-item",
+						"label": "Sine",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 140
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine HQ",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Med",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 138
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine Oct",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Hard",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 132
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine Oct HQ",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Asymm.",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 139
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine-Saw",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 137
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine-Saw HQ",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 131
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine-Square",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 130
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine-Square HQ",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 136
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Tri-Saw",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 141
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Tri-Saw HQ",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 134
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Tri",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 133
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Tri HQ",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 135
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Tri NES",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 129
+						}
+					  }
+					]
+				  }
+				]
+			  },
+			  {
+				"$type": "group",
+				"label": "Generated",
+				"controls": [
+					{
+						"$type": "control-spacer-address",
+						"address": "/wavetable/a/osc/1/id"
+					},
+					{
+					"$type": "control-menu",
+					"items": [
+					  {
+						"$type": "menu-item",
+						"label": "Sine FM2x",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 12
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine FM2x HQ",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Med",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 53
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine FM3x",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Hard",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 30
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine FM3x HQ",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Asymm.",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 25
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine Half",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 2
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine Half HQ",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 22
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine Inv Pow",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 14
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine Inv Pow HQ",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 28
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine 1 Harm",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 13
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine PD",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 51
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine PD HQ",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 7
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine Pow",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 32
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine Pow HQ",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 24
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine Quant1",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 35
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine Quant2",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 44
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine Quant3",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 60
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine SyncWindow",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 49
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine 2 Harm",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 45
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine Window",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 59
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine WindowFM",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 36
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine WindowHQ",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 6
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine WindowOct",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 21
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sine WindowPrime",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 19
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Square ATC",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 10
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sq Window",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 40
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sq WindowHQ",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 31
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Sweepy",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 37
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Tri Primary",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 54
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Tri-Sin Shape",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "OJD",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 16
+						}
+					  }
+					]
+				  }
+				]
+			  },
+			  {
+				"$type": "group",
+				"label": "One Shot",
+				"controls": [
+					{
+						"$type": "control-spacer-address",
+						"address": "/wavetable/a/osc/1/id"
+					},
+					{
+					"$type": "control-menu",
+					"items": [
+					  {
+						"$type": "menu-item",
+						"label": "Blip 1",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 143
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Blip 2",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 144
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Blip 3",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 145
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Pulse",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 142
+						}
+					  }
+					  
+					]
+				  }
+				]
+			  },
+			  {
+				"$type": "group",
+				"label": "Rythmic",
+				"controls": [
+					{
+						"$type": "control-spacer-address",
+						"address": "/wavetable/a/osc/1/id"
+					},
+					{
+					"$type": "control-menu",
+					"items": [
+					  {
+						"$type": "menu-item",
+						"label": "Bata",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 123
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Bells",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 113
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Bloop",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 128
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Computer 1",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 116
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Computer 2",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 114
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Computer 3",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 117
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Drumbeat 1",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 126
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Drumbeat 2",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 121
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Laser",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 119
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Rim",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 115
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Scrape",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 125
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Sparkly 1",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 122
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Sparkly 2",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 120
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Sparkly 3",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 112
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Sprikles 1",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 124
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Sprikles 2",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 127
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Wool Bow",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 118
+						}
+					  }
+					  
+					]
+				  }
+				]
+			  },
+			  {
+				"$type": "group",
+				"label": "Sampled",
+				"controls": [
+					{
+						"$type": "control-spacer-address",
+						"address": "/wavetable/a/osc/1/id"
+					},
+					{
+					"$type": "control-menu",
+					"items": [
+					  {
+						"$type": "menu-item",
+						"label": "Banjo 1",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 168
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Banjo 2",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 154
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Cello",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 158
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Choir",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 164
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Cluster",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 188
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Digi Organ 1",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 178
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Digi Organ 2",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 153
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Glissy",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 161
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Guitar",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 185
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Acoustic 1",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 172
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Acoustic 2",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 187
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Electric 1",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 176
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Electric 2",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 163
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Guit. High",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 165
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Guit. Mid",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 150
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Guit. Steel",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 159
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Harp 1",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 167
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Harp 2",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 166
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Harpsi",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 146
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Koto 1",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 152
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Koto 2",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 170
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Koto 3",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 186
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Mallet 1",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 175
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Mallet 2",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 171
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Mod Perc",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 151
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Music Box 1",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 181
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Music Box 2",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 179
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Mystic",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 177
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "New Bell",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 149
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Piano 1",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 155
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Piano 2",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 147
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Piano Dark",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 180
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Piano Low",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 183
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Pizz 1",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 160
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Pizz 2",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 157
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Vocal Ah 1",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 162
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Vocal Ah 2",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 156
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Vocal Choir 1",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 169
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Vocal Choir 2",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 174
+						}
+					  },
+					  {
+						"$type": "menu-item",
+						"label": "Vocal Oh",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 182
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Oh Formant",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 173
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Oh Frmnt 2",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 148
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Wonky",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 184
+						}
+					  }
+					  
+					  
+					]
+				  }
+				]
+			  },
+			  {
+				"$type": "group",
+				"label": "Waldorf",
+				"controls": [
+					{
+						"$type": "control-spacer-address",
+						"address": "/wavetable/a/osc/1/id"
+					},
+					{
+					"$type": "control-menu",
+					"items": [
+					  {
+						"$type": "menu-item",
+						"label": "B3Waves",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 70
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Beat",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 105
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "BELLTR",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 104
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "BELTREE2",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 84
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "CARDBORD",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 90
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "CELL1H",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 61
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "CELLPG",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 103
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "CELO",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 91
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Chaosweep",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 86
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Chorus 2",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 109
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Diff. MKs",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 107
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "DIGDU",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 81
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "DRAIN",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 98
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "DXBASS",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 77
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "ELECTRIC",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 100
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "FM Bell WM",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 102
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "FMGlock",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 94
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "FMP",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 79
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "FMT Pulse",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 74
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Fmt Saw 3",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 65
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "FORMsaw2",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 78
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Hype P",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 83
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Jamming",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 64
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "JSMITH",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 73
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "KingKlang",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 66
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Male AhPG",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 76
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "microwave1",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 88
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "microwave4",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 111
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "ME E-Plan",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 67
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "mw1",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 89
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Ord. FM",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 92
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Organs",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 97
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "PrfctPWM",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 108
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "RACHEL",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 72
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Saw Arp",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 63
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "SawOct",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 75
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Sine Sweep",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 62
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "SLAPE2",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 80
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "SoftSync",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 88
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "SomeOrgan",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 93
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "STRHMX",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 96
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "StringHit",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 69
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "TS",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 82
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "TSITAR3",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 185
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "Tubular",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 101
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "VeryHi WM",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 71
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "ViceVersa",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 95
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "vs1",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 110
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "vs2",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 87
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "WATER4",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 106
+						}
+					  },{
+						"$type": "menu-item",
+						"label": "WETFONE",
+						"onselect": {
+						  "$type": "message",
+						  "$comment": "Soft",
+						  "address": "/wavetable/a/osc/1/id",
+						  "value": 99
+						}
+					  }
+					  
+					]
+				  }
+				]
+			  }
+			]
+		  },
 		{
 			"$type": "control-menu",
 			"items": [
@@ -183,6 +1754,75 @@
 					}
 				}
 			]
+		},{
+			"$type": "control-menu",
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "Oct -3",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Retrigger On",
+						"address": "/param/a/osc/1/octave",
+						"value": -3
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Oct -2",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Retrigger On",
+						"address": "/param/a/osc/1/octave",
+						"value": -2
+					}
+				},{
+					"$type": "menu-item",
+					"label": "Oct -1",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Retrigger On",
+						"address": "/param/a/osc/1/octave",
+						"value": -1
+					}
+				},{
+					"$type": "menu-item",
+					"label": "Oct 0",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Retrigger On",
+						"address": "/param/a/osc/1/octave",
+						"value": 0
+					}
+				},{
+					"$type": "menu-item",
+					"label": "Oct +1",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Retrigger On",
+						"address": "/param/a/osc/1/octave",
+						"value": 1
+					}
+				},{
+					"$type": "menu-item",
+					"label": "Oct +2",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Retrigger On",
+						"address": "/param/a/osc/1/octave",
+						"value": 2
+					}
+				},{
+					"$type": "menu-item",
+					"label": "Oct 3",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Retrigger On",
+						"address": "/param/a/osc/1/octave",
+						"value": 3
+					}
+				}
+			]
 		},
 		{
 			"$type": "control-range",
@@ -190,13 +1830,6 @@
 			"address": "/param/a/osc/fm_depth",
 			"min": 0,
 			"max": 1
-		},
-		{
-			"$type": "control-range",
-			"label": "FM Routing",
-			"address": "/param/a/osc/fm_routing",
-			"min": 0,
-			"max": 3
 		}
 	]
 }

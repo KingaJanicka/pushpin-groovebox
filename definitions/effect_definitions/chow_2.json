@@ -33,7 +33,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "1",
-						"address": "/param/a/osc/1/param3",
+						"address": "/param/fx/a/2/param3",
 						"value": 0
 					}
 				},
@@ -43,7 +43,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "2",
-						"address": "/param/a/osc/1/param3",
+						"address": "/param/fx/a/2/param3",
 						"value": 1
 					}
 				}

@@ -16,9 +16,9 @@
 		},
 		{
 			"$type": "message",
-			"$comment": "Set OCT to zero",
-			"address": "/param/a/osc/1/octave",
-			"value": 0
+			"$comment": "Set routing",
+			"address": "/param/a/osc/fm_routing",
+			"value": 1
 		}
 	],
 	"controls": [
@@ -178,6 +178,75 @@
 					}
 				}
 			]
+		},{
+			"$type": "control-menu",
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "Oct -3",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Retrigger On",
+						"address": "/param/a/osc/1/octave",
+						"value": -3
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Oct -2",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Retrigger On",
+						"address": "/param/a/osc/1/octave",
+						"value": -2
+					}
+				},{
+					"$type": "menu-item",
+					"label": "Oct -1",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Retrigger On",
+						"address": "/param/a/osc/1/octave",
+						"value": -1
+					}
+				},{
+					"$type": "menu-item",
+					"label": "Oct 0",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Retrigger On",
+						"address": "/param/a/osc/1/octave",
+						"value": 0
+					}
+				},{
+					"$type": "menu-item",
+					"label": "Oct +1",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Retrigger On",
+						"address": "/param/a/osc/1/octave",
+						"value": 1
+					}
+				},{
+					"$type": "menu-item",
+					"label": "Oct +2",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Retrigger On",
+						"address": "/param/a/osc/1/octave",
+						"value": 2
+					}
+				},{
+					"$type": "menu-item",
+					"label": "Oct 3",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Retrigger On",
+						"address": "/param/a/osc/1/octave",
+						"value": 3
+					}
+				}
+			]
 		},
 		{
 			"$type": "control-range",
@@ -185,13 +254,6 @@
 			"address": "/param/a/osc/fm_depth",
 			"min": 0,
 			"max": 1
-		},
-		{
-			"$type": "control-range",
-			"label": "FM Routing",
-			"address": "/param/a/osc/fm_routing",
-			"min": 0,
-			"max": 3
 		}
 	]
 }

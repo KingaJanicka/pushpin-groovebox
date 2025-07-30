@@ -6,6 +6,7 @@ import definitions
 import traceback
 from ratelimit import limits
 import asyncio
+import time
 
 logger = logging.getLogger("mod_matrix_device")
 # logger.setLevel(level=logging.DEBUG)
@@ -44,11 +45,11 @@ class ModMatrixDevice(definitions.PyshaMode):
         self.delete_mapping_column = 6
         self.scroll_column = 7
         self.page = 0
-        self.slot = None
+        
+        self.slot = 15 # Might need to change this back to None
         self.osc = osc
         self.label = "Mod Matrix"
         self.dispatcher = osc.get("dispatcher", None)
-        self.slot = None
         self.log_in = logger.getChild(f"in-{kwargs['osc_in_port']}")
         self.log_out = logger.getChild(f"out-{kwargs['osc_out_port']}")
         self.init = []
@@ -174,16 +175,17 @@ class ModMatrixDevice(definitions.PyshaMode):
             if new_mapping in self.mod_matrix_mappings:
                 return
             else:
-                print("added mapping")
+                # print("added mapping")
                 self.mod_matrix_mappings.append(new_mapping)
         else: self.mod_matrix_mappings.append(new_mapping)
         # print(self.mod_matrix_mappings)
 
 
     def select(self):
-        self.snap_knobs_to_mod_matrix()
         self.query_all_mods()
+        time.sleep(0.1)
         self.is_active = True
+        self.snap_knobs_to_mod_matrix()
 
     def send_message(self, *args):
         self.log_out.debug(args)
@@ -430,10 +432,15 @@ class ModMatrixDevice(definitions.PyshaMode):
         sel_label = EMPTY_STRING
 
         if selected_idx - 2 >= 0:
-            prev_prev_label = list[selected_idx - 2].label or EMPTY_STRING
-
+            try:
+                prev_prev_label = list[selected_idx - 2].label or EMPTY_STRING
+            except IndexError: 
+                pass
         if selected_idx - 1 >= 0:
-            prev_label = list[selected_idx - 1].label or EMPTY_STRING
+            try:
+                prev_label = list[selected_idx - 1].label or EMPTY_STRING
+            except IndexError:
+                pass
 
         try:
             sel_label = list[selected_idx].label or EMPTY_STRING
@@ -1006,7 +1013,7 @@ class ModMatrixDevice(definitions.PyshaMode):
         devices = self.get_all_mod_matrix_devices()
         selected_device = int(self.controls[self.device_column])
         controls = self.get_all_mod_matrix_controls_for_device_in_slot(selected_device)
-        if self.app.sequencer_mode.disable_controls == False:
+        if self.app.sequencer_mode.disable_controls == False and self.app.metro_sequencer_mode.disable_controls == False:
             match encoder_idx:
                 # First encoder
                 case self.src_cat_column:
@@ -1101,6 +1108,7 @@ class ModMatrixDevice(definitions.PyshaMode):
         except ValueError:
             return
 
-        if encoder_idx == self.delete_mapping_column and self.app.sequencer_mode.disable_controls == False:
-            self.snap_knobs_to_mod_matrix()
-            self.send_delete_message()
+        if encoder_idx == self.delete_mapping_column :
+            if self.app.sequencer_mode.disable_controls == False and self.app.metro_sequencer_mode.disable_controls == False:
+                self.snap_knobs_to_mod_matrix()
+                self.send_delete_message()

@@ -7,6 +7,18 @@
 			"$comment": "unmute osc",
 			"address": "/param/fx/global/1/type",
 			"value": 1
+		},
+		{
+			"$type": "message",
+			"$comment": "sync on",
+			"address": "/param/fx/global/1/param1/tempo_sync+",
+			"value": 1
+		},
+		{
+			"$type": "message",
+			"$comment": "sync on",
+			"address": "/param/fx/global/1/param2/tempo_sync+",
+			"value": 1
 		}
 	],
 	"controls": [
@@ -81,18 +93,114 @@
 			"min": 0,
 			"max": 1
 		},
+
 		{
+			"$type": "control-menu",
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "L Sync On",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Keytrack On",
+						"address": "/param/fx/global/1/param1/tempo_sync+",
+						"value": 1
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "L Sync Off",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Keytrack Off",
+						"address": "/param/fx/global/1/param1/tempo_sync+",
+						"value": 0
+					}
+				}
+			]
+		},
+		{
+			"$type": "control-menu",
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "R Sync On",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Keytrack On",
+						"address": "/param/fx/global/1/param2/tempo_sync+",
+						"value": 1
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "R Sync Off",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Keytrack Off",
+						"address": "/param/fx/global/1/param2/tempo_sync+",
+						"value": 0
+					}
+				}
+			]
+		},
+		{
+			"$type": "control-menu",
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "Fbk Limit off",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Keytrack On",
+						"address": "/param/fx/global/1/param3/deform+",
+						"value": 0
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Fdbk Cubic",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Keytrack Off",
+						"address": "/param/fx/global/1/param1/tempo_sync+",
+						"value": 1
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Fdbk Tanh",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Keytrack Off",
+						"address": "/param/fx/global/1/param1/tempo_sync+",
+						"value": 2
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Fdbk Hard 0dBFS",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Keytrack Off",
+						"address": "/param/fx/global/1/param1/tempo_sync+",
+						"value": 3
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Fdbk hard +18dBFS",
+					"onselect": {
+						"$type": "message",
+						"$comment": "Keytrack Off",
+						"address": "/param/fx/global/1/param1/tempo_sync+",
+						"value": 4
+					}
+				}
+			]
+		},		{
 			"$type": "control-spacer-address",
 			"address": "/param/fx/global/1/param12"
-		},
-		{
-			"$type": "control-spacer"
-		},
-		{
-			"$type": "control-spacer"
-		},
-		{
-			"$type": "control-spacer"
 		},
 		{
 			"$type": "control-range",

@@ -120,7 +120,6 @@ class SequencerMode(MelodicMode):
 
         # Loads scale edit menu
         try:
-            # TODO: Bug here
             dump = None
             if os.path.exists(self.scale_menu_filename):
                 dump = json.load(open(self.scale_menu_filename))
@@ -217,8 +216,7 @@ class SequencerMode(MelodicMode):
 
     def sequencer_on_tick(self, instrument_name, length):
         # if seq is active
-        seq_mode = self.app.sequencer_mode
-        if self.app.is_mode_active(seq_mode):
+        if self.app.is_mode_active(self.app.sequencer_mode):
             self.update_pads()
             self.app.trig_edit_mode.update_button_colours()
         if self.get_current_instrument_short_name_helper() == instrument_name:
@@ -255,7 +253,6 @@ class SequencerMode(MelodicMode):
         # print(self.app.osc_mode.get_current_instrument_osc_address_sections())
 
     def update_display(self, ctx, w, h):
-        # TODO: Some regressive bug with how this menu is drawn, will not draw the background after the 1st time
         if self.show_scale_menu == True:
             background_colour = self.get_current_instrument_color_helper()
             instrument_name = self.get_current_instrument_short_name_helper()
@@ -359,7 +356,7 @@ class SequencerMode(MelodicMode):
         seq_pad_state = seq.get_track(self.selected_track)
         idx = pad_n - 36
         idx = pad_ij[0] * 8 + pad_ij[1]
-        seq.steps_held.append(idx)
+        self.app.steps_held.append(idx)
         # If a pad is off, turn it on
         if seq_pad_state[idx] == False:
             seq.set_state(self.selected_track, idx, True)
@@ -391,7 +388,7 @@ class SequencerMode(MelodicMode):
             pass
             # seq.set_state(self.selected_track, idx, False
 
-        seq.steps_held.remove(idx)
+        self.app.steps_held.remove(idx)
         self.save_state()
         self.app.pads_need_update = True
 
@@ -448,10 +445,10 @@ class SequencerMode(MelodicMode):
                 self.get_current_instrument_short_name_helper()
             ]
             try:
-                if len(seq.steps_held) != 0:
+                if len(self.app.steps_held) != 0:
                     for mode in self.app.active_modes:
                         if mode == self.app.trig_edit_mode:
-                            idx = seq.steps_held[0]
+                            idx = self.app.steps_held[0]
                             value = None
 
                             if seq.get_lock_state(idx, encoder_idx) is None:

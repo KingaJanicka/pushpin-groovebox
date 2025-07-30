@@ -19,7 +19,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "1",
-						"address": "/param/a/osc/1/param1",
+						"address": "/param/fx/a/1//param1",
 						"value": 0
 					}
 				},
@@ -29,7 +29,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "2",
-						"address": "/param/a/osc/1/param1",
+						"address": "/param/fx/a/1//param1",
 						"value": 1
 					}
 				},
@@ -39,7 +39,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "3",
-						"address": "/param/a/osc/1/param1",
+						"address": "/param/fx/a/1//param1",
 						"value": 2
 					}
 				},
@@ -49,7 +49,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "4",
-						"address": "/param/a/osc/1/param1",
+						"address": "/param/fx/a/1//param1",
 						"value": 3
 					}
 				},
@@ -59,7 +59,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "5",
-						"address": "/param/a/osc/1/param1",
+						"address": "/param/fx/a/1//param1",
 						"value": 4
 					}
 				},
@@ -69,7 +69,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "6",
-						"address": "/param/a/osc/1/param1",
+						"address": "/param/fx/a/1//param1",
 						"value": 5
 					}
 				},
@@ -79,7 +79,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "7",
-						"address": "/param/a/osc/1/param1",
+						"address": "/param/fx/a/1//param1",
 						"value": 6
 					}
 				},
@@ -89,7 +89,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "8",
-						"address": "/param/a/osc/1/param1",
+						"address": "/param/fx/a/1//param1",
 						"value": 7
 					}
 				},
@@ -99,7 +99,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "9",
-						"address": "/param/a/osc/1/param1",
+						"address": "/param/fx/a/1//param1",
 						"value": 8
 					}
 				},
@@ -109,7 +109,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "10",
-						"address": "/param/a/osc/1/param1",
+						"address": "/param/fx/a/1//param1",
 						"value": 9
 					}
 				},
@@ -119,7 +119,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "11",
-						"address": "/param/a/osc/1/param1",
+						"address": "/param/fx/a/1//param1",
 						"value": 10
 					}
 				},
@@ -129,7 +129,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "12",
-						"address": "/param/a/osc/1/param1",
+						"address": "/param/fx/a/1//param1",
 						"value": 11
 					}
 				},
@@ -139,7 +139,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "13",
-						"address": "/param/a/osc/1/param1",
+						"address": "/param/fx/a/1//param1",
 						"value": 12
 					}
 				},
@@ -149,7 +149,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "14",
-						"address": "/param/a/osc/1/param1",
+						"address": "/param/fx/a/1//param1",
 						"value": 13
 					}
 				},
@@ -159,7 +159,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "15",
-						"address": "/param/a/osc/1/param1",
+						"address": "/param/fx/a/1//param1",
 						"value": 14
 					}
 				},
@@ -169,7 +169,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "16",
-						"address": "/param/a/osc/1/param1",
+						"address": "/param/fx/a/1//param1",
 						"value": 15
 					}
 				},
@@ -179,7 +179,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "17",
-						"address": "/param/a/osc/1/param1",
+						"address": "/param/fx/a/1//param1",
 						"value": 16
 					}
 				},
@@ -189,7 +189,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "18",
-						"address": "/param/a/osc/1/param1",
+						"address": "/param/fx/a/1//param1",
 						"value": 17
 					}
 				},
@@ -199,7 +199,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "19",
-						"address": "/param/a/osc/1/param1",
+						"address": "/param/fx/a/1//param1",
 						"value": 18
 					}
 				},
@@ -209,7 +209,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "20",
-						"address": "/param/a/osc/1/param1",
+						"address": "/param/fx/a/1//param1",
 						"value": 19
 					}
 				},
@@ -219,7 +219,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "21",
-						"address": "/param/a/osc/1/param1",
+						"address": "/param/fx/a/1//param1",
 						"value": 20
 					}
 				},
@@ -229,7 +229,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "22",
-						"address": "/param/a/osc/1/param1",
+						"address": "/param/fx/a/1//param1",
 						"value": 21
 					}
 				},
@@ -239,7 +239,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "23",
-						"address": "/param/a/osc/1/param1",
+						"address": "/param/fx/a/1//param1",
 						"value": 22
 					}
 				},
@@ -249,7 +249,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "24",
-						"address": "/param/a/osc/1/param1",
+						"address": "/param/fx/a/1//param1",
 						"value": 23
 					}
 				},
@@ -259,7 +259,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "25",
-						"address": "/param/a/osc/1/param1",
+						"address": "/param/fx/a/1//param1",
 						"value": 24
 					}
 				},
@@ -269,7 +269,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "26",
-						"address": "/param/a/osc/1/param1",
+						"address": "/param/fx/a/1//param1",
 						"value": 25
 					}
 				},
@@ -279,7 +279,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "27",
-						"address": "/param/a/osc/1/param1",
+						"address": "/param/fx/a/1//param1",
 						"value": 26
 					}
 				},
@@ -289,7 +289,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "28",
-						"address": "/param/a/osc/1/param1",
+						"address": "/param/fx/a/1//param1",
 						"value": 27
 					}
 				}
@@ -314,7 +314,7 @@
 			"label": "Unison Voices",
 			"address": "/param/fx/a/1/param4",
 			"min": 0,
-			"max": 1
+			"max": 16
 		},
 		{
 			"$type": "control-range",

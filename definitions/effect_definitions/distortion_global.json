@@ -47,7 +47,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "1",
-						"address": "/param/a/osc/1/param12",
+						"address": "/param/fx/global/1/param12",
 						"value": 0
 					}
 				},

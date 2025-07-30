@@ -98,6 +98,7 @@ class Instrument(PyshaMode):
         for slot_idx, slot in enumerate(self.slots):
             if slot:
                 # print(f'making a dispatcher for slot {slot["address"]}')
+
                 dispatcher.map(slot["address"], self.set_slot_state)
         for x in range(16):
             self.devices.append([])
@@ -135,7 +136,7 @@ class Instrument(PyshaMode):
 
             slot_idx = device_definitions[device_name]["slot"]
             self.devices[slot_idx].append(device)
-
+        self.current_devices = []
         print(
             "Loaded {0} devices for instrument {1}".format(
                 sum([len(slot) for slot in self.devices]),
@@ -145,6 +146,32 @@ class Instrument(PyshaMode):
         # Check what's mapped
         # print(dispatcher._map.keys())
         # self.query_all_params()
+
+        self.devices_modulation = []
+        
+        # gets all the modulation devices
+        for slot_idx, slot_devices in enumerate(self.devices):
+            for device in slot_devices:
+                if 8 <= slot_idx <= 15:
+                    self.devices_modulation.append(device)
+
+        self.update_current_devices()
+
+    def update_current_devices(self):
+        updated_devices = []
+        for slot_idx, slot_devices in enumerate(self.devices):
+            for device in slot_devices:
+                if slot_idx == 2 or slot_idx == 3 or slot_idx == 4:
+                    updated_devices.append(device)
+                else:
+                    slot = self.slots[slot_idx]
+                    for init in device.init:
+                        if init["address"] == slot["address"] and int(init["value"]) == float(slot["value"]):
+                            updated_devices.append(device)
+        self.current_devices = updated_devices
+        return
+    
+
 
     def set_slot_state(self, *resp):
         address, value, *rest = resp
@@ -168,6 +195,7 @@ class Instrument(PyshaMode):
                 if float(slot["value"]) != float(value):
                     slot["value"] = float(value)
                     break
+        self.update_current_devices()
                 
 
     async def init_devices(self):
@@ -182,6 +210,19 @@ class Instrument(PyshaMode):
                             init["value"]
                         ) == float(slot["value"]):
                             await device.select()
+
+    def init_devices_sync(self):
+        for slot_idx, slot_devices in enumerate(self.devices):
+            for device in slot_devices:
+                if slot_idx == 2 or slot_idx == 3 or slot_idx == 4:
+                    device.select_sync()
+                else:
+                    slot = self.slots[slot_idx]
+                    for init in device.init:
+                        if init["address"] == slot["address"] and int(
+                            init["value"]
+                        ) == float(slot["value"]):
+                            device.select_sync()
 
 
 
@@ -234,12 +275,15 @@ class Instrument(PyshaMode):
             asyncio.create_task(self.engine.start())
 
     def query_all_params(self):
-        for device in self.devices:
-            device.query_all()
-        # client = self.osc["client"]
-        # if client:
-        #     print(f"Querying all_params on {self.name}")
-        #     client.send_message("/q/all_params", None)
+        # TODO: this is broken
+        # # print(self.devices)
+        # for device in self.devices:
+        #     print(device.label)
+            # device.query_all()
+        client = self.osc["client"]
+        if client:
+            # print(f"Querying all_params on {self.name}")
+            client.send_message("/q/all_params", None)
 
     def query_slots(self):
         client = self.osc["client"]

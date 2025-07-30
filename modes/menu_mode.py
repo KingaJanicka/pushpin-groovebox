@@ -65,8 +65,9 @@ class MenuMode(PyshaMode):
         self.app.osc_mode.current_device_index_and_page[1] = 0
         instrument = self.app.osc_mode.get_current_instrument()
         # print("called q slots")
-        # TODO: I have no clue why the fricity frick this sleep needs to be here
-        # TODO: But it does and the FX switching will lag behind one selection if not
+        # TODO: This needs to be revised with state rewrite
+        # old: I have no clue why the fricity frick this sleep needs to be here
+        # old: But it does and the FX switching will lag behind one selection if not
         time.sleep(0.2)
         instrument.query_slots()
 
@@ -199,8 +200,13 @@ class MenuMode(PyshaMode):
 
         elif button_name == push2_constants.BUTTON_ADD_DEVICE:
             selected_device = devices_in_current_slot[self.selected_menu_item_index]
+            
             try:
-                self.app.queue.append(selected_device.select())
+                
+                # Using the blocking select call here
+                # to prevent a data race
+                # self.app.queue.append(selected_device.select())
+                selected_device.select_sync()
                 devices = self.app.osc_mode.get_current_instrument_devices()
                 for device in devices:
                     if device.label == selected_device.label:

@@ -70,12 +70,33 @@ class OSCControl(object):
     def draw(self, ctx, x_part, draw_lock=False, lock_value=None):
         font_color = definitions.WHITE        
         value = self.value
+        
+        
         if draw_lock is not False:
-            font_color = definitions.RED
+            # font_color = definitions.RED
+            font_color = self.get_color_func()
             if lock_value is not None:
                 value = lock_value
             else:
                 value = float(0.0)
+            
+            
+            display_w = push2_python.constants.DISPLAY_LINE_PIXELS
+            x = (display_w // 8) * x_part
+            y = 21
+            x_witdh = 118
+            y_height = 72
+            ctx.move_to(x,y)
+            ctx.line_to(x + x_witdh,y)
+            ctx.line_to(x + x_witdh,y+y_height)
+            ctx.line_to(x, y+y_height)
+            ctx.close_path()
+            ctx.set_source_rgb(*definitions.get_color_rgb_float(definitions.GRAY_DARK))
+            ctx.fill()
+            # ctx.restore()
+
+        
+        
         
         if self.bipolar == True:
             margin_top = 25
@@ -154,7 +175,7 @@ class OSCControl(object):
             ctx.move_to(xc + length * value, yc - triangle_padding)
             ctx.close_path()
             ctx.set_source_rgb(*definitions.get_color_rgb_float(color))
-            ctx.fill_preserve()
+            ctx.fill()
             ctx.restore()
 
         if self.bipolar == False:
@@ -235,11 +256,36 @@ class OSCControl(object):
             ctx.move_to(xc + length * value, yc - triangle_padding)
             ctx.close_path()
             ctx.set_source_rgb(*definitions.get_color_rgb_float(color))
-            ctx.fill_preserve()
+            ctx.fill()
             ctx.restore()
 
 
-    def draw_submenu(self, ctx, x_part):
+    def draw_submenu(self, ctx, x_part, draw_lock=False, lock_value=None):
+        font_color = definitions.WHITE        
+        value = self.value
+        if draw_lock is not False:
+            font_color = self.get_color_func()
+            if lock_value is not None:
+                value = lock_value
+            else:
+                value = float(0.0)
+        
+        
+            display_w = push2_python.constants.DISPLAY_LINE_PIXELS
+            x = (display_w // 8) * x_part
+            y = 95
+            x_witdh = 118
+            y_height = 30
+            ctx.move_to(x,y)
+            ctx.line_to(x + x_witdh,y)
+            ctx.line_to(x + x_witdh,y+y_height)
+            ctx.line_to(x, y+y_height)
+            ctx.close_path()
+            ctx.set_source_rgb(*definitions.get_color_rgb_float(definitions.GRAY_DARK))
+            ctx.fill()
+            # ctx.restore()
+        
+        
         margin_top = 95
         line_padding = 4
         line_width = 80
@@ -251,7 +297,7 @@ class OSCControl(object):
             margin_top,
             self.label,
             height=name_height,
-            font_color=definitions.WHITE,
+            font_color=font_color,
             center_horizontally=True,
         )
 
@@ -262,10 +308,10 @@ class OSCControl(object):
             ctx,
             x_part,
             margin_top + name_height,
-            str(round(self.value, 2)),
+            str(round(value, 2)),
             height=val_height,
             font_color=color,
-            margin_left=int(self.value / self.max * line_width * 0.75 + 10),
+            margin_left=int(value / self.max * line_width * 0.75 + 10),
         )
 
         radius = name_height / 2
@@ -298,7 +344,8 @@ class OSCControl(object):
         value, *rest = args
         self.log.debug((address, value))
         self.value = value
-        # TODO: this human readable string doesn't change with knob movements, querry fixes it but makes it glitchy
+        
+        # this human readable string doesn't change with knob movements, querry fixes it but makes it glitchy
         # self.string = string
 
     def update_value(self, increment, **kwargs):
@@ -423,7 +470,7 @@ class OSCControlMacro(object):
         self.log.debug((address, value))
 
         self.value = scale_value(value)
-        ###TODO: Find by index
+        # Find by index
 
 
 class OSCControlSwitch(object):
@@ -507,7 +554,8 @@ class OSCControlSwitch(object):
         if int(self.value) <= len(self.groups) - 1:
             return self.groups[
                 int(self.value)
-            ]  # TODO: nasty but enables less-twitchy knobs, prob needs fixing
+            ]  
+            # TODO: nasty but enables less-twitchy knobs, prob needs fixing
 
     def set_state(self, address, *args):
         self.log.debug((address, args))
@@ -572,7 +620,7 @@ class OSCControlSwitch(object):
             font_color=definitions.WHITE,
         )
 
-    def draw_submenu(self, ctx, offset):
+    def draw_submenu(self, ctx, offset, draw_lock=False, lock_value=None):
         margin_top = 95
         val_height = 15
 
@@ -785,15 +833,26 @@ class OSCControlMenu(object):
         idx = int(math.floor(self.value))
 
         font_color = definitions.WHITE        
-        value = self.value
-        if draw_lock is not False:
-            font_color = definitions.RED
+        if draw_lock != False:
+            # font_color = definitions.RED
+            font_color = self.get_color_func()
             if lock_value is not None:
-                value = lock_value
-                idx = int(math.floor(lock_value))
+                idx = int(lock_value)
             else:
-                value = float(0.0)
-        
+                idx = int(0.0)
+            background_color = definitions.GRAY_DARK
+            ctx.save()
+            display_w = push2_python.constants.DISPLAY_LINE_PIXELS
+            x = (display_w // 8) * offset
+            y = 21
+            x_witdh = 118
+            y_height = 72
+            ctx.rectangle(x,y,x_witdh,y_height)
+            ctx.set_source_rgb(*definitions.get_color_rgb_float(definitions.GRAY_DARK))
+            ctx.fill()
+            ctx.restore()
+
+            
 
         if len(self.items) > idx + 1:
             next_label = self.items[idx + 1].label
@@ -812,6 +871,7 @@ class OSCControlMenu(object):
                 prev_label,
                 height=next_prev_height,
                 font_color=font_color,
+                background_color=None
             )
 
         # Current param value
@@ -823,6 +883,7 @@ class OSCControlMenu(object):
             current_label,
             height=val_height,
             font_color=color,
+            background_color=None
         )
 
         # Next param name
@@ -834,19 +895,39 @@ class OSCControlMenu(object):
                 next_label,
                 height=next_prev_height,
                 font_color=font_color,
+                background_color=None
             )
 
-    def draw_submenu(self, ctx, offset):
+    def draw_submenu(self, ctx, offset, draw_lock=False, lock_value=None):
         margin_top = 95
         val_height = 15
         # TODO: need to add the lock drawing stuff here
         # Current param value
+        label = self.label
+        if draw_lock != False:
+            # font_color = definitions.RED
+            if lock_value is not None:
+                idx = int(lock_value)
+            else:
+                idx = int(0.0)
+            label = self.items[idx].label
+            ctx.save()
+            display_w = push2_python.constants.DISPLAY_LINE_PIXELS
+            x = (display_w // 8) * offset
+            y = 95
+            x_witdh = 118
+            y_height = 25
+            ctx.rectangle(x,y,x_witdh,y_height)
+            ctx.set_source_rgb(*definitions.get_color_rgb_float(definitions.GRAY_DARK))
+            ctx.fill()
+            ctx.restore()
+        
         color = self.get_color_func()
         show_text(
             ctx,
             offset,
             margin_top,
-            str(self.label),
+            str(label),
             height=val_height,
             font_color=color,
         )
@@ -854,7 +935,7 @@ class OSCControlMenu(object):
 
 class OSCMenuItem(object):
     name = "Menu Item"
-    #TODO: Switching those menu items is really thrashy, prob a feedback look with osc
+    #TODO This needs to be updated along with state refresh
     def __init__(self, config, get_color_func=None, send_osc_func=None):
         if config.get("$type", None) != "menu-item":
             raise Exception("Invalid config passed to new OSCMenuItem")

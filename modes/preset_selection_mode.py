@@ -7,7 +7,7 @@ from glob import glob
 from user_interface.display_utils import show_text
 from pathlib import Path
 import logging
-
+import time
 log = logging.getLogger("preset_selection_mode")
 
 # log.setLevel(level=logging.DEBUG)
@@ -67,12 +67,23 @@ class PresetSelectionMode(definitions.PyshaMode):
             self.save_presets()
 
     def load_init_presets(self):
-        for item in self.presets:
-            self.send_osc(
-                "/patch/load",
-                self.presets[item][0],
-                instrument_shortname=item,
-            )
+        # TODO: Something resets the devices right after they're loaded
+        print("update presets")
+        for idx, instrument in enumerate(self.app.instruments):
+            self.send_osc("/patch/load", self.presets[instrument][1], instrument_shortname=instrument)
+            time.sleep(0.1)
+            self.send_osc("/q/all_params", self.presets[instrument][1], instrument_shortname=instrument)
+            
+        
+        #     time.sleep(0.1)
+        #     self.app.instruments[instrument].query_slots()
+        #     self.app.instruments[instrument].query_devices()
+        #     self.app.instruments[instrument].update_current_devices()
+        #     self.on_pad_pressed(pad_ij=[1, idx], pad_n=None, velocity=None)
+        #     self.on_pad_released(pad_ij=[1, idx], pad_n=None, velocity=None)
+        
+        # self.on_pad_pressed(pad_ij=[1, 0], pad_n=None, velocity=None)
+        # self.on_pad_released(pad_ij=[1, 0], pad_n=None, velocity=None)
 
     def create_dict_from_paths(self, arr):
         d = dict()
@@ -326,17 +337,15 @@ class PresetSelectionMode(definitions.PyshaMode):
         return True  # Prevent other modes to get this event
 
     def on_pad_released(self, pad_n, pad_ij, velocity):
-        #TODO: select needs to be called here
+        #TODO: select needs to be called here, think this will need to be
+        # revised as we work on the param-locking
+        # TODO: with the re-write of how devices are handled this is now broken
         instrument = self.app.osc_mode.get_current_instrument()
         instrument.query_slots()
-        # instrument.query_all_params()
-        # instrument.query_devices()
-        devices = self.app.osc_mode.get_current_instrument_devices()
-        for device in devices:
-            device.query_visible_controls()
-            self.app.queue.append(device.select())
+        instrument.query_devices()
+        instrument.update_current_devices()
+        instrument.init_devices_sync()
         self.update_pads()
-        # print("pad released")
         return True  # Prevent other modes to get this event
 
     def nested_draw(

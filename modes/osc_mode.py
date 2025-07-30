@@ -11,6 +11,8 @@ from modes.instrument import Instrument
 from ratelimit import RateLimitException
 import traceback
 import numbers
+import time
+
 
 import sys
 import struct
@@ -170,9 +172,12 @@ class OSCMode(PyshaMode):
                     for device_index, device in enumerate(devices):
                         # Replaces the control values with state
                         values = []
+                        # TODO: This breaks with our current state model
                         for control_index, control in enumerate(device.controls):
-                            state_value = state[instrument_short_name][device_index][control_index]
-                            
+                            try:    
+                                state_value = state[instrument_short_name][device_index][control_index]
+                            except Exception as e:
+                                print(e)
 
                             if isinstance(control, OSCControl) or isinstance(control, OSCControlMenu):
                                 # Update state of the devices and send OSC message
@@ -256,71 +261,19 @@ class OSCMode(PyshaMode):
     def get_current_instrument_devices(self):
         instrument_shortname = self.get_current_instrument_short_name_helper()
         instrument = self.app.instruments.get(instrument_shortname, None)
-
-        devices = []
-
-        for slot_idx, slot_devices in enumerate(instrument.devices):
-            for device in slot_devices:
-                if slot_idx == 2 or slot_idx == 3 or slot_idx == 4:
-                    devices.append(device)
-                elif 8 <= slot_idx <= 15:
-                    devices.append(device)
-                else:
-                    slot = instrument.slots[slot_idx]
-                    for init in device.init:
-                        if init["address"] == slot["address"] and int(
-                            init["value"]
-                        ) == float(slot["value"]):
-                            devices.append(device)
-
-        return devices
+        return instrument.current_devices
 
     def get_instrument_devices(self, instrument_short_name):
         instrument = self.app.instruments.get(instrument_short_name, None)
-
-        devices = []
-
-        for slot_idx, slot_devices in enumerate(instrument.devices):
-            for device in slot_devices:
-                if slot_idx == 2 or slot_idx == 3 or slot_idx == 4:
-                    devices.append(device)
-                elif 8 <= slot_idx <= 15:
-                    devices.append(device)
-                else:
-                    slot = instrument.slots[slot_idx]
-                    for init in device.init:
-                        if init["address"] == slot["address"] and int(
-                            init["value"]
-                        ) == float(slot["value"]):
-                            devices.append(device)
-
-        return devices
+        return instrument.current_devices
 
     def get_current_instrument_page_devices(self):
         instrument_shortname = self.get_current_instrument_short_name_helper()
         instrument = self.app.instruments.get(instrument_shortname, None)
-
-        devices = []
-        devices_modulation = []
-
-        for slot_idx, slot_devices in enumerate(instrument.devices):
-            for device in slot_devices:
-                if slot_idx == 2 or slot_idx == 3 or slot_idx == 4:
-                    devices.append(device)
-                elif 8 <= slot_idx <= 15:
-                    devices_modulation.append(device)
-                else:
-                    slot = instrument.slots[slot_idx]
-                    for init in device.init:
-                        if init["address"] == slot["address"] and int(
-                            init["value"]
-                        ) == float(slot["value"]):
-                            devices.append(device)
-
         if self.instrument_page == 0:
-            return devices
-        else:
-            return devices_modulation
+            return instrument.current_devices
+        elif self.instrument_page == 1:
+            return instrument.devices_modulation
 
     def query_devices(self):
         self.app.instruments[self.get_current_instrument_short_name_helper()].query_slots()
@@ -339,8 +292,8 @@ class OSCMode(PyshaMode):
 
     def get_current_instrument_device_and_page(self):
         device_idx, page = self.current_device_index_and_page
-        
-        current_device = self.get_current_instrument_page_devices()[device_idx]
+        devices = self.get_current_instrument_page_devices()
+        current_device = devices[device_idx]
         return (current_device, page)
 
     def get_current_slot_devices(self):
@@ -385,8 +338,7 @@ class OSCMode(PyshaMode):
     def update_current_instrument_page(self, new_device=None, new_instrument_page=None):
         # TODO: Make this page switching work with more instrument pages
         # if for some reason someone wants more than 16 devices
-        # TODO: Not sure how I feel about the query here
-
+        
         # Only pages when you're not trying to pick a new device
         if self.app.is_mode_active(self.app.menu_mode) == False:
             self.instrument_page = new_instrument_page
@@ -419,9 +371,23 @@ class OSCMode(PyshaMode):
 
     def update_buttons(self):
         current_device = self.get_current_instrument_device()
+        instrument_name = self.get_current_instrument_short_name_helper()
+        pad_state = self.app.metro_sequencer_mode.metro_seq_pad_state[instrument_name]
+        seq_pad_state = pad_state[self.app.metro_sequencer_mode.selected_track]
+        seq = self.app.metro_sequencer_mode.instrument_sequencers[self.get_current_instrument_short_name_helper()]
+        index = None
+        try:
+            index = self.app.steps_held[0]
+        except:
+            pass
         for count, name in enumerate(self.upper_row_button_names):
             if count < current_device.size:
-                self.push.buttons.set_button_color(name, definitions.WHITE)
+                if index != None:
+                    for value in seq.locks[index*8][count+self.instrument_page]:
+                        if value != None:
+                            self.push.buttons.set_button_color(name, definitions.WHITE)
+                else:
+                    self.push.buttons.set_button_color(name, self.get_current_instrument_color_helper())
             else:
                 self.push.buttons.set_button_color(name, definitions.BLACK)
 
@@ -507,27 +473,29 @@ class OSCMode(PyshaMode):
         show_prev, show_next = selected_device.get_next_prev_pages()
         _, current_page = self.get_current_instrument_device_and_page()
 
-        if button_name in self.upper_row_button_names and self.app.sequencer_mode.show_scale_menu != True:
-            current_instrument_devices = self.get_current_instrument_page_devices()
-            _, current_page = self.get_current_instrument_device_and_page()
+        if button_name in self.upper_row_button_names:
+            if self.app.sequencer_mode.show_scale_menu != True:
+                if self.app.metro_sequencer_mode.show_scale_menu != True:
+                    current_instrument_devices = self.get_current_instrument_page_devices()
+                    _, current_page = self.get_current_instrument_device_and_page()
 
-            idx = self.upper_row_button_names.index(button_name)
-            if idx < len(current_instrument_devices):
-                new_device = current_instrument_devices[idx]
-                # Stay on the same device page if new instrument, otherwise go to next page
+                    idx = self.upper_row_button_names.index(button_name)
+                    if idx < len(current_instrument_devices):
+                        new_device = current_instrument_devices[idx]
+                        # Stay on the same device page if new instrument, otherwise go to next page
 
-                new_page = (
-                    0
-                    if new_device != selected_device
-                    else (
-                        current_page - 1
-                        if show_prev
-                        else current_page + 1 if show_next else 0
-                    )
-                )
+                        new_page = (
+                            0
+                            if new_device != selected_device
+                            else (
+                                current_page - 1
+                                if show_prev
+                                else current_page + 1 if show_next else 0
+                            )
+                        )
 
-                self.update_current_device_page(idx, new_page=new_page)
-            return True
+                        self.update_current_device_page(idx, new_page=new_page)
+                    return True
         elif button_name in self.lower_row_button_names:
             self.update_current_device_page(new_page=0)  # Reset page on new instrument
         elif button_name in [
@@ -544,16 +512,26 @@ class OSCMode(PyshaMode):
             push2_python.constants.BUTTON_LEFT,
             push2_python.constants.BUTTON_RIGHT,
         ]:
+            instrument_shortname = self.get_current_instrument_short_name_helper()
+            instrument = self.app.instruments.get(instrument_shortname, None)
+            instrument.update_current_devices()
             if button_name == push2_python.constants.BUTTON_LEFT:
                 self.update_current_instrument_page(new_instrument_page=0)
             elif button_name == push2_python.constants.BUTTON_RIGHT:
                 self.update_current_instrument_page(new_instrument_page=1)
+            instrument.update_current_devices()
             return True
 
     def on_encoder_rotated(self, encoder_name, increment):
         try:
-            current_device = self.get_current_instrument_device()
-            current_device.on_encoder_rotated(encoder_name, increment)
+            metro = self.app.metro_sequencer_mode
+            # This call makes sure we always use the right enc_rot call
+            # Because the seq has its own due to how param locks work
+            if len(self.app.steps_held) == 0 and metro.show_scale_menu == False:
+                current_device = self.get_current_instrument_device()
+                current_device.on_encoder_rotated(encoder_name, increment)
+            else:
+                metro.on_encoder_rotated(encoder_name, increment)
         except RateLimitException:
             pass
         except Exception as err:

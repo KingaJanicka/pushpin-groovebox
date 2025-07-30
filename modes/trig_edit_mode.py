@@ -31,6 +31,7 @@ class TrigEditMode(definitions.PyshaMode):
     current_address = None
     trig_edit_filename = "trig_edit.json"
     is_active = False
+    slot = 16 # Might need to change this back to None
 
     def initialize(self, settings=None, **kwargs):
         self.is_active = False
@@ -316,8 +317,8 @@ class TrigEditMode(definitions.PyshaMode):
                 "$type": "control-range",
                 "label": "Length",
                 "address": f"/",
-                "min": 0,
-                "max": 1,
+                "min": 0.1,
+                "max": 0.9,
             },
             self.get_current_instrument_color_helper,
             self.send_message,
@@ -407,7 +408,6 @@ class TrigEditMode(definitions.PyshaMode):
         pass
 
     def activate(self):
-        # TODO: this does seem rather slow
         self.is_active = True
         self.update_button_colours()
         self.current_page = 0
@@ -461,19 +461,26 @@ class TrigEditMode(definitions.PyshaMode):
     def update_display(self, ctx, w, h):
         visible_controls = self.controls
         offset = 0
-        seq = self.app.sequencer_mode.instrument_sequencers[
-            self.get_current_instrument_short_name_helper()
-        ]
+        seq = None
+        if self.app.is_mode_active(self.app.sequencer_mode) == True:
+            seq = self.app.sequencer_mode.instrument_sequencers[
+                self.get_current_instrument_short_name_helper()
+            ]
+        elif self.app.is_mode_active(self.app.metro_sequencer_mode) == True:
+            seq = self.app.metro_sequencer_mode.instrument_sequencers[
+                self.get_current_instrument_short_name_helper()
+            ]
         for control in visible_controls:
-            draw_lock = True if len(seq.steps_held) != 0 else False
+            draw_lock = True if len(self.app.steps_held) != 0 else False
             if offset + 1 <= 8:
                 try:
-                    step_idx = seq.steps_held[0] if draw_lock == True else None
+                    step_idx = self.app.steps_held[0] if draw_lock == True else None
                     lock_value = (
                         seq.get_lock_state(step_idx, offset)
                         if step_idx != None
                         else None
                     )
+                    # print("Draw lock:", draw_lock, " Lock Value:", lock_value)
                     if draw_lock == True and lock_value != None:
                         control.draw(
                             ctx, offset, draw_lock=draw_lock, lock_value=lock_value
@@ -501,7 +508,7 @@ class TrigEditMode(definitions.PyshaMode):
             try:
                 instrument = self.get_current_instrument_short_name_helper()
                 seq = self.app.sequencer_mode.instrument_sequencers[instrument]
-                idx = seq.steps_held[0] if len(seq.steps_held) != 0 else 0
+                idx = self.app.steps_held[0] if len(self.app.steps_held) != 0 else 0
                 selected_track = self.app.sequencer_mode.selected_track
                 lock = seq.get_lock_state(idx, 8)
                 current_state = self.state[instrument][selected_track][8]
@@ -511,6 +518,8 @@ class TrigEditMode(definitions.PyshaMode):
                     list = binary_list.copy()
                     while len(list) <= 8:
                         list.append(0)
+                
+                
                 binary_list = list
                 try:
                     button_idx = int(button_name[-1]) - 1
@@ -523,7 +532,7 @@ class TrigEditMode(definitions.PyshaMode):
                     binary_list[button_idx] = 1
                 # Converts binary to int
                 new_int = int("".join(map(str, binary_list)), 2)
-                if len(seq.steps_held) > 0:
+                if len(self.app.steps_held) > 0:
                     # set lock
                     seq.set_lock_state(idx, 8, new_int)
                 else:
@@ -545,7 +554,7 @@ class TrigEditMode(definitions.PyshaMode):
             seq = self.app.sequencer_mode.instrument_sequencers[instrument]
             sel_track_len = instrument_scale_edit_controls[selected_track][0].value
 
-            idx = seq.steps_held[0] if len(seq.steps_held) != 0 else 0
+            idx = self.app.steps_held[0] if len(self.app.steps_held) != 0 else 0
             lock = seq.get_lock_state(idx, 8)
             current_state = self.state[instrument][selected_track][8]
             value = int(current_state) if lock == None else int(lock)
@@ -581,9 +590,9 @@ class TrigEditMode(definitions.PyshaMode):
             seq = self.app.sequencer_mode.instrument_sequencers[
                 self.get_current_instrument_short_name_helper()
             ]
-            disable_controls = self.app.sequencer_mode.disable_controls
-            if len(seq.steps_held) != 0 or disable_controls == True:
-                pass
+            if len(self.app.steps_held) != 0:
+                if self.app.sequencer_mode.disable_controls == False and self.app.metro_sequencer_mode.disable_controls == False:
+                    pass
             else:
                 control = self.controls[encoder_idx]
 

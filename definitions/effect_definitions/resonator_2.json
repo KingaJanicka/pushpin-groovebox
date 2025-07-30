@@ -61,7 +61,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "1",
-						"address": "/param/a/osc/1/param10",
+						"address": "/param/fx/a/2/param10",
 						"value": 0
 					}
 				},
@@ -71,7 +71,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "2",
-						"address": "/param/a/osc/1/param10",
+						"address": "/param/fx/a/2/param10",
 						"value": 1
 					}
 				},
@@ -81,7 +81,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "3",
-						"address": "/param/a/osc/1/param10",
+						"address": "/param/fx/a/2/param10",
 						"value": 2
 					}
 				},
@@ -91,7 +91,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "4",
-						"address": "/param/a/osc/1/param10",
+						"address": "/param/fx/a/2/param10",
 						"value": 3
 					}
 				}

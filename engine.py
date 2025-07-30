@@ -5,7 +5,6 @@ import sys
 import json
 from signal import SIGINT
 
-
 class Engine(ABC):
     app = None
     type = None
@@ -104,9 +103,10 @@ class Engine(ABC):
                     "node.id", None
                 ) == instrument_node.get("id", None):
                     if port.get("info", {}).get("direction", None):
-                        # TODO: this needs to be re-written to be handled a bit better
+                        # TODO: this needs to be re-written to be handled a bit better with the PW rewrite
                         # So we don't have sperate cases for surge and OW
                         # Need to make sure monitor outs won't end up in "outputs"
+                        
                         if self.instrument["instrument_name"] == "Overwitch":
                             if (
                                 port.get("info", [])
@@ -253,7 +253,7 @@ class Engine(ABC):
                 unsorted_duplex_ports.append(port)
 
         for port in unsorted_duplex_ports:
-            # TODO make work with aendra's nicer code
+            
             # TODO: Aendra really hates this perfectly reasonable match statement
             # port_name = port["info"]["props"]["port.name"]
 
@@ -427,7 +427,6 @@ class SurgeXTEngine(Engine):
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
-
         self.PID = self.process.pid
 
         # Sleep 2s to allow Surge boot up
@@ -557,7 +556,8 @@ class ExternalEngine(Engine):
         sample_rate=44100,
         buffer_size=128,
         midi_device_idx=None,
-        instrument_definition={},  # TODO: create stub instrument def
+        instrument_definition={},  
+        # TODO: create stub instrument def
     ):
         super().__init__(
             app,

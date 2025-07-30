@@ -1,0 +1,7 @@
+twist is broken on osc1
+control-menu does not set properly
+
+Improve visual feedback with buttons
+esp the sequencer track buttons
+
+modmatrix should send the mapping as soon as the knob is turned i think

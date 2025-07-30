@@ -128,6 +128,10 @@ class OSCDevice(PyshaMode):
             if hasattr(control, "select"):
                 control.select()
 
+    def select_sync(self):
+        for cmd in self.init:
+            self.send_message(cmd["address"], float(cmd["value"]))
+
     async def select(self):
         # TODO: This should keep values from prev device when switching
         # This state should be set in on_button_pressed in menu_mode
@@ -146,7 +150,7 @@ class OSCDevice(PyshaMode):
         await asyncio.sleep(0.1)
         for cmd in self.init:
             self.send_message(cmd["address"], float(cmd["value"]))
-            instrument.set_slot_state(cmd["address"], float(cmd["value"]))
+            # instrument.set_slot_state(cmd["address"], float(cmd["value"]))
             await asyncio.sleep(0.1)
     
 
@@ -160,23 +164,49 @@ class OSCDevice(PyshaMode):
             control.query()
 
     def query_all(self):
+        print("device q all")
         for control in self.controls:
             control.query()
 
     def draw(self, ctx):
         visible_controls = self.get_visible_controls()
+        instrument_name = self.app.metro_sequencer_mode.get_current_instrument_short_name_helper()
+        
+        seq = self.app.metro_sequencer_mode.instrument_sequencers[instrument_name]
+        draw_lock = False
+        step = None
+        state = None
+        if len(self.app.steps_held) != 0:
+            draw_lock = True
+            step = self.app.steps_held[0]
+
+        
         all_controls = self.pages
         offset = 0
+        
+        # TODO: Those are broken, subpage does not draw correctly
+        other_page = (self.page + 1) % 2
         for control in all_controls[self.page]:
             if offset + 1 <= 8:
-                control.draw(ctx, offset)
+                
+                # Draw the lock but only if the lock value is not None and pad is pressed
+                if step != None and seq.get_lock_state(step, offset + self.page * 8) != None:
+                    lock_value = seq.get_lock_state(step, offset + self.page * 8)
+                    control.draw(ctx, offset, draw_lock=draw_lock, lock_value=lock_value)
+                else:
+                    control.draw(ctx, offset)
                 offset += 1
         offset = 0
-        other_page = (self.page + 1) % 2
         try:
             for control in all_controls[other_page]:
                 if offset + 1 <= 8:
-                    control.draw_submenu(ctx, offset)
+                
+                    # Draw the lock but only if the lock value is not None and pad is pressed
+                    if step != None and seq.get_lock_state(step, offset+ other_page*8) != None:
+                        lock_value = seq.get_lock_state(step, offset+other_page*8)
+                        control.draw_submenu(ctx, offset, draw_lock=draw_lock, lock_value=lock_value)
+                    else:
+                        control.draw_submenu(ctx, offset)
                     offset += 1
         except:
             pass
@@ -258,7 +288,7 @@ class OSCDevice(PyshaMode):
                     push2_python.constants.ENCODER_TRACK7_ENCODER,
                     push2_python.constants.ENCODER_TRACK8_ENCODER,
                 ].index(encoder_name)
-                if self.app.sequencer_mode.disable_controls == False:
+                if self.app.sequencer_mode.disable_controls == False and self.app.metro_sequencer_mode.disable_controls == False:
                     visible_controls = self.get_visible_controls()
                     control = visible_controls[encoder_idx]
                     control.update_value(increment)
@@ -269,7 +299,7 @@ class OSCDevice(PyshaMode):
                     if len(state) == 0:
                         self.app.osc_mode.load_state()
                     # state[instrument_shortname][self.slot][encoder_idx] = control.value
-                    
+
 
         except ValueError:
             pass  # Encoder not in list

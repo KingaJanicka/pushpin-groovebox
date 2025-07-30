@@ -13,21 +13,21 @@
 		{
 			"$type": "control-range",
 			"label": "Mod Rate",
-			"address": "/param/fx/global/1/param1",
-			"min": 0,
-			"max": 1
-		},
-		{
-			"$type": "control-range",
-			"label": "Mod Depth",
 			"address": "/param/fx/global/1/param2",
 			"min": 0,
 			"max": 1
 		},
 		{
 			"$type": "control-range",
-			"label": "Chorus Time",
+			"label": "Mod Depth",
 			"address": "/param/fx/global/1/param3",
+			"min": 0,
+			"max": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Chorus Time",
+			"address": "/param/fx/global/1/param1",
 			"min": 0,
 			"max": 1
 		},
@@ -55,7 +55,7 @@
 		{
 			"$type": "control-range",
 			"label": "Width",
-			"address": "/param/fx/global/1/param7",
+			"address": "/param/fx/global/1/param8",
 			"min": 0,
 			"max": 1,
 			"bipolar": 1
@@ -63,7 +63,7 @@
 		{
 			"$type": "control-range",
 			"label": "Mix",
-			"address": "/param/fx/global/1/param8",
+			"address": "/param/fx/global/1/param7",
 			"min": 0,
 			"max": 1,
 			"bipolar": 1

@@ -1,8 +1,7 @@
 {
-	"name": "LFO Mono",
+	"name": "LFO",
 	"slot": 9,
 	"init": [],
-	"modmatrix": false,
 	"controls": [
 		{
 			"$type": "control-range",
@@ -174,13 +173,54 @@
 		},
 		
 		{
-			"$type": "control-range",
-			"label": "Unipolar",
-			"address": "/param/a/slfo/2/unipolar",
-			"min": 0,
-			"max": 1
+			"$type": "control-menu",
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "No Sync",
+					"onselect": {
+						"$type": "message",
+						"$comment": "1",
+						"address": "/param/a/slfo/2/tempo_sync+",
+						"value": 0
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Tempo Sync",
+					"onselect": {
+						"$type": "message",
+						"$comment": "2",
+						"address": "/param/a/slfo/2/tempo_sync+",
+						"value": 1
+					}
+				}
+			]
+		},{
+			"$type": "control-menu",
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "Bipolar",
+					"onselect": {
+						"$type": "message",
+						"$comment": "1",
+						"address": "/param/a/slfo/6/unipolar",
+						"value": 0
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Unipolar",
+					"onselect": {
+						"$type": "message",
+						"$comment": "2",
+						"address": "/param/a/slfo/6/unipolar",
+						"value": 1
+					}
+				}
+			]
 		},
-		{"$type":"control-spacer"},
 		{
 			"$type": "control-range",
 			"label": "Delay",

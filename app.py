@@ -11,6 +11,8 @@ import numpy
 import push2_python
 import asyncio
 import jack
+import isobar as iso
+from ratelimit import limits
 
 from modes.melodic_mode import MelodicMode
 from modes.instrument_selection_mode import InstrumentSelectionMode
@@ -74,6 +76,7 @@ class PyshaApp(object):
     previously_active_mode_for_xor_group = {}
     pads_need_update = True
     buttons_need_update = True
+    steps_held=[]
 
     # notifications
     notification_text = None
@@ -90,8 +93,10 @@ class PyshaApp(object):
     # Pipewire-related
     external_instruments = []
     pipewire = None
-    volumes = [ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+    volumes = [ 0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6]
     volume_node = None
+    global_timeline = iso.Timeline(tempo, output_device=iso.DummyOutputDevice())
+    pwcli = None
 
     def __init__(self):
         if os.path.exists("settings.json"):
@@ -101,7 +106,7 @@ class PyshaApp(object):
 
         self.set_midi_in_channel(settings.get("midi_in_default_channel", 0))
         self.set_midi_out_channel(settings.get("midi_out_default_channel", 0))
-        self.target_frame_rate = settings.get("target_frame_rate", 60)
+        self.target_frame_rate = settings.get("target_frame_rate", 30)
         self.use_push2_display = settings.get("use_push2_display", True)
 
         self.init_midi_in(device_name=settings.get("default_midi_in_device_name", None))
@@ -189,6 +194,8 @@ class PyshaApp(object):
             self.settings_mode.activate()
 
     def toggle_menu_mode(self):
+        previous_mode = self.previously_active_mode_for_xor_group
+        # print("modes:",previous_mode)
         # instrument = self.osc_mode.get_current_instrument()
         # instrument.query_slots()
         if self.is_mode_active(self.menu_mode):
@@ -199,9 +206,15 @@ class PyshaApp(object):
                     new_active_modes.append(mode)
 
             self.active_modes = new_active_modes
+            # new_active_modes.append(previous_mode)
+            
             self.menu_mode.deactivate()
         else:
             # Activate (replace midi cc and instrument selection mode by ddrm tone selector mode)
+            # print("activate menu")
+            # print(self.active_modes)
+            self.previously_active_mode_for_xor_group = self.active_modes[-1]
+            
             new_active_modes = []
             for mode in self.active_modes:
                 if mode != self.preset_selection_mode:
@@ -214,37 +227,42 @@ class PyshaApp(object):
             self.menu_mode.activate()
 
     # TODO: preset sel/trig edit get wonky when switching from one to another
+    # One triggering needs to shut down another
 
     def toggle_preset_selection_mode(self):
+        
+        previous_mode = self.previously_active_mode_for_xor_group
         if self.is_mode_active(self.preset_selection_mode):
             # Deactivate (replace ddrm tone selector mode by midi cc and instrument selection mode)
             new_active_modes = []
             for mode in self.active_modes:
                 if mode != self.preset_selection_mode:
                     new_active_modes.append(mode)
-
             new_active_modes.append(self.osc_mode)
-
+            # new_active_modes.append(previous_mode)
             self.active_modes = new_active_modes
-            self.osc_mode.activate()
             self.preset_selection_mode.deactivate()
+            self.metro_sequencer_mode.activate()
+            self.osc_mode.activate()
         else:
             # Activate (replace midi cc and instrument selection mode by ddrm tone selector mode)
+            # self.previously_active_mode_for_xor_group = self.active_modes[-1]
             new_active_modes = []
             for mode in self.active_modes:
                 if mode != self.menu_mode and mode != self.osc_mode and mode != self.trig_edit_mode:
                     new_active_modes.append(mode)
-
             new_active_modes.append(self.preset_selection_mode)
             self.active_modes = new_active_modes
             self.menu_mode.deactivate()
             self.osc_mode.deactivate()
             self.trig_edit_mode.deactivate()
+            self.metro_sequencer_mode.deactivate()
             self.preset_selection_mode.activate()
             # print(self.active_modes, "active modes")
 
 
     def toggle_trig_edit_mode(self):
+        previous_mode = self.previously_active_mode_for_xor_group
         if self.is_mode_active(self.trig_edit_mode):
             # Deactivate (replace ddrm tone selector mode by midi cc and instrument selection mode)
             new_active_modes = []
@@ -253,12 +271,13 @@ class PyshaApp(object):
                     new_active_modes.append(mode)
 
             new_active_modes.append(self.osc_mode)
-
+            new_active_modes.append(previous_mode)
             self.active_modes = new_active_modes
             self.osc_mode.activate()
             self.trig_edit_mode.deactivate()
         else:
             # Activate (replace midi cc and instrument selection mode by ddrm tone selector mode)
+            self.previously_active_mode_for_xor_group = self.active_modes[-1]
             new_active_modes = []
             for mode in self.active_modes:
                 if mode != self.menu_mode and mode != self.osc_mode and mode != self.preset_selection_mode:
@@ -269,10 +288,12 @@ class PyshaApp(object):
             self.menu_mode.deactivate()
             self.osc_mode.deactivate()
             self.trig_edit_mode.activate()
+            self.metro_sequencer_mode.deactivate()
             self.preset_selection_mode.deactivate()
             # print(self.active_modes, "active modes")
 
     def toggle_ddrm_tone_selector_mode(self):
+        previous_mode = self.previously_active_mode_for_xor_group
         if self.is_mode_active(self.ddrm_tone_selector_mode):
             # Deactivate (replace ddrm tone selector mode by midi cc and instrument selection mode)
             new_active_modes = []
@@ -283,11 +304,13 @@ class PyshaApp(object):
                     new_active_modes.append(self.instrument_selection_mode)
                     new_active_modes.append(self.osc_mode)
             self.active_modes = new_active_modes
+            new_active_modes.append(previous_mode)
             self.ddrm_tone_selector_mode.deactivate()
             self.osc_mode.activate()
             self.instrument_selection_mode.activate()
         else:
             # Activate (replace midi cc and instrument selection mode by ddrm tone selector mode)
+            self.previously_active_mode_for_xor_group = self.active_modes[-1]
             new_active_modes = []
             for mode in self.active_modes:
                 if mode != self.instrument_selection_mode and mode != self.osc_mode:
@@ -296,6 +319,7 @@ class PyshaApp(object):
                     new_active_modes.append(self.ddrm_tone_selector_mode)
             self.active_modes = new_active_modes
             self.osc_mode.deactivate()
+            self.metro_sequencer_mode.deactivate()
             self.instrument_selection_mode.deactivate()
             self.ddrm_tone_selector_mode.activate()
 
@@ -304,22 +328,23 @@ class PyshaApp(object):
         for the same xor_group, these other modes get deactivated. This also stores a reference to the
         latest active mode for xor_group, so once a mode gets unset, the previously active one can be
         automatically set"""
-
         if not self.is_mode_active(mode_to_set):
-
             # First deactivate all existing modes for that xor group
             new_active_modes = []
             for mode in self.active_modes:
-                if (
-                    mode.xor_group is not None
-                    and mode.xor_group == mode_to_set.xor_group
-                ):
-                    mode.deactivate()
-                    self.previously_active_mode_for_xor_group[mode.xor_group] = (
-                        mode  # Store last mode that was active for the group
-                    )
-                else:
-                    new_active_modes.append(mode)
+                try:
+                    if (
+                        mode.xor_group is not None
+                        and mode.xor_group == mode_to_set.xor_group
+                    ):
+                        mode.deactivate()
+                        self.previously_active_mode_for_xor_group[mode.xor_group] = (
+                            mode  # Store last mode that was active for the group
+                        )
+                    else:
+                        new_active_modes.append(mode)
+                except:
+                    pass
             self.active_modes = new_active_modes
 
             # Now add the mode to set to the active modes list and activate it
@@ -358,9 +383,9 @@ class PyshaApp(object):
             self.set_slice_notes_mode()
         elif self.is_mode_active(self.slice_notes_mode):
             self.set_melodic_mode()
-        elif self.is_mode_active(self.melodic_mode) or self.is_mode_active(self.mute_mode):
+        elif self.is_mode_active(self.melodic_mode):
             self.set_sequencer_mode()
-        elif self.is_mode_active(self.sequencer_mode):
+        elif self.is_mode_active(self.sequencer_mode) or self.is_mode_active(self.mute_mode):
             self.set_metro_sequencer_mode()
         else:
             # If none of melodic or rhythmic or slice modes were active, enable melodic by default
@@ -384,7 +409,12 @@ class PyshaApp(object):
         self.set_mode_for_xor_group(self.metro_sequencer_mode)
 
     def set_mute_mode(self):
-        self.set_mode_for_xor_group(self.mute_mode)
+        if self.is_mode_active(self.preset_selection_mode):
+            self.toggle_preset_selection_mode()
+        try:
+            self.set_mode_for_xor_group(self.mute_mode)
+        except Exception as e:
+            print(e)
 
     def set_preset_selection_mode(self):
         self.set_mode_for_xor_group(self.preset_selection_mode)
@@ -462,7 +492,6 @@ class PyshaApp(object):
 
     def init_midi_out(self, device_name=None):
         pass
-        # #TODO:: Does this do anything?
         # print("Configuring MIDI out to {}...".format(device_name))
         # self.available_midi_out_device_names = [
         #     name
@@ -804,6 +833,7 @@ class PyshaApp(object):
             # "ALSA lib seq_hw.c:466:(snd_seq_hw_open) open /dev/snd/seq failed: Cannot allocate memory" issues.
             # A work around is make the reconnection time bigger, but a better solution should probably be found.
             self.push.set_push2_reconnect_call_interval(2)
+            
         # for y in range(0, 8):
         #     for x in range(0, 8):
         #         self.push.pads.set_pad_color((x, y), color=definitions.OFF_BTN_COLOR)
@@ -887,6 +917,7 @@ class PyshaApp(object):
         print("Loading State ...")
         self.metro_sequencer_mode.load_state()
         self.sequencer_mode.load_state()
+        self.preset_selection_mode.load_init_presets()
         print("Pysha is running...")
         while True:
             before_draw_time = time.time()
@@ -977,10 +1008,18 @@ class PyshaApp(object):
         self.volume_node = [node for node in self.pipewire if node['type']  == 'PipeWire:Interface:Node' and node['info']['props']['node.name'] == 'pushpin-volumes'].pop()
         return self.volume_node
     
+    
+    
+    @limits(calls=1, period=0.01)
     def send_message_cli(self, *args):
         volume_node_id = self.volume_node["id"]
-        cli_string = f"pw-cli s {volume_node_id} Props '{{monitorVolumes: {self.volumes}}}'"
-        self.queue.append(asyncio.create_subprocess_shell(cli_string, stdout=asyncio.subprocess.PIPE))
+        # for idx, instrument in enumerate(self.instruments):
+            # value = self.volumes[idx *2]
+            # app.send_osc("/param/global/volume", value, instrument_short_name=instrument)
+        # cli_string = f"pw-cli s {volume_node_id} Props '{{monitorVolumes: {self.volumes}}}'"
+        # print(cli_string)
+        # print(f"s {volume_node_id} Props '{{monitorVolumes: {self.volumes}}}'\n")
+        self.pwcli.stdin.write(bytes(f"s {volume_node_id} Props {{\"monitorVolumes\": {self.volumes}}}\n", 'utf-8'))
   
 
 # Bind push action handlers with class methods
@@ -1130,7 +1169,7 @@ async def main():
     print("Initialising Pipewire support...")
     await asyncio.sleep(5)
     await app.get_pipewire_config()
-    app.preset_selection_mode.load_init_presets()
+    app.pwcli = await asyncio.create_subprocess_shell('pw-cli', stdin=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL, stdout=asyncio.subprocess.DEVNULL)
     #sets volumes to full in the duplex
     app.get_volume_node()
     app.send_message_cli()
@@ -1144,8 +1183,7 @@ async def main():
         app.instruments[instrument].query_devices()
         
         app.queue.append(app.instruments[instrument].init_devices())
-        
-
+        app.global_timeline.add_output_device(app.instruments[instrument].midi_out_device)    
     for instrument in app.external_instruments:
         await instrument.engine.configure_pipewire()
     while True:
