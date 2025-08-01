@@ -184,12 +184,12 @@ class Instrument(PyshaMode):
                 
                 # This compares new value with current value and fires a selected/disselected call
                 if slot["address"] == ('/param/a/osc/1/type' or 'param/a/osc/2/type') and value == 4 and slot["value"] != 4:
+                    print("audio in selected")
                     pass
-                    # print("audio in selected")
 
                 if slot["address"] == ('/param/a/osc/1/type' or 'param/a/osc/2/type') and value != 4 and slot["value"] == 4:
+                    print("audio in dis-selected")
                     pass
-                    # print("audio in dis-selected")
 
 
                 if float(slot["value"]) != float(value):
