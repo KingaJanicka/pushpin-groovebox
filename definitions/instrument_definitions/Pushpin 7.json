@@ -5,6 +5,7 @@
     "midi_channel": 7,
     "osc_in_port": 1037,
     "osc_out_port": 1047,
+    "duplex_osc_port": 1057,
     "n_banks": 1,
     "default_layout": "lmelodic"
 }

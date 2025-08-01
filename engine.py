@@ -3,7 +3,15 @@ import asyncio
 import traceback
 import sys
 import json
+import logging
 from signal import SIGINT
+from pythonosc.udp_client import SimpleUDPClient
+from pythonosc.osc_server import AsyncIOOSCUDPServer
+from pythonosc.dispatcher import Dispatcher
+
+logger = logging.getLogger("engine.py")
+# logging.basicConfig(level=logging.DEBUG)
+# logging.getLogger().setLevel(level=logging.DEBUG)
 
 class Engine(ABC):
     app = None
@@ -43,6 +51,7 @@ class Engine(ABC):
         self.buffer_size = buffer_size
         self.midi_device_idx = midi_device_idx
         self.instrument = instrument_definition
+
         self.duplex_node = None
         self.duplex_ports = {
             "inputs": {
@@ -88,24 +97,7 @@ class Engine(ABC):
         
         pass
 
-    async def start_pd_node(self, file_index = None):
-        # await asyncio.sleep(1)
-        self.pd_process = await asyncio.create_subprocess_exec(
-            "pw-jack",
-            "puredata",
-            "-nogui",
-            "-jack",
-            f"./puredata_nodes/passthrough_{file_index}.pd",
-            stdin=asyncio.subprocess.PIPE,
-            stdout=asyncio.subprocess.PIPE,
-            # stderr=asyncio.subprocess.PIPE,
-            
-        )
-        
-        self.PD_PID = self.pd_process.pid
-    
-
-
+  
         
 
 
@@ -164,7 +156,7 @@ class Engine(ABC):
                         ):
                             self.pw_ports["input"].append(port)
 
-        await self.get_instrument_duplex_node()
+        self.get_instrument_duplex_node()
         await self.get_instrument_duplex_ports()
 
     def stop(self):
@@ -359,6 +351,16 @@ class Engine(ABC):
 
 
 class SurgeXTEngine(Engine):
+        
+    puredata_process_id = None
+    puredata_client_id = None
+    # Magic number is defined in the puradata patch
+    duplex_node_osc_address = None
+    duplex_node_osc_client = None
+    duplex_node_osc_server = None
+    duplex_node_osc = None
+    log_in = None
+    
     def __init__(
         self,
         app,
@@ -374,7 +376,16 @@ class SurgeXTEngine(Engine):
             midi_device_idx=midi_device_idx,
             instrument_definition=instrument_definition,
         )
-
+        print(self.instrument["duplex_osc_port"])
+        self.duplex_node_osc_address = self.instrument["duplex_osc_port"]
+        
+        # Setup stuff for the volume node osc client
+        dispatcher = Dispatcher()
+        self.log_in = logger.getChild(f"in-{self.duplex_node_osc_address}")
+        dispatcher.set_default_handler(lambda *message: self.log_in.debug(message))
+        self.duplex_node_osc_client = SimpleUDPClient("127.0.0.1", int(self.duplex_node_osc_address))
+        self.duplex_node_osc = {"client": self.duplex_node_osc_client, "server": self.duplex_node_osc_server, "dispatcher": dispatcher}
+        
     async def configure_pipewire(self):
         await super().configure_pipewire()
 
@@ -422,6 +433,64 @@ class SurgeXTEngine(Engine):
 
         await connectPipewireSourceToPipewireDest(volume_L_output['id'], interface_L_port)
         await connectPipewireSourceToPipewireDest(volume_R_output['id'], interface_R_port)
+
+    async def start_pd_node(self, file_index = None):
+        # await asyncio.sleep(1)
+        self.pd_process = await asyncio.create_subprocess_exec(
+            "pw-jack",
+            "puredata",
+            "-nogui",
+            "-jack",
+            f"./puredata_nodes/passthrough_{file_index}.pd",
+            stdin=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE,
+            # stderr=asyncio.subprocess.PIPE,
+            
+        )
+        
+        self.puredata_process_id = self.pd_process.pid
+    
+
+    def get_duplex_client(self):
+        for item in self.pipewire:
+            if item["type"] == "PipeWire:Interface:Client":
+                # print(item.get("info", {}).get("props", {}).get("application.process.id",None), self.puredata_process_id)
+                try:
+                    id = item.get("info", {}).get("props", {}).get("application.process.id",None)
+                    if id == self.puredata_process_id:
+                        self.duplex_client = item
+                        self.puredata_client_id = self.duplex_client.get("id", None)
+                except:
+                    pass
+        
+        return self.duplex_client
+
+
+    def get_duplex_node(self):
+        for node in self.pipewire:
+            if node["type"] == "PipeWire:Interface:Node":
+                try:
+                    id = node.get("info", {}).get("props", {}).get("client.id",None)
+                    if id == self.puredata_client_id:
+                        self.duplex_node = node
+                except:
+                    pass
+        return self.duplex_node
+        
+        
+    async def disconnect_links_from_volume_node(self):
+        # init_links = [link for link in self.pipewire if link['type'] == 'PipeWire:Interface:Link' and link['info']['output-node-id'] == self.volume_node['id']]
+        link_list = []
+        for link in self.pipewire: 
+            if link['type'] == 'PipeWire:Interface:Link':
+                # print(link['info']['output-node-id'], "  ", link['info']['input-node-id'], "  ", self.volume_node['id'], )
+                if link['info']['output-node-id'] == self.duplex_node['id'] or link['info']['input-node-id'] == self.duplex_node['id']:
+                    link_list.append(link)
+        for link in link_list:
+            await disconnectPipewireLink(link['id'])
+    
+        # print("disconnected __________")
+
 
 
     def getPID(self):

@@ -1026,6 +1026,24 @@ class PyshaApp(object):
             await asyncio.sleep(2)
             await self.get_pipewire_config()
 
+
+    
+    async def start_pd_node(self, file_index = 8):
+        await asyncio.sleep(1)
+        self.pd_process = await asyncio.create_subprocess_exec(
+            "pw-jack",
+            "puredata",
+            "-jack",
+            "-nogui",
+            f"./puredata_nodes/passthrough_{file_index}.pd",
+            stdin=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE,
+            # stderr=asyncio.subprocess.PIPE,
+            
+        )
+        
+        self.puredata_process_id = self.pd_process.pid
+        
     def get_volume_client(self):
         for item in self.pipewire:
             if item["type"] == "PipeWire:Interface:Client":
@@ -1051,22 +1069,7 @@ class PyshaApp(object):
                 except:
                     pass
         return self.volume_node
-    
-    async def start_pd_node(self, file_index = 8):
-        await asyncio.sleep(1)
-        self.pd_process = await asyncio.create_subprocess_exec(
-            "pw-jack",
-            "puredata",
-            "-jack",
-            "-nogui",
-            f"./puredata_nodes/passthrough_{file_index}.pd",
-            stdin=asyncio.subprocess.PIPE,
-            stdout=asyncio.subprocess.PIPE,
-            # stderr=asyncio.subprocess.PIPE,
-            
-        )
         
-        self.puredata_process_id = self.pd_process.pid
         
     async def disconnect_links_from_volume_node(self):
         # init_links = [link for link in self.pipewire if link['type'] == 'PipeWire:Interface:Link' and link['info']['output-node-id'] == self.volume_node['id']]
