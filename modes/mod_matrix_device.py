@@ -963,12 +963,6 @@ class ModMatrixDevice(definitions.PyshaMode):
         visible_controls[self.depth_control_column] = mod_depth_scaled
     
 
-    @limits(calls=1, period=0.1)
-    def send_message_cli(self, *args):
-        volume_node_id = self.app.volume_node["id"]
-        cli_string = f"pw-cli s {volume_node_id} Props '{{monitorVolumes: {self.app.volumes}}}'"
-        self.app.queue.append(asyncio.create_subprocess_shell(cli_string, stdout=asyncio.subprocess.PIPE))
-
     def on_encoder_rotated(self, encoder_name, increment):
         #This if statement is for setting post-synth volume levels
         if encoder_name == push2_python.constants.ENCODER_MASTER_ENCODER:
@@ -991,7 +985,7 @@ class ModMatrixDevice(definitions.PyshaMode):
             all_volumes[instrument_idx*2] = track_L_volume
             all_volumes[instrument_idx*2 +1] = track_R_volume
             self.app.volumes = all_volumes
-            self.send_message_cli()
+            self.app.set_master_volumes()
 
         
         try:
