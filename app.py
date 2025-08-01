@@ -1238,7 +1238,6 @@ async def main():
     await app.start_pd_node()
     for index, instrument in enumerate(app.instruments):
         await app.instruments[instrument].start(loop)
-        await app.instruments[instrument].engine.start_pd_node(file_index=index)
 
     for instrument in app.external_instruments:
         await instrument.start(loop)
@@ -1248,6 +1247,7 @@ async def main():
     await app.get_pipewire_config()
      #sets volumes to full in the duplex
     # TODO: Is this getting the right node? Disconnect isn't disconnecting
+    
     app.get_volume_client()
     app.get_volume_node()
     await app.disconnect_links_from_volume_node()

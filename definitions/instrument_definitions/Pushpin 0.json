@@ -6,5 +6,6 @@
   "osc_in_port": 1030,
   "osc_out_port": 1040,
   "duplex_osc_port": 1050,
+  "instrument_index": 0,
   "default_layout": "lmelodic"
 }
