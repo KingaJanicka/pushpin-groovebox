@@ -1,5 +1,7 @@
 The GUI for PD nodes needs to be supressed, IDK why the flag isn't working
 
+each PD node comes with connections, they all need to be disconencted by default
+
 twist is broken on osc1
 control-menu does not set properly
 
@@ -7,3 +9,9 @@ Improve visual feedback with buttons
 esp the sequencer track buttons
 
 modmatrix should send the mapping as soon as the knob is turned i think
+
+
+start PD patch, get PID
+start OSC client server
+get client using PID
+get node using clinet ID

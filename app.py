@@ -10,10 +10,15 @@ import mido
 import numpy
 import push2_python
 import asyncio
+import logging
 import jack
 import isobar as iso
 from ratelimit import limits
+from pythonosc.udp_client import SimpleUDPClient
+from pythonosc.osc_server import AsyncIOOSCUDPServer
+from pythonosc.dispatcher import Dispatcher
 
+from engine import disconnectPipewireLink
 from modes.melodic_mode import MelodicMode
 from modes.instrument_selection_mode import InstrumentSelectionMode
 from modes.rhythmic_mode import RhythmicMode
@@ -33,6 +38,7 @@ from user_interface.display_utils import show_notification
 from modes.external_instrument import ExternalInstrument
 from definitions import DEFAULT_GLOBAL_TEMPO
 
+logger = logging.getLogger("app.py")
 # logging.basicConfig(level=logging.DEBUG)
 # logging.getLogger().setLevel(level=logging.DEBUG)
 
@@ -94,11 +100,18 @@ class PyshaApp(object):
     external_instruments = []
     pipewire = None
     volumes = [ 0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6]
+    volume_client = None
     volume_node = None
     global_timeline = iso.Timeline(tempo, output_device=iso.DummyOutputDevice())
     pwcli = None
-    PD_PID = None
-    pd_process = None
+    puredata_process_id = None
+    puredata_client_id = None
+    # Magic number is defined in the puradata patch
+    volume_node_osc_address = 1058
+    volume_node_osc_client = None
+    volume_node_osc_server = None
+    volume_node_osc = None
+    log_in = None
     
     def __init__(self):
         if os.path.exists("settings.json"):
@@ -106,6 +119,13 @@ class PyshaApp(object):
         else:
             settings = {}
 
+        # Setup stuff for the volume node osc client
+        dispatcher = Dispatcher()
+        self.log_in = logger.getChild(f"in-{self.volume_node_osc_address}")
+        dispatcher.set_default_handler(lambda *message: self.log_in.debug(message))
+        self.volume_node_osc_client = SimpleUDPClient("127.0.0.1", int(self.volume_node_osc_address))
+        self.volume_node_osc = {"client": self.volume_node_osc_client, "server": self.volume_node_osc_server, "dispatcher": dispatcher}
+        
         self.set_midi_in_channel(settings.get("midi_in_default_channel", 0))
         self.set_midi_out_channel(settings.get("midi_out_default_channel", 0))
         self.target_frame_rate = settings.get("target_frame_rate", 30)
@@ -1006,13 +1026,30 @@ class PyshaApp(object):
             await asyncio.sleep(2)
             await self.get_pipewire_config()
 
+    def get_volume_client(self):
+        for item in self.pipewire:
+            if item["type"] == "PipeWire:Interface:Client":
+                # print(item.get("info", {}).get("props", {}).get("application.process.id",None), self.puredata_process_id)
+                try:
+                    id = item.get("info", {}).get("props", {}).get("application.process.id",None)
+                    if id == self.puredata_process_id:
+                        self.volume_client = item
+                        self.puredata_client_id = self.volume_client.get("id", None)
+                except:
+                    pass
+        
+        return self.volume_client
+
+
     def get_volume_node(self):
         for node in self.pipewire:
-            try:
-                if node["info"]["props"]["application.process.id"] == self.PD_PID:
-                    self.volume_node = node
-            except:
-                pass
+            if node["type"] == "PipeWire:Interface:Node":
+                try:
+                    id = node.get("info", {}).get("props", {}).get("client.id",None)
+                    if id == self.puredata_client_id:
+                        self.volume_node = node
+                except:
+                    pass
         return self.volume_node
     
     async def start_pd_node(self, file_index = 8):
@@ -1029,22 +1066,32 @@ class PyshaApp(object):
             
         )
         
-        self.PD_PID = self.pd_process.pid
-
-        await asyncio.sleep(1)
+        self.puredata_process_id = self.pd_process.pid
+        
+    async def disconnect_links_from_volume_node(self):
+        # init_links = [link for link in self.pipewire if link['type'] == 'PipeWire:Interface:Link' and link['info']['output-node-id'] == self.volume_node['id']]
+        link_list = []
+        for link in self.pipewire: 
+            if link['type'] == 'PipeWire:Interface:Link':
+                # print(link['info']['output-node-id'], "  ", link['info']['input-node-id'], "  ", self.volume_node['id'], )
+                if link['info']['output-node-id'] == self.volume_node['id'] or link['info']['input-node-id'] == self.volume_node['id']:
+                    link_list.append(link)
+        for link in link_list:
+            await disconnectPipewireLink(link['id'])
     
+        # print("disconnected __________")
     
-    
-    @limits(calls=1, period=0.01)
-    def send_message_cli(self, *args):
-        volume_node_id = self.volume_node["id"]
-        # for idx, instrument in enumerate(self.instruments):
-            # value = self.volumes[idx *2]
-            # app.send_osc("/param/global/volume", value, instrument_short_name=instrument)
-        # cli_string = f"pw-cli s {volume_node_id} Props '{{monitorVolumes: {self.volumes}}}'"
-        # print(cli_string)
-        # print(f"s {volume_node_id} Props '{{monitorVolumes: {self.volumes}}}'\n")
-        self.pwcli.stdin.write(bytes(f"s {volume_node_id} Props {{\"monitorVolumes\": {self.volumes}}}\n", 'utf-8'))
+    def set_volumes(self, *args):
+        # TODO: need to make a client for all them nodes
+        # This is done in instrument, just copy
+        for idx, instrument in enumerate(self.instruments):
+            left_channel_idx = idx * 2
+            right_channel_idx = left_channel_idx + 1
+            # Value only from left because we want to have it center
+            volume_value = self.volumes[left_channel_idx]
+            self.volume_node_osc_client.send_message(f"/vol_{left_channel_idx}", float(volume_value))
+            self.volume_node_osc_client.send_message(f"/vol_{right_channel_idx}", float(volume_value))
+        
   
 
 # Bind push action handlers with class methods
@@ -1185,25 +1232,27 @@ async def main():
     # Initialise OSC sockets
     loop = asyncio.get_event_loop()
 
-    for instrument in app.instruments:
+    await app.start_pd_node()
+    for index, instrument in enumerate(app.instruments):
         await app.instruments[instrument].start(loop)
+        await app.instruments[instrument].engine.start_pd_node(file_index=index)
 
     for instrument in app.external_instruments:
         await instrument.start(loop)
-    # Starts the node we use for master volume
-    await app.start_pd_node()
+        
     print("Initialising Pipewire support...")
     await asyncio.sleep(5)
     await app.get_pipewire_config()
-    app.pwcli = await asyncio.create_subprocess_shell('pw-cli', stdin=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL, stdout=asyncio.subprocess.DEVNULL)
-    #sets volumes to full in the duplex
+     #sets volumes to full in the duplex
+    # TODO: Is this getting the right node? Disconnect isn't disconnecting
+    app.get_volume_client()
     app.get_volume_node()
-    app.send_message_cli()
+    await app.disconnect_links_from_volume_node()
+    app.set_volumes()
     
     #Querry controls to update initial state
 
     for index, instrument in enumerate(app.instruments):
-        await app.instruments[instrument].engine.start_pd_node(file_index=index)
         await app.instruments[instrument].engine.configure_pipewire()
         await asyncio.sleep(0.1)
         app.instruments[instrument].query_all_controls()

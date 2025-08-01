@@ -89,7 +89,7 @@ class Engine(ABC):
         pass
 
     async def start_pd_node(self, file_index = None):
-        await asyncio.sleep(1)
+        # await asyncio.sleep(1)
         self.pd_process = await asyncio.create_subprocess_exec(
             "pw-jack",
             "puredata",
@@ -103,8 +103,10 @@ class Engine(ABC):
         )
         
         self.PD_PID = self.pd_process.pid
+    
 
-        await asyncio.sleep(1)
+
+        
 
 
     async def configure_pipewire(self):
@@ -251,8 +253,8 @@ class Engine(ABC):
         # Gets the right node, so we can adjust volumes and get the ID for ports
         for node in nodes:
             if (
-                node.get("info", []).get("props", []).get("node.description", None)
-                == self.instrument["instrument_name"]
+                node.get("info", []).get("props", []).get("application.process.id", None)
+                == self.PD_PID
             ):
                 self.duplex_node = node
                 return node
@@ -389,7 +391,7 @@ class SurgeXTEngine(Engine):
             await disconnectPipewireLink(link['id'])
             
         # connect source of link to duplex in
-        volume_node = [node for node in self.app.pipewire if node['type']  == 'PipeWire:Interface:Node' and node['info']['props']['node.name'] == 'pushpin-volumes'].pop()
+        volume_node = self.app.get_volume_node()
         if not volume_node:
             raise Exception('Volume Duplex node not found')
         
@@ -399,8 +401,10 @@ class SurgeXTEngine(Engine):
         volume_input_port_index_L = midi_channel * 2
         volume_input_port_index_R = (midi_channel * 2) + 1
 
-        volume_L_input = [port for port in volume_ports if port['info']['props']['object.path'] == f"pushpin-volumes:playback_{volume_input_port_index_L}"].pop()
-        volume_R_input = [port for port in volume_ports if port['info']['props']['object.path'] == f"pushpin-volumes:playback_{volume_input_port_index_R}"].pop()
+
+        # Those lines here decide what's connecting to what
+        volume_L_input = [port for port in volume_ports if port['info']['props']['object.path'] == f"pure_data:input_{volume_input_port_index_L}"].pop()
+        volume_R_input = [port for port in volume_ports if port['info']['props']['object.path'] == f"pure_data:input_{volume_input_port_index_R}"].pop()
 
         surge_L = [port for port in surge_output_ports if port['info']['props']['port.name'] == 'output_FL'].pop()
         surge_R = [port for port in surge_output_ports if port['info']['props']['port.name'] == 'output_FR'].pop()
@@ -410,8 +414,8 @@ class SurgeXTEngine(Engine):
         await connectPipewireSourceToPipewireDest(surge_R['id'], volume_R_input['id'])
 
         # connect duplex out to destination of link
-        volume_L_output = [port for port in volume_ports if port['info']['props']['object.path'] == f"pushpin-volumes:capture_{volume_input_port_index_L}"].pop()
-        volume_R_output = [port for port in volume_ports if port['info']['props']['object.path'] == f"pushpin-volumes:capture_{volume_input_port_index_R}"].pop()
+        volume_L_output = [port for port in volume_ports if port['info']['props']['object.path'] == f"pure_data:output_{volume_input_port_index_L}"].pop()
+        volume_R_output = [port for port in volume_ports if port['info']['props']['object.path'] == f"pure_data:output_{volume_input_port_index_R}"].pop()
 
         interface_L_port = [link['info']['input-port-id'] for link in init_links if link['info']['output-port-id'] == surge_L['id']].pop()
         interface_R_port = [link['info']['input-port-id'] for link in init_links if link['info']['output-port-id'] == surge_R['id']].pop()
