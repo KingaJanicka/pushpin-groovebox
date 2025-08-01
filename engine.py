@@ -494,7 +494,6 @@ class SurgeXTEngine(Engine):
         for link in link_list:
             await disconnectPipewireLink(link['id'])
     
-        print("disconnected __________")
 
 
 
