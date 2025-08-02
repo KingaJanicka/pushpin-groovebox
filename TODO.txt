@@ -10,8 +10,5 @@ esp the sequencer track buttons
 
 modmatrix should send the mapping as soon as the knob is turned i think
 
-
-PD Duplex and OSC clients are spawning
-I think things are not getting disconnected proper?
-
-duplex_node and duplex_ports are not getting grabbed correctly
+Different track have different latency for audio-in device
+Master has none???
