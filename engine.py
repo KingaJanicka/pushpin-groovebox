@@ -156,8 +156,6 @@ class Engine(ABC):
                         ):
                             self.pw_ports["input"].append(port)
 
-        await self.get_instrument_duplex_node()
-        await self.get_instrument_duplex_ports()
 
     def stop(self):
         self.process.kill()
@@ -252,6 +250,7 @@ class Engine(ABC):
                 return node
 
     async def get_instrument_duplex_ports(self):
+        print("get duplex ports called")
         ports = filter(
             lambda x: x["type"] == "PipeWire:Interface:Port", self.app.pipewire
         )
@@ -261,12 +260,13 @@ class Engine(ABC):
             await self.get_instrument_duplex_node()
 
         for port in ports:
+            # print(port["info"]["props"]["node.id"],  self.duplex_node["id"])
             if (
                 self.duplex_node
                 and port["info"]["props"]["node.id"] == self.duplex_node["id"]
             ):
                 unsorted_duplex_ports.append(port)
-
+        print("unsorted ports")
         for port in unsorted_duplex_ports:
             
             # TODO: Aendra really hates this perfectly reasonable match statement
@@ -280,71 +280,72 @@ class Engine(ABC):
             # channel = "R" if int(port_index) % 2 else "L"
             # input_index = int(port_index) - 1 if channel == 'L' else int(port_index) - 2
             # self.duplex_ports["inputs" if port_type == 'playback' else 'outputs'][f"{'Input' if port_type == 'playback' else 'Output'} {input_index}"][channel] = port
-
+           
+            
             match port["info"]["props"]["port.name"]:
-                case "playback_1":
+                case "pure_data:input_1":
                     self.duplex_ports["inputs"]["Input 0"]["L"] = port
-                case "playback_2":
+                case "pure_data:input_2":
                     self.duplex_ports["inputs"]["Input 0"]["R"] = port
-                case "playback_3":
+                case "pure_data:input_3":
                     self.duplex_ports["inputs"]["Input 1"]["L"] = port
-                case "playback_4":
+                case "pure_data:input_4":
                     self.duplex_ports["inputs"]["Input 1"]["R"] = port
-                case "playback_5":
+                case "pure_data:input_5":
                     self.duplex_ports["inputs"]["Input 2"]["L"] = port
-                case "playback_6":
+                case "pure_data:input_6":
                     self.duplex_ports["inputs"]["Input 2"]["R"] = port
-                case "playback_7":
+                case "pure_data:input_7":
                     self.duplex_ports["inputs"]["Input 3"]["L"] = port
-                case "playback_8":
+                case "pure_data:input_8":
                     self.duplex_ports["inputs"]["Input 3"]["R"] = port
-                case "playback_9":
+                case "pure_data:input_9":
                     self.duplex_ports["inputs"]["Input 4"]["L"] = port
-                case "playback_10":
+                case "pure_data:input_10":
                     self.duplex_ports["inputs"]["Input 4"]["R"] = port
-                case "playback_11":
+                case "pure_data:input_11":
                     self.duplex_ports["inputs"]["Input 5"]["L"] = port
-                case "playback_12":
+                case "pure_data:input_12":
                     self.duplex_ports["inputs"]["Input 5"]["R"] = port
-                case "playback_13":
+                case "pure_data:input_13":
                     self.duplex_ports["inputs"]["Input 6"]["L"] = port
-                case "playback_14":
+                case "pure_data:input_14":
                     self.duplex_ports["inputs"]["Input 6"]["R"] = port
-                case "playback_15":
+                case "pure_data:input_15":
                     self.duplex_ports["inputs"]["Input 7"]["L"] = port
-                case "playback_16":
+                case "pure_data:input_16":
                     self.duplex_ports["inputs"]["Input 7"]["R"] = port
-                case "capture_1":
+                case "pure_data:output_1":
                     self.duplex_ports["outputs"]["Output 0"]["L"] = port
-                case "capture_2":
+                case "pure_data:output_2":
                     self.duplex_ports["outputs"]["Output 0"]["R"] = port
-                case "capture_3":
+                case "pure_data:output_3":
                     self.duplex_ports["outputs"]["Output 1"]["L"] = port
-                case "capture_4":
+                case "pure_data:output_4":
                     self.duplex_ports["outputs"]["Output 1"]["R"] = port
-                case "capture_5":
+                case "pure_data:output_5":
                     self.duplex_ports["outputs"]["Output 2"]["L"] = port
-                case "capture_6":
+                case "pure_data:output_6":
                     self.duplex_ports["outputs"]["Output 2"]["R"] = port
-                case "capture_7":
+                case "pure_data:output_7":
                     self.duplex_ports["outputs"]["Output 3"]["L"] = port
-                case "capture_8":
+                case "pure_data:output_8":
                     self.duplex_ports["outputs"]["Output 3"]["R"] = port
-                case "capture_9":
+                case "pure_data:output_9":
                     self.duplex_ports["outputs"]["Output 4"]["L"] = port
-                case "capture_10":
+                case "pure_data:output_10":
                     self.duplex_ports["outputs"]["Output 4"]["R"] = port
-                case "capture_11":
+                case "pure_data:output_11":
                     self.duplex_ports["outputs"]["Output 5"]["L"] = port
-                case "capture_12":
+                case "pure_data:output_12":
                     self.duplex_ports["outputs"]["Output 5"]["R"] = port
-                case "capture_13":
+                case "pure_data:output_13":
                     self.duplex_ports["outputs"]["Output 6"]["L"] = port
-                case "capture_14":
+                case "pure_data:output_14":
                     self.duplex_ports["outputs"]["Output 6"]["R"] = port
-                case "capture_15":
+                case "pure_data:output_15":
                     self.duplex_ports["outputs"]["Output 7"]["L"] = port
-                case "capture_16":
+                case "pure_data:output_16":
                     self.duplex_ports["outputs"]["Output 7"]["R"] = port
                 case _:
                     pass
@@ -390,9 +391,9 @@ class SurgeXTEngine(Engine):
         
     async def configure_pipewire(self):
         await super().configure_pipewire()
-        await self.start_pd_node()
         self.get_duplex_client()
         self.get_duplex_node()
+        await self.get_duplex_ports()
         await self.disconnect_links_from_duplex_node()
         # d/c from default sinks
         # get instrument links
@@ -495,7 +496,109 @@ class SurgeXTEngine(Engine):
             await disconnectPipewireLink(link['id'])
     
 
+    async def get_duplex_ports(self):
+        print("get duplex ports called")
+        ports = filter(
+            lambda x: x["type"] == "PipeWire:Interface:Port", self.app.pipewire
+        )
+        unsorted_duplex_ports = []
 
+        if not self.duplex_node:
+            self.get_duplex_node()
+
+        for port in ports:
+            # print(port["info"]["props"]["node.id"],  self.duplex_node["id"])
+            if (
+                self.duplex_node
+                and port["info"]["props"]["node.id"] == self.duplex_node["id"]
+            ):
+                unsorted_duplex_ports.append(port)
+        print("unsorted ports", len(unsorted_duplex_ports))
+        
+        for port in unsorted_duplex_ports:
+            
+            # TODO: Aendra really hates this perfectly reasonable match statement
+            # port_name = port["info"]["props"]["port.name"]
+
+            # port_type, port_index = port_name.split('_')
+
+            # if port_type not in ['playback', 'capture']:
+            #     continue
+
+            # channel = "R" if int(port_index) % 2 else "L"
+            # input_index = int(port_index) - 1 if channel == 'L' else int(port_index) - 2
+            # self.duplex_ports["inputs" if port_type == 'playback' else 'outputs'][f"{'Input' if port_type == 'playback' else 'Output'} {input_index}"][channel] = port
+           
+            # print(port["info"]["props"]["port.name"]) 
+            match port["info"]["props"]["port.name"]:
+                case "input_1":
+                    self.duplex_ports["inputs"]["Input 0"]["L"] = port
+                case "input_2":
+                    self.duplex_ports["inputs"]["Input 0"]["R"] = port
+                case "input_3":
+                    self.duplex_ports["inputs"]["Input 1"]["L"] = port
+                case "input_4":
+                    self.duplex_ports["inputs"]["Input 1"]["R"] = port
+                case "input_5":
+                    self.duplex_ports["inputs"]["Input 2"]["L"] = port
+                case "input_6":
+                    self.duplex_ports["inputs"]["Input 2"]["R"] = port
+                case "input_7":
+                    self.duplex_ports["inputs"]["Input 3"]["L"] = port
+                case "input_8":
+                    self.duplex_ports["inputs"]["Input 3"]["R"] = port
+                case "input_9":
+                    self.duplex_ports["inputs"]["Input 4"]["L"] = port
+                case "input_10":
+                    self.duplex_ports["inputs"]["Input 4"]["R"] = port
+                case "input_11":
+                    self.duplex_ports["inputs"]["Input 5"]["L"] = port
+                case "input_12":
+                    self.duplex_ports["inputs"]["Input 5"]["R"] = port
+                case "input_13":
+                    self.duplex_ports["inputs"]["Input 6"]["L"] = port
+                case "input_14":
+                    self.duplex_ports["inputs"]["Input 6"]["R"] = port
+                case "input_15":
+                    self.duplex_ports["inputs"]["Input 7"]["L"] = port
+                case "input_16":
+                    self.duplex_ports["inputs"]["Input 7"]["R"] = port
+                case "output_1":
+                    self.duplex_ports["outputs"]["Output 0"]["L"] = port
+                case "output_2":
+                    self.duplex_ports["outputs"]["Output 0"]["R"] = port
+                case "output_3":
+                    self.duplex_ports["outputs"]["Output 1"]["L"] = port
+                case "output_4":
+                    self.duplex_ports["outputs"]["Output 1"]["R"] = port
+                case "output_5":
+                    self.duplex_ports["outputs"]["Output 2"]["L"] = port
+                case "output_6":
+                    self.duplex_ports["outputs"]["Output 2"]["R"] = port
+                case "output_7":
+                    self.duplex_ports["outputs"]["Output 3"]["L"] = port
+                case "output_8":
+                    self.duplex_ports["outputs"]["Output 3"]["R"] = port
+                case "output_9":
+                    self.duplex_ports["outputs"]["Output 4"]["L"] = port
+                case "output_10":
+                    self.duplex_ports["outputs"]["Output 4"]["R"] = port
+                case "output_11":
+                    self.duplex_ports["outputs"]["Output 5"]["L"] = port
+                case "output_12":
+                    self.duplex_ports["outputs"]["Output 5"]["R"] = port
+                case "output_13":
+                    self.duplex_ports["outputs"]["Output 6"]["L"] = port
+                case "output_14":
+                    self.duplex_ports["outputs"]["Output 6"]["R"] = port
+                case "output_15":
+                    self.duplex_ports["outputs"]["Output 7"]["L"] = port
+                case "output_16":
+                    self.duplex_ports["outputs"]["Output 7"]["R"] = port
+                case _:
+                    pass
+
+        # print(self.duplex_ports)
 
     def getPID(self):
         return self.PID
@@ -530,8 +633,10 @@ class SurgeXTEngine(Engine):
         # Sleep 2s to allow Surge boot up
         await asyncio.sleep(2)
 
-    async def updateConfig(self):
+    async def updateConfigPureData(self,):
+
         self.PID = self.process.pid
+
         pwConfig = await getPipewireConfigForPID(self.PID)
         if pwConfig:
             self.pipewire = pwConfig

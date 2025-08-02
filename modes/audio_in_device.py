@@ -127,7 +127,7 @@ class AudioInDevice(PyshaMode):
                 "max": 1,
             },
             self.get_color,
-            self.send_message_cli,
+            self.set_duplex_volumes,
         )
         self.controls.append(in_1_gain)
 
@@ -140,7 +140,7 @@ class AudioInDevice(PyshaMode):
                 "max": 1,
             },
             self.get_color,
-            self.send_message_cli,
+            self.set_duplex_volumes,
         )
         self.controls.append(in_2_gain)
 
@@ -153,7 +153,7 @@ class AudioInDevice(PyshaMode):
                 "max": 1,
             },
             self.get_color,
-            self.send_message_cli,
+            self.set_duplex_volumes,
         )
         self.controls.append(in_3_gain)
         
@@ -166,7 +166,7 @@ class AudioInDevice(PyshaMode):
                 "max": 1,
             },
             self.get_color,
-            self.send_message_cli,
+            self.set_duplex_volumes,
         )
         self.controls.append(in_4_gain)
 
@@ -336,8 +336,7 @@ class AudioInDevice(PyshaMode):
         return self.osc["client"].send_message(*args)
     
     
-    @limits(calls=1, period=0.1)
-    def send_message_cli(self, *args):
+    def set_duplex_volumes(self, *args):
         duplex_node = self.engine.duplex_node
         channel_volumes = []
         for val in self.input_gains:
@@ -345,8 +344,17 @@ class AudioInDevice(PyshaMode):
                 val = 0.0
             channel_volumes.extend([val, val])
         device_id = duplex_node["id"]
-        cli_string = f"pw-cli s {device_id} Props '{{monitorVolumes: {channel_volumes}}}'"
-        self.app.queue.append(asyncio.create_subprocess_shell(cli_string, stdout=asyncio.subprocess.PIPE))
+        # cli_string = f"pw-cli s {device_id} Props '{{monitorVolumes: {channel_volumes}}}'"
+        # self.app.queue.append(asyncio.create_subprocess_shell(cli_string, stdout=asyncio.subprocess.PIPE))
+        
+        
+        for idx in range(8):
+            left_channel_idx = idx * 2
+            right_channel_idx = left_channel_idx + 1
+            # Value only from left because we want to have it center
+            volume_value = channel_volumes[left_channel_idx]
+            self.engine.duplex_node_osc_client.send_message(f"/vol_{left_channel_idx}", float(volume_value))
+            self.engine.duplex_node_osc_client.send_message(f"/vol_{right_channel_idx}", float(volume_value))
 
 
     def update_input_gains(self):
@@ -593,7 +601,7 @@ class AudioInDevice(PyshaMode):
             all_volumes[instrument_idx*2] = track_L_volume
             all_volumes[instrument_idx*2 +1] = track_R_volume
             self.app.volumes = all_volumes
-            self.app.send_message_cli()
+            self.app.set_master_volumes()
 
         try:
             encoder_idx = [

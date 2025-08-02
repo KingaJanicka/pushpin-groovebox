@@ -1238,6 +1238,7 @@ async def main():
     await app.start_pd_node()
     for index, instrument in enumerate(app.instruments):
         await app.instruments[instrument].start(loop)
+        await app.instruments[instrument].engine.start_pd_node()
 
     for instrument in app.external_instruments:
         await instrument.start(loop)

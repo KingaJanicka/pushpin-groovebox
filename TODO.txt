@@ -13,4 +13,5 @@ modmatrix should send the mapping as soon as the knob is turned i think
 
 PD Duplex and OSC clients are spawning
 I think things are not getting disconnected proper?
-Next step is to figure out why we can't switch to the audio in device
+
+duplex_node and duplex_ports are not getting grabbed correctly
