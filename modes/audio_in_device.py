@@ -321,7 +321,17 @@ class AudioInDevice(PyshaMode):
         self.update()
         for cmd in self.init:
             self.send_message(cmd["address"], float(cmd["value"]))
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(0.2)
+
+    async def spawn_puredata_node(self):
+        instrument_name = self.app.instrument_selection_mode.get_current_instrument_short_name()
+        await self.app.instruments[instrument_name].engine.start_pd_node()
+        await self.app.instruments[instrument_name].engine.configure_pipewire()
+
+    async def kill_puredata_node(self):
+        instrument_name = self.app.instrument_selection_mode.get_current_instrument_short_name()
+        await self.app.instruments[instrument_name].engine.kill_pd_node()
+
     
     def select_sync(self):
         # self.query_visible_controls()

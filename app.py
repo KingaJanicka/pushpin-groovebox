@@ -1019,7 +1019,6 @@ class PyshaApp(object):
                 self.pipewire = json.loads(stdout.decode().strip())
             if stderr:
                 print(stderr)
-
         except Exception as e:
             traceback.print_exc()
             print("Waiting 2 seconds for device to become available and trying again...")
@@ -1029,7 +1028,6 @@ class PyshaApp(object):
 
     
     async def start_pd_node(self, file_index = 8):
-        await asyncio.sleep(1)
         self.pd_process = await asyncio.create_subprocess_exec(
             "pw-jack",
             "puredata",
@@ -1238,7 +1236,7 @@ async def main():
     await app.start_pd_node()
     for index, instrument in enumerate(app.instruments):
         await app.instruments[instrument].start(loop)
-        await app.instruments[instrument].engine.start_pd_node()
+        # await app.instruments[instrument].engine.start_pd_node()
 
     for instrument in app.external_instruments:
         await instrument.start(loop)
@@ -1246,8 +1244,6 @@ async def main():
     print("Initialising Pipewire support...")
     await asyncio.sleep(5)
     await app.get_pipewire_config()
-     #sets volumes to full in the duplex
-    # TODO: Is this getting the right node? Disconnect isn't disconnecting
     
     app.get_volume_client()
     app.get_volume_node()
@@ -1262,7 +1258,7 @@ async def main():
         app.instruments[instrument].query_all_controls()
         app.instruments[instrument].query_devices()
         
-        app.queue.append(app.instruments[instrument].init_devices())
+        app.queue.append(app.instruments[instrument].init_devices_sync())
         app.global_timeline.add_output_device(app.instruments[instrument].midi_out_device)    
     for instrument in app.external_instruments:
         await instrument.engine.configure_pipewire()

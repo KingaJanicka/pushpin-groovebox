@@ -1,6 +1,7 @@
 import logging
 import engine
 import mido
+import time
 import isobar as iso
 from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.osc_server import AsyncIOOSCUDPServer
@@ -184,12 +185,16 @@ class Instrument(PyshaMode):
                 
                 # This compares new value with current value and fires a selected/disselected call
                 if slot["address"] == ('/param/a/osc/1/type' or 'param/a/osc/2/type') and value == 4 and slot["value"] != 4:
-                    print("audio in selected")
-                    pass
+                    instrument_name = self.app.instrument_selection_mode.get_current_instrument_short_name()
+                    engine = self.app.instruments[instrument_name].engine
+                    if engine.puredata_process_id == None:
+                        self.app.queue.append(engine.start_pd_node())
 
                 if slot["address"] == ('/param/a/osc/1/type' or 'param/a/osc/2/type') and value != 4 and slot["value"] == 4:
-                    print("audio in dis-selected")
-                    pass
+                    instrument_name = self.app.instrument_selection_mode.get_current_instrument_short_name()
+                    engine = self.app.instruments[instrument_name].engine
+                    if engine.puredata_process_id != None:
+                        self.app.queue.append(engine.kill_pd_node())
 
 
                 if float(slot["value"]) != float(value):

@@ -10,5 +10,5 @@ esp the sequencer track buttons
 
 modmatrix should send the mapping as soon as the knob is turned i think
 
-Different track have different latency for audio-in device
-Master has none???
+With the lift the disconenct in the engine.py doesn't work
+I think we should pass the buffer/etc settings ourselves to puredata and see if that helps

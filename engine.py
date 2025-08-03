@@ -391,10 +391,6 @@ class SurgeXTEngine(Engine):
         
     async def configure_pipewire(self):
         await super().configure_pipewire()
-        self.get_duplex_client()
-        self.get_duplex_node()
-        await self.get_duplex_ports()
-        await self.disconnect_links_from_duplex_node()
         # d/c from default sinks
         # get instrument links
         # print([instrument['info']['props']['media.class'] for instrument in self.instrument_nodes if instrument['info']['props']['media.class']])
@@ -445,18 +441,35 @@ class SurgeXTEngine(Engine):
         self.pd_process = await asyncio.create_subprocess_exec(
             "pw-jack",
             "puredata",
-            "-nogui",
             "-jack",
+            "-nogui",
+            "-rt",
+            "-audiobuf",
+            "25",
+            # "-blocksize"
+            # "1024",
+            # "-r"
+            # "48000",
             f"./puredata_nodes/passthrough_{self.instrument_index}.pd",
             stdin=asyncio.subprocess.PIPE,
             stdout=asyncio.subprocess.PIPE,
             # stderr=asyncio.subprocess.PIPE,
             
         )
-        
         self.puredata_process_id = self.pd_process.pid
-    
 
+        await self.app.get_pipewire_config()
+        self.get_duplex_client()
+        self.get_duplex_node()
+        await self.get_duplex_ports()
+        await self.disconnect_links_from_duplex_node()
+        
+    
+    
+    async def kill_pd_node(self):
+        self.pd_process.kill()
+        self.puredata_process_id = None
+    
     def get_duplex_client(self):
         for item in self.app.pipewire:
             if item["type"] == "PipeWire:Interface:Client":
@@ -497,7 +510,6 @@ class SurgeXTEngine(Engine):
     
 
     async def get_duplex_ports(self):
-        print("get duplex ports called")
         ports = filter(
             lambda x: x["type"] == "PipeWire:Interface:Port", self.app.pipewire
         )
@@ -505,7 +517,7 @@ class SurgeXTEngine(Engine):
 
         if not self.duplex_node:
             self.get_duplex_node()
-
+            
         for port in ports:
             # print(port["info"]["props"]["node.id"],  self.duplex_node["id"])
             if (
@@ -513,8 +525,7 @@ class SurgeXTEngine(Engine):
                 and port["info"]["props"]["node.id"] == self.duplex_node["id"]
             ):
                 unsorted_duplex_ports.append(port)
-        print("unsorted ports", len(unsorted_duplex_ports))
-        
+        # print(len(unsorted_duplex_ports))
         for port in unsorted_duplex_ports:
             
             # TODO: Aendra really hates this perfectly reasonable match statement
