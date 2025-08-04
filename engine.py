@@ -43,7 +43,7 @@ class Engine(ABC):
         self,
         app,
         sample_rate=44100,
-        buffer_size=144,
+        buffer_size=64,
         midi_device_idx=None,
         instrument_definition=None,
     ):
