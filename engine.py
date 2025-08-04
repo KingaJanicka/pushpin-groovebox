@@ -4,6 +4,7 @@ import traceback
 import sys
 import json
 import logging
+import time
 from signal import SIGINT
 from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.osc_server import AsyncIOOSCUDPServer
@@ -42,7 +43,7 @@ class Engine(ABC):
         self,
         app,
         sample_rate=44100,
-        buffer_size=64,
+        buffer_size=144,
         midi_device_idx=None,
         instrument_definition=None,
     ):
@@ -368,7 +369,7 @@ class SurgeXTEngine(Engine):
         self,
         app,
         sample_rate=44100,
-        buffer_size=64,
+        buffer_size=256,
         midi_device_idx=None,
         instrument_definition=None,
         
@@ -410,7 +411,7 @@ class SurgeXTEngine(Engine):
         
         volume_ports = [port for port in self.app.pipewire if port['type'] == 'PipeWire:Interface:Port' and port['info']['props']['node.id'] == volume_node['id']]
         
-        midi_channel = self.instrument['midi_channel']
+        midi_channel = self.instrument['instrument_index']
         volume_input_port_index_L = midi_channel * 2
         volume_input_port_index_R = (midi_channel * 2) + 1
 
@@ -436,6 +437,14 @@ class SurgeXTEngine(Engine):
         await connectPipewireSourceToPipewireDest(volume_L_output['id'], interface_L_port)
         await connectPipewireSourceToPipewireDest(volume_R_output['id'], interface_R_port)
 
+
+    async def configure_duplex_node(self):
+        self.get_duplex_client()
+        self.get_duplex_node() #print in here
+        self.get_duplex_ports() #and in here
+        await self.disconnect_links_from_duplex_node()
+        await self.connect_links_to_duplex_node()
+
     async def start_pd_node(self):
         # await asyncio.sleep(1)
         self.pd_process = await asyncio.create_subprocess_exec(
@@ -444,12 +453,6 @@ class SurgeXTEngine(Engine):
             "-jack",
             "-nogui",
             "-rt",
-            "-audiobuf",
-            "25",
-            # "-blocksize"
-            # "1024",
-            # "-r"
-            # "48000",
             f"./puredata_nodes/passthrough_{self.instrument_index}.pd",
             stdin=asyncio.subprocess.PIPE,
             stdout=asyncio.subprocess.PIPE,
@@ -457,14 +460,16 @@ class SurgeXTEngine(Engine):
             
         )
         self.puredata_process_id = self.pd_process.pid
-
-        await self.app.get_pipewire_config()
-        self.get_duplex_client()
-        self.get_duplex_node()
-        await self.get_duplex_ports()
-        await self.disconnect_links_from_duplex_node()
-        
+        try:
+            # 
+            await asyncio.sleep(1)
+            await self.app.get_pipewire_config()
+            await self.configure_duplex_node()
+        except Exception as e:
+            print("error in start_pd_node", e)
+        # Needs a line that will connect duplex to surge-xt in
     
+        
     
     async def kill_pd_node(self):
         self.pd_process.kill()
@@ -497,24 +502,12 @@ class SurgeXTEngine(Engine):
         return self.duplex_node
         
         
-    async def disconnect_links_from_duplex_node(self):
-        # init_links = [link for link in self.pipewire if link['type'] == 'PipeWire:Interface:Link' and link['info']['output-node-id'] == self.volume_node['id']]
-        link_list = []
-        for link in self.app.pipewire: 
-            if link['type'] == 'PipeWire:Interface:Link':
-                # print(link['info']['output-node-id'], "  ", link['info']['input-node-id'], "  ", self.volume_node['id'], )
-                if link['info']['output-node-id'] == self.duplex_node['id'] or link['info']['input-node-id'] == self.duplex_node['id']:
-                    link_list.append(link)
-        for link in link_list:
-            await disconnectPipewireLink(link['id'])
-    
 
-    async def get_duplex_ports(self):
+    def get_duplex_ports(self):
         ports = filter(
             lambda x: x["type"] == "PipeWire:Interface:Port", self.app.pipewire
         )
         unsorted_duplex_ports = []
-
         if not self.duplex_node:
             self.get_duplex_node()
             
@@ -525,7 +518,6 @@ class SurgeXTEngine(Engine):
                 and port["info"]["props"]["node.id"] == self.duplex_node["id"]
             ):
                 unsorted_duplex_ports.append(port)
-        # print(len(unsorted_duplex_ports))
         for port in unsorted_duplex_ports:
             
             # TODO: Aendra really hates this perfectly reasonable match statement
@@ -610,6 +602,36 @@ class SurgeXTEngine(Engine):
                     pass
 
         # print(self.duplex_ports)
+
+    async def disconnect_links_from_duplex_node(self):
+        # init_links = [link for link in self.pipewire if link['type'] == 'PipeWire:Interface:Link' and link['info']['output-node-id'] == self.volume_node['id']]
+        link_list = []
+        for link in self.app.pipewire: 
+            if link['type'] == 'PipeWire:Interface:Link':
+                # print(link['info']['output-node-id'], "  ", link['info']['input-node-id'], "  ", self.volume_node['id'], )
+                if link['info']['output-node-id'] == self.duplex_node['id'] or link['info']['input-node-id'] == self.duplex_node['id']:
+                    link_list.append(link)
+        for link in link_list:
+            await disconnectPipewireLink(link['id'])
+    
+    async def connect_links_to_duplex_node(self):
+        # Get the node
+        # Connect node outputs to surge_xt inputs
+        # No need to connect the inputs, that will be handled
+        surge_input_node = [instrument for instrument in self.instrument_nodes if instrument['info']['props']['media.class'] == 'Stream/Input/Audio'].pop()
+        surge_input_ports = [port for port in self.app.pipewire if port['type'] == 'PipeWire:Interface:Port' and port['info']['props']['node.id'] == surge_input_node['id']]
+        surge_L_input = [port for port in surge_input_ports if port['info']['props']['port.name'] == 'input_FL'].pop()
+        surge_R_input = [port for port in surge_input_ports if port['info']['props']['port.name'] == 'input_FR'].pop()
+
+
+        for idx in range(8):
+            duplex_L_out = self.duplex_ports["outputs"][f'Output {idx}']["L"]
+            duplex_R_out = self.duplex_ports["outputs"][f'Output {idx}']["R"]
+            await connectPipewireSourceToPipewireDest(duplex_L_out['id'], surge_L_input['id'])
+            await connectPipewireSourceToPipewireDest(duplex_R_out['id'], surge_R_input['id'])
+        
+        pass
+
 
     def getPID(self):
         return self.PID

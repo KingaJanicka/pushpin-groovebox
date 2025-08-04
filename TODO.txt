@@ -12,3 +12,10 @@ modmatrix should send the mapping as soon as the knob is turned i think
 
 With the lift the disconenct in the engine.py doesn't work
 I think we should pass the buffer/etc settings ourselves to puredata and see if that helps
+
+
+
+This is the config line needed to set smaller blocksize with pw-jack
+to be used only once, val=32 in samples
+pw-metadata -n settings 0 clock.quantum <VALUE> 
+
