@@ -369,7 +369,7 @@ class SurgeXTEngine(Engine):
         self,
         app,
         sample_rate=44100,
-        buffer_size=256,
+        buffer_size=64,
         midi_device_idx=None,
         instrument_definition=None,
         
