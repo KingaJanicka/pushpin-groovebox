@@ -15,8 +15,8 @@ class Engine(ABC):
     instrument_nodes = None
     connections = None
     pw_ports = None
-    sample_rate = 48000
-    buffer_size = 512
+    sample_rate = 96000
+    buffer_size = 16
     midi_in_port = None
     midi_out_port = None
     midi_port = None
@@ -31,8 +31,8 @@ class Engine(ABC):
     def __init__(
         self,
         app,
-        sample_rate=44100,
-        buffer_size=64,
+        sample_rate=96000,
+        buffer_size=16,
         midi_device_idx=None,
         instrument_definition=None,
     ):
@@ -339,8 +339,8 @@ class SurgeXTEngine(Engine):
     def __init__(
         self,
         app,
-        sample_rate=44100,
-        buffer_size=64,
+        sample_rate=48000,
+        buffer_size=32,
         midi_device_idx=None,
         instrument_definition=None,
     ):
