@@ -1031,6 +1031,8 @@ class PyshaApp(object):
     async def start_pd_node(self, file_index = 8):
         self.pd_process = await asyncio.create_subprocess_exec(
             "pw-jack",
+            "-p",
+            "128",
             "puredata",
             "-jack",
             "-nogui",
@@ -1254,6 +1256,8 @@ async def main():
     #Querry controls to update initial state
 
     for index, instrument in enumerate(app.instruments):
+        # IDK why the fuck but after switch to JACK
+        # The config_pw call makes surge-xt instances crash
         await app.instruments[instrument].engine.configure_pipewire()
         await asyncio.sleep(0.1)
         app.instruments[instrument].query_all_controls()
