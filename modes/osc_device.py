@@ -303,3 +303,5 @@ class OSCDevice(PyshaMode):
 
         except ValueError:
             pass  # Encoder not in list
+
+        

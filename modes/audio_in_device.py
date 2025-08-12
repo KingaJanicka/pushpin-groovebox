@@ -403,7 +403,6 @@ class AudioInDevice(PyshaMode):
                 device.input_gains[7] = value_8
 
     def connect_ports_duplex(self, *args):
-
         [addr, val] = args
         if val != None:
             column_index = None 
@@ -424,6 +423,8 @@ class AudioInDevice(PyshaMode):
 
 
             # This bit handles selecting a None input, just disconnects if something was already connected
+            # TODO: Needs a check so that it doesn't send
+            # When there isn't any connection
             if addr == "/":
                 disconnect_L = self.engine.connections[column_index]["L"]
                 disconnect_R = self.engine.connections[column_index]["R"]
@@ -440,7 +441,7 @@ class AudioInDevice(PyshaMode):
                 self.engine.connections[column_index]["L"] = None
                 self.engine.connections[column_index]["R"] = None
                 return
-                
+             
             try:
                 source_instrument = self.get_instrument_for_pid(val)
                 source_instrument_ports = source_instrument.engine.pw_ports
@@ -449,16 +450,21 @@ class AudioInDevice(PyshaMode):
                 source_R = None
                 dest_L = None
                 dest_R=None
-                
                 #We're getting IDs for left and right ports, input and output
-               
+                # print("inside try block")
                 if source_instrument.name != "Overwitch":
+                    # print("inside if")
+                    # print(source_instrument_ports['output'])
                     for port in source_instrument_ports['output']:
-                        if port.get("info", []).get("props",[]).get("audio.channel", None) == "FL":
+                        # print("inside for")
+                        # print("port", port)
+                        if port.get("info", []).get("props",[]).get("object.path", None) == "Surge XT:output_0":
                             source_L = port['id']
-                        elif port.get("info", []).get("props",[]).get("audio.channel", None) == "FR":
+                        elif port.get("info", []).get("props",[]).get("object.path", None) == "Surge XT:output_1":
                             source_R = port['id']
                 else:
+                    # TODO: This is prob broken
+                    # print("else")
                     # gets the selected values for all 8 menus and assigns the right port
                     control_idx = column_index % 4
                     control =  self.controls[8 + control_idx].get_active_group()
@@ -468,35 +474,37 @@ class AudioInDevice(PyshaMode):
                             source_L = port['id']
                             source_R = port['id']
                 #makes sure we don't send the same command over and over
+                # TODO this check don't work _sometimes_
                 if source_L == self.engine.connections[column_index]["L"] and source_R == self.engine.connections[column_index]["R"]:
                     return
-                
-                # This bit disconnects previously conneted synth within a column
-                for port in current_instrument_ports['input']:
-                    if port['info']['props']['audio.channel'] == "FL":
-                        dest_L = port['id']
-                    elif port['info']['props']['audio.channel'] == "FR":
-                        dest_R = port['id']
 
-                if self.engine.connections[column_index]["L"] != (source_L or None)  and self.engine.connections[column_index]["R"] != (source_R or None) :
-                    disconnect_L = self.engine.connections[column_index]["L"]
-                    disconnect_R = self.engine.connections[column_index]["R"]
-                    if disconnect_L and disconnect_R is not None:
-                        self.app.queue.append(disconnectPipewireSourceFromPipewireDest(disconnect_L, duplex_in_L))
-                        self.app.queue.append(disconnectPipewireSourceFromPipewireDest(disconnect_R, duplex_in_R))
-                        self.app.queue.append(disconnectPipewireSourceFromPipewireDest(duplex_out_L, dest_L))
-                        self.app.queue.append(disconnectPipewireSourceFromPipewireDest(duplex_out_R, dest_R))
-
-                # Connects to currently selected instance, assigns the port IDs for later reference
-                for index, connection in enumerate(self.engine.connections):
-                    if index == column_index:
-                        connection["L"] = source_L
-                        connection["R"] = source_R
-                self.app.queue.append(connectPipewireSourceToPipewireDest(source_L, duplex_in_L))
-                self.app.queue.append(connectPipewireSourceToPipewireDest(source_R, duplex_in_R))
-                self.app.queue.append(connectPipewireSourceToPipewireDest(duplex_out_L, dest_L))
-                self.app.queue.append(connectPipewireSourceToPipewireDest(duplex_out_R, dest_R))
-                print("end of try ")
+                else:
+                    # This bit disconnects previously conneted synth within a column
+                    for port in current_instrument_ports['input']:
+                        if port['info']['props']['object.path'] == "Surge XT:input_0":
+                            dest_L = port['id']
+                        elif port['info']['props']['object.path'] == "Surge XT:input_1":
+                            dest_R = port['id']
+                    
+                    if self.engine.connections[column_index]["L"] != (source_L or None)  and self.engine.connections[column_index]["R"] != (source_R or None) :
+                        disconnect_L = self.engine.connections[column_index]["L"]
+                        disconnect_R = self.engine.connections[column_index]["R"]
+                        if disconnect_L and disconnect_R is not None:
+                            self.app.queue.append(disconnectPipewireSourceFromPipewireDest(disconnect_L, duplex_in_L))
+                            self.app.queue.append(disconnectPipewireSourceFromPipewireDest(disconnect_R, duplex_in_R))
+                            self.app.queue.append(disconnectPipewireSourceFromPipewireDest(duplex_out_L, dest_L))
+                            self.app.queue.append(disconnectPipewireSourceFromPipewireDest(duplex_out_R, dest_R))
+                    
+                    # Connects to currently selected instance, assigns the port IDs for later reference
+                    for index, connection in enumerate(self.engine.connections):
+                        if index == column_index:
+                            connection["L"] = source_L
+                            connection["R"] = source_R
+                    self.app.queue.append(connectPipewireSourceToPipewireDest(source_L, duplex_in_L))
+                    self.app.queue.append(connectPipewireSourceToPipewireDest(source_R, duplex_in_R))
+                    self.app.queue.append(connectPipewireSourceToPipewireDest(duplex_out_L, dest_L))
+                    self.app.queue.append(connectPipewireSourceToPipewireDest(duplex_out_R, dest_R))
+                    
             except Exception as e:
                 print("Error in connect_ports_duplex in audio_in_device")
                 traceback.print_exc()
@@ -636,3 +644,20 @@ class AudioInDevice(PyshaMode):
         
         except ValueError:
             pass  # Encoder not in list
+    def on_encoder_released(self, encoder_name):
+        try:
+            encoder_idx = [
+                push2_python.constants.ENCODER_TRACK1_ENCODER,
+                push2_python.constants.ENCODER_TRACK2_ENCODER,
+                push2_python.constants.ENCODER_TRACK3_ENCODER,
+                push2_python.constants.ENCODER_TRACK4_ENCODER,
+                push2_python.constants.ENCODER_TRACK5_ENCODER,
+                push2_python.constants.ENCODER_TRACK6_ENCODER,
+                push2_python.constants.ENCODER_TRACK7_ENCODER,
+                push2_python.constants.ENCODER_TRACK8_ENCODER,
+            ].index(encoder_name)
+            if self.page == 1:
+                pass
+        
+        except ValueError:
+            pass

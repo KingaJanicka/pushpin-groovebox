@@ -1086,7 +1086,6 @@ class ModMatrixDevice(definitions.PyshaMode):
                         self.snap_knobs_to_mod_matrix()
 
     def on_encoder_touched(self, encoder_name):
-           
         try:
             encoder_idx = [
                 push2_python.constants.ENCODER_TRACK1_ENCODER,

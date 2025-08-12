@@ -147,15 +147,15 @@ class Engine(ABC):
                             ):
                                 self.pw_ports["input"].append(port)
 
-                        elif "output" in port.get("info", []).get("props", []).get(
-                            "port.name", "None"
-                        ):
-                            self.pw_ports["output"].append(port)
+                        # elif "output" in port.get("info", []).get("props", []).get(
+                        #     "port.name", "None"
+                        # ):
+                        #     self.pw_ports["output"].append(port)
 
-                        elif "input" in port.get("info", []).get("props", []).get(
-                            "port.name", "None"
-                        ):
-                            self.pw_ports["input"].append(port)
+                        # elif "input" in port.get("info", []).get("props", []).get(
+                        #     "port.name", "None"
+                        # ):
+                        #     self.pw_ports["input"].append(port)
 
 
     def stop(self):
@@ -404,7 +404,11 @@ class SurgeXTEngine(Engine):
                 if port['info']['props']['node.id'] == surge_node['id']:
                     if port['info']['props']['object.path'] == "Surge XT:output_0" or port['info']['props']['object.path'] == "Surge XT:output_1":
                         surge_output_ports.append(port)
-        
+                        self.pw_ports["output"].append(port)
+                    if port['info']['props']['object.path'] == "Surge XT:input_0" or port['info']['props']['object.path'] == "Surge XT:input_1":
+                        self.pw_ports["input"].append(port)
+
+    
         init_links = [link for link in self.app.pipewire if link['type'] == 'PipeWire:Interface:Link' and link['info']['output-node-id'] == surge_node['id']]
 
         # connect source of link to duplex in
