@@ -4,6 +4,7 @@ from osc_controls import (
     OSCControlSwitch,
     OSCGroup,
 )
+import copy
 import push2_python
 import logging
 import asyncio
@@ -61,6 +62,7 @@ class AudioInDevice(PyshaMode):
         engine=None,
         **kwargs,
     ):
+        self.page_one_controls = []
         self.last_knob_turned = 0
         self.app = kwargs["app"]
         self.input_gains = [0 ,0 ,0 ,0 ,0 ,0 ,0 ,0]
@@ -103,6 +105,7 @@ class AudioInDevice(PyshaMode):
             audio_channel_control.address, audio_channel_control.set_state
         )
         self.controls.append(audio_channel_control)
+        self.page_one_controls.append(audio_channel_control)
 
         audio_gain_control = OSCControl(
             {
@@ -116,7 +119,7 @@ class AudioInDevice(PyshaMode):
             self.send_message,
         )
         self.dispatcher.map(audio_gain_control.address, audio_gain_control.set_state)
-        self.controls.append(audio_gain_control)
+        self.page_one_controls.append(audio_gain_control)
 
         in_1_gain = OSCControl(
             {
@@ -130,6 +133,7 @@ class AudioInDevice(PyshaMode):
             self.set_duplex_volumes,
         )
         self.controls.append(in_1_gain)
+        self.page_one_controls.append(in_1_gain)
 
         in_2_gain = OSCControl(
             {
@@ -143,6 +147,7 @@ class AudioInDevice(PyshaMode):
             self.set_duplex_volumes,
         )
         self.controls.append(in_2_gain)
+        self.page_one_controls.append(in_2_gain)
 
         in_3_gain = OSCControl(
             {
@@ -156,6 +161,7 @@ class AudioInDevice(PyshaMode):
             self.set_duplex_volumes,
         )
         self.controls.append(in_3_gain)
+        self.page_one_controls.append(in_3_gain)
         
         in_4_gain = OSCControl(
             {
@@ -169,6 +175,7 @@ class AudioInDevice(PyshaMode):
             self.set_duplex_volumes,
         )
         self.controls.append(in_4_gain)
+        self.page_one_controls.append(in_4_gain)
 
         low_cut_control = OSCControl(
             {
@@ -183,6 +190,7 @@ class AudioInDevice(PyshaMode):
         )
         self.dispatcher.map(low_cut_control.address, low_cut_control.set_state)
         self.controls.append(low_cut_control)
+        self.page_one_controls.append(low_cut_control)
 
         high_cut_control = OSCControl(
             {
@@ -197,12 +205,15 @@ class AudioInDevice(PyshaMode):
         )
         self.dispatcher.map(high_cut_control.address, high_cut_control.set_state)
         self.controls.append(high_cut_control)
+        self.page_one_controls.append(high_cut_control)
         for control in self.get_visible_controls():
             if hasattr(control, "select"):
                 control.select()
         # self.update()
 
     def update(self):
+        self.controls.clear()
+        self.controls = self.page_one_controls
         name = self.engine.instrument["instrument_name"]
         control_def = {
             "$type": "control-switch",
@@ -272,6 +283,7 @@ class AudioInDevice(PyshaMode):
             control_def["groups"].append(dest)
 
         overwitch = self.app.external_instruments[0]
+        print("Overwitch engine PID, ", overwitch.engine.PID) 
         overwitch_def = None
         overwitch_def = {
             "$type": "group",
@@ -291,7 +303,7 @@ class AudioInDevice(PyshaMode):
                 }
             ],
         }
-    
+        print(len(overwitch.engine.pw_ports))
         for port in overwitch.engine.pw_ports["output"]:
             control = {
                             "$type": "menu-item",

@@ -267,7 +267,7 @@ class Engine(ABC):
                 and port["info"]["props"]["node.id"] == self.duplex_node["id"]
             ):
                 unsorted_duplex_ports.append(port)
-        print("unsorted ports")
+        # print("unsorted ports")
         for port in unsorted_duplex_ports:
             
             # TODO: Aendra really hates this perfectly reasonable match statement
@@ -421,8 +421,7 @@ class SurgeXTEngine(Engine):
         midi_channel = self.instrument['instrument_index']
         volume_input_port_index_L = midi_channel * 2
         volume_input_port_index_R = (midi_channel * 2) + 1
-
-
+        
         # Those lines here decide what's connecting to what
         volume_L_input = [port for port in volume_ports if port['info']['props']['object.path'] == f"pure_data:input_{volume_input_port_index_L}"].pop()
         volume_R_input = [port for port in volume_ports if port['info']['props']['object.path'] == f"pure_data:input_{volume_input_port_index_R}"].pop()
@@ -447,6 +446,8 @@ class SurgeXTEngine(Engine):
         # SurgeXT will panic and crash if left without any input or output when in JACK
         # Which is why we're disconencting last
         for link in init_links:
+            print("output node", link["info"]["output-node-id"])
+            print("input node", link["info"]["input-node-id"])
             await disconnectPipewireLink(link['id'])
 
     async def configure_duplex_node(self):
@@ -481,7 +482,7 @@ class SurgeXTEngine(Engine):
         await asyncio.sleep(2)
         
     async def start_pd_node(self):
-        print("engine start PD node")
+        # print("engine start PD node")
         # await asyncio.sleep(1)
         self.pd_process = await asyncio.create_subprocess_exec(
             "pw-jack",
@@ -556,7 +557,7 @@ class SurgeXTEngine(Engine):
                 and port["info"]["props"]["node.id"] == self.duplex_node["id"]
             ):
                 unsorted_duplex_ports.append(port)
-        print(len(unsorted_duplex_ports))
+        # print(len(unsorted_duplex_ports))
         for port in unsorted_duplex_ports:
             
             # TODO: Aendra really hates this perfectly reasonable match statement
@@ -657,9 +658,6 @@ class SurgeXTEngine(Engine):
         # Get the node
         # Connect node outputs to surge_xt inputs
         # No need to connect the inputs, that will be handled
-        # TODO
-        # print("gets here")
-        # print(self.instrument_nodes)
         surge_node = self.instrument_nodes[0]
         # print("but not here")
         surge_input_ports = []

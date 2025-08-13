@@ -184,7 +184,6 @@ class Instrument(PyshaMode):
                 if 'param/a/osc/' in slot["address"] and value == 4 and slot["value"] != 4:
                     instrument_name = self.app.instrument_selection_mode.get_current_instrument_short_name()
                     engine = self.app.instruments[instrument_name].engine
-                    print("hit")
                     if engine.puredata_process_id == None:
                         self.app.queue.append(engine.start_pd_node())
 

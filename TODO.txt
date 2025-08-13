@@ -12,14 +12,5 @@ This is the config line needed to set smaller blocksize with pw-jack
 to be used only once, val=32 in samples
 pw-metadata -n settings 0 clock.quantum <VALUE> 
 
-Need to swap the surge instances to use pw-jack
-
-using JACK `pw-link -d` will kill the surge-xt instance
-
-Surge XT ClI is crashing when all links are removed. 
-We need to connect to duplex first, then remove init links
-
-Configure duplex node is failing too, duplex_in_L = duplex_ports
-duplex_ports returns empy for whateefvr reaso
-some weird shit in connect links to duplex node
+TODO: Locks broke again? IDK why, maybe pad was stuck?
 
