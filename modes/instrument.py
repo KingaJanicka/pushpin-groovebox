@@ -1,6 +1,7 @@
 import logging
 import engine
 import mido
+import time
 import isobar as iso
 from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.osc_server import AsyncIOOSCUDPServer
@@ -178,18 +179,22 @@ class Instrument(PyshaMode):
         # print(f"Setting state of slot {address} to {value}")
         for slot in self.slots:
             if slot and slot["address"] == address:
-                # if slot["value"] != value:
-                #     print("slot ", slot["address"], slot["value"],  " disselected")
-                #     print("slot ", address, value,  " selected")
                 
                 # This compares new value with current value and fires a selected/disselected call
-                if slot["address"] == ('/param/a/osc/1/type' or 'param/a/osc/2/type') and value == 4 and slot["value"] != 4:
-                    pass
-                    # print("audio in selected")
+                if 'param/a/osc/' in slot["address"] and value == 4 and slot["value"] != 4:
+                    instrument_name = self.app.instrument_selection_mode.get_current_instrument_short_name()
+                    engine = self.app.instruments[instrument_name].engine
+                    if engine.puredata_process_id == None:
+                        self.app.queue.append(engine.start_pd_node())
 
-                if slot["address"] == ('/param/a/osc/1/type' or 'param/a/osc/2/type') and value != 4 and slot["value"] == 4:
-                    pass
-                    # print("audio in dis-selected")
+                if 'param/a/osc/' in slot["address"] and value != 4 and slot["value"] == 4:
+                    instrument_name = self.app.instrument_selection_mode.get_current_instrument_short_name()
+                    engine = self.app.instruments[instrument_name].engine
+                    
+                    # This if statemant is so that we don't kill a duplex node if 
+                    # another instance of audio-in device is active
+                    if self.slots[0]["value"] != 4 or self.slots[1]["value"] != 4:
+                        self.app.queue.append(engine.kill_pd_node())
 
 
                 if float(slot["value"]) != float(value):

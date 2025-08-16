@@ -554,3 +554,17 @@ class OSCMode(PyshaMode):
             print("Exception in on_encoder_touched in osc_mode")
             traceback.print_exc()
             pass  # Encoder not in list
+    def on_encoder_released(self, encoder_name):
+        try:
+            current_device = self.get_current_instrument_device()
+            if current_device.label == "Audio In":
+                # TODO: something is bugged when this func gets called, only with encoder 7 (one for deleting)
+                current_device.on_encoder_released(encoder_name)
+
+            else:
+                pass
+                # current_device.on_encoder_rotated(encoder_name)
+        except Exception as err:
+            print("Exception in on_encoder_touched in osc_mode")
+            traceback.print_exc()
+            pass  # Encoder not in list

@@ -4,6 +4,7 @@ from osc_controls import (
     OSCControlSwitch,
     OSCGroup,
 )
+import copy
 import push2_python
 import logging
 import asyncio
@@ -61,6 +62,7 @@ class AudioInDevice(PyshaMode):
         engine=None,
         **kwargs,
     ):
+        self.page_one_controls = []
         self.last_knob_turned = 0
         self.app = kwargs["app"]
         self.input_gains = [0 ,0 ,0 ,0 ,0 ,0 ,0 ,0]
@@ -103,6 +105,7 @@ class AudioInDevice(PyshaMode):
             audio_channel_control.address, audio_channel_control.set_state
         )
         self.controls.append(audio_channel_control)
+        self.page_one_controls.append(audio_channel_control)
 
         audio_gain_control = OSCControl(
             {
@@ -116,7 +119,7 @@ class AudioInDevice(PyshaMode):
             self.send_message,
         )
         self.dispatcher.map(audio_gain_control.address, audio_gain_control.set_state)
-        self.controls.append(audio_gain_control)
+        self.page_one_controls.append(audio_gain_control)
 
         in_1_gain = OSCControl(
             {
@@ -127,9 +130,10 @@ class AudioInDevice(PyshaMode):
                 "max": 1,
             },
             self.get_color,
-            self.send_message_cli,
+            self.set_duplex_volumes,
         )
         self.controls.append(in_1_gain)
+        self.page_one_controls.append(in_1_gain)
 
         in_2_gain = OSCControl(
             {
@@ -140,9 +144,10 @@ class AudioInDevice(PyshaMode):
                 "max": 1,
             },
             self.get_color,
-            self.send_message_cli,
+            self.set_duplex_volumes,
         )
         self.controls.append(in_2_gain)
+        self.page_one_controls.append(in_2_gain)
 
         in_3_gain = OSCControl(
             {
@@ -153,9 +158,10 @@ class AudioInDevice(PyshaMode):
                 "max": 1,
             },
             self.get_color,
-            self.send_message_cli,
+            self.set_duplex_volumes,
         )
         self.controls.append(in_3_gain)
+        self.page_one_controls.append(in_3_gain)
         
         in_4_gain = OSCControl(
             {
@@ -166,9 +172,10 @@ class AudioInDevice(PyshaMode):
                 "max": 1,
             },
             self.get_color,
-            self.send_message_cli,
+            self.set_duplex_volumes,
         )
         self.controls.append(in_4_gain)
+        self.page_one_controls.append(in_4_gain)
 
         low_cut_control = OSCControl(
             {
@@ -183,6 +190,7 @@ class AudioInDevice(PyshaMode):
         )
         self.dispatcher.map(low_cut_control.address, low_cut_control.set_state)
         self.controls.append(low_cut_control)
+        self.page_one_controls.append(low_cut_control)
 
         high_cut_control = OSCControl(
             {
@@ -197,12 +205,15 @@ class AudioInDevice(PyshaMode):
         )
         self.dispatcher.map(high_cut_control.address, high_cut_control.set_state)
         self.controls.append(high_cut_control)
+        self.page_one_controls.append(high_cut_control)
         for control in self.get_visible_controls():
             if hasattr(control, "select"):
                 control.select()
         # self.update()
 
     def update(self):
+        self.controls.clear()
+        self.controls = self.page_one_controls
         name = self.engine.instrument["instrument_name"]
         control_def = {
             "$type": "control-switch",
@@ -272,6 +283,7 @@ class AudioInDevice(PyshaMode):
             control_def["groups"].append(dest)
 
         overwitch = self.app.external_instruments[0]
+        print("Overwitch engine PID, ", overwitch.engine.PID) 
         overwitch_def = None
         overwitch_def = {
             "$type": "group",
@@ -291,7 +303,7 @@ class AudioInDevice(PyshaMode):
                 }
             ],
         }
-    
+        print(len(overwitch.engine.pw_ports))
         for port in overwitch.engine.pw_ports["output"]:
             control = {
                             "$type": "menu-item",
@@ -321,7 +333,24 @@ class AudioInDevice(PyshaMode):
         self.update()
         for cmd in self.init:
             self.send_message(cmd["address"], float(cmd["value"]))
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(0.2)
+
+    async def spawn_puredata_node(self):
+        instrument_name = self.app.instrument_selection_mode.get_current_instrument_short_name()
+        await self.app.instruments[instrument_name].engine.start_pd_node()
+        await self.app.instruments[instrument_name].engine.configure_pipewire()
+
+    async def kill_puredata_node(self):
+        instrument_name = self.app.instrument_selection_mode.get_current_instrument_short_name()
+        await self.app.instruments[instrument_name].engine.kill_pd_node()
+
+    
+    def select_sync(self):
+        # self.query_visible_controls()
+        self.update()
+        for cmd in self.init:
+            self.send_message(cmd["address"], float(cmd["value"]))
+            
     
     def select_sync(self):
         # self.query_visible_controls()
@@ -334,8 +363,7 @@ class AudioInDevice(PyshaMode):
         return self.osc["client"].send_message(*args)
     
     
-    @limits(calls=1, period=0.1)
-    def send_message_cli(self, *args):
+    def set_duplex_volumes(self, *args):
         duplex_node = self.engine.duplex_node
         channel_volumes = []
         for val in self.input_gains:
@@ -343,8 +371,17 @@ class AudioInDevice(PyshaMode):
                 val = 0.0
             channel_volumes.extend([val, val])
         device_id = duplex_node["id"]
-        cli_string = f"pw-cli s {device_id} Props '{{monitorVolumes: {channel_volumes}}}'"
-        self.app.queue.append(asyncio.create_subprocess_shell(cli_string, stdout=asyncio.subprocess.PIPE))
+        # cli_string = f"pw-cli s {device_id} Props '{{monitorVolumes: {channel_volumes}}}'"
+        # self.app.queue.append(asyncio.create_subprocess_shell(cli_string, stdout=asyncio.subprocess.PIPE))
+        
+        
+        for idx in range(8):
+            left_channel_idx = idx * 2
+            right_channel_idx = left_channel_idx + 1
+            # Value only from left because we want to have it center
+            volume_value = channel_volumes[left_channel_idx]
+            self.engine.duplex_node_osc_client.send_message(f"/vol_{left_channel_idx}", float(volume_value))
+            self.engine.duplex_node_osc_client.send_message(f"/vol_{right_channel_idx}", float(volume_value))
 
 
     def update_input_gains(self):
@@ -383,7 +420,6 @@ class AudioInDevice(PyshaMode):
                 device.input_gains[7] = value_8
 
     def connect_ports_duplex(self, *args):
-
         [addr, val] = args
         if val != None:
             column_index = None 
@@ -404,6 +440,8 @@ class AudioInDevice(PyshaMode):
 
 
             # This bit handles selecting a None input, just disconnects if something was already connected
+            # TODO: Needs a check so that it doesn't send
+            # When there isn't any connection
             if addr == "/":
                 disconnect_L = self.engine.connections[column_index]["L"]
                 disconnect_R = self.engine.connections[column_index]["R"]
@@ -420,7 +458,7 @@ class AudioInDevice(PyshaMode):
                 self.engine.connections[column_index]["L"] = None
                 self.engine.connections[column_index]["R"] = None
                 return
-                
+             
             try:
                 source_instrument = self.get_instrument_for_pid(val)
                 source_instrument_ports = source_instrument.engine.pw_ports
@@ -429,16 +467,21 @@ class AudioInDevice(PyshaMode):
                 source_R = None
                 dest_L = None
                 dest_R=None
-                
                 #We're getting IDs for left and right ports, input and output
-               
+                # print("inside try block")
                 if source_instrument.name != "Overwitch":
+                    # print("inside if")
+                    # print(source_instrument_ports['output'])
                     for port in source_instrument_ports['output']:
-                        if port.get("info", []).get("props",[]).get("audio.channel", None) == "FL":
+                        # print("inside for")
+                        # print("port", port)
+                        if port.get("info", []).get("props",[]).get("object.path", None) == "Surge XT:output_0":
                             source_L = port['id']
-                        elif port.get("info", []).get("props",[]).get("audio.channel", None) == "FR":
+                        elif port.get("info", []).get("props",[]).get("object.path", None) == "Surge XT:output_1":
                             source_R = port['id']
                 else:
+                    # TODO: This is prob broken
+                    # print("else")
                     # gets the selected values for all 8 menus and assigns the right port
                     control_idx = column_index % 4
                     control =  self.controls[8 + control_idx].get_active_group()
@@ -448,35 +491,37 @@ class AudioInDevice(PyshaMode):
                             source_L = port['id']
                             source_R = port['id']
                 #makes sure we don't send the same command over and over
+                # TODO this check don't work _sometimes_
                 if source_L == self.engine.connections[column_index]["L"] and source_R == self.engine.connections[column_index]["R"]:
                     return
-                
-                # This bit disconnects previously conneted synth within a column
-                for port in current_instrument_ports['input']:
-                    if port['info']['props']['audio.channel'] == "FL":
-                        dest_L = port['id']
-                    elif port['info']['props']['audio.channel'] == "FR":
-                        dest_R = port['id']
 
-                if self.engine.connections[column_index]["L"] != (source_L or None)  and self.engine.connections[column_index]["R"] != (source_R or None) :
-                    disconnect_L = self.engine.connections[column_index]["L"]
-                    disconnect_R = self.engine.connections[column_index]["R"]
-                    if disconnect_L and disconnect_R is not None:
-                        self.app.queue.append(disconnectPipewireSourceFromPipewireDest(disconnect_L, duplex_in_L))
-                        self.app.queue.append(disconnectPipewireSourceFromPipewireDest(disconnect_R, duplex_in_R))
-                        self.app.queue.append(disconnectPipewireSourceFromPipewireDest(duplex_out_L, dest_L))
-                        self.app.queue.append(disconnectPipewireSourceFromPipewireDest(duplex_out_R, dest_R))
-
-                # Connects to currently selected instance, assigns the port IDs for later reference
-                for index, connection in enumerate(self.engine.connections):
-                    if index == column_index:
-                        connection["L"] = source_L
-                        connection["R"] = source_R
-                self.app.queue.append(connectPipewireSourceToPipewireDest(source_L, duplex_in_L))
-                self.app.queue.append(connectPipewireSourceToPipewireDest(source_R, duplex_in_R))
-                self.app.queue.append(connectPipewireSourceToPipewireDest(duplex_out_L, dest_L))
-                self.app.queue.append(connectPipewireSourceToPipewireDest(duplex_out_R, dest_R))
-                print("end of try ")
+                else:
+                    # This bit disconnects previously conneted synth within a column
+                    for port in current_instrument_ports['input']:
+                        if port['info']['props']['object.path'] == "Surge XT:input_0":
+                            dest_L = port['id']
+                        elif port['info']['props']['object.path'] == "Surge XT:input_1":
+                            dest_R = port['id']
+                    
+                    if self.engine.connections[column_index]["L"] != (source_L or None)  and self.engine.connections[column_index]["R"] != (source_R or None) :
+                        disconnect_L = self.engine.connections[column_index]["L"]
+                        disconnect_R = self.engine.connections[column_index]["R"]
+                        if disconnect_L and disconnect_R is not None:
+                            self.app.queue.append(disconnectPipewireSourceFromPipewireDest(disconnect_L, duplex_in_L))
+                            self.app.queue.append(disconnectPipewireSourceFromPipewireDest(disconnect_R, duplex_in_R))
+                            self.app.queue.append(disconnectPipewireSourceFromPipewireDest(duplex_out_L, dest_L))
+                            self.app.queue.append(disconnectPipewireSourceFromPipewireDest(duplex_out_R, dest_R))
+                    
+                    # Connects to currently selected instance, assigns the port IDs for later reference
+                    for index, connection in enumerate(self.engine.connections):
+                        if index == column_index:
+                            connection["L"] = source_L
+                            connection["R"] = source_R
+                    self.app.queue.append(connectPipewireSourceToPipewireDest(source_L, duplex_in_L))
+                    self.app.queue.append(connectPipewireSourceToPipewireDest(source_R, duplex_in_R))
+                    self.app.queue.append(connectPipewireSourceToPipewireDest(duplex_out_L, dest_L))
+                    self.app.queue.append(connectPipewireSourceToPipewireDest(duplex_out_R, dest_R))
+                    
             except Exception as e:
                 print("Error in connect_ports_duplex in audio_in_device")
                 traceback.print_exc()
@@ -591,7 +636,7 @@ class AudioInDevice(PyshaMode):
             all_volumes[instrument_idx*2] = track_L_volume
             all_volumes[instrument_idx*2 +1] = track_R_volume
             self.app.volumes = all_volumes
-            self.app.send_message_cli()
+            self.app.set_master_volumes()
 
         try:
             encoder_idx = [
@@ -616,3 +661,20 @@ class AudioInDevice(PyshaMode):
         
         except ValueError:
             pass  # Encoder not in list
+    def on_encoder_released(self, encoder_name):
+        try:
+            encoder_idx = [
+                push2_python.constants.ENCODER_TRACK1_ENCODER,
+                push2_python.constants.ENCODER_TRACK2_ENCODER,
+                push2_python.constants.ENCODER_TRACK3_ENCODER,
+                push2_python.constants.ENCODER_TRACK4_ENCODER,
+                push2_python.constants.ENCODER_TRACK5_ENCODER,
+                push2_python.constants.ENCODER_TRACK6_ENCODER,
+                push2_python.constants.ENCODER_TRACK7_ENCODER,
+                push2_python.constants.ENCODER_TRACK8_ENCODER,
+            ].index(encoder_name)
+            if self.page == 1:
+                pass
+        
+        except ValueError:
+            pass

@@ -1,0 +1,617 @@
+[I][00911.325348] pw.context   | [      pipewire.c:  578 pw_init()] version 1.2.7
+[I][00911.333922] jack         | [ pipewire-jack.c: 4030 jack_client_open()] 0x55563f534180: open 'pure_data' options:1
+[I][00911.334289] pw.conf      | [          conf.c:  415 conf_load()] 0x55563f542690: loaded config '/usr/share/pipewire/jack.conf' with 5 items
+[I][00911.334343] pw.conf      | [          conf.c: 1143 pw_conf_section_for_each()] handle config '/usr/share/pipewire/jack.conf' section 'context.properties'
+[I][00911.334358] pw.context   | [       context.c:  395 pw_context_new()] 0x55563f5348b0: parsed 1 context.properties items
+[I][00911.334420] pw.context   | [       context.c:  276 setup_data_loops()] created data loop 'data-loop.0'
+[I][00911.334432] pw.context   | [       context.c:  279 setup_data_loops()] created 1 data-loops
+[I][00911.334684] pw.conf      | [          conf.c: 1143 pw_conf_section_for_each()] handle config '/usr/share/pipewire/jack.conf' section 'context.spa-libs'
+[I][00911.334722] pw.context   | [       context.c:  488 pw_context_new()] 0x55563f5348b0: parsed 1 context.spa-libs items
+[I][00911.334735] pw.conf      | [          conf.c: 1143 pw_conf_section_for_each()] handle config '/usr/share/pipewire/jack.conf' section 'context.modules'
+[I][00911.334747] pw.module    | [   impl-module.c:  156 pw_context_load_module()] 0x55563f5348b0: name:libpipewire-module-rt args:{
+            #rt.prio      = 83
+            #rt.time.soft = -1
+            #rt.time.hard = -1
+        }
+[I][00911.334941] mod.rt       | [     module-rt.c: 1098 pipewire__module_init()] invalid nice level 20 (not between -20 and 19). nice level will not be adjusted
+[I][00911.334982] pw.conf      | [          conf.c:  611 load_module()] 0x55563f5348b0: loaded module libpipewire-module-rt
+[I][00911.334995] pw.module    | [   impl-module.c:  156 pw_context_load_module()] 0x55563f5348b0: name:libpipewire-module-protocol-native args:(null)
+[I][00911.335758] pw.conf      | [          conf.c:  611 load_module()] 0x55563f5348b0: loaded module libpipewire-module-protocol-native
+[I][00911.335786] pw.module    | [   impl-module.c:  156 pw_context_load_module()] 0x55563f5348b0: name:libpipewire-module-client-node args:(null)
+[I][00911.336053] pw.conf      | [          conf.c:  611 load_module()] 0x55563f5348b0: loaded module libpipewire-module-client-node
+[I][00911.336073] pw.module    | [   impl-module.c:  156 pw_context_load_module()] 0x55563f5348b0: name:libpipewire-module-metadata args:(null)
+[I][00911.336208] pw.conf      | [          conf.c:  611 load_module()] 0x55563f5348b0: loaded module libpipewire-module-metadata
+[I][00911.336223] pw.context   | [       context.c:  492 pw_context_new()] 0x55563f5348b0: parsed 4 context.modules items
+[I][00911.336234] pw.context   | [       context.c:  497 pw_context_new()] 0x55563f5348b0: parsed 0 context.objects items
+[I][00911.336244] pw.context   | [       context.c:  500 pw_context_new()] 0x55563f5348b0: parsed 0 context.exec items
+[I][00911.336259] pw.metadata  | [ impl-metadata.c:  186 impl_set_property()] 0x55563f547450: add id:0 key:log.level type: value:0
+[I][00911.336269] pw.metadata  | [ impl-metadata.c:  186 impl_set_property()] 0x55563f547450: add id:0 key:clock.rate type: value:48000
+[I][00911.336278] pw.metadata  | [ impl-metadata.c:  186 impl_set_property()] 0x55563f547450: add id:0 key:clock.allowed-rates type: value:[ 48000 ]
+[I][00911.336285] pw.metadata  | [ impl-metadata.c:  186 impl_set_property()] 0x55563f547450: add id:0 key:clock.quantum type: value:1024
+[I][00911.336293] pw.metadata  | [ impl-metadata.c:  186 impl_set_property()] 0x55563f547450: add id:0 key:clock.min-quantum type: value:32
+[I][00911.336300] pw.metadata  | [ impl-metadata.c:  186 impl_set_property()] 0x55563f547450: add id:0 key:clock.max-quantum type: value:2048
+[I][00911.336310] pw.metadata  | [ impl-metadata.c:  186 impl_set_property()] 0x55563f547450: add id:0 key:clock.force-quantum type: value:0
+[I][00911.336318] pw.metadata  | [ impl-metadata.c:  186 impl_set_property()] 0x55563f547450: add id:0 key:clock.force-rate type: value:0
+[I][00911.336376] pw.conf      | [          conf.c: 1143 pw_conf_section_for_each()] handle config '/usr/share/pipewire/jack.conf' section 'jack.properties'
+[I][00911.336397] pw.conf      | [          conf.c: 1143 pw_conf_section_for_each()] handle config '/usr/share/pipewire/jack.conf' section 'jack.rules'
+[I][00911.336416] pw.context   | [       context.c:  725 pw_context_acquire_loop()] 0x55563f5348b0: looking for name:'(null)' class:'(null)'
+[I][00911.336425] pw.context   | [       context.c:  291 data_loop_start()] starting data loop data-loop.0
+[I][00911.336597] mod.rt       | [     module-rt.c:  668 acquire_rt_sched()] acquired realtime priority 83 for thread 0x7ffed2ed7180
+[I][00911.336639] spa.loop     | [          loop.c:  213 loop_create_queue()] 0x55563f545598 created queue 0x55563f551170
+[I][00911.336656] pw.context   | [       context.c:  701 acquire_data_loop()] 0x55563f5348b0: using name:'data-loop.0' class:'data.rt' ref:1
+[I][00911.336666] pw.context   | [       context.c:  701 acquire_data_loop()] 0x55563f5348b0: using name:'data-loop.0' class:'data.rt' ref:2
+[I][00911.337228] mod.protocol-native | [  local-socket.c:   72 try_connect()] connecting to 'pipewire-0' runtime_dir:/run/user/1000
+[I][00911.340538] jack         | [ pipewire-jack.c: 3888 registry_event_global()] 0x55563f534180: client added "Dummy-Driver" emit:1
+[I][00911.340631] jack         | [ pipewire-jack.c: 3888 registry_event_global()] 0x55563f534180: client added "Freewheel-Driver" emit:1
+[I][00911.340693] jack         | [ pipewire-jack.c: 3888 registry_event_global()] 0x55563f534180: client added "Midi-Bridge" emit:1
+[I][00911.340720] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 51/51 "Midi-Bridge:Midi Through:(playback_0) Midi Through Port-0" emit:1
+[I][00911.340748] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 52/52 "Midi-Bridge:Ableton AG Ableton Push 2 at usb-xhci-hcd-1-2-3- high speed:(playback_0) Ableton Push 2 Live Port" emit:1
+[I][00911.340768] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 53/53 "Midi-Bridge:Ableton AG Ableton Push 2 at usb-xhci-hcd-1-2-3- high speed:(playback_1) Ableton Push 2 User Port" emit:1
+[I][00911.340811] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 54/54 "Midi-Bridge:Midi Through:(capture_0) Midi Through Port-0" emit:1
+[I][00911.340834] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 55/55 "Midi-Bridge:Ableton AG Ableton Push 2 at usb-xhci-hcd-1-2-3- high speed:(capture_0) Ableton Push 2 Live Port" emit:1
+[I][00911.340858] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 56/56 "Midi-Bridge:Ableton AG Ableton Push 2 at usb-xhci-hcd-1-2-3- high speed:(capture_1) Ableton Push 2 User Port" emit:1
+[I][00911.340876] jack         | [ pipewire-jack.c: 3888 registry_event_global()] 0x55563f534180: client added "BLE MIDI 1" emit:1
+[I][00911.340893] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 58/58 "BLE MIDI 1:in" emit:1
+[I][00911.340907] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 59/59 "BLE MIDI 1:out" emit:1
+[I][00911.340924] jack         | [ pipewire-jack.c: 3888 registry_event_global()] 0x55563f534180: client added "Komplete Audio 2 Pro" emit:1
+[I][00911.340936] jack         | [ pipewire-jack.c: 3888 registry_event_global()] 0x55563f534180: client added "Komplete Audio 2 Pro" emit:0
+[I][00911.340946] jack         | [ pipewire-jack.c: 3888 registry_event_global()] 0x55563f534180: client added "Built-in Audio Pro" emit:1
+[I][00911.341034] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 75/80 "Komplete Audio 2 Pro:playback_AUX0" emit:1
+[I][00911.341076] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 76/81 "Komplete Audio 2 Pro:monitor_AUX0" emit:1
+[I][00911.341095] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 77/82 "Komplete Audio 2 Pro:playback_AUX1" emit:1
+[I][00911.341122] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 78/83 "Komplete Audio 2 Pro:monitor_AUX1" emit:1
+[I][00911.341137] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 79/84 "Komplete Audio 2 Pro:capture_AUX0" emit:1
+[I][00911.341150] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 80/85 "Komplete Audio 2 Pro:capture_AUX1" emit:1
+[I][00911.341165] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 81/86 "Built-in Audio Pro:playback_AUX0" emit:1
+[I][00911.341180] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 82/87 "Built-in Audio Pro:monitor_AUX0" emit:1
+[I][00911.341218] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 83/88 "Built-in Audio Pro:playback_AUX1" emit:1
+[I][00911.341286] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 84/89 "Built-in Audio Pro:monitor_AUX1" emit:1
+[I][00911.341303] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 85/90 "Built-in Audio Pro:playback_AUX2" emit:1
+[I][00911.341316] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 86/91 "Built-in Audio Pro:monitor_AUX2" emit:1
+[I][00911.341329] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 87/92 "Built-in Audio Pro:playback_AUX3" emit:1
+[I][00911.341344] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 88/93 "Built-in Audio Pro:monitor_AUX3" emit:1
+[I][00911.341369] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 89/94 "Built-in Audio Pro:playback_AUX4" emit:1
+[I][00911.341394] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 90/95 "Built-in Audio Pro:monitor_AUX4" emit:1
+[I][00911.341422] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 91/96 "Built-in Audio Pro:playback_AUX5" emit:1
+[I][00911.341466] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 92/97 "Built-in Audio Pro:monitor_AUX5" emit:1
+[I][00911.341520] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 93/98 "Built-in Audio Pro:playback_AUX6" emit:1
+[I][00911.341557] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 94/99 "Built-in Audio Pro:monitor_AUX6" emit:1
+[I][00911.341580] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 95/100 "Built-in Audio Pro:playback_AUX7" emit:1
+[I][00911.341597] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 96/101 "Built-in Audio Pro:monitor_AUX7" emit:1
+[I][00911.341616] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 125/1099 "Midi-Bridge:RtMidiIn Client:(playback_0) RtMidi input" emit:1
+[I][00911.341632] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 102/1100 "Midi-Bridge:RtMidiOut Client:(capture_0) Pushpin 0" emit:1
+[I][00911.341647] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 124/1101 "Midi-Bridge:RtMidiOut Client:(capture_0) Pushpin 1" emit:1
+[I][00911.341679] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 123/1102 "Midi-Bridge:RtMidiOut Client:(capture_0) Pushpin 2" emit:1
+[I][00911.341703] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 122/1103 "Midi-Bridge:RtMidiOut Client:(capture_0) Pushpin 3" emit:1
+[I][00911.341715] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 100/1104 "Midi-Bridge:RtMidiOut Client:(capture_0) Pushpin 4" emit:1
+[I][00911.341741] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 121/1105 "Midi-Bridge:RtMidiOut Client:(capture_0) Pushpin 5" emit:1
+[I][00911.341756] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 120/1106 "Midi-Bridge:RtMidiOut Client:(capture_0) Pushpin 6" emit:1
+[I][00911.341771] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 119/1107 "Midi-Bridge:RtMidiOut Client:(capture_0) Pushpin 7" emit:1
+[I][00911.341785] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 116/1108 "Midi-Bridge:RtMidiIn Client:(playback_0) RtMidi input-1108" emit:1
+[I][00911.341803] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 115/1109 "Midi-Bridge:RtMidiOut Client:(capture_0) Pushpin 0 sequencer" emit:1
+[I][00911.341843] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 114/1110 "Midi-Bridge:RtMidiIn Client:(playback_0) RtMidi input-1110" emit:1
+[I][00911.341881] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 113/1111 "Midi-Bridge:RtMidiOut Client:(capture_0) Pushpin 1 sequencer" emit:1
+[I][00911.341898] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 110/1112 "Midi-Bridge:RtMidiIn Client:(playback_0) RtMidi input-1112" emit:1
+[I][00911.341913] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 109/1113 "Midi-Bridge:RtMidiOut Client:(capture_0) Pushpin 2 sequencer" emit:1
+[I][00911.341926] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 117/1114 "Midi-Bridge:RtMidiIn Client:(playback_0) RtMidi input-1114" emit:1
+[I][00911.341941] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 118/1115 "Midi-Bridge:RtMidiOut Client:(capture_0) Pushpin 3 sequencer" emit:1
+[I][00911.341983] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 112/1116 "Midi-Bridge:RtMidiIn Client:(playback_0) RtMidi input-1116" emit:1
+[I][00911.342010] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 111/1117 "Midi-Bridge:RtMidiOut Client:(capture_0) Pushpin 4 sequencer" emit:1
+[I][00911.342034] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 108/1118 "Midi-Bridge:RtMidiIn Client:(playback_0) RtMidi input-1118" emit:1
+[I][00911.342054] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 107/1119 "Midi-Bridge:RtMidiOut Client:(capture_0) Pushpin 5 sequencer" emit:1
+[I][00911.342072] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 106/1120 "Midi-Bridge:RtMidiIn Client:(playback_0) RtMidi input-1120" emit:1
+[I][00911.342090] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 126/1121 "Midi-Bridge:RtMidiOut Client:(capture_0) Pushpin 6 sequencer" emit:1
+[I][00911.342104] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 101/1122 "Midi-Bridge:RtMidiIn Client:(playback_0) RtMidi input-1122" emit:1
+[I][00911.342121] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 105/1123 "Midi-Bridge:RtMidiOut Client:(capture_0) Pushpin 7 sequencer" emit:1
+[I][00911.342140] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 104/1124 "Midi-Bridge:Overwitch:(capture_0) Overwitch" emit:1
+[I][00911.342156] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 103/1125 "Midi-Bridge:RtMidiOut Client:(capture_0) RtMidi output" emit:1
+[I][00911.361728] spa.loop     | [          loop.c:  213 loop_create_queue()] 0x55563f545598 created queue 0x7ffecc02a450
+[I][00911.361999] jack         | [ pipewire-jack.c: 3888 registry_event_global()] 0x55563f534180: client added "pure_data" emit:1
+[I][00911.362045] jack         | [ pipewire-jack.c: 1835 check_sample_rate()] 0x55563f534180: sample_rate old:-1 new:48000 cb:(nil)
+[I][00911.362061] jack         | [ pipewire-jack.c: 1821 check_buffer_frames()] 0x55563f534180: bufferframes old:-1 new:512 cb:(nil)
+[I][00911.362615] jack         | [ pipewire-jack.c: 4299 jack_client_open()] 0x55563f534180: opened
+warning: 'delay' setting (2 ms) too small for current blocksize (512 samples); falling back to minimum value (11 ms)
+[I][00911.362808] jack         | [ pipewire-jack.c: 5247 jack_port_register()] 0x55563f534180: port register "pure_data:input_1" "32 bit float mono audio" 00000001 0
+[I][00911.363801] jack         | [ pipewire-jack.c: 3712 registry_event_global()] 0x55563f534180: pure_data:input_1 found our port 0x7ffecc032e58
+[I][00911.363839] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 128/1128 "pure_data:input_1" emit:1
+[I][00911.363872] jack         | [ pipewire-jack.c: 5247 jack_port_register()] 0x55563f534180: port register "pure_data:input_2" "32 bit float mono audio" 00000001 0
+[I][00911.364598] jack         | [ pipewire-jack.c: 3712 registry_event_global()] 0x55563f534180: pure_data:input_2 found our port 0x7ffecc033780
+[I][00911.364622] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 147/1129 "pure_data:input_2" emit:1
+[I][00911.364667] jack         | [ pipewire-jack.c: 5247 jack_port_register()] 0x55563f534180: port register "pure_data:input_3" "32 bit float mono audio" 00000001 0
+[I][00911.367969] jack         | [ pipewire-jack.c: 3712 registry_event_global()] 0x55563f534180: pure_data:input_3 found our port 0x7ffecc0340a8
+[I][00911.368051] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 256/1130 "pure_data:input_3" emit:1
+[I][00911.368102] jack         | [ pipewire-jack.c: 5247 jack_port_register()] 0x55563f534180: port register "pure_data:input_4" "32 bit float mono audio" 00000001 0
+[I][00911.370043] jack         | [ pipewire-jack.c: 3712 registry_event_global()] 0x55563f534180: pure_data:input_4 found our port 0x7ffecc0349d0
+[I][00911.370139] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 185/1131 "pure_data:input_4" emit:1
+[I][00911.370240] jack         | [ pipewire-jack.c: 5247 jack_port_register()] 0x55563f534180: port register "pure_data:input_5" "32 bit float mono audio" 00000001 0
+[I][00911.375755] jack         | [ pipewire-jack.c: 3712 registry_event_global()] 0x55563f534180: pure_data:input_5 found our port 0x7ffecc0352f8
+[I][00911.375853] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 258/1132 "pure_data:input_5" emit:1
+[I][00911.375917] jack         | [ pipewire-jack.c: 5247 jack_port_register()] 0x55563f534180: port register "pure_data:input_6" "32 bit float mono audio" 00000001 0
+[I][00911.377696] jack         | [ pipewire-jack.c: 3712 registry_event_global()] 0x55563f534180: pure_data:input_6 found our port 0x7ffecc035c20
+[I][00911.377754] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 189/1133 "pure_data:input_6" emit:1
+[I][00911.377801] jack         | [ pipewire-jack.c: 5247 jack_port_register()] 0x55563f534180: port register "pure_data:input_7" "32 bit float mono audio" 00000001 0
+[I][00911.379614] jack         | [ pipewire-jack.c: 3712 registry_event_global()] 0x55563f534180: pure_data:input_7 found our port 0x7ffecc036548
+[I][00911.379697] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 145/1134 "pure_data:input_7" emit:1
+[I][00911.379754] jack         | [ pipewire-jack.c: 5247 jack_port_register()] 0x55563f534180: port register "pure_data:input_8" "32 bit float mono audio" 00000001 0
+[I][00911.380775] jack         | [ pipewire-jack.c: 3712 registry_event_global()] 0x55563f534180: pure_data:input_8 found our port 0x55563f568e10
+[I][00911.380809] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 187/1135 "pure_data:input_8" emit:1
+[I][00911.380849] jack         | [ pipewire-jack.c: 5247 jack_port_register()] 0x55563f534180: port register "pure_data:input_9" "32 bit float mono audio" 00000001 0
+[I][00911.382961] jack         | [ pipewire-jack.c: 3712 registry_event_global()] 0x55563f534180: pure_data:input_9 found our port 0x55563f569738
+[I][00911.383048] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 207/1136 "pure_data:input_9" emit:1
+[I][00911.383121] jack         | [ pipewire-jack.c: 5247 jack_port_register()] 0x55563f534180: port register "pure_data:input_10" "32 bit float mono audio" 00000001 0
+[I][00911.384898] jack         | [ pipewire-jack.c: 3712 registry_event_global()] 0x55563f534180: pure_data:input_10 found our port 0x55563f56a060
+[I][00911.384938] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 209/1137 "pure_data:input_10" emit:1
+[I][00911.384974] jack         | [ pipewire-jack.c: 5247 jack_port_register()] 0x55563f534180: port register "pure_data:input_11" "32 bit float mono audio" 00000001 0
+[I][00911.388741] jack         | [ pipewire-jack.c: 3712 registry_event_global()] 0x55563f534180: pure_data:input_11 found our port 0x55563f56a988
+[I][00911.388828] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 136/1138 "pure_data:input_11" emit:1
+[I][00911.388883] jack         | [ pipewire-jack.c: 5247 jack_port_register()] 0x55563f534180: port register "pure_data:input_12" "32 bit float mono audio" 00000001 0
+[I][00911.391010] jack         | [ pipewire-jack.c: 3712 registry_event_global()] 0x55563f534180: pure_data:input_12 found our port 0x55563f56b2b0
+[I][00911.391111] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 146/1139 "pure_data:input_12" emit:1
+[I][00911.391169] jack         | [ pipewire-jack.c: 5247 jack_port_register()] 0x55563f534180: port register "pure_data:input_13" "32 bit float mono audio" 00000001 0
+[I][00911.392955] jack         | [ pipewire-jack.c: 3712 registry_event_global()] 0x55563f534180: pure_data:input_13 found our port 0x55563f56bbd8
+[I][00911.393005] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 150/1140 "pure_data:input_13" emit:1
+[I][00911.393050] jack         | [ pipewire-jack.c: 5247 jack_port_register()] 0x55563f534180: port register "pure_data:input_14" "32 bit float mono audio" 00000001 0
+[I][00911.394746] jack         | [ pipewire-jack.c: 3712 registry_event_global()] 0x55563f534180: pure_data:input_14 found our port 0x55563f56c500
+[I][00911.394802] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 149/1141 "pure_data:input_14" emit:1
+[I][00911.394846] jack         | [ pipewire-jack.c: 5247 jack_port_register()] 0x55563f534180: port register "pure_data:input_15" "32 bit float mono audio" 00000001 0
+[I][00911.396741] jack         | [ pipewire-jack.c: 3712 registry_event_global()] 0x55563f534180: pure_data:input_15 found our port 0x55563f56ce28
+[I][00911.396802] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 144/1142 "pure_data:input_15" emit:1
+[I][00911.396844] jack         | [ pipewire-jack.c: 5247 jack_port_register()] 0x55563f534180: port register "pure_data:input_16" "32 bit float mono audio" 00000001 0
+[I][00911.401927] jack         | [ pipewire-jack.c: 3712 registry_event_global()] 0x55563f534180: pure_data:input_16 found our port 0x55563f58f410
+[I][00911.402016] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 137/1143 "pure_data:input_16" emit:1
+[I][00911.402068] jack         | [ pipewire-jack.c: 5247 jack_port_register()] 0x55563f534180: port register "pure_data:output_1" "32 bit float mono audio" 00000002 0
+[I][00911.403268] jack         | [ pipewire-jack.c: 3712 registry_event_global()] 0x55563f534180: pure_data:output_1 found our port 0x55563f58fd38
+[I][00911.403318] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 157/1144 "pure_data:output_1" emit:1
+[I][00911.403357] jack         | [ pipewire-jack.c: 5247 jack_port_register()] 0x55563f534180: port register "pure_data:output_2" "32 bit float mono audio" 00000002 0
+[I][00911.405512] jack         | [ pipewire-jack.c: 3712 registry_event_global()] 0x55563f534180: pure_data:output_2 found our port 0x55563f590660
+[I][00911.405589] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 158/1145 "pure_data:output_2" emit:1
+[I][00911.405642] jack         | [ pipewire-jack.c: 5247 jack_port_register()] 0x55563f534180: port register "pure_data:output_3" "32 bit float mono audio" 00000002 0
+[I][00911.406615] jack         | [ pipewire-jack.c: 3712 registry_event_global()] 0x55563f534180: pure_data:output_3 found our port 0x55563f590f88
+[I][00911.406644] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 159/1146 "pure_data:output_3" emit:1
+[I][00911.406680] jack         | [ pipewire-jack.c: 5247 jack_port_register()] 0x55563f534180: port register "pure_data:output_4" "32 bit float mono audio" 00000002 0
+[I][00911.409090] jack         | [ pipewire-jack.c: 3712 registry_event_global()] 0x55563f534180: pure_data:output_4 found our port 0x55563f5918b0
+[I][00911.409163] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 160/1147 "pure_data:output_4" emit:1
+[I][00911.409240] jack         | [ pipewire-jack.c: 5247 jack_port_register()] 0x55563f534180: port register "pure_data:output_5" "32 bit float mono audio" 00000002 0
+[I][00911.410123] jack         | [ pipewire-jack.c: 3712 registry_event_global()] 0x55563f534180: pure_data:output_5 found our port 0x55563f5921d8
+[I][00911.410161] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 213/1148 "pure_data:output_5" emit:1
+[I][00911.410206] jack         | [ pipewire-jack.c: 5247 jack_port_register()] 0x55563f534180: port register "pure_data:output_6" "32 bit float mono audio" 00000002 0
+[I][00911.411822] jack         | [ pipewire-jack.c: 3712 registry_event_global()] 0x55563f534180: pure_data:output_6 found our port 0x55563f592b00
+[I][00911.411868] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 238/1149 "pure_data:output_6" emit:1
+[I][00911.411916] jack         | [ pipewire-jack.c: 5247 jack_port_register()] 0x55563f534180: port register "pure_data:output_7" "32 bit float mono audio" 00000002 0
+[I][00911.412776] jack         | [ pipewire-jack.c: 3712 registry_event_global()] 0x55563f534180: pure_data:output_7 found our port 0x55563f593428
+[I][00911.412801] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 211/1150 "pure_data:output_7" emit:1
+[I][00911.412832] jack         | [ pipewire-jack.c: 5247 jack_port_register()] 0x55563f534180: port register "pure_data:output_8" "32 bit float mono audio" 00000002 0
+[I][00911.414525] jack         | [ pipewire-jack.c: 3712 registry_event_global()] 0x55563f534180: pure_data:output_8 found our port 0x55563f5954f0
+[I][00911.414577] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 170/1151 "pure_data:output_8" emit:1
+[I][00911.414626] jack         | [ pipewire-jack.c: 5247 jack_port_register()] 0x55563f534180: port register "pure_data:output_9" "32 bit float mono audio" 00000002 0
+[I][00911.415670] jack         | [ pipewire-jack.c: 3712 registry_event_global()] 0x55563f534180: pure_data:output_9 found our port 0x55563f595e18
+[I][00911.415700] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 182/1152 "pure_data:output_9" emit:1
+[I][00911.415739] jack         | [ pipewire-jack.c: 5247 jack_port_register()] 0x55563f534180: port register "pure_data:output_10" "32 bit float mono audio" 00000002 0
+[I][00911.417917] jack         | [ pipewire-jack.c: 3712 registry_event_global()] 0x55563f534180: pure_data:output_10 found our port 0x55563f596740
+[I][00911.418006] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 203/1153 "pure_data:output_10" emit:1
+[I][00911.418057] jack         | [ pipewire-jack.c: 5247 jack_port_register()] 0x55563f534180: port register "pure_data:output_11" "32 bit float mono audio" 00000002 0
+[I][00911.419702] jack         | [ pipewire-jack.c: 3712 registry_event_global()] 0x55563f534180: pure_data:output_11 found our port 0x55563f597068
+[I][00911.419768] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 260/1154 "pure_data:output_11" emit:1
+[I][00911.419829] jack         | [ pipewire-jack.c: 5247 jack_port_register()] 0x55563f534180: port register "pure_data:output_12" "32 bit float mono audio" 00000002 0
+[I][00911.425296] jack         | [ pipewire-jack.c: 3712 registry_event_global()] 0x55563f534180: pure_data:output_12 found our port 0x55563f597990
+[I][00911.425400] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 178/1155 "pure_data:output_12" emit:1
+[I][00911.425451] jack         | [ pipewire-jack.c: 5247 jack_port_register()] 0x55563f534180: port register "pure_data:output_13" "32 bit float mono audio" 00000002 0
+[I][00911.427123] jack         | [ pipewire-jack.c: 3712 registry_event_global()] 0x55563f534180: pure_data:output_13 found our port 0x55563f5982b8
+[I][00911.427177] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 168/1156 "pure_data:output_13" emit:1
+[I][00911.427235] jack         | [ pipewire-jack.c: 5247 jack_port_register()] 0x55563f534180: port register "pure_data:output_14" "32 bit float mono audio" 00000002 0
+[I][00911.431330] jack         | [ pipewire-jack.c: 3712 registry_event_global()] 0x55563f534180: pure_data:output_14 found our port 0x55563f598be0
+[I][00911.431428] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 172/1157 "pure_data:output_14" emit:1
+[I][00911.431498] jack         | [ pipewire-jack.c: 5247 jack_port_register()] 0x55563f534180: port register "pure_data:output_15" "32 bit float mono audio" 00000002 0
+[I][00911.434598] jack         | [ pipewire-jack.c: 3712 registry_event_global()] 0x55563f534180: pure_data:output_15 found our port 0x55563f599508
+[I][00911.434684] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 236/1158 "pure_data:output_15" emit:1
+[I][00911.434743] jack         | [ pipewire-jack.c: 5247 jack_port_register()] 0x55563f534180: port register "pure_data:output_16" "32 bit float mono audio" 00000002 0
+[I][00911.438402] jack         | [ pipewire-jack.c: 3712 registry_event_global()] 0x55563f534180: pure_data:output_16 found our port 0x55563f59b5d0
+[I][00911.438493] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 190/1159 "pure_data:output_16" emit:1
+[I][00911.438588] jack         | [ pipewire-jack.c: 4612 jack_activate()] 0x55563f534180: active:0
+[I][00911.438653] jack         | [ pipewire-jack.c: 3233 impl_create()] create thread
+[I][00911.438858] mod.rt       | [     module-rt.c:  668 acquire_rt_sched()] acquired realtime priority 83 for thread 0x7ffed1d67180
+[I][00911.448430] spa.loop     | [          loop.c:  213 loop_create_queue()] 0x55563f53fdd8 created queue 0x7ffec4000b70
+[I][00911.448532] jack         | [ pipewire-jack.c: 1821 check_buffer_frames()] 0x55563f534180: bufferframes old:0 new:512 cb:0x55560e5047d0
+[I][00911.448618] jack         | [ pipewire-jack.c: 1821 check_buffer_frames()] 0x55563f534180: bufferframes old:0 new:128 cb:0x55560e5047d0
+[I][00911.448858] jack         | [ pipewire-jack.c: 6199 jack_connect()] 0x55563f534180: connect Komplete Audio 2 Pro:capture_AUX0 pure_data:input_1
+[I][00911.453814] jack         | [ pipewire-jack.c: 2765 client_node_port_set_param()] client 0x55563f534180: port pure_data:input_1 0.0 id:15 (Spa:Enum:ParamId:Latency) 0x55563f56dd98
+[I][00911.453950] jack         | [ pipewire-jack.c: 2730 port_set_latency()] port pure_data:input_1: set capture latency 1.000000-1.000000 0-0 0-0
+[I][00911.453983] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:output_1 update capture latency 0.000000-1.000000 0-0 0-0
+[I][00911.454008] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:output_1: update
+[I][00911.454066] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:output_2 update capture latency 0.000000-1.000000 0-0 0-0
+[I][00911.454103] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:output_2: update
+[I][00911.454148] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:output_3 update capture latency 0.000000-1.000000 0-0 0-0
+[I][00911.454165] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:output_3: update
+[I][00911.454177] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:output_4 update capture latency 0.000000-1.000000 0-0 0-0
+[I][00911.454188] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:output_4: update
+[I][00911.454199] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:output_5 update capture latency 0.000000-1.000000 0-0 0-0
+[I][00911.454212] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:output_5: update
+[I][00911.454222] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:output_6 update capture latency 0.000000-1.000000 0-0 0-0
+[I][00911.454234] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:output_6: update
+[I][00911.454245] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:output_7 update capture latency 0.000000-1.000000 0-0 0-0
+[I][00911.454256] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:output_7: update
+[I][00911.454267] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:output_8 update capture latency 0.000000-1.000000 0-0 0-0
+[I][00911.454277] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:output_8: update
+[I][00911.454292] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:output_9 update capture latency 0.000000-1.000000 0-0 0-0
+[I][00911.454303] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:output_9: update
+[I][00911.454314] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:output_10 update capture latency 0.000000-1.000000 0-0 0-0
+[I][00911.454326] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:output_10: update
+[I][00911.454337] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:output_11 update capture latency 0.000000-1.000000 0-0 0-0
+[I][00911.454348] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:output_11: update
+[I][00911.454357] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:output_12 update capture latency 0.000000-1.000000 0-0 0-0
+[I][00911.454368] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:output_12: update
+[I][00911.454380] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:output_13 update capture latency 0.000000-1.000000 0-0 0-0
+[I][00911.454392] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:output_13: update
+[I][00911.454401] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:output_14 update capture latency 0.000000-1.000000 0-0 0-0
+[I][00911.454412] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:output_14: update
+[I][00911.454422] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:output_15 update capture latency 0.000000-1.000000 0-0 0-0
+[I][00911.454439] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:output_15: update
+[I][00911.454449] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:output_16 update capture latency 0.000000-1.000000 0-0 0-0
+[I][00911.454460] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:output_16: update
+[I][00911.454471] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:input_1: update
+[I][00911.454523] jack         | [ pipewire-jack.c: 3901 registry_event_global()] 0x55563f534180: link 255 79/84 -> 128/1128 added
+[I][00911.454592] jack         | [ pipewire-jack.c: 6199 jack_connect()] 0x55563f534180: connect Komplete Audio 2 Pro:capture_AUX1 pure_data:input_2
+[I][00911.469551] jack         | [ pipewire-jack.c: 2765 client_node_port_set_param()] client 0x55563f534180: port pure_data:input_1 0.0 id:4 (Spa:Enum:ParamId:Format) 0x55563f56e288
+[I][00911.469634] jack         | [ pipewire-jack.c: 2587 port_set_format()] port pure_data:input_1: update
+[I][00911.469681] jack         | [ pipewire-jack.c: 2765 client_node_port_set_param()] client 0x55563f534180: port pure_data:input_2 0.1 id:15 (Spa:Enum:ParamId:Latency) 0x55563f56e438
+[I][00911.469696] jack         | [ pipewire-jack.c: 2730 port_set_latency()] port pure_data:input_2: set capture latency 1.000000-1.000000 0-0 0-0
+[I][00911.469717] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:input_2: update
+[I][00911.469741] jack         | [ pipewire-jack.c: 3901 registry_event_global()] 0x55563f534180: link 222 80/85 -> 147/1129 added
+[I][00911.469798] jack         | [ pipewire-jack.c: 6199 jack_connect()] 0x55563f534180: connect Komplete Audio 2 Pro:monitor_AUX0 pure_data:input_3
+[I][00911.478492] jack         | [ pipewire-jack.c: 2765 client_node_port_set_param()] client 0x55563f534180: port pure_data:input_3 0.2 id:15 (Spa:Enum:ParamId:Latency) 0x55563f56ddc0
+[I][00911.478619] jack         | [ pipewire-jack.c: 3901 registry_event_global()] 0x55563f534180: link 135 76/81 -> 256/1130 added
+[I][00911.478692] jack         | [ pipewire-jack.c: 6199 jack_connect()] 0x55563f534180: connect Komplete Audio 2 Pro:monitor_AUX1 pure_data:input_4
+[I][00911.480150] jack         | [ pipewire-jack.c: 2765 client_node_port_set_param()] client 0x55563f534180: port pure_data:input_4 0.3 id:15 (Spa:Enum:ParamId:Latency) 0x55563f56ddc0
+[I][00911.480220] jack         | [ pipewire-jack.c: 3901 registry_event_global()] 0x55563f534180: link 127 78/83 -> 185/1131 added
+[I][00911.480396] jack         | [ pipewire-jack.c: 6199 jack_connect()] 0x55563f534180: connect pure_data:output_1 Komplete Audio 2 Pro:playback_AUX0
+[I][00911.496461] jack         | [ pipewire-jack.c: 2765 client_node_port_set_param()] client 0x55563f534180: port pure_data:input_2 0.1 id:4 (Spa:Enum:ParamId:Format) 0x55563f56e0f8
+[I][00911.496554] jack         | [ pipewire-jack.c: 2587 port_set_format()] port pure_data:input_2: update
+[I][00911.496600] jack         | [ pipewire-jack.c: 2765 client_node_port_set_param()] client 0x55563f534180: port pure_data:input_3 0.2 id:4 (Spa:Enum:ParamId:Format) 0x55563f56e368
+[I][00911.496615] jack         | [ pipewire-jack.c: 2587 port_set_format()] port pure_data:input_3: update
+[I][00911.496636] jack         | [ pipewire-jack.c: 2765 client_node_port_set_param()] client 0x55563f534180: port pure_data:input_4 0.3 id:4 (Spa:Enum:ParamId:Format) 0x55563f56e5d8
+[I][00911.496647] jack         | [ pipewire-jack.c: 2587 port_set_format()] port pure_data:input_4: update
+[I][00911.496667] jack         | [ pipewire-jack.c: 2765 client_node_port_set_param()] client 0x55563f534180: port pure_data:output_1 1.0 id:15 (Spa:Enum:ParamId:Latency) 0x55563f56e788
+[I][00911.496680] jack         | [ pipewire-jack.c: 2730 port_set_latency()] port pure_data:output_1: set playback latency 1.000000-1.000000 0-0 0-0
+[I][00911.496699] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:input_1 update playback latency 0.000000-1.000000 0-0 0-0
+[I][00911.496721] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:input_1: update
+[I][00911.496735] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:input_2 update playback latency 0.000000-1.000000 0-0 0-0
+[I][00911.496754] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:input_2: update
+[I][00911.496766] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:input_3 update playback latency 0.000000-1.000000 0-0 0-0
+[I][00911.496777] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:input_3: update
+[I][00911.496787] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:input_4 update playback latency 0.000000-1.000000 0-0 0-0
+[I][00911.496796] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:input_4: update
+[I][00911.496805] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:input_5 update playback latency 0.000000-1.000000 0-0 0-0
+[I][00911.496817] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:input_5: update
+[I][00911.496827] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:input_6 update playback latency 0.000000-1.000000 0-0 0-0
+[I][00911.496839] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:input_6: update
+[I][00911.496850] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:input_7 update playback latency 0.000000-1.000000 0-0 0-0
+[I][00911.496861] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:input_7: update
+[I][00911.496871] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:input_8 update playback latency 0.000000-1.000000 0-0 0-0
+[I][00911.496885] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:input_8: update
+[I][00911.496896] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:input_9 update playback latency 0.000000-1.000000 0-0 0-0
+[I][00911.496907] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:input_9: update
+[I][00911.496918] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:input_10 update playback latency 0.000000-1.000000 0-0 0-0
+[I][00911.496928] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:input_10: update
+[I][00911.496938] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:input_11 update playback latency 0.000000-1.000000 0-0 0-0
+[I][00911.496948] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:input_11: update
+[I][00911.496959] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:input_12 update playback latency 0.000000-1.000000 0-0 0-0
+[I][00911.496969] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:input_12: update
+[I][00911.496981] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:input_13 update playback latency 0.000000-1.000000 0-0 0-0
+[I][00911.496992] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:input_13: update
+[I][00911.497001] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:input_14 update playback latency 0.000000-1.000000 0-0 0-0
+[I][00911.497012] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:input_14: update
+[I][00911.497022] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:input_15 update playback latency 0.000000-1.000000 0-0 0-0
+[I][00911.497033] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:input_15: update
+[I][00911.497043] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:input_16 update playback latency 0.000000-1.000000 0-0 0-0
+[I][00911.497058] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:input_16: update
+[I][00911.497071] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:output_1: update
+[I][00911.497133] jack         | [ pipewire-jack.c: 3901 registry_event_global()] 0x55563f534180: link 143 157/1144 -> 75/80 added
+[I][00911.497211] jack         | [ pipewire-jack.c: 6199 jack_connect()] 0x55563f534180: connect pure_data:output_2 Komplete Audio 2 Pro:playback_AUX1
+[I][00911.522554] jack         | [ pipewire-jack.c: 2765 client_node_port_set_param()] client 0x55563f534180: port pure_data:output_2 1.1 id:15 (Spa:Enum:ParamId:Latency) 0x55563f56eba0
+[I][00911.522652] jack         | [ pipewire-jack.c: 2730 port_set_latency()] port pure_data:output_2: set playback latency 1.000000-1.000000 0-0 0-0
+[I][00911.522685] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:output_2: update
+[I][00911.522753] jack         | [ pipewire-jack.c: 3901 registry_event_global()] 0x55563f534180: link 134 158/1145 -> 77/82 added
+[I][00911.606924] jack         | [ pipewire-jack.c: 2765 client_node_port_set_param()] client 0x55563f534180: port pure_data:output_1 1.0 id:4 (Spa:Enum:ParamId:Format) 0x55563f56e718
+[I][00911.607047] jack         | [ pipewire-jack.c: 2587 port_set_format()] port pure_data:output_1: update
+[I][00911.607110] jack         | [ pipewire-jack.c: 2765 client_node_port_set_param()] client 0x55563f534180: port pure_data:output_2 1.1 id:4 (Spa:Enum:ParamId:Format) 0x55563f56e988
+[I][00911.607128] jack         | [ pipewire-jack.c: 2587 port_set_format()] port pure_data:output_2: update
+[I][00911.723707] jack         | [ pipewire-jack.c: 3888 registry_event_global()] 0x55563f534180: client added "JuceJackDummy" emit:1
+[I][00911.732037] jack         | [ pipewire-jack.c: 3944 registry_event_global_remove()] 0x55563f534180: client 133 removed "JuceJackDummy"
+[I][00911.781668] jack         | [ pipewire-jack.c: 3888 registry_event_global()] 0x55563f534180: client added "Surge XT" emit:1
+[I][00911.787732] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 139/1170 "Surge XT:in_1" emit:0
+[I][00911.789642] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 130/1171 "Surge XT:in_2" emit:0
+[I][00911.793004] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 138/1172 "Surge XT:in_3" emit:0
+[I][00911.795126] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 129/1173 "Surge XT:in_4" emit:0
+[I][00911.797561] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 141/1174 "Surge XT:out_1" emit:0
+[I][00911.799342] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 132/1175 "Surge XT:out_2" emit:0
+[I][00911.811608] jack         | [ pipewire-jack.c: 3901 registry_event_global()] 0x55563f534180: link 140 79/84 -> 139/1170 added
+[I][00911.815502] jack         | [ pipewire-jack.c: 3901 registry_event_global()] 0x55563f534180: link 131 80/85 -> 130/1171 added
+[I][00911.821328] jack         | [ pipewire-jack.c: 3901 registry_event_global()] 0x55563f534180: link 161 141/1174 -> 75/80 added
+[I][00911.827438] jack         | [ pipewire-jack.c: 3901 registry_event_global()] 0x55563f534180: link 151 132/1175 -> 77/82 added
+[I][00911.959438] jack         | [ pipewire-jack.c: 3888 registry_event_global()] 0x55563f534180: client added "JuceJackDummy" emit:1
+[I][00912.006476] jack         | [ pipewire-jack.c: 3944 registry_event_global_remove()] 0x55563f534180: client 153 removed "JuceJackDummy"
+[I][00912.087611] jack         | [ pipewire-jack.c: 3888 registry_event_global()] 0x55563f534180: client added "JuceJackDummy" emit:1
+[I][00912.087673] jack         | [ pipewire-jack.c: 3888 registry_event_global()] 0x55563f534180: client added "JuceJackDummy-243" emit:1
+[I][00912.087705] jack         | [ pipewire-jack.c: 3888 registry_event_global()] 0x55563f534180: client added "JuceJackDummy-208" emit:1
+[I][00912.114742] jack         | [ pipewire-jack.c: 3944 registry_event_global_remove()] 0x55563f534180: client 153 removed "JuceJackDummy"
+[I][00912.114792] jack         | [ pipewire-jack.c: 3944 registry_event_global_remove()] 0x55563f534180: client 243 removed "JuceJackDummy-243"
+[I][00912.114804] jack         | [ pipewire-jack.c: 3944 registry_event_global_remove()] 0x55563f534180: client 208 removed "JuceJackDummy-208"
+[I][00912.144875] jack         | [ pipewire-jack.c: 3888 registry_event_global()] 0x55563f534180: client added "Surge XT-208" emit:1
+[I][00912.195750] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 153/1196 "Surge XT-208:in_1" emit:0
+[I][00912.195807] jack         | [ pipewire-jack.c: 3888 registry_event_global()] 0x55563f534180: client added "JuceJackDummy" emit:1
+[I][00912.195829] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 197/1198 "Surge XT-208:in_2" emit:0
+[I][00912.275854] jack         | [ pipewire-jack.c: 3888 registry_event_global()] 0x55563f534180: client added "JuceJackDummy-200" emit:1
+[I][00912.275906] jack         | [ pipewire-jack.c: 3888 registry_event_global()] 0x55563f534180: client added "JuceJackDummy-174" emit:1
+[I][00912.275924] jack         | [ pipewire-jack.c: 3888 registry_event_global()] 0x55563f534180: client added "Surge XT-242" emit:1
+[I][00912.275974] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 162/1202 "Surge XT-208:in_3" emit:0
+[I][00912.276001] jack         | [ pipewire-jack.c: 3944 registry_event_global_remove()] 0x55563f534180: client 192 removed "JuceJackDummy"
+[I][00912.295957] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 192/1204 "Surge XT-208:in_4" emit:0
+[I][00912.296002] jack         | [ pipewire-jack.c: 3944 registry_event_global_remove()] 0x55563f534180: client 200 removed "JuceJackDummy-200"
+[I][00912.296044] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 216/1205 "Surge XT-242:in_1" emit:0
+[I][00912.298864] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 231/1207 "Surge XT-208:out_1" emit:0
+[I][00912.352125] jack         | [ pipewire-jack.c: 3888 registry_event_global()] 0x55563f534180: client added "Surge XT-230" emit:1
+[I][00912.352177] jack         | [ pipewire-jack.c: 3888 registry_event_global()] 0x55563f534180: client added "Surge XT-167" emit:1
+[I][00912.365636] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 247/1210 "Surge XT-242:in_2" emit:0
+[I][00912.365701] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 176/1211 "Surge XT-167:in_1" emit:0
+[I][00912.365721] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 205/1212 "Surge XT-242:in_3" emit:0
+[I][00912.392736] jack         | [ pipewire-jack.c: 3888 registry_event_global()] 0x55563f534180: client added "Surge XT-261" emit:1
+[I][00912.400788] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 206/1214 "Surge XT-242:in_4" emit:0
+[I][00912.400848] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 173/1215 "Surge XT-167:in_2" emit:0
+[I][00912.400870] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 215/1216 "Surge XT-242:out_1" emit:0
+[I][00912.400888] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 250/1217 "Surge XT-261:in_1" emit:0
+[I][00912.429913] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 163/1218 "Surge XT-208:out_2" emit:0
+[I][00912.430003] jack         | [ pipewire-jack.c: 3888 registry_event_global()] 0x55563f534180: client added "Surge XT-237" emit:1
+[I][00912.455411] pw.context   | [      pipewire.c:  578 pw_init()] version 1.2.7
+[I][00912.457741] jack         | [ pipewire-jack.c: 3944 registry_event_global_remove()] 0x55563f534180: client 174 removed "JuceJackDummy-174"
+[I][00912.457824] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 156/1220 "Surge XT-237:in_1" emit:0
+[I][00912.457849] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 174/1221 "Surge XT-242:out_2" emit:0
+[I][00912.457883] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 177/1222 "Surge XT-167:in_3" emit:0
+[I][00912.457902] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 198/1223 "Surge XT-261:in_2" emit:0
+[I][00912.457922] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 244/1224 "Surge XT-230:in_1" emit:0
+[I][00912.472684] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 171/1226 "Surge XT-237:in_2" emit:0
+[I][00912.497275] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 239/1227 "Surge XT-167:in_4" emit:0
+[I][00912.497342] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 225/1228 "Surge XT-261:in_3" emit:0
+[I][00912.497360] jack         | [ pipewire-jack.c: 3901 registry_event_global()] 0x55563f534180: link 166 79/84 -> 153/1196 added
+[I][00912.497385] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 202/1230 "Surge XT-237:in_3" emit:0
+[I][00912.497418] jack         | [ pipewire-jack.c: 3901 registry_event_global()] 0x55563f534180: link 221 79/84 -> 216/1205 added
+[I][00912.497439] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 257/1232 "Surge XT-167:out_1" emit:0
+[I][00912.536419] jack         | [ pipewire-jack.c: 3888 registry_event_global()] 0x55563f534180: client added "Surge XT-183" emit:1
+[I][00912.536481] jack         | [ pipewire-jack.c: 3901 registry_event_global()] 0x55563f534180: link 224 80/85 -> 197/1198 added
+[I][00912.536533] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 259/1235 "Surge XT-167:out_2" emit:0
+[I][00912.536557] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 191/1236 "Surge XT-261:in_4" emit:0
+[I][00912.577303] jack         | [ pipewire-jack.c: 3901 registry_event_global()] 0x55563f534180: link 249 80/85 -> 247/1210 added
+[I][00912.577390] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 228/1238 "Surge XT-261:out_1" emit:0
+[I][00912.577430] jack         | [ pipewire-jack.c: 3901 registry_event_global()] 0x55563f534180: link 241 231/1207 -> 75/80 added
+[I][00912.577454] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 165/1240 "Surge XT-183:in_1" emit:0
+[I][00912.577471] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 164/1241 "Surge XT-230:in_2" emit:0
+[I][00912.577486] jack         | [ pipewire-jack.c: 3901 registry_event_global()] 0x55563f534180: link 179 215/1216 -> 75/80 added
+[I][00912.577496] jack         | [ pipewire-jack.c: 3901 registry_event_global()] 0x55563f534180: link 214 79/84 -> 176/1211 added
+[I][00912.577511] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 262/1244 "Surge XT-261:out_2" emit:0
+[I][00912.577534] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 199/1245 "Surge XT-237:in_4" emit:0
+[I][00912.607352] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 175/1246 "Surge XT-237:out_1" emit:0
+[I][00912.607420] jack         | [ pipewire-jack.c: 3901 registry_event_global()] 0x55563f534180: link 223 174/1221 -> 77/82 added
+[I][00912.607433] jack         | [ pipewire-jack.c: 3901 registry_event_global()] 0x55563f534180: link 240 80/85 -> 173/1215 added
+[I][00912.607448] jack         | [ pipewire-jack.c: 3901 registry_event_global()] 0x55563f534180: link 226 163/1218 -> 77/82 added
+[I][00912.607478] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 253/1250 "Surge XT-183:in_2" emit:0
+[I][00912.607501] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 188/1251 "Surge XT-237:out_2" emit:0
+[I][00912.638049] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 195/1252 "Surge XT-230:in_3" emit:0
+[I][00912.657780] jack         | [ pipewire-jack.c: 3901 registry_event_global()] 0x55563f534180: link 245 257/1232 -> 75/80 added
+[I][00912.657826] jack         | [ pipewire-jack.c: 3901 registry_event_global()] 0x55563f534180: link 196 79/84 -> 250/1217 added
+[I][00912.657889] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 252/1255 "Surge XT-183:in_3" emit:0
+[I][00912.657905] jack         | [ pipewire-jack.c: 3901 registry_event_global()] 0x55563f534180: link 251 79/84 -> 156/1220 added
+[I][00912.657925] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 263/1257 "Surge XT-230:in_4" emit:0
+[I][00912.697110] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 248/1258 "Surge XT-230:out_1" emit:0
+[I][00912.697207] jack         | [ pipewire-jack.c: 3901 registry_event_global()] 0x55563f534180: link 254 259/1235 -> 77/82 added
+[I][00912.697233] jack         | [ pipewire-jack.c: 3901 registry_event_global()] 0x55563f534180: link 233 80/85 -> 198/1223 added
+[I][00912.697280] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 229/1261 "Surge XT-183:in_4" emit:0
+[I][00912.697296] jack         | [ pipewire-jack.c: 3901 registry_event_global()] 0x55563f534180: link 193 80/85 -> 171/1226 added
+[I][00912.697343] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 246/1263 "Surge XT-230:out_2" emit:0
+[I][00912.744298] jack         | [ pipewire-jack.c: 3901 registry_event_global()] 0x55563f534180: link 212 228/1238 -> 75/80 added
+[I][00912.744352] jack         | [ pipewire-jack.c: 3901 registry_event_global()] 0x55563f534180: link 181 175/1246 -> 75/80 added
+[I][00912.744380] jack         | [ pipewire-jack.c: 3901 registry_event_global()] 0x55563f534180: link 235 262/1244 -> 77/82 added
+[I][00912.744437] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 186/1267 "Surge XT-183:out_1" emit:0
+[I][00912.756391] jack         | [ pipewire-jack.c: 3894 registry_event_global()] 0x55563f534180: port added 194/1268 "Surge XT-183:out_2" emit:0
+[I][00912.775801] jack         | [ pipewire-jack.c: 3901 registry_event_global()] 0x55563f534180: link 184 188/1251 -> 77/82 added
+[I][00912.800440] jack         | [ pipewire-jack.c: 3901 registry_event_global()] 0x55563f534180: link 219 79/84 -> 165/1240 added
+[I][00912.800541] jack         | [ pipewire-jack.c: 3901 registry_event_global()] 0x55563f534180: link 180 80/85 -> 253/1250 added
+[I][00912.820891] jack         | [ pipewire-jack.c: 3901 registry_event_global()] 0x55563f534180: link 227 186/1267 -> 75/80 added
+[I][00912.820939] jack         | [ pipewire-jack.c: 3901 registry_event_global()] 0x55563f534180: link 210 79/84 -> 244/1224 added
+[I][00912.820961] jack         | [ pipewire-jack.c: 3901 registry_event_global()] 0x55563f534180: link 204 194/1268 -> 77/82 added
+[I][00912.834310] jack         | [ pipewire-jack.c: 3901 registry_event_global()] 0x55563f534180: link 217 80/85 -> 164/1241 added
+[I][00912.834365] jack         | [ pipewire-jack.c: 3901 registry_event_global()] 0x55563f534180: link 218 248/1258 -> 75/80 added
+[I][00912.853390] jack         | [ pipewire-jack.c: 3901 registry_event_global()] 0x55563f534180: link 220 246/1263 -> 77/82 added
+[I][00916.936574] jack         | [ pipewire-jack.c: 2765 client_node_port_set_param()] client 0x55563f534180: port pure_data:input_1 0.0 id:15 (Spa:Enum:ParamId:Latency) (nil)
+[I][00916.936659] jack         | [ pipewire-jack.c: 2730 port_set_latency()] port pure_data:input_1: set capture latency 0.000000-0.000000 0-0 0-0
+[I][00916.936695] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:input_1: update
+[I][00916.936795] jack         | [ pipewire-jack.c: 2765 client_node_port_set_param()] client 0x55563f534180: port pure_data:input_1 0.0 id:4 (Spa:Enum:ParamId:Format) (nil)
+[I][00916.936810] jack         | [ pipewire-jack.c: 2587 port_set_format()] port pure_data:input_1: update
+[I][00916.936855] jack         | [ pipewire-jack.c: 3957 registry_event_global_remove()] 0x55563f534180: link 255 79/84 -> 128/1128 removed
+[I][00917.027842] jack         | [ pipewire-jack.c: 2765 client_node_port_set_param()] client 0x55563f534180: port pure_data:input_2 0.1 id:15 (Spa:Enum:ParamId:Latency) (nil)
+[I][00917.027925] jack         | [ pipewire-jack.c: 2730 port_set_latency()] port pure_data:input_2: set capture latency 0.000000-0.000000 0-0 0-0
+[I][00917.027948] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:output_1 update capture latency 0.000000-0.000000 0-0 0-0
+[I][00917.027971] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:output_1: update
+[I][00917.028002] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:output_2 update capture latency 0.000000-0.000000 0-0 0-0
+[I][00917.028016] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:output_2: update
+[I][00917.028030] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:output_3 update capture latency 0.000000-0.000000 0-0 0-0
+[I][00917.028042] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:output_3: update
+[I][00917.028056] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:output_4 update capture latency 0.000000-0.000000 0-0 0-0
+[I][00917.028067] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:output_4: update
+[I][00917.028077] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:output_5 update capture latency 0.000000-0.000000 0-0 0-0
+[I][00917.028088] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:output_5: update
+[I][00917.028099] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:output_6 update capture latency 0.000000-0.000000 0-0 0-0
+[I][00917.028110] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:output_6: update
+[I][00917.028119] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:output_7 update capture latency 0.000000-0.000000 0-0 0-0
+[I][00917.028145] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:output_7: update
+[I][00917.028179] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:output_8 update capture latency 0.000000-0.000000 0-0 0-0
+[I][00917.028195] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:output_8: update
+[I][00917.028208] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:output_9 update capture latency 0.000000-0.000000 0-0 0-0
+[I][00917.028394] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:output_9: update
+[I][00917.028433] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:output_10 update capture latency 0.000000-0.000000 0-0 0-0
+[I][00917.028596] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:output_10: update
+[I][00917.028615] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:output_11 update capture latency 0.000000-0.000000 0-0 0-0
+[I][00917.028653] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:output_11: update
+[I][00917.028695] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:output_12 update capture latency 0.000000-0.000000 0-0 0-0
+[I][00917.028710] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:output_12: update
+[I][00917.028725] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:output_13 update capture latency 0.000000-0.000000 0-0 0-0
+[I][00917.028736] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:output_13: update
+[I][00917.028746] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:output_14 update capture latency 0.000000-0.000000 0-0 0-0
+[I][00917.028757] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:output_14: update
+[I][00917.028766] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:output_15 update capture latency 0.000000-0.000000 0-0 0-0
+[I][00917.028777] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:output_15: update
+[I][00917.028789] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:output_16 update capture latency 0.000000-0.000000 0-0 0-0
+[I][00917.028799] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:output_16: update
+[I][00917.028809] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:input_2: update
+[I][00917.028893] jack         | [ pipewire-jack.c: 2765 client_node_port_set_param()] client 0x55563f534180: port pure_data:input_2 0.1 id:4 (Spa:Enum:ParamId:Format) (nil)
+[I][00917.028907] jack         | [ pipewire-jack.c: 2587 port_set_format()] port pure_data:input_2: update
+[I][00917.028947] jack         | [ pipewire-jack.c: 3957 registry_event_global_remove()] 0x55563f534180: link 222 80/85 -> 147/1129 removed
+[I][00917.176741] jack         | [ pipewire-jack.c: 2765 client_node_port_set_param()] client 0x55563f534180: port pure_data:input_3 0.2 id:4 (Spa:Enum:ParamId:Format) (nil)
+[I][00917.176814] jack         | [ pipewire-jack.c: 2587 port_set_format()] port pure_data:input_3: update
+[I][00917.176865] jack         | [ pipewire-jack.c: 3957 registry_event_global_remove()] 0x55563f534180: link 135 76/81 -> 256/1130 removed
+[I][00917.260755] jack         | [ pipewire-jack.c: 2765 client_node_port_set_param()] client 0x55563f534180: port pure_data:input_4 0.3 id:4 (Spa:Enum:ParamId:Format) (nil)
+[I][00917.260846] jack         | [ pipewire-jack.c: 2587 port_set_format()] port pure_data:input_4: update
+[I][00917.260922] jack         | [ pipewire-jack.c: 3957 registry_event_global_remove()] 0x55563f534180: link 127 78/83 -> 185/1131 removed
+[I][00917.350700] jack         | [ pipewire-jack.c: 2765 client_node_port_set_param()] client 0x55563f534180: port pure_data:output_1 1.0 id:15 (Spa:Enum:ParamId:Latency) (nil)
+[I][00917.350783] jack         | [ pipewire-jack.c: 2730 port_set_latency()] port pure_data:output_1: set playback latency 0.000000-0.000000 0-0 0-0
+[I][00917.350825] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:output_1: update
+[I][00917.350872] jack         | [ pipewire-jack.c: 2765 client_node_port_set_param()] client 0x55563f534180: port pure_data:output_1 1.0 id:4 (Spa:Enum:ParamId:Format) (nil)
+[I][00917.350953] jack         | [ pipewire-jack.c: 2587 port_set_format()] port pure_data:output_1: update
+[I][00917.351002] jack         | [ pipewire-jack.c: 3957 registry_event_global_remove()] 0x55563f534180: link 143 157/1144 -> 75/80 removed
+[I][00917.443476] jack         | [ pipewire-jack.c: 2765 client_node_port_set_param()] client 0x55563f534180: port pure_data:output_2 1.1 id:15 (Spa:Enum:ParamId:Latency) (nil)
+[I][00917.443546] jack         | [ pipewire-jack.c: 2730 port_set_latency()] port pure_data:output_2: set playback latency 0.000000-0.000000 0-0 0-0
+[I][00917.443571] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:input_1 update playback latency 0.000000-0.000000 0-0 0-0
+[I][00917.443603] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:input_1: update
+[I][00917.443636] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:input_2 update playback latency 0.000000-0.000000 0-0 0-0
+[I][00917.443651] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:input_2: update
+[I][00917.443664] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:input_3 update playback latency 0.000000-0.000000 0-0 0-0
+[I][00917.443674] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:input_3: update
+[I][00917.443685] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:input_4 update playback latency 0.000000-0.000000 0-0 0-0
+[I][00917.443698] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:input_4: update
+[I][00917.443708] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:input_5 update playback latency 0.000000-0.000000 0-0 0-0
+[I][00917.443719] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:input_5: update
+[I][00917.443732] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:input_6 update playback latency 0.000000-0.000000 0-0 0-0
+[I][00917.443744] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:input_6: update
+[I][00917.443757] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:input_7 update playback latency 0.000000-0.000000 0-0 0-0
+[I][00917.443767] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:input_7: update
+[I][00917.443778] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:input_8 update playback latency 0.000000-0.000000 0-0 0-0
+[I][00917.443788] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:input_8: update
+[I][00917.443797] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:input_9 update playback latency 0.000000-0.000000 0-0 0-0
+[I][00917.443808] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:input_9: update
+[I][00917.443822] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:input_10 update playback latency 0.000000-0.000000 0-0 0-0
+[I][00917.443834] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:input_10: update
+[I][00917.443844] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:input_11 update playback latency 0.000000-0.000000 0-0 0-0
+[I][00917.443854] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:input_11: update
+[I][00917.443864] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:input_12 update playback latency 0.000000-0.000000 0-0 0-0
+[I][00917.443874] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:input_12: update
+[I][00917.443888] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:input_13 update playback latency 0.000000-0.000000 0-0 0-0
+[I][00917.443899] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:input_13: update
+[I][00917.443909] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:input_14 update playback latency 0.000000-0.000000 0-0 0-0
+[I][00917.443920] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:input_14: update
+[I][00917.443931] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:input_15 update playback latency 0.000000-0.000000 0-0 0-0
+[I][00917.443942] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:input_15: update
+[I][00917.443951] jack         | [ pipewire-jack.c: 2654 port_check_latency()] 0x55563f534180: pure_data:input_16 update playback latency 0.000000-0.000000 0-0 0-0
+[I][00917.443965] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:input_16: update
+[I][00917.443976] jack         | [ pipewire-jack.c: 2627 port_update_latency()] port pure_data:output_2: update
+[I][00917.443995] jack         | [ pipewire-jack.c: 2765 client_node_port_set_param()] client 0x55563f534180: port pure_data:output_2 1.1 id:4 (Spa:Enum:ParamId:Format) (nil)
+[I][00917.444044] jack         | [ pipewire-jack.c: 2587 port_set_format()] port pure_data:output_2: update
+[I][00917.444085] jack         | [ pipewire-jack.c: 3957 registry_event_global_remove()] 0x55563f534180: link 134 158/1145 -> 77/82 removed
+[I][00917.579726] jack         | [ pipewire-jack.c: 3957 registry_event_global_remove()] 0x55563f534180: link 161 141/1174 -> 75/80 removed
+[I][00917.675129] jack         | [ pipewire-jack.c: 3957 registry_event_global_remove()] 0x55563f534180: link 151 132/1175 -> 77/82 removed
+[I][00917.810440] jack         | [ pipewire-jack.c: 3957 registry_event_global_remove()] 0x55563f534180: link 140 79/84 -> 139/1170 removed
+[I][00917.810502] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 139/1170 removed "Surge XT:in_1"
+[I][00917.810518] jack         | [ pipewire-jack.c: 3957 registry_event_global_remove()] 0x55563f534180: link 131 80/85 -> 130/1171 removed
+[I][00917.810528] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 130/1171 removed "Surge XT:in_2"
+[I][00917.810537] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 138/1172 removed "Surge XT:in_3"
+[I][00917.810546] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 129/1173 removed "Surge XT:in_4"
+[I][00917.810556] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 141/1174 removed "Surge XT:out_1"
+[I][00917.810567] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 132/1175 removed "Surge XT:out_2"
+[I][00917.810581] jack         | [ pipewire-jack.c: 3944 registry_event_global_remove()] 0x55563f534180: client 133 removed "Surge XT"
+[I][00917.865579] jack         | [ pipewire-jack.c: 3957 registry_event_global_remove()] 0x55563f534180: link 241 231/1207 -> 75/80 removed
+[I][00917.969819] jack         | [ pipewire-jack.c: 3957 registry_event_global_remove()] 0x55563f534180: link 226 163/1218 -> 77/82 removed
+[I][00918.025794] jack         | [ pipewire-jack.c: 3957 registry_event_global_remove()] 0x55563f534180: link 166 79/84 -> 153/1196 removed
+[I][00918.025979] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 153/1196 removed "Surge XT-208:in_1"
+[I][00918.026017] jack         | [ pipewire-jack.c: 3957 registry_event_global_remove()] 0x55563f534180: link 224 80/85 -> 197/1198 removed
+[I][00918.026034] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 197/1198 removed "Surge XT-208:in_2"
+[I][00918.026046] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 162/1202 removed "Surge XT-208:in_3"
+[I][00918.026058] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 192/1204 removed "Surge XT-208:in_4"
+[I][00918.026071] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 231/1207 removed "Surge XT-208:out_1"
+[I][00918.026086] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 163/1218 removed "Surge XT-208:out_2"
+[I][00918.026107] jack         | [ pipewire-jack.c: 3944 registry_event_global_remove()] 0x55563f534180: client 208 removed "Surge XT-208"
+[I][00918.150163] jack         | [ pipewire-jack.c: 3957 registry_event_global_remove()] 0x55563f534180: link 212 228/1238 -> 75/80 removed
+[I][00918.219663] jack         | [ pipewire-jack.c: 3957 registry_event_global_remove()] 0x55563f534180: link 235 262/1244 -> 77/82 removed
+[I][00918.264007] jack         | [ pipewire-jack.c: 3957 registry_event_global_remove()] 0x55563f534180: link 196 79/84 -> 250/1217 removed
+[I][00918.264107] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 250/1217 removed "Surge XT-261:in_1"
+[I][00918.264127] jack         | [ pipewire-jack.c: 3957 registry_event_global_remove()] 0x55563f534180: link 233 80/85 -> 198/1223 removed
+[I][00918.264138] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 198/1223 removed "Surge XT-261:in_2"
+[I][00918.264150] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 225/1228 removed "Surge XT-261:in_3"
+[I][00918.264159] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 191/1236 removed "Surge XT-261:in_4"
+[I][00918.264170] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 228/1238 removed "Surge XT-261:out_1"
+[I][00918.264180] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 262/1244 removed "Surge XT-261:out_2"
+[I][00918.264195] jack         | [ pipewire-jack.c: 3944 registry_event_global_remove()] 0x55563f534180: client 261 removed "Surge XT-261"
+[I][00918.386964] jack         | [ pipewire-jack.c: 3957 registry_event_global_remove()] 0x55563f534180: link 179 215/1216 -> 75/80 removed
+[I][00918.434330] jack         | [ pipewire-jack.c: 3957 registry_event_global_remove()] 0x55563f534180: link 223 174/1221 -> 77/82 removed
+[I][00918.468841] jack         | [ pipewire-jack.c: 3957 registry_event_global_remove()] 0x55563f534180: link 221 79/84 -> 216/1205 removed
+[I][00918.468944] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 216/1205 removed "Surge XT-242:in_1"
+[I][00918.468970] jack         | [ pipewire-jack.c: 3957 registry_event_global_remove()] 0x55563f534180: link 249 80/85 -> 247/1210 removed
+[I][00918.468986] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 247/1210 removed "Surge XT-242:in_2"
+[I][00918.468996] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 205/1212 removed "Surge XT-242:in_3"
+[I][00918.469007] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 206/1214 removed "Surge XT-242:in_4"
+[I][00918.469018] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 215/1216 removed "Surge XT-242:out_1"
+[I][00918.469027] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 174/1221 removed "Surge XT-242:out_2"
+[I][00918.469042] jack         | [ pipewire-jack.c: 3944 registry_event_global_remove()] 0x55563f534180: client 242 removed "Surge XT-242"
+[I][00918.574832] jack         | [ pipewire-jack.c: 3957 registry_event_global_remove()] 0x55563f534180: link 181 175/1246 -> 75/80 removed
+[I][00918.607216] jack         | [ pipewire-jack.c: 3957 registry_event_global_remove()] 0x55563f534180: link 184 188/1251 -> 77/82 removed
+[I][00918.645791] jack         | [ pipewire-jack.c: 3957 registry_event_global_remove()] 0x55563f534180: link 251 79/84 -> 156/1220 removed
+[I][00918.645894] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 156/1220 removed "Surge XT-237:in_1"
+[I][00918.645912] jack         | [ pipewire-jack.c: 3957 registry_event_global_remove()] 0x55563f534180: link 193 80/85 -> 171/1226 removed
+[I][00918.645923] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 171/1226 removed "Surge XT-237:in_2"
+[I][00918.645933] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 202/1230 removed "Surge XT-237:in_3"
+[I][00918.645943] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 199/1245 removed "Surge XT-237:in_4"
+[I][00918.645955] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 175/1246 removed "Surge XT-237:out_1"
+[I][00918.645984] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 188/1251 removed "Surge XT-237:out_2"
+[I][00918.645999] jack         | [ pipewire-jack.c: 3944 registry_event_global_remove()] 0x55563f534180: client 237 removed "Surge XT-237"
+[I][00918.740023] jack         | [ pipewire-jack.c: 3957 registry_event_global_remove()] 0x55563f534180: link 227 186/1267 -> 75/80 removed
+[I][00918.766288] jack         | [ pipewire-jack.c: 3957 registry_event_global_remove()] 0x55563f534180: link 204 194/1268 -> 77/82 removed
+[I][00918.802650] jack         | [ pipewire-jack.c: 3957 registry_event_global_remove()] 0x55563f534180: link 219 79/84 -> 165/1240 removed
+[I][00918.802757] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 165/1240 removed "Surge XT-183:in_1"
+[I][00918.802774] jack         | [ pipewire-jack.c: 3957 registry_event_global_remove()] 0x55563f534180: link 180 80/85 -> 253/1250 removed
+[I][00918.802785] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 253/1250 removed "Surge XT-183:in_2"
+[I][00918.802796] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 252/1255 removed "Surge XT-183:in_3"
+[I][00918.802806] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 229/1261 removed "Surge XT-183:in_4"
+[I][00918.802817] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 186/1267 removed "Surge XT-183:out_1"
+[I][00918.802828] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 194/1268 removed "Surge XT-183:out_2"
+[I][00918.802843] jack         | [ pipewire-jack.c: 3944 registry_event_global_remove()] 0x55563f534180: client 183 removed "Surge XT-183"
+[I][00918.901774] jack         | [ pipewire-jack.c: 3957 registry_event_global_remove()] 0x55563f534180: link 245 257/1232 -> 75/80 removed
+[I][00918.931874] jack         | [ pipewire-jack.c: 3957 registry_event_global_remove()] 0x55563f534180: link 254 259/1235 -> 77/82 removed
+[I][00918.963387] jack         | [ pipewire-jack.c: 3957 registry_event_global_remove()] 0x55563f534180: link 214 79/84 -> 176/1211 removed
+[I][00918.963483] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 176/1211 removed "Surge XT-167:in_1"
+[I][00918.963505] jack         | [ pipewire-jack.c: 3957 registry_event_global_remove()] 0x55563f534180: link 240 80/85 -> 173/1215 removed
+[I][00918.963521] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 173/1215 removed "Surge XT-167:in_2"
+[I][00918.963533] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 177/1222 removed "Surge XT-167:in_3"
+[I][00918.963545] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 239/1227 removed "Surge XT-167:in_4"
+[I][00918.963557] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 257/1232 removed "Surge XT-167:out_1"
+[I][00918.963568] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 259/1235 removed "Surge XT-167:out_2"
+[I][00918.963587] jack         | [ pipewire-jack.c: 3944 registry_event_global_remove()] 0x55563f534180: client 167 removed "Surge XT-167"
+[I][00919.063717] jack         | [ pipewire-jack.c: 3957 registry_event_global_remove()] 0x55563f534180: link 218 248/1258 -> 75/80 removed
+[I][00919.090359] jack         | [ pipewire-jack.c: 3957 registry_event_global_remove()] 0x55563f534180: link 220 246/1263 -> 77/82 removed
+[I][00919.119033] jack         | [ pipewire-jack.c: 3957 registry_event_global_remove()] 0x55563f534180: link 210 79/84 -> 244/1224 removed
+[I][00919.119124] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 244/1224 removed "Surge XT-230:in_1"
+[I][00919.119151] jack         | [ pipewire-jack.c: 3957 registry_event_global_remove()] 0x55563f534180: link 217 80/85 -> 164/1241 removed
+[I][00919.119164] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 164/1241 removed "Surge XT-230:in_2"
+[I][00919.119177] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 195/1252 removed "Surge XT-230:in_3"
+[I][00919.119187] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 263/1257 removed "Surge XT-230:in_4"
+[I][00919.119196] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 248/1258 removed "Surge XT-230:out_1"
+[I][00919.119207] jack         | [ pipewire-jack.c: 3951 registry_event_global_remove()] 0x55563f534180: port 246/1263 removed "Surge XT-230:out_2"
+[I][00919.119219] jack         | [ pipewire-jack.c: 3944 registry_event_global_remove()] 0x55563f534180: client 230 removed "Surge XT-230"
+Pd: signal 2
+[W][00952.123107] spa.loop     | [          loop.c: 1073 impl_clear()] 0x55563f54eb18: loop is entered 1 times polling:1
+[W][00952.123174] spa.loop     | [          loop.c: 1073 impl_clear()] 0x55563f545598: loop is entered 1 times polling:1
+[W][00952.123210] spa.loop     | [          loop.c: 1073 impl_clear()] 0x55563f53fdd8: loop is entered 1 times polling:1
+Exception ignored in: <function BaseSubprocessTransport.__del__ at 0x7fff6925c220>
+Traceback (most recent call last):
+  File "/usr/lib/python3.11/asyncio/base_subprocess.py", line 126, in __del__
+  File "/usr/lib/python3.11/asyncio/base_subprocess.py", line 104, in close
+  File "/usr/lib/python3.11/asyncio/unix_events.py", line 757, in close
+  File "/usr/lib/python3.11/asyncio/unix_events.py", line 743, in write_eof
+  File "/usr/lib/python3.11/asyncio/base_events.py", line 761, in call_soon
+  File "/usr/lib/python3.11/asyncio/base_events.py", line 519, in _check_closed
+RuntimeError: Event loop is closed
