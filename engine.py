@@ -446,8 +446,6 @@ class SurgeXTEngine(Engine):
         # SurgeXT will panic and crash if left without any input or output when in JACK
         # Which is why we're disconencting last
         for link in init_links:
-            print("output node", link["info"]["output-node-id"])
-            print("input node", link["info"]["input-node-id"])
             await disconnectPipewireLink(link['id'])
 
     async def configure_duplex_node(self):
