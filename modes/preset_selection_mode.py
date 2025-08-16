@@ -66,24 +66,61 @@ class PresetSelectionMode(definitions.PyshaMode):
         except:
             self.save_presets()
 
-    def load_init_presets(self):
-        # TODO: Something resets the devices right after they're loaded
-        print("update presets")
+
+    def init_surge_preset_state(self):
         for idx, instrument in enumerate(self.app.instruments):
-            self.send_osc("/patch/load", self.presets[instrument][1], instrument_shortname=instrument)
-            time.sleep(0.1)
-            self.send_osc("/q/all_params", self.presets[instrument][1], instrument_shortname=instrument)
+            for index in range(8):
+                preset_name = f"{instrument}_{index}"            
+                preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
+                does_file_exist = os.path.isfile(f"{preset_path}.fxp") 
+                if does_file_exist == False:
+                    print('regen')
+                    self.send_osc("/patch/load", self.presets[instrument][idx], instrument_shortname=instrument)
+                    time.sleep(0.1)
+                    self.send_osc("/patch/save", preset_path, instrument_shortname=instrument)
+                    time.sleep(0.1)
             
+
+    def save_pad_to_state(self):
+        instrument_shortname = (
+            self.app.instrument_selection_mode.get_current_instrument_short_name()
+        )
+        instrument_index = self.app.instrument_selection_mode.get_current_instrument_info()["instrument_index"]
+        preset_index = self.last_pad_in_column_pressed[instrument_shortname][0]
+        preset_name = f"{instrument_shortname}_{preset_index}"            
+        preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
+        print(preset_path)
+        self.send_osc("/patch/save", preset_path, instrument_shortname=instrument_shortname)
+
+    def save_all_presets_to_state(self):
+        for idx, instrument_shortname in enumerate(self.app.instruments):
+            preset_index = self.last_pad_in_column_pressed[instrument_shortname][0]
+            preset_name = f"{instrument_shortname}_{preset_index}"            
+            preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
+            print(preset_path)
+            self.send_osc("/patch/save", preset_path, instrument_shortname=instrument_shortname)
+            time.sleep(1)
+            
+        print("saved presets to state")
+
+    def load_init_presets(self):
         
-        #     time.sleep(0.1)
-        #     self.app.instruments[instrument].query_slots()
-        #     self.app.instruments[instrument].query_devices()
-        #     self.app.instruments[instrument].update_current_devices()
-        #     self.on_pad_pressed(pad_ij=[1, idx], pad_n=None, velocity=None)
-        #     self.on_pad_released(pad_ij=[1, idx], pad_n=None, velocity=None)
+        # Check if there is a preset in the state dir
+        # If yes load that
+        # If not then load the normal patch and save to the state
         
-        # self.on_pad_pressed(pad_ij=[1, 0], pad_n=None, velocity=None)
-        # self.on_pad_released(pad_ij=[1, 0], pad_n=None, velocity=None)
+        self.init_surge_preset_state()
+        
+        for idx, instrument in enumerate(self.app.instruments):
+            preset_name = f"{instrument}_{0}"            
+            preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
+            does_file_exist = os.path.isfile(preset_path) 
+            
+            self.send_osc("/patch/load", preset_path, instrument_shortname=instrument)
+            time.sleep(0.1)
+            self.send_osc("/q/all_params",preset_path, instrument_shortname=instrument)
+            
+            
 
     def create_dict_from_paths(self, arr):
         d = dict()
@@ -270,6 +307,7 @@ class PresetSelectionMode(definitions.PyshaMode):
         )
         self.app.buttons_need_update = True
         self.app.pads_need_update = True
+        self.save_all_presets_to_state()
 
     def update_buttons(self):
         show_prev, show_next = self.has_prev_next_pages()
@@ -525,5 +563,6 @@ class PresetSelectionMode(definitions.PyshaMode):
         instrument = self.app.instruments.get(
             instrument_shortname or self.app.osc_mode.get_current_instrument_short_name_helper(), None
         )
+        print(instrument_shortname, instrument)
         if instrument:
             return instrument.send_message(*args)

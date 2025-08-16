@@ -1283,8 +1283,11 @@ if __name__ == "__main__":
         asyncio.run(main())
     except KeyboardInterrupt:
         print("Exiting Pysha...")
-        app.push.f_stop.set()
-        app.osc_mode.close_transports()
+        try:
+            app.push.f_stop.set()
+            app.osc_mode.close_transports()
+        except:
+            pass
         # # cancel all tasks in the event loop
         # tasks = asyncio.all_tasks()
         # for task in tasks:

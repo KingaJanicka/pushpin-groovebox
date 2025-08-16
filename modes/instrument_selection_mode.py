@@ -78,6 +78,7 @@ class InstrumentSelectionMode(definitions.PyshaMode):
                         "illuminate_local_notes": instrument_data.get(
                             "illuminate_local_notes", True
                         ),
+                        "instrument_index": instrument_data.get("instrument_index", None)
                     }
                 )
             print("Created {0} instruments!".format(len(self.instruments_info)))
