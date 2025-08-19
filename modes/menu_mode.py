@@ -210,7 +210,7 @@ class MenuMode(PyshaMode):
                 devices = self.app.osc_mode.get_current_instrument_devices()
                 for device in devices:
                     if device.label == selected_device.label:
-                        device.query_visible_controls()
+                        device.query_all_controls()
                 self.app.toggle_menu_mode()
                 self.app.buttons_need_update = True
             except IndexError:

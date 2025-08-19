@@ -115,8 +115,8 @@ class SequencerMode(MelodicMode):
         # Loads Trig edit state
         self.app.trig_edit_mode.load_state()
 
-        # Loads Osc mode state
-        self.app.osc_mode.load_state()
+        # # Loads Osc mode state
+        # self.app.osc_mode.load_state()
 
         # Loads scale edit menu
         try:
@@ -182,8 +182,8 @@ class SequencerMode(MelodicMode):
         # Saves Trig edit state
         self.app.trig_edit_mode.save_state()
         
-        # Saves Osc mode state
-        self.app.osc_mode.save_state()
+        # # Saves Osc mode state
+        # self.app.osc_mode.save_state()
 
 
     def start_timeline(self):

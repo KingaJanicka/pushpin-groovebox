@@ -379,8 +379,8 @@ class MetroSequencerMode(MelodicMode):
         # Loads Trig edit state
         self.app.trig_edit_mode.load_state()
 
-        # Loads Osc mode state
-        self.app.osc_mode.load_state()
+        # # Loads Osc mode state
+        # self.app.osc_mode.load_state()
 
         # Loads scale edit menu
         try:
@@ -440,8 +440,8 @@ class MetroSequencerMode(MelodicMode):
         # Saves Trig edit state
         self.app.trig_edit_mode.save_state()
 
-        # Saves Osc mode state
-        self.app.osc_mode.save_state()
+        # # Saves Osc mode state
+        # self.app.osc_mode.save_state()
 
     def start_timeline(self):
         self.global_timeline.background()

@@ -12,5 +12,13 @@ This is the config line needed to set smaller blocksize with pw-jack
 to be used only once, val=32 in samples
 pw-metadata -n settings 0 clock.quantum <VALUE> 
 
-TODO: Locks broke again? IDK why, maybe pad was stuck?
+
+
+
+TODO: 
+For whatever reason not all synth params will update on state load
+I think this might have to do with some error regarding the visible/all in osc_device
+
+Locks broke again? IDK why, maybe pad was stuck?
+
 

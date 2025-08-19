@@ -8,6 +8,7 @@ from user_interface.display_utils import show_text
 from pathlib import Path
 import logging
 import time
+import asyncio
 log = logging.getLogger("preset_selection_mode")
 
 # log.setLevel(level=logging.DEBUG)
@@ -62,12 +63,14 @@ class PresetSelectionMode(definitions.PyshaMode):
         )
 
         try:
+            
             self.load_presets()
         except:
             self.save_presets()
 
 
     def init_surge_preset_state(self):
+        print("Init surge preset state")
         for idx, instrument in enumerate(self.app.instruments):
             for index in range(8):
                 preset_name = f"{instrument}_{index}"            
@@ -93,35 +96,38 @@ class PresetSelectionMode(definitions.PyshaMode):
         self.send_osc("/patch/save", preset_path, instrument_shortname=instrument_shortname)
 
     def save_all_presets_to_state(self):
+        print("saving presets")
         for idx, instrument_shortname in enumerate(self.app.instruments):
             preset_index = self.last_pad_in_column_pressed[instrument_shortname][0]
             preset_name = f"{instrument_shortname}_{preset_index}"            
             preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
-            print(preset_path)
+            # print(preset_path)
             self.send_osc("/patch/save", preset_path, instrument_shortname=instrument_shortname)
-            time.sleep(1)
+            # time.sleep(1)
             
+        # self.app.osc_mode.save_state()
         print("saved presets to state")
 
-    def load_init_presets(self):
-        
+    async def load_init_state(self, instrument_shortname):
+        print("load presets")
         # Check if there is a preset in the state dir
         # If yes load that
         # If not then load the normal patch and save to the state
+    
+        preset_name = f"{instrument_shortname}_{0}"            
+        preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
+        self.send_osc("/patch/load", preset_path, instrument_shortname=instrument_shortname)
+        self.send_osc("/q/all_params",preset_path, instrument_shortname=instrument_shortname)
+        instrument = self.app.instruments[instrument_shortname]
+        await asyncio.sleep(2)
+        instrument.query_slots()
+        instrument.update_current_devices()
+        instrument.query_all_controls()
+        # time.sleep(1)
+        # instrument.init_devices_sync()
+        # print("end of load init presets")
         
-        self.init_surge_preset_state()
         
-        for idx, instrument in enumerate(self.app.instruments):
-            preset_name = f"{instrument}_{0}"            
-            preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
-            does_file_exist = os.path.isfile(preset_path) 
-            
-            self.send_osc("/patch/load", preset_path, instrument_shortname=instrument)
-            time.sleep(0.1)
-            self.send_osc("/q/all_params",preset_path, instrument_shortname=instrument)
-            
-            
-
     def create_dict_from_paths(self, arr):
         d = dict()
         for path in arr:
@@ -145,13 +151,9 @@ class PresetSelectionMode(definitions.PyshaMode):
     def save_presets(self):
         json.dump(self.presets, open(self.presets_filename, "w"))  # Save to file
 
-    def activate(self):
-        self.current_page = 0
-        self.update_buttons()
-        self.update_pads()
-
     def new_instrument_selected(self):
         self.current_page = 0
+        self.save_all_presets_to_state()
         self.app.pads_need_update = True
         self.app.buttons_need_update = True
 
@@ -307,7 +309,7 @@ class PresetSelectionMode(definitions.PyshaMode):
         )
         self.app.buttons_need_update = True
         self.app.pads_need_update = True
-        self.save_all_presets_to_state()
+        # self.save_all_presets_to_state()
 
     def update_buttons(self):
         show_prev, show_next = self.has_prev_next_pages()
@@ -375,12 +377,9 @@ class PresetSelectionMode(definitions.PyshaMode):
         return True  # Prevent other modes to get this event
 
     def on_pad_released(self, pad_n, pad_ij, velocity):
-        #TODO: select needs to be called here, think this will need to be
-        # revised as we work on the param-locking
-        # TODO: with the re-write of how devices are handled this is now broken
         instrument = self.app.osc_mode.get_current_instrument()
         instrument.query_slots()
-        instrument.query_devices()
+        instrument.query_all_controls()
         instrument.update_current_devices()
         instrument.init_devices_sync()
         self.update_pads()
@@ -563,6 +562,6 @@ class PresetSelectionMode(definitions.PyshaMode):
         instrument = self.app.instruments.get(
             instrument_shortname or self.app.osc_mode.get_current_instrument_short_name_helper(), None
         )
-        print(instrument_shortname, instrument)
+        # print(instrument_shortname, instrument)
         if instrument:
             return instrument.send_message(*args)
