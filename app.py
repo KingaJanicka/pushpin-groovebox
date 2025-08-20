@@ -216,6 +216,7 @@ class PyshaApp(object):
             self.settings_mode.activate()
 
     def toggle_menu_mode(self):
+        # print("toggle menu mode")
         previous_mode = self.previously_active_mode_for_xor_group
         # print("modes:",previous_mode)
         # instrument = self.osc_mode.get_current_instrument()
@@ -233,7 +234,6 @@ class PyshaApp(object):
             self.menu_mode.deactivate()
         else:
             # Activate (replace midi cc and instrument selection mode by ddrm tone selector mode)
-            # print("activate menu")
             # print(self.active_modes)
             self.previously_active_mode_for_xor_group = self.active_modes[-1]
             
@@ -944,7 +944,9 @@ class PyshaApp(object):
         for idx, instrument_shortname in enumerate(self.instruments):
             instrument = self.instruments[instrument_shortname]
                 
-            await self.preset_selection_mode.load_init_state(instrument_shortname=instrument_shortname)
+            self.queue.append(self.preset_selection_mode.load_init_state(instrument_shortname=instrument_shortname))
+            # instrument.update_current_devices()
+
 
         # self.osc_mode.load_state()
         

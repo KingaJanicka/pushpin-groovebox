@@ -109,7 +109,7 @@ class PresetSelectionMode(definitions.PyshaMode):
         print("saved presets to state")
 
     async def load_init_state(self, instrument_shortname):
-        print("load presets")
+        # print("load presets")
         # Check if there is a preset in the state dir
         # If yes load that
         # If not then load the normal patch and save to the state
@@ -119,10 +119,12 @@ class PresetSelectionMode(definitions.PyshaMode):
         self.send_osc("/patch/load", preset_path, instrument_shortname=instrument_shortname)
         self.send_osc("/q/all_params",preset_path, instrument_shortname=instrument_shortname)
         instrument = self.app.instruments[instrument_shortname]
-        await asyncio.sleep(2)
+        await asyncio.sleep(1)
         instrument.query_slots()
+        await asyncio.sleep(1)
         instrument.update_current_devices()
-        instrument.query_all_controls()
+        self.send_osc("/q/all_params",preset_path, instrument_shortname=instrument_shortname)
+        # instrument.query_all_controls()
         # time.sleep(1)
         # instrument.init_devices_sync()
         # print("end of load init presets")
@@ -298,6 +300,8 @@ class PresetSelectionMode(definitions.PyshaMode):
         self.update_pads()
         self.notify_status_in_display()
         self.set_knob_postions()
+        
+
 
     def deactivate(self):
         self.app.push.pads.set_all_pads_to_color(color=definitions.BLACK)
@@ -310,6 +314,13 @@ class PresetSelectionMode(definitions.PyshaMode):
         self.app.buttons_need_update = True
         self.app.pads_need_update = True
         # self.save_all_presets_to_state()
+        try:
+            for idx, instrument_shortname in enumerate(self.app.instruments):
+                instrument = self.app.instruments[instrument_shortname]
+                    
+                instrument.update_current_devices()
+        except Exception as e:
+            pass
 
     def update_buttons(self):
         show_prev, show_next = self.has_prev_next_pages()
