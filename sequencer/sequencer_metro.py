@@ -324,14 +324,14 @@ class SequencerMetro(object):
                                     lock_value = None
                                     if self.locks[self.step_index][slot_idx][control_idx] != None:
                                         lock_value = self.locks[self.step_index][slot_idx][control_idx] 
+                                        if hasattr(control, "value"):
+                                            lock_offset = lock_value - control.value
+                                            value_after_scale = lock_offset * lock_scale_value + control.value
+                                            if lock_value != None:
+                                                self.app.send_osc(lock_address, value_after_scale, instrument.name)
+                                                self.controls_to_reset.append(control)
                                     else:
                                         lock_value = 0
-                                    if hasattr(control, "value"):
-                                        lock_offset = lock_value - control.value
-                                        value_after_scale = lock_offset * lock_scale_value + control.value
-                                        if lock_value != None:
-                                            self.app.send_osc(lock_address, value_after_scale, instrument.name)
-                                            self.controls_to_reset.append(control)
                 # This elif branch is for slots that have only one device and therefore
                 # don't have the device address/val in the init
                 elif slot_idx == 2 or slot_idx == 3 or slot_idx == 4:
@@ -343,14 +343,14 @@ class SequencerMetro(object):
                             lock_value = None
                             if self.locks[self.step_index][slot_idx][control_idx] != None:
                                 lock_value = self.locks[self.step_index][slot_idx][control_idx] 
+                                if hasattr(control, "value"):
+                                    lock_offset = lock_value - control.value
+                                    value_after_scale = lock_offset * lock_scale_value + control.value
+                                    if lock_value != None and lock_address != None:
+                                        self.app.send_osc(lock_address, value_after_scale, instrument.name)
+                                        self.controls_to_reset.append(control)
                             else:
                                 lock_value = 0
-                            if hasattr(control, "value"):
-                                lock_offset = lock_value - control.value
-                                value_after_scale = lock_offset * lock_scale_value + control.value
-                                if lock_value != None and lock_address != None:
-                                    self.app.send_osc(lock_address, value_after_scale, instrument.name)
-                                    self.controls_to_reset.append(control)
 
 
         except Exception as e:
