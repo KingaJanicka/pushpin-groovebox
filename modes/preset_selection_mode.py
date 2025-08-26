@@ -109,7 +109,6 @@ class PresetSelectionMode(definitions.PyshaMode):
         print("saved presets to state")
 
     async def load_init_state(self, instrument_shortname):
-        # print("load presets")
         # Check if there is a preset in the state dir
         # If yes load that
         # If not then load the normal patch and save to the state
@@ -123,9 +122,11 @@ class PresetSelectionMode(definitions.PyshaMode):
         instrument.query_slots()
         await asyncio.sleep(1)
         instrument.update_current_devices()
+        await asyncio.sleep(2)
         instrument.query_all_controls()
-        # self.send_osc("/q/all_params",preset_path, instrument_shortname=instrument_shortname)
-        # instrument.query_all_controls()
+        self.send_osc("/q/all_params",preset_path, instrument_shortname=instrument_shortname)
+        instrument.query_all_controls()
+        
         # time.sleep(1)
         # instrument.init_devices_sync()
         # print("end of load init presets")
