@@ -282,41 +282,41 @@ class AudioInDevice(PyshaMode):
             }
             control_def["groups"].append(dest)
 
-        overwitch = self.app.external_instruments[0]
-        print("Overwitch engine PID, ", overwitch.engine.PID) 
-        overwitch_def = None
-        overwitch_def = {
-            "$type": "group",
-            "label": f'{overwitch.name}',
-            "pid": f'{overwitch.engine.PID or 0}',
-            "onselect": {
-                "$type": "message",
-                "$comment": "",
-                "address": "/bla",
-                "value": overwitch.engine.PID or 0,
-            },
-            "controls": [
-                {
-                    "$type": "control-menu",
-                    "items": [
-                    ],
-                }
-            ],
-        }
-        print(len(overwitch.engine.pw_ports))
-        for port in overwitch.engine.pw_ports["output"]:
-            control = {
-                            "$type": "menu-item",
-                            "label": port["info"]["props"]["port.name"],
-                            "onselect": {
-                                "$type": "message",
-                                "$comment": "RingMod",
-                                "address": "/bla",
-                                "value": overwitch.engine.PID or 0,
-                            },
-                        }
-            overwitch_def["controls"][0]["items"].append(control)
-        control_def["groups"].append(overwitch_def)
+        # overwitch = self.app.external_instruments[0]
+        # print("Overwitch engine PID, ", overwitch.engine.PID) 
+        # overwitch_def = None
+        # overwitch_def = {
+        #     "$type": "group",
+        #     "label": f'{overwitch.name}',
+        #     "pid": f'{overwitch.engine.PID or 0}',
+        #     "onselect": {
+        #         "$type": "message",
+        #         "$comment": "",
+        #         "address": "/bla",
+        #         "value": overwitch.engine.PID or 0,
+        #     },
+        #     "controls": [
+        #         {
+        #             "$type": "control-menu",
+        #             "items": [
+        #             ],
+        #         }
+        #     ],
+        # }
+        # print(len(overwitch.engine.pw_ports))
+        # for port in overwitch.engine.pw_ports["output"]:
+        #     control = {
+        #                     "$type": "menu-item",
+        #                     "label": port["info"]["props"]["port.name"],
+        #                     "onselect": {
+        #                         "$type": "message",
+        #                         "$comment": "RingMod",
+        #                         "address": "/bla",
+        #                         "value": overwitch.engine.PID or 0,
+        #                     },
+        #                 }
+        #     overwitch_def["controls"][0]["items"].append(control)
+        # control_def["groups"].append(overwitch_def)
         for out in range(1, 5):
             try:
                 menu = OSCControlSwitch(

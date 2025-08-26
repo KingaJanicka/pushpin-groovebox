@@ -13,6 +13,7 @@ import asyncio
 import logging
 import jack
 import isobar as iso
+import re
 from ratelimit import limits
 from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.osc_server import AsyncIOOSCUDPServer
@@ -185,7 +186,7 @@ class PyshaApp(object):
         self.ddrm_tone_selector_mode = DDRMToneSelectorMode(self, settings=settings)
         self.menu_mode = MenuMode(self, settings=settings, send_osc_func=self.send_osc)
         self.settings_mode = SettingsMode(self, settings=settings)
-        self.mute_mode = MuteMode(self, settings=settings)
+        self.mute_mode = MuteMode(self, settings=settings) 
         overwitch_def = {
             "instrument_name": "Overwitch",
             "instrument_short_name": "Overwitch",
@@ -1243,6 +1244,20 @@ def on_midi_connected(_):
         # traceback.print_exc()
 
 async def main():
+    
+    ow = await asyncio.create_subprocess_exec("overwitch-cli","-l", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+    stdout, stderr = await ow.communicate()
+    overwitch_devices = []
+    
+    for dev in stdout.splitlines():
+        """
+        String Template:
+        0: Analog Heat (ID 1935:000a) at bus 001, address 002
+        """
+        m = re.search(r'(?P<device_number>\d+):\s(?P<device_name>[^\(]+)\(ID (?P<device_id>\d+:[^\)]+)\) at bus (?P<device_bus>\d+), address (?P<device_address>\d+)', dev)
+        
+        overwitch_devices.append({'idx': m.group('device_number'), 'name': m.group('device_name')})
+        print(overwitch_devices)
     # Initialise OSC sockets
     loop = asyncio.get_event_loop()
 

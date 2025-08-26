@@ -319,19 +319,20 @@ class SequencerMetro(object):
                     lock_scale_value = 0
                 else:
                     lock_scale_value = self.lock_scale[self.step_index] / 7
-                
                 if slot != None:
                     for device_idx, device in enumerate(instrument.devices[slot_idx]):
                         for command in enumerate(device.init):
-                            # TODO: or if slot is 2,3,4 to make sure we're sending on the filter page too
+                            
                             if command[1]["address"] == slot["address"] and command[1]["value"] == slot["value"]:
                                 # we have the right device
                                 # Now we just need to enum the controls and send the values 
                                 for control_idx, control in enumerate(device.controls):
                                     lock_address = control.address
                                     lock_value = self.locks[self.step_index][slot_idx][control_idx]
+                                    lock_offset = lock_value - control.value
+                                    value_after_scale = lock_offset * lock_scale_value + control.value
                                     if lock_value != None:
-                                        self.app.send_osc(lock_address, lock_value*lock_scale_value, instrument.name)
+                                        self.app.send_osc(lock_address, value_after_scale, instrument.name)
                                         self.controls_to_reset.append(control)
                 
                 # This elif branch is for slots that have only one device and therefore
@@ -343,8 +344,10 @@ class SequencerMetro(object):
                         for control_idx, control in enumerate(device.controls):
                             lock_address = control.address
                             lock_value = self.locks[self.step_index][slot_idx][control_idx]
+                            lock_offset = lock_value - control.value
+                            value_after_scale = lock_offset * lock_scale_value + control.value
                             if lock_value != None and lock_address != None:
-                                self.app.send_osc(lock_address, lock_value*lock_scale_value, instrument.name)
+                                self.app.send_osc(lock_address, value_after_scale, instrument.name)
                                 self.controls_to_reset.append(control)
         except Exception as e:
             print("Error in evaluate_and_play_notes")
