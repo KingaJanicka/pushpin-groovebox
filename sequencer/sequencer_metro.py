@@ -85,7 +85,7 @@ class SequencerMetro(object):
                     # tick_callback(self.name, len(self.pitch)),
                     self.seq_playhead_update(),
                 ),
-                "duration": 0.1,
+                "duration": 0.0625,
             }, 
         )
 
@@ -177,7 +177,7 @@ class SequencerMetro(object):
             # Play the note, reset the counter for the time scale
             self.step_count += 1
             self.evaluate_and_play_notes()
-            self.scale_count = int(seq_time_scale)
+            self.scale_count = int(seq_time_scale) + 1
         
         elif self.scale_count != 0:
             # This has to do with the time scale setting

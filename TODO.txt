@@ -27,4 +27,7 @@ Audio in broken (overwitch)
 check if min value of the plock is the knob val
 Should be fixed but check to be sure (preset_sel line 330)
 
-off by one error with the master scale steps thing
+vocoder borken, clouds too
+needds a reset of held pads on inst change for the sequencer
+
+off by one error in time scale
