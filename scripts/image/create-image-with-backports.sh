@@ -19,7 +19,7 @@ IMAGE="$(date +'%Y-%m-%d')_pushpin-groovebox_$(git rev-parse --short HEAD).img"
 # service dbus start
 
 if ! test -f $IMAGE; then
-  curl -o https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-11-19/2024-11-19-raspios-bookworm-arm64-lite.img.xz $IMAGE.xz
+  curl -o $IMAGE.xz https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-11-19/2024-11-19-raspios-bookworm-arm64-lite.img.xz
   xz -d $IMAGE.xz
 fi
 
