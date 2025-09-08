@@ -13,6 +13,30 @@
 			"$comment": "Set vol to zero",
 			"address": "/param/a/mixer/rm1x2/volume",
 			"value": 0
+		},
+			{
+			"$type": "message",
+			"$comment": "Set send to zero",
+			"address": "/param/a/send/1/level",
+			"value": 0
+		},
+			{
+			"$type": "message",
+			"$comment": "Set send to zero",
+			"address": "/param/a/send/2/level",
+			"value": 0
+		},
+			{
+			"$type": "message",
+			"$comment": "Set send to zero",
+			"address": "/param/a/send/3/level",
+			"value": 0
+		},
+			{
+			"$type": "message",
+			"$comment": "Set send to zero",
+			"address": "/param/a/send/4/level",
+			"value": 0
 		}
 	],
 	"controls": [

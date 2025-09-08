@@ -133,16 +133,6 @@ class OSCDevice(PyshaMode):
             self.send_message(cmd["address"], float(cmd["value"]))
 
     async def select(self):
-        # TODO: This should keep values from prev device when switching
-        # This state should be set in on_button_pressed in menu_mode
-
-        # Dispatchers are useful but they're preventing us from using this select along with locking from the sequencer
-        # Maybe we should only have them on selectivley?
-
-        # Maybe keep *all* state in the json, reverse engineer the preset format so that we can set stuff manually
-        # when the preset changes, preventing desync entirely
-
-        
 
         instrument_shortname = self.app.osc_mode.get_current_instrument_short_name_helper()
         instrument = self.app.instruments[instrument_shortname]
@@ -294,10 +284,10 @@ class OSCDevice(PyshaMode):
                     control.update_value(increment)
                     
                     # Update state with current control value
-                    instrument_shortname = self.app.osc_mode.get_current_instrument_short_name_helper()
-                    state = self.app.osc_mode.state 
-                    if len(state) == 0:
-                        self.app.osc_mode.load_state()
+                    # instrument_shortname = self.app.osc_mode.get_current_instrument_short_name_helper()
+                    # state = self.app.osc_mode.state 
+                    # if len(state) == 0:
+                        # self.app.osc_mode.load_state()
                     # state[instrument_shortname][self.slot][encoder_idx] = control.value
 
 

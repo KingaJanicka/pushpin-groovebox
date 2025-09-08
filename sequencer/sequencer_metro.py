@@ -50,14 +50,11 @@ class SequencerMetro(object):
         self.app = app
         self.step_index = 0
         self.step_count = 0
-        self.master_step_index = 0
-        self.master_step_count = 0
         self.prev_step_index = 0
         self.show_locks = False
         self.next_step_index = 1
         self.steps_held = []
         self.scale_count = 1
-        self.master_scale_count = 1
         self.controls_to_reset = []
         self.name = instrument.name
         self.note = [None] * default_number_of_steps
@@ -85,11 +82,11 @@ class SequencerMetro(object):
         self.playhead_track = self.timeline.schedule(
             {
                 "action": lambda: (
-                    tick_callback(self.name, len(self.pitch)),
+                    # tick_callback(self.name, len(self.pitch)),
                     self.seq_playhead_update(),
                 ),
-                "duration": 0.125,
-            }
+                "duration": 0.0625,
+            }, 
         )
 
     def get_track_by_name(self, name):
@@ -159,27 +156,28 @@ class SequencerMetro(object):
         pattern_len = controls[5].value
         master_seq_time_scale = controls[6].value
         master_pattern_len = controls[7].value
-          
+        master_step_count = round((self.app.global_timeline.current_time + 0.1)* int(master_seq_time_scale)/2, 1)
+        # print(master_step_count)
         # Same as below but for master counter
-        if self.master_scale_count == 0:
-            self.master_step_count += 1
-            self.master_scale_count = int(master_seq_time_scale)
         
-        elif self.master_scale_count != 0:
-            self.master_scale_count -= 1
-        
-        if self.master_scale_count == 1:
-            if self.master_step_count == int(master_pattern_len):
-                self.reset_master_index()
-                self.reset_index()
-                self.scale_count = 0
-                self.next_step_index = 0
+        # print(master_timeline.current_time * 4)
+        # print(master_step_count, int(master_pattern_len), int(master_seq_time_scale)/2)
+        if master_step_count >= int(master_pattern_len) * int(master_seq_time_scale)/2 :
+
+            self.reset_index()
+            self.scale_count = 0
+            self.next_step_index = 0
+            try:
+                self.app.global_timeline.reset()
+            except Exception as e:
+                print(e)
+                
         
         if self.scale_count == 0:
             # Play the note, reset the counter for the time scale
             self.step_count += 1
             self.evaluate_and_play_notes()
-            self.scale_count = int(seq_time_scale)
+            self.scale_count = int(seq_time_scale) + 1
         
         elif self.scale_count != 0:
             # This has to do with the time scale setting
@@ -253,10 +251,6 @@ class SequencerMetro(object):
         self.step_index = 0
         self.next_step_index = 1
         
-    def reset_master_index(self):
-        self.master_step_index = 0
-        self.master_step_count = 0
-    
     def evaluate_and_play_notes(self):
         try:
             gate_track_active = self.app.mute_mode.tracks_active[self.name][
@@ -303,7 +297,6 @@ class SequencerMetro(object):
                     # We need to reset values that were changed by param locks
                     for control in self.controls_to_reset:
                         self.app.send_osc(control.address, float(control.value), instrument.name)
-                        
                     self.timeline.schedule(
                         {"note": pitch_and_octave, "gate": gate, "amplitude": velocity}, count=1, output_device=self.midi_out_device
                     )
@@ -319,21 +312,26 @@ class SequencerMetro(object):
                     lock_scale_value = 0
                 else:
                     lock_scale_value = self.lock_scale[self.step_index] / 7
-                
                 if slot != None:
                     for device_idx, device in enumerate(instrument.devices[slot_idx]):
                         for command in enumerate(device.init):
-                            # TODO: or if slot is 2,3,4 to make sure we're sending on the filter page too
+                            
                             if command[1]["address"] == slot["address"] and command[1]["value"] == slot["value"]:
                                 # we have the right device
                                 # Now we just need to enum the controls and send the values 
                                 for control_idx, control in enumerate(device.controls):
                                     lock_address = control.address
-                                    lock_value = self.locks[self.step_index][slot_idx][control_idx]
-                                    if lock_value != None:
-                                        self.app.send_osc(lock_address, lock_value*lock_scale_value, instrument.name)
-                                        self.controls_to_reset.append(control)
-                
+                                    lock_value = None
+                                    if self.locks[self.step_index][slot_idx][control_idx] != None:
+                                        lock_value = self.locks[self.step_index][slot_idx][control_idx] 
+                                        if hasattr(control, "value"):
+                                            lock_offset = lock_value - control.value
+                                            value_after_scale = lock_offset * lock_scale_value + control.value
+                                            if lock_value != None:
+                                                self.app.send_osc(lock_address, value_after_scale, instrument.name)
+                                                self.controls_to_reset.append(control)
+                                    else:
+                                        lock_value = 0
                 # This elif branch is for slots that have only one device and therefore
                 # don't have the device address/val in the init
                 elif slot_idx == 2 or slot_idx == 3 or slot_idx == 4:
@@ -342,10 +340,19 @@ class SequencerMetro(object):
                         # Now we just need to enum the controls and send the values 
                         for control_idx, control in enumerate(device.controls):
                             lock_address = control.address
-                            lock_value = self.locks[self.step_index][slot_idx][control_idx]
-                            if lock_value != None and lock_address != None:
-                                self.app.send_osc(lock_address, lock_value*lock_scale_value, instrument.name)
-                                self.controls_to_reset.append(control)
+                            lock_value = None
+                            if self.locks[self.step_index][slot_idx][control_idx] != None:
+                                lock_value = self.locks[self.step_index][slot_idx][control_idx] 
+                                if hasattr(control, "value"):
+                                    lock_offset = lock_value - control.value
+                                    value_after_scale = lock_offset * lock_scale_value + control.value
+                                    if lock_value != None and lock_address != None:
+                                        self.app.send_osc(lock_address, value_after_scale, instrument.name)
+                                        self.controls_to_reset.append(control)
+                            else:
+                                lock_value = 0
+
+
         except Exception as e:
             print("Error in evaluate_and_play_notes")
             traceback.print_exc()

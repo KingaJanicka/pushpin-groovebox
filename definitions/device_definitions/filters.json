@@ -1285,7 +1285,7 @@
 									"onselect": {
 										"$type": "message",
 										"$comment": "",
-										"address": "/param/a/filter/1/type",
+										"address": "/param/a/filter/2/type",
 										"value": 0
 									}
 								}
@@ -1300,7 +1300,7 @@
 									"onselect": {
 										"$type": "message",
 										"$comment": "Std",
-										"address": "/param/a/filter/1/subtype",
+										"address": "/param/a/filter/2/subtype",
 										"value": 0
 									}
 								}

@@ -13,6 +13,7 @@ import asyncio
 import logging
 import jack
 import isobar as iso
+import re
 from ratelimit import limits
 from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.osc_server import AsyncIOOSCUDPServer
@@ -185,7 +186,7 @@ class PyshaApp(object):
         self.ddrm_tone_selector_mode = DDRMToneSelectorMode(self, settings=settings)
         self.menu_mode = MenuMode(self, settings=settings, send_osc_func=self.send_osc)
         self.settings_mode = SettingsMode(self, settings=settings)
-        self.mute_mode = MuteMode(self, settings=settings)
+        self.mute_mode = MuteMode(self, settings=settings) 
         overwitch_def = {
             "instrument_name": "Overwitch",
             "instrument_short_name": "Overwitch",
@@ -216,6 +217,7 @@ class PyshaApp(object):
             self.settings_mode.activate()
 
     def toggle_menu_mode(self):
+        # print("toggle menu mode")
         previous_mode = self.previously_active_mode_for_xor_group
         # print("modes:",previous_mode)
         # instrument = self.osc_mode.get_current_instrument()
@@ -233,7 +235,6 @@ class PyshaApp(object):
             self.menu_mode.deactivate()
         else:
             # Activate (replace midi cc and instrument selection mode by ddrm tone selector mode)
-            # print("activate menu")
             # print(self.active_modes)
             self.previously_active_mode_for_xor_group = self.active_modes[-1]
             
@@ -939,7 +940,17 @@ class PyshaApp(object):
         print("Loading State ...")
         self.metro_sequencer_mode.load_state()
         self.sequencer_mode.load_state()
-        self.preset_selection_mode.load_init_presets()
+        self.preset_selection_mode.init_surge_preset_state()
+        
+        for idx, instrument_shortname in enumerate(self.instruments):
+            instrument = self.instruments[instrument_shortname]
+                
+            self.queue.append(self.preset_selection_mode.load_init_state(instrument_shortname=instrument_shortname))
+            # instrument.update_current_devices()
+
+
+        # self.osc_mode.load_state()
+        
         print("Pysha is running...")
         while True:
             before_draw_time = time.time()
@@ -1233,6 +1244,20 @@ def on_midi_connected(_):
         # traceback.print_exc()
 
 async def main():
+    
+    ow = await asyncio.create_subprocess_exec("overwitch-cli","-l", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+    stdout, stderr = await ow.communicate()
+    overwitch_devices = []
+    
+    for dev in stdout.splitlines():
+        """
+        String Template:
+        0: Analog Heat (ID 1935:000a) at bus 001, address 002
+        """
+        m = re.search(r'(?P<device_number>\d+):\s(?P<device_name>[^\(]+)\(ID (?P<device_id>\d+:[^\)]+)\) at bus (?P<device_bus>\d+), address (?P<device_address>\d+)', dev)
+        
+        overwitch_devices.append({'idx': m.group('device_number'), 'name': m.group('device_name')})
+        print(overwitch_devices)
     # Initialise OSC sockets
     loop = asyncio.get_event_loop()
 
@@ -1283,8 +1308,11 @@ if __name__ == "__main__":
         asyncio.run(main())
     except KeyboardInterrupt:
         print("Exiting Pysha...")
-        app.push.f_stop.set()
-        app.osc_mode.close_transports()
+        try:
+            app.push.f_stop.set()
+            app.osc_mode.close_transports()
+        except:
+            pass
         # # cancel all tasks in the event loop
         # tasks = asyncio.all_tasks()
         # for task in tasks:

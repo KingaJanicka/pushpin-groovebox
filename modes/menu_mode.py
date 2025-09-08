@@ -51,6 +51,7 @@ class MenuMode(PyshaMode):
         return show_prev, show_next
 
     def activate(self):
+        instrument = self.app.osc_mode.get_current_instrument()
         device = self.app.osc_mode.get_current_instrument_device()
         devices_in_current_slot = self.app.osc_mode.get_current_slot_devices()
         for idx, item in enumerate(devices_in_current_slot):
@@ -68,9 +69,13 @@ class MenuMode(PyshaMode):
         # TODO: This needs to be revised with state rewrite
         # old: I have no clue why the fricity frick this sleep needs to be here
         # old: But it does and the FX switching will lag behind one selection if not
+        
+        # TODO: Still a problem and now increase of sleep does not help
+        # WELP
+        
         time.sleep(0.2)
         instrument.query_slots()
-
+        instrument.update_current_devices()
         time.sleep(0.1)
         current_device.query_all_controls()
         for button_name in (
@@ -210,7 +215,7 @@ class MenuMode(PyshaMode):
                 devices = self.app.osc_mode.get_current_instrument_devices()
                 for device in devices:
                     if device.label == selected_device.label:
-                        device.query_visible_controls()
+                        device.query_all_controls()
                 self.app.toggle_menu_mode()
                 self.app.buttons_need_update = True
             except IndexError:
