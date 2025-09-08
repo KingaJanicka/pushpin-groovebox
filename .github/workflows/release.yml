@@ -15,21 +15,27 @@ jobs:
       uses: actions/checkout@v5
     - name: install SDM
       run: curl -L https://raw.githubusercontent.com/gitbls/sdm/master/EZsdmInstaller | bash
-    - name: build images
-      working-directory: ./scripts/image
-      run: bash create-image-with-backports.sh
     - name: get hash
       id: get_sha
       run: echo "sha=$(git rev-parse --short HEAD)"  >> "$GITHUB_OUTPUT"
+    - name: generate build name
+      id: get_buildname
+      run: echo "IMAGE=$(date +'%Y-%m-%d')_pushpin-groovebox_${{ steps.get_sha.outputs.sha }}" >> "$GITHUB_OUTPUT"
+    - name: build image
+      working-directory: ./scripts/image
+      run: bash create-image-with-backports.sh
+      env:
+        IMAGE: ${{ steps.get_buildname.outputs.IMAGE }}
     - name: create tag
       id: create_tag
       run: |
         git tag ${{ steps.get_sha.outputs.sha }} -f
         git push origin ${{ steps.get_sha.outputs.sha }} -f
     - name: Gzip file
-      run: tar cvf - "./scripts/image/pushpin-groovebox-${{ steps.get_sha.outputs.sha }}.img" | gzip -9 - > "pushpin-groovebox-${{ steps.get_sha.outputs.sha }}.img.tar.gz"
+      run: tar cvf - "./scripts/image/${{ steps.get_buildname.outputs.IMAGE }}.img" | gzip -9 - > "${{ steps.get_buildname.outputs.IMAGE }}.img.tar.gz"
     - name: create release
       uses: softprops/action-gh-release@v2
       with:
         files: ./*.img.tar.gz
         tag_name: "${{ steps.get_sha.outputs.sha }}"
+        name: ${{ steps.get_sha.outputs.sha }}
