@@ -29,8 +29,8 @@ jobs:
     - name: create tag
       id: create_tag
       run: |
-        git tag $(git rev-parse --short HEAD)
-        git push origin $(git rev-parse --short HEAD)
+        git tag $(git rev-parse --short HEAD) -f
+        git push origin $(git rev-parse --short HEAD) -f
     - name: create release
       uses: softprops/action-gh-release@v2
       with:
