@@ -66,6 +66,9 @@ make
 make install
 ldconfig
 
+echo "Installing PureData"
+apt install puredata -y
+
 cat > /etc/sdm/0piboot/010-update-overwitch-udev.sh <<EOF
 #!/bin/bash
 # This script runs as root during the first boot of the system

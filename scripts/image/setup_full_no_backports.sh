@@ -49,7 +49,7 @@ apt update
 apt install surge-xt-nightly -y
 
 echo "Installing PureData"
-apt insall puredata
+apt install puredata -y
 
 echo "Building Overwitch"
 cd $OVERWITCH_SOURCE_PATH
