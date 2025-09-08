@@ -1,0 +1,51 @@
+name: Run tests
+
+on:
+  push:
+    branches: ["main"]
+
+permissions:
+  contents: write
+
+jobs:
+  check_sha:
+    runs-on: ubuntu-latest
+    name: Check latest commit
+    outputs:
+      should_run: ${{ steps.should_run.outputs.should_run }}
+      sha: ${{ steps.get_sha.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: dagargo/overwitch
+      - id: get_sha
+        name: get latest_commit
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - id: should_run
+        continue-on-error: true
+        name: check latest commit is less than a day
+        if: ${{ github.event_name == 'schedule' }}
+        run: test -z $(git rev-list  --after="24 hours" ${{ steps.get_sha.outputs.sha }} && echo "{should_run}=false"  >> "$GITHUB_OUTPUT"
+
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v5
+    - name: install dependencies
+      run: |
+          sudo apt-get update
+          sudo apt-get -y --no-install-recommends install automake libtool libusb-1.0-0-dev libjack-jackd2-dev libsamplerate0-dev libsndfile1-dev autopoint gettext libjson-glib-dev libgtk-4-dev libsystemd-dev
+          sudo apt-get -y --no-install-recommends install libcunit1-dev
+    - name: build images
+      run: ./scripts/image/create-image-with-backports.sh
+    - name: create tag
+      id: create_tag
+      run: |
+        git tag $(git rev-parse --short HEAD)
+        git push origin $(git rev-parse --short HEAD)
+    - name: create release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: ./**/*.img
+        tagname: $(git rev-parse --short HEAD)
