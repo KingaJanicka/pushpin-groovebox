@@ -29,10 +29,10 @@ jobs:
     - name: create tag
       id: create_tag
       run: |
-        git tag $(git rev-parse --short HEAD) -f
-        git push origin $(git rev-parse --short HEAD) -f
+        git tag ${{ steps.get_sha.outputs.sha }} -f
+        git push origin ${{ steps.get_sha.outputs.sha }} -f
     - name: Gzip file
-      run: tar cvf - "./scripts/image/pushpin-groovebox-$(git rev-parse --short HEAD).img" | gzip -9 - > "pushpin-groovebox-$(git rev-parse --short HEAD).img.tar.gz"
+      run: tar cvf - "./scripts/image/pushpin-groovebox-${{ steps.get_sha.outputs.sha }}.img" | gzip -9 - > "pushpin-groovebox-${{ steps.get_sha.outputs.sha }}.img.tar.gz"
     - name: create release
       uses: softprops/action-gh-release@v2
       with:

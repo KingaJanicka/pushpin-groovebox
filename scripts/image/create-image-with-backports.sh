@@ -14,12 +14,12 @@ function errexit() {
 
 [ $EUID -eq 0 ] && sudo="" || sudo="sudo"
 
-IMAGE="2024-11-19-raspios-bookworm-arm64-lite.img"
+IMAGE="$(date +'%Y-%m-%d')_pushpin-groovebox_$(git rev-parse --short HEAD).img"
 
 # service dbus start
 
 if ! test -f $IMAGE; then
-  curl -O https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-11-19/2024-11-19-raspios-bookworm-arm64-lite.img.xz
+  curl -o https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-11-19/2024-11-19-raspios-bookworm-arm64-lite.img.xz $IMAGE.xz
   xz -d $IMAGE.xz
 fi
 
@@ -73,4 +73,4 @@ EOF
     ) | bash -c "cat >|$assets/my.plugins"
 echo $assets/my.plugins
 
-$sudo sdm --batch --plugin @$assets/my.plugins --shrink --bootscripts --restart --regen-ssh-host-keys "pushpin-groovebox-$(git rev-parse --short HEAD).img"
+$sudo sdm --batch --plugin @$assets/my.plugins --shrink --bootscripts --restart --regen-ssh-host-keys $IMAGE
