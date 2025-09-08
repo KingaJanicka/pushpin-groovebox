@@ -23,6 +23,9 @@ jobs:
     - name: build images
       working-directory: ./scripts/image
       run: bash create-image-with-backports.sh
+    - name: get hash
+      id: get_sha
+      run: echo "sha=$(git rev-parse --short HEAD)"  >> "$GITHUB_OUTPUT"
     - name: create tag
       id: create_tag
       run: |
@@ -32,4 +35,4 @@ jobs:
       uses: softprops/action-gh-release@v2
       with:
         files: ./scripts/image/*.img
-        tagname: $(git rev-parse --short HEAD)
+        tag_name: "${{ steps.get_sha.outputs.sha }}"
