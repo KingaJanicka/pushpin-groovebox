@@ -1,9 +1,3 @@
-[submodule "surge"]
-	path = surge
-	url = https://github.com/surge-synthesizer/surge.git
-[submodule "overwitch"]
-	path = overwitch
-	url = https://github.com/dagargo/overwitch.git
 [submodule "scripts"]
 	path = scripts
 	url = git@github.com:aendra-rininsland/pushpin-raspberry-pi-images.git
