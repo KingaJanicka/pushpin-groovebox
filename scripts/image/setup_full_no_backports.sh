@@ -48,6 +48,9 @@ curl -fsSL https://download.opensuse.org/repositories/home:surge-synth-team/Rasp
 apt update
 apt install surge-xt-nightly -y
 
+echo "Installing PureData"
+apt insall puredata
+
 echo "Building Overwitch"
 cd $OVERWITCH_SOURCE_PATH
 git clone https://github.com/dagargo/overwitch
