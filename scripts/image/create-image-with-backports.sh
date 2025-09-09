@@ -67,7 +67,7 @@ raspiconfig:boot_behavior=B1
 L10n:host
 
 # Run config script
-runscript:script=$PWD/setup_full_with_backports.sh
+runscript:script=$PWD/scripts/image/setup_full_with_backports.sh
 
 EOF
     ) | bash -c "cat >|$assets/my.plugins"

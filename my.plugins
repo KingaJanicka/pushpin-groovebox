@@ -1,0 +1,39 @@
+# Plugin List generated 2025-09-09 14:26:33
+
+# Delete user pi if it exists
+# https://github.com/gitbls/sdm/blob/master/Docs/Plugins.md#user
+user:deluser=pi
+
+# Add a new user
+# https://github.com/gitbls/sdm/blob/master/Docs/Plugins.md#user
+user:adduser=ladmin|password=Numark234|addgroup=audio
+
+# Install btwifiset (Control Pi's WiFi from your phone)
+# https://github.com/gitbls/sdm/blob/master/Docs/Plugins.md#btwifiset
+# btwifiset:country=GB|timeout=30
+
+# Install apps
+# https://github.com/gitbls/sdm/blob/master/Docs/Plugins.md#apps
+#apps:name=pushpindependencies|apps=libasound2-dev,libjack-dev,python3-brlapi,git,libcairo2-dev,python3-dev,raspberrypi-ui-mods
+
+# This configuration eliminates the need for piwiz so disable it
+disables:piwiz
+
+# Uncomment to enable trim on all disks
+# https://github.com/gitbls/sdm/blob/master/Docs/Plugins.md#trim-enable
+trim-enable
+
+# Enable X11
+# https://github.com/gitbls/sdm/blob/master/Docs/Plugins.md#graphics
+# graphics:graphics=wayland
+
+# Set Boot to console.
+raspiconfig:boot_behavior=B1
+
+# Configure localization settings to the same as this system
+# https://github.com/gitbls/sdm/blob/master/Docs/Plugins.md#l10n
+L10n:host
+
+# Run config script
+#runscript:script=/home/ladmin/s/music_devices/pushpin-groovebox/scripts/image/setup_full_with_backports.sh
+

@@ -1047,6 +1047,8 @@ class PyshaApp(object):
             "puredata",
             "-jack",
             "-nogui",
+            "-channels",
+            "16",
             f"./puredata_nodes/passthrough_{file_index}.pd",
             stdin=asyncio.subprocess.PIPE,
             stdout=asyncio.subprocess.PIPE,

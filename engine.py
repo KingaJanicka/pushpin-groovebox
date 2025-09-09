@@ -490,6 +490,8 @@ class SurgeXTEngine(Engine):
             "-jack",
             "-nogui",
             "-rt",
+            "-channels",
+            "16",
             f"./puredata_nodes/passthrough_{self.instrument_index}.pd",
             stdin=asyncio.subprocess.PIPE,
             stdout=asyncio.subprocess.PIPE,
