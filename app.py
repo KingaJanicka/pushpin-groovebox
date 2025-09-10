@@ -401,18 +401,12 @@ class PyshaApp(object):
 
     def toggle_melodic_rhythmic_slice_modes(self):
         if self.is_mode_active(self.metro_sequencer_mode):
-            self.set_rhythmic_mode()
-        elif self.is_mode_active(self.rhythmic_mode):
-            self.set_slice_notes_mode()
-        elif self.is_mode_active(self.slice_notes_mode):
             self.set_melodic_mode()
         elif self.is_mode_active(self.melodic_mode):
-            self.set_sequencer_mode()
-        elif self.is_mode_active(self.sequencer_mode) or self.is_mode_active(self.mute_mode):
             self.set_metro_sequencer_mode()
         else:
             # If none of melodic or rhythmic or slice modes were active, enable melodic by default
-            self.set_melodic_mode()
+            self.set_metro_sequencer_mode()
 
     def set_melodic_mode(self):
         self.set_mode_for_xor_group(self.melodic_mode)

@@ -1029,7 +1029,9 @@ class MetroSequencerMode(MelodicMode):
 
     def on_encoder_rotated(self, encoder_name, increment):
         try:
-            if encoder_name == "Master Encoder":
+            if encoder_name == push2_constants.ENCODER_MASTER_ENCODER:
+                return
+            if encoder_name == push2_constants.ENCODER_TEMPO_ENCODER:
                 return
             encoder_idx = [
                 push2_python.constants.ENCODER_TRACK1_ENCODER,
