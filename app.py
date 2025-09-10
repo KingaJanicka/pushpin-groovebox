@@ -1047,8 +1047,10 @@ class PyshaApp(object):
             "puredata",
             "-jack",
             "-nogui",
+            "-rt",
             "-channels",
             "16",
+            "-nocallback",
             f"./puredata_nodes/passthrough_{file_index}.pd",
             stdin=asyncio.subprocess.PIPE,
             stdout=asyncio.subprocess.PIPE,
@@ -1246,7 +1248,6 @@ def on_midi_connected(_):
         # traceback.print_exc()
 
 async def main():
-    
     ow = await asyncio.create_subprocess_exec("overwitch-cli","-l", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
     stdout, stderr = await ow.communicate()
     overwitch_devices = []
@@ -1256,6 +1257,7 @@ async def main():
         String Template:
         0: Analog Heat (ID 1935:000a) at bus 001, address 002
         """
+        # TODO: this splitline will be key to state recall of overwitch connections
         m = re.search(r'(?P<device_number>\d+):\s(?P<device_name>[^\(]+)\(ID (?P<device_id>\d+:[^\)]+)\) at bus (?P<device_bus>\d+), address (?P<device_address>\d+)', dev)
         
         overwitch_devices.append({'idx': m.group('device_number'), 'name': m.group('device_name')})

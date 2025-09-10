@@ -30,4 +30,6 @@ Should be fixed but check to be sure (preset_sel line 330)
 vocoder borken, clouds too
 needds a reset of held pads on inst change for the sequencer
 
-off by one error in time scale
+
+watchdog: signaling pd... puredata dies???
+github.com/pure-data/pure-data/issues/2446
