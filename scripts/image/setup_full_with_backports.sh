@@ -60,6 +60,7 @@ echo "Building Overwitch"
 cd $OVERWITCH_SOURCE_PATH
 git clone https://github.com/dagargo/overwitch
 cd $OVERWITCH_FOLDER_NAME
+git checkout 7e4743a
 autoreconf --install
 ./configure  CLI_ONLY=yes
 make
