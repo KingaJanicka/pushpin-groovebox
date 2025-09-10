@@ -524,15 +524,15 @@ class OSCMode(PyshaMode):
 
     def on_encoder_rotated(self, encoder_name, increment):
         try:
+            metro = self.app.metro_sequencer_mode
             if encoder_name == push2_python.constants.ENCODER_TEMPO_ENCODER:
                 old_tempo = self.app.tempo
                 self.app.tempo = old_tempo + increment
                 self.app.global_timeline.tempo = self.app.tempo
                 self.app.add_display_notification(f'Tempo: {self.app.tempo}')
-            metro = self.app.metro_sequencer_mode
             # This call makes sure we always use the right enc_rot call
             # Because the seq has its own due to how param locks work
-            if len(self.app.steps_held) == 0 and metro.show_scale_menu == False:
+            elif len(self.app.steps_held) == 0 and metro.show_scale_menu == False:
                 current_device = self.get_current_instrument_device()
                 current_device.on_encoder_rotated(encoder_name, increment)
             else:
