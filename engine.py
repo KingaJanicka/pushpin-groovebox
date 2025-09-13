@@ -869,7 +869,6 @@ class ExternalEngine(Engine):
             self.pipewireID = pwConfig["id"]
 
     async def get_instrument_nodes(self):
-        print("ext inst in nodes")
         clients = filter(
             lambda x: x["type"] == "PipeWire:Interface:Client", self.app.pipewire.copy()
         )

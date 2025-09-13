@@ -185,6 +185,8 @@ class Instrument(PyshaMode):
                 if 'param/a/osc/' in slot["address"] and value == 4 and slot["value"] != 4:
                     instrument_name = self.name
                     engine = self.app.instruments[instrument_name].engine
+                    for external_instrument in self.app.external_instruments:
+                        self.app.queue.append(external_instrument.engine.configure_pipewire())
                     if engine.puredata_process_id == None:
                         self.app.queue.append(engine.start_pd_node())
 

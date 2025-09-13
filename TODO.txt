@@ -34,4 +34,9 @@ needds a reset of held pads on inst change for the sequencer
 watchdog: signaling pd... puredata dies???
 github.com/pure-data/pure-data/issues/2446
 
-audio in menus are still fucky
+Something weird is happening with the overwitch-service client when we launch the app
+conenctions in audio in device need to happen on knob release
+
+Theres latency but we can work to reduce it later
+
+We need to add some sort of MIDI sync back in. Important if we want to demo it with Rytm
