@@ -213,7 +213,8 @@ class AudioInDevice(PyshaMode):
 
     def update(self):
         self.controls.clear()
-        self.controls = self.page_one_controls
+        for control in self.page_one_controls:
+            self.controls.append(control)
         name = self.engine.instrument["instrument_name"]
         control_def = {
             "$type": "control-switch",
