@@ -126,13 +126,15 @@ class PresetSelectionMode(definitions.PyshaMode):
         instrument.query_all_controls()
         self.send_osc("/q/all_params",preset_path, instrument_shortname=instrument_shortname)
         instrument.query_all_controls()
-        
-        if instrument.current_devices[0].label == "Audio In":
-            print(instrument.name)
-            # await instrument.engine.start_pd_node()
-        elif instrument.current_devices[1].label == "Audio In":
-            print(instrument.name)
-            # await instrument.engine.start_pd_node()
+
+        # Turns out we don't need those statements but leaving them in here just
+        # in case this pattern is needed later 
+        # if instrument.current_devices[0].label == "Audio In":
+        #     print(instrument.name)
+
+        # elif instrument.current_devices[1].label == "Audio In":
+        #     print(instrument.name)
+
         # time.sleep(1)
         # instrument.init_devices_sync()
         # print("end of load init presets")
