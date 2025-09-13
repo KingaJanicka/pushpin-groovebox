@@ -33,6 +33,7 @@ class Instrument(PyshaMode):
         self.devices = []
         self.instrument_nodes = []
         self.instrument_ports = []
+        self.instrument_global_volume = 1.0
         self.slots = [
             {"address": "/param/a/osc/1/type", "value": 0.0},
             {"address": "/param/a/osc/2/type", "value": 0.0},
@@ -182,13 +183,13 @@ class Instrument(PyshaMode):
                 
                 # This compares new value with current value and fires a selected/disselected call
                 if 'param/a/osc/' in slot["address"] and value == 4 and slot["value"] != 4:
-                    instrument_name = self.app.instrument_selection_mode.get_current_instrument_short_name()
+                    instrument_name = self.name
                     engine = self.app.instruments[instrument_name].engine
                     if engine.puredata_process_id == None:
                         self.app.queue.append(engine.start_pd_node())
 
                 if 'param/a/osc/' in slot["address"] and value != 4 and slot["value"] == 4:
-                    instrument_name = self.app.instrument_selection_mode.get_current_instrument_short_name()
+                    instrument_name = self.name
                     engine = self.app.instruments[instrument_name].engine
                     
                     # This if statemant is so that we don't kill a duplex node if 

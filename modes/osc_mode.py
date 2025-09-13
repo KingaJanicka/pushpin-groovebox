@@ -530,6 +530,20 @@ class OSCMode(PyshaMode):
                 self.app.tempo = old_tempo + increment
                 self.app.global_timeline.tempo = self.app.tempo
                 self.app.add_display_notification(f'Tempo: {self.app.tempo}')
+            if encoder_name == push2_python.constants.ENCODER_MASTER_ENCODER:
+                instrument_shortname = self.get_current_instrument_short_name_helper()
+                instrument = self.app.instruments.get(instrument_shortname, None)
+                
+                if 0 < instrument.instrument_global_volume + 0.01 * increment < 1:
+                    new_volume = instrument.instrument_global_volume + 0.01 * increment
+                    instrument.instrument_global_volume = new_volume
+                if 0 >= instrument.instrument_global_volume + 0.01 * increment:
+                    instrument.instrument_global_volume = 0
+                
+                if instrument.instrument_global_volume + 0.01 * increment > 1:
+                    instrument.instrument_global_volume = 1
+                    
+                instrument.send_message("/param/global/volume", float(instrument.instrument_global_volume))
             # This call makes sure we always use the right enc_rot call
             # Because the seq has its own due to how param locks work
             elif len(self.app.steps_held) == 0 and metro.show_scale_menu == False:

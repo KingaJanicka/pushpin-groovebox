@@ -616,7 +616,7 @@ class AudioInDevice(PyshaMode):
 
     def on_encoder_rotated(self, encoder_name, increment):
         #This if statement is for setting post-synth volume levels
-        if encoder_name == push2_python.constants.ENCODER_MASTER_ENCODER:
+        if encoder_name == push2_python.constants.ENCODER_SWING_ENCODER:
             instrument = self.app.osc_mode.get_current_instrument()
             all_volumes = self.app.volumes
             instrument_idx = instrument.osc_in_port % 10

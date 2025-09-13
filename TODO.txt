@@ -33,3 +33,4 @@ needds a reset of held pads on inst change for the sequencer
 
 watchdog: signaling pd... puredata dies???
 github.com/pure-data/pure-data/issues/2446
+

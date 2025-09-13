@@ -205,6 +205,8 @@ class InstrumentSelectionMode(definitions.PyshaMode):
             instrument_color = self.instruments_info[i]["color"]
             volume = self.app.volumes[i*2]
             volume_parsed = int(volume*100)
+            global_volume = self.app.instruments[self.instruments_info[i]["instrument_name"]].instrument_global_volume
+            globlal_volume_rounded = int(global_volume *100)
             if self.selected_instrument % 8 == i:
                 background_color = instrument_color
                 font_color = definitions.BLACK
@@ -212,12 +214,12 @@ class InstrumentSelectionMode(definitions.PyshaMode):
                 background_color = definitions.BLACK
                 font_color = instrument_color
             instrument_short_name = f'{self.instruments_info[i]["instrument_short_name"]}    {volume_parsed}'
-
+            label = f'{volume_parsed} / {globlal_volume_rounded}'
             show_text(
                 ctx,
                 i,
                 h - height,
-                instrument_short_name,
+                label,
                 height=height,
                 font_color=font_color,
                 background_color=background_color,
