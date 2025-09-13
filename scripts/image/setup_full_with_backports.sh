@@ -65,6 +65,15 @@ autoreconf --install
 make
 make install
 ldconfig
+cd udev
+make install
+cd $OVERWITCH_SOURCE_PATH/systemd
+make install
+systemctl --user enable overwitch.service
+# We need to run it through pw-jack so update service with correct invocation
+sed -i "s/overwitch-service/pw-jack overwitch-service/" /etc/systemd/user/overwitch.service
+
+
 
 echo "Installing PureData"
 apt install puredata -y
