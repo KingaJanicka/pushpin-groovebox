@@ -1242,20 +1242,20 @@ def on_midi_connected(_):
         # traceback.print_exc()
 
 async def main():
-    ow = await asyncio.create_subprocess_exec("overwitch-cli","-l", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-    stdout, stderr = await ow.communicate()
-    overwitch_devices = []
+    # ow = await asyncio.create_subprocess_exec("overwitch-cli","-l", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+    # stdout, stderr = await ow.communicate()
+    # overwitch_devices = []
     
-    for dev in stdout.splitlines():
-        """
-        String Template:
-        0: Analog Heat (ID 1935:000a) at bus 001, address 002
-        """
-        # TODO: this splitline will be key to state recall of overwitch connections
-        m = re.search(r'(?P<device_number>\d+):\s(?P<device_name>[^\(]+)\(ID (?P<device_id>\d+:[^\)]+)\) at bus (?P<device_bus>\d+), address (?P<device_address>\d+)', dev)
+    # for dev in stdout.splitlines():
+    #     """
+    #     String Template:
+    #     0: Analog Heat (ID 1935:000a) at bus 001, address 002
+    #     """
+    #     # TODO: this splitline will be key to state recall of overwitch connections
+    #     m = re.search(r'(?P<device_number>\d+):\s(?P<device_name>[^\(]+)\(ID (?P<device_id>\d+:[^\)]+)\) at bus (?P<device_bus>\d+), address (?P<device_address>\d+)', dev)
         
-        overwitch_devices.append({'idx': m.group('device_number'), 'name': m.group('device_name')})
-        print(overwitch_devices)
+    #     overwitch_devices.append({'idx': m.group('device_number'), 'name': m.group('device_name')})
+    #     print(overwitch_devices)
     # Initialise OSC sockets
     loop = asyncio.get_event_loop()
 
@@ -1264,8 +1264,8 @@ async def main():
         await app.instruments[instrument].start(loop)
         # await app.instruments[instrument].engine.start_pd_node()
 
-    for instrument in app.external_instruments:
-        await instrument.start(loop)
+    # for instrument in app.external_instruments:
+    #     await instrument.start(loop)
         
     print("Initialising Pipewire support...")
     await asyncio.sleep(5)
