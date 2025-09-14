@@ -1000,6 +1000,7 @@ class MetroSequencerMode(MelodicMode):
                 for step in self.steps_held:
                     seq.clear_all_locks_for_step(step%8)
         elif button_name == push2_constants.BUTTON_PLAY:
+            
             if self.timeline_is_playing == False:
                 self.start_timeline()
                 self.timeline_is_playing = True

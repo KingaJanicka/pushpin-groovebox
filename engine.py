@@ -466,6 +466,7 @@ class SurgeXTEngine(Engine):
             f"surge-xt-cli",
             f"--audio-interface={'1.0'}",
             f"--audio-input-interface={'1.0'}",
+            # f"--audio-output-interface={'0.25'}",
             f"--midi-input={self.midi_device_idx}",
             f"--osc-in-port={self.osc_in_port}",
             f"--osc-out-port={self.osc_out_port}",

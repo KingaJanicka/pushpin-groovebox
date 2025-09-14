@@ -103,7 +103,8 @@ class PyshaApp(object):
     volumes = [ 0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6]
     volume_client = None
     volume_node = None
-    global_timeline = iso.Timeline(tempo, output_device=iso.DummyOutputDevice())
+    iso_midi_in = None
+    global_timeline = None
     pwcli = None
     puredata_process_id = None
     puredata_client_id = None
@@ -136,6 +137,17 @@ class PyshaApp(object):
         self.init_midi_out(
             device_name=settings.get("default_midi_out_device_name", None)
         )
+        iso_midi_in_device_name = None
+        for port in iso.get_midi_input_names():
+            if settings.get("default_midi_in_device_name") in port:
+                iso_midi_in_device_name = port
+                self.iso_midi_in = iso.MidiInputDevice(device_name=iso_midi_in_device_name)
+                self.global_timeline = iso.Timeline(output_device=iso.DummyOutputDevice(), clock_source=self.iso_midi_in)
+                # self.global_timeline.background()
+        if iso_midi_in_device_name == None:
+            self.global_timeline = iso.Timeline(self.tempo, output_device=iso.DummyOutputDevice())
+    
+    
         self.init_notes_midi_in(
             device_name=settings.get("default_notes_midi_in_device_name", None)
         )
