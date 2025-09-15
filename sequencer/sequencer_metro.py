@@ -13,7 +13,6 @@ default_number_of_steps = 64
 
 class SequencerMetro(object):
     pitch = 64
-    is_running = False
     tick_callback = None
     send_osc_func = None
     playhead = 0
@@ -150,7 +149,19 @@ class SequencerMetro(object):
             traceback.print_exc()
 
     def seq_playhead_update(self):
-        
+        try:
+            clock = self.app.global_timeline.get_clock_source()
+            # print(self.app.midi_in)
+            # is_running = clock.is_midi_transport_started
+            is_running = self.app.global_timeline.running
+            # if is_running == True:
+            #     print("transport on")
+            # else:
+            #     print("Just chillin")
+            
+            # print("Clock state", clock.is_midi_transport_started)
+        except Exception as e:
+            print(e)
         if self.app.metro_sequencer_mode.sequencer_is_playing == True:
             self.playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01))
             controls = self.app.metro_sequencer_mode.instrument_scale_edit_controls[self.name]

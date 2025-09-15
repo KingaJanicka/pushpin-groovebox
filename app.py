@@ -727,6 +727,30 @@ class PyshaApp(object):
             self.send_osc(address, val, instrument_short_name)
 
     def midi_in_handler(self, msg):
+        # print(msg.type)
+        if msg.type == "stop":
+            self.metro_sequencer_mode.sequencer_is_playing = False
+        
+        if msg.type == "start":
+            self.metro_sequencer_mode.sequencer_is_playing = True
+        
+        if msg.type == "songpos" or msg.type == "stop":
+            # self.metro_sequencer_mode.sequencer_is_playing = False
+            for (instrument_short_name) in self.metro_sequencer_mode.get_all_distinct_instrument_short_names_helper():
+                
+                try:
+                    sequencer = self.metro_sequencer_mode.instrument_sequencers[instrument_short_name]
+                    sequencer.reset_index()
+                    sequencer.scale_count = 0
+                    sequencer.next_step_index = 0
+                except Exception as e:
+                    print(e)
+                try:
+                    self.global_timeline.reset()
+                except Exception as e:
+                    print(e)
+                self.metro_sequencer_mode.update_pads_to_seq_state()
+                
         if hasattr(msg, "channel"):
             instrument = next(
                 (
