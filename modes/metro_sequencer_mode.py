@@ -59,7 +59,7 @@ class MetroSequencerMode(MelodicMode):
     button_1_4_pressed = False
     playhead = 0
     seq_tick = 0
-    timeline_is_playing = False
+    sequencer_is_playing = False
     current_selected_section_and_page = {}
     instrument_sequencers = {}
     tempo = 120
@@ -1001,13 +1001,13 @@ class MetroSequencerMode(MelodicMode):
                     seq.clear_all_locks_for_step(step%8)
         elif button_name == push2_constants.BUTTON_PLAY:
             
-            if self.timeline_is_playing == False:
+            if self.sequencer_is_playing == False:
                 self.start_timeline()
-                self.timeline_is_playing = True
+                self.sequencer_is_playing = True
 
-            elif self.timeline_is_playing == True:
+            elif self.sequencer_is_playing == True:
                 self.stop_timeline()
-                self.timeline_is_playing = False
+                self.sequencer_is_playing = False
         elif button_name == push2_constants.BUTTON_SCALE:
             self.disable_controls = True if self.show_scale_menu == False else False
             self.show_scale_menu = True if self.show_scale_menu == False else False

@@ -77,7 +77,7 @@ class SequencerMetro(object):
         self.midi_in_device = instrument.midi_out_device
         self.midi_in_name = instrument.midi_in_name
         self.midi_out_device = instrument.midi_out_device
-        
+        self.load_state()
         # We should use track.update() to update the sequencers to match the pad state
         self.playhead_track = self.timeline.schedule(
             {
@@ -150,54 +150,57 @@ class SequencerMetro(object):
             traceback.print_exc()
 
     def seq_playhead_update(self):
-        self.playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01))
-        controls = self.app.metro_sequencer_mode.instrument_scale_edit_controls[self.name]
-        seq_time_scale = controls[4].value
-        pattern_len = controls[5].value
-        master_seq_time_scale = controls[6].value
-        master_pattern_len = controls[7].value
-        master_step_count = round((self.app.global_timeline.current_time + 0.1)* int(master_seq_time_scale)/2, 1)
-        # print(master_step_count)
-        # Same as below but for master counter
         
-        # print(master_timeline.current_time * 4)
-        # print(master_step_count, int(master_pattern_len), int(master_seq_time_scale)/2)
-        if master_step_count >= int(master_pattern_len) * int(master_seq_time_scale)/2 :
-
-            self.reset_index()
-            self.scale_count = 0
-            self.next_step_index = 0
-            try:
-                self.app.global_timeline.reset()
-            except Exception as e:
-                print(e)
-                
-        
-        if self.scale_count == 0:
-            # Play the note, reset the counter for the time scale
-            self.step_count += 1
-            self.evaluate_and_play_notes()
-            self.scale_count = int(seq_time_scale) + 1
-        
-        elif self.scale_count != 0:
-            # This has to do with the time scale setting
-            # This block makes sure we only fire every X 1/32nd notes
-            self.scale_count -= 1
-    
-        
-        if self.scale_count == 1:
-            # Increment right before the note is played, so the visual feedback lines up
-            # The if clause is to make sure we don't go over the bounds with next step
-            # And to prevent visual glitches with the playhead
+        if self.app.metro_sequencer_mode.sequencer_is_playing == True:
+            self.playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01))
+            controls = self.app.metro_sequencer_mode.instrument_scale_edit_controls[self.name]
+            seq_time_scale = controls[4].value
+            pattern_len = controls[5].value
+            master_seq_time_scale = controls[6].value
+            master_pattern_len = controls[7].value
+            master_step_count = round((self.app.global_timeline.current_time + 0.1)* int(master_seq_time_scale)/2, 1)
+            # print(master_step_count)
+            # Same as below but for master counter
             
-            if self.step_count == int(pattern_len):
+            # print(master_timeline.current_time * 4)
+            # print(master_step_count, int(master_pattern_len), int(master_seq_time_scale)/2)
+            if master_step_count >= int(master_pattern_len) * int(master_seq_time_scale)/2 :
+
                 self.reset_index()
+                self.scale_count = 0
                 self.next_step_index = 0
-            else:
-                self.increment_index()
-                self.increment_next_step_index(index=self.step_index)
-
+                try:
+                    self.app.global_timeline.reset()
+                except Exception as e:
+                    print(e)
+                    
             
+            if self.scale_count == 0:
+                # Play the note, reset the counter for the time scale
+                self.step_count += 1
+                self.evaluate_and_play_notes()
+                self.scale_count = int(seq_time_scale) + 1
+            
+            elif self.scale_count != 0:
+                # This has to do with the time scale setting
+                # This block makes sure we only fire every X 1/32nd notes
+                self.scale_count -= 1
+        
+            
+            if self.scale_count == 1:
+                # Increment right before the note is played, so the visual feedback lines up
+                # The if clause is to make sure we don't go over the bounds with next step
+                # And to prevent visual glitches with the playhead
+                
+                if self.step_count == int(pattern_len):
+                    self.reset_index()
+                    self.next_step_index = 0
+                else:
+                    self.increment_index()
+                    self.increment_next_step_index(index=self.step_index)
+        else: 
+            return
+                
     
 
 
@@ -278,8 +281,8 @@ class SequencerMetro(object):
                 mutes_idx = column*8+1
                 
                 
-                prob = None
-    
+                prob = 1
+                
                 # checking columns for the True statement
                 for x in range(7):
                     if self.mutes_skips[mutes_idx + x] == True:
