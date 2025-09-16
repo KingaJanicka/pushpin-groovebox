@@ -322,13 +322,15 @@ class AudioInDevice(PyshaMode):
         for out in range(1, 5):
             try:
                 menu = OSCControlSwitch(
-                    control_def, self.get_color, self.connect_ports_duplex, self.dispatcher
+                    control_def, self.get_color, self.empty_func, self.dispatcher
                 )
                 self.controls.append(menu)
             except Exception as e:
                 print("Exception in update in audio_in_device")
                 traceback.print_exc()
 
+    def empty_func(self, *args):
+        pass
 
     async def select(self):
         # self.query_visible_controls()
@@ -421,8 +423,29 @@ class AudioInDevice(PyshaMode):
                 device.input_gains[6] = value_7
                 device.input_gains[7] = value_8
 
+    def reconnect_all_duplex_ports(self):
+        # Getting all links
+        links = filter(
+            lambda x: x["type"] == "PipeWire:Interface:Link", self.app.pipewire.copy()
+        )
+        # Filter links for ones connected to the duplex
+        old_links_to_duplex = []
+        for link in links:
+            # need to get the ID for the duplex and compare with input_id
+            # if it's the same it means it goes into the duplex
+            print(link)
+        
+        # Determine where the new links would go, based on the position of the knobs
+        
+        # Disconnect links, but only if the new link is different (isn't the same as the old link)
+        # best to avoid disconnecting all as that would cause a dropout in other channels
+        
+        # Connect new links 
+
+
     def connect_ports_duplex(self, *args):
         [addr, val] = args
+        print("connect_ports_duplex called")
         if val != None:
             column_index = None 
             if self.slot == 0:
@@ -676,6 +699,12 @@ class AudioInDevice(PyshaMode):
                 push2_python.constants.ENCODER_TRACK8_ENCODER,
             ].index(encoder_name)
             if self.page == 1:
+                
+                try:
+                    self.reconnect_all_duplex_ports()
+                except Exception as e:
+                    print(e)
+                print("after connect")
                 pass
         
         except ValueError:
