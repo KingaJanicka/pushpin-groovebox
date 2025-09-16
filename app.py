@@ -727,12 +727,21 @@ class PyshaApp(object):
             self.send_osc(address, val, instrument_short_name)
 
     def midi_in_handler(self, msg):
-        # print(msg.type)
+        # if msg.type != 'clock':
+        #     print(msg.type)
+        
+        # TODO: Does this work without midi in? I think it should
+        # TODO: I think we need to reset the seq playhead_track on start or maybe stop
+        # so that the clocks line up proper
         if msg.type == "stop":
             self.metro_sequencer_mode.sequencer_is_playing = False
+            for (instrument_short_name) in self.metro_sequencer_mode.get_all_distinct_instrument_short_names_helper():
+                sequencer = self.metro_sequencer_mode.instrument_sequencers[instrument_short_name]
+                # sequencer.reschedule_playhead_track()
         
-        if msg.type == "start":
+        if msg.type == "start" or msg.type == "continue":
             self.metro_sequencer_mode.sequencer_is_playing = True
+            # self.metro_sequencer_mode.reschedule_playhead_tracks()
         
         if msg.type == "songpos" or msg.type == "stop":
             # self.metro_sequencer_mode.sequencer_is_playing = False
@@ -749,7 +758,7 @@ class PyshaApp(object):
                     self.global_timeline.reset()
                 except Exception as e:
                     print(e)
-                self.metro_sequencer_mode.update_pads_to_seq_state()
+            self.metro_sequencer_mode.update_pads_to_seq_state()
                 
         if hasattr(msg, "channel"):
             instrument = next(

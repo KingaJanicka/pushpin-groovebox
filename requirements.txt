@@ -9,7 +9,7 @@ Flask-SocketIO==5.3.6
 flatten-json==0.1.14
 greenlet==3.0.3
 h11==0.14.0
-isobar==0.1.2
+isobar==0.2.1
 itsdangerous==2.2.0
 JACK-Client==0.5.4
 Jinja2==3.1.4

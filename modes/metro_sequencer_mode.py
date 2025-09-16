@@ -272,6 +272,29 @@ class MetroSequencerMode(MelodicMode):
                     [True, True, True, True, True, True, True, True],
                 ]
 
+    def reschedule_playhead_tracks(self):
+        # unschedule
+        # TODO: finish this func
+        try:
+            
+            self.app.global_timeline.clear()
+            
+            for (instrument_short_name) in self.get_all_distinct_instrument_short_names_helper():
+                sequencer = self.instrument_sequencers[instrument_short_name]
+                sequencer.playhead_track = sequencer.timeline.schedule(
+                    {
+                        "action": lambda: (
+                            # tick_callback(self.name, len(self.pitch)),
+                            sequencer.seq_playhead_update(),
+                        ),
+                        "duration": 0.0625,
+                    }, 
+                )
+            print("after callbacks")
+        except Exception as e:
+            print("Exception in reschedule_playhead_tracks", e)
+        # self.timeline.unschedule(self.playhead_track)
+
     def update_pads_to_seq_state(self):
         for (
             instrument_short_name
