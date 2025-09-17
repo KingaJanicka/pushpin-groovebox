@@ -307,6 +307,8 @@ class AudioInDevice(PyshaMode):
                 ],
             }
             for port in overwitch.engine.pw_ports["output"]:
+                # print(port["info"]["props"]["port.direction"])
+                
                 control = {
                                 "$type": "menu-item",
                                 "label": port["info"]["props"]["port.name"],
@@ -699,7 +701,6 @@ class AudioInDevice(PyshaMode):
                 push2_python.constants.ENCODER_TRACK8_ENCODER,
             ].index(encoder_name)
             if self.page == 1:
-                
                 # try:
                 #     self.connect_ports_duplex("Dummy", "dummy")
                 # except Exception as e:

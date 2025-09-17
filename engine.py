@@ -109,6 +109,9 @@ class Engine(ABC):
         all_ports = filter(
             lambda x: x["type"] == "PipeWire:Interface:Port", self.app.pipewire
         )
+        if self.instrument["instrument_name"] == "Overwitch":
+            self.pw_ports["output"].clear()
+            self.pw_ports["input"].clear()
         for port in all_ports:
             # with nodes we can associate nodes with clients/instruments via PID
             # And ports with nodes via ID/node.id
