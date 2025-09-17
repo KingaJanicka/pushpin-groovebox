@@ -322,7 +322,7 @@ class AudioInDevice(PyshaMode):
         for out in range(1, 5):
             try:
                 menu = OSCControlSwitch(
-                    control_def, self.get_color, self.empty_func, self.dispatcher
+                    control_def, self.get_color, self.connect_ports_duplex, self.dispatcher
                 )
                 self.controls.append(menu)
             except Exception as e:
@@ -365,7 +365,6 @@ class AudioInDevice(PyshaMode):
     def send_message(self, *args):
         self.log_out.debug(args)
         return self.osc["client"].send_message(*args)
-    
     
     def set_duplex_volumes(self, *args):
         duplex_node = self.engine.duplex_node
@@ -433,7 +432,7 @@ class AudioInDevice(PyshaMode):
         for link in links:
             # need to get the ID for the duplex and compare with input_id
             # if it's the same it means it goes into the duplex
-            print(link)
+            print(link["info"]["input-node-id"], link["info"]["input-node-id"])
         
         # Determine where the new links would go, based on the position of the knobs
         
@@ -444,8 +443,8 @@ class AudioInDevice(PyshaMode):
 
 
     def connect_ports_duplex(self, *args):
+        
         [addr, val] = args
-        print("connect_ports_duplex called")
         if val != None:
             column_index = None 
             if self.slot == 0:
@@ -471,9 +470,10 @@ class AudioInDevice(PyshaMode):
                 disconnect_L = self.engine.connections[column_index]["L"]
                 disconnect_R = self.engine.connections[column_index]["R"]
                 for port in current_instrument_ports['input']:
-                    if port['info']['props']['audio.channel'] == "FL":
+                    # print(port)
+                    if port['info']['props']['audio.channel'] == "Surge XT:input_0":
                         dest_L = port['id']
-                    elif port['info']['props']['audio.channel'] == "FR":
+                    elif port['info']['props']['audio.channel'] == "Surge XT:input_1":
                         dest_R = port['id']
                 if (disconnect_L != None) and (disconnect_R != None):
                         self.app.queue.append(disconnectPipewireSourceFromPipewireDest(disconnect_L, duplex_in_L))
@@ -700,11 +700,11 @@ class AudioInDevice(PyshaMode):
             ].index(encoder_name)
             if self.page == 1:
                 
-                try:
-                    self.reconnect_all_duplex_ports()
-                except Exception as e:
-                    print(e)
-                print("after connect")
+                # try:
+                #     self.connect_ports_duplex("Dummy", "dummy")
+                # except Exception as e:
+                #     print(e)
+                # print("after connect")
                 pass
         
         except ValueError:
