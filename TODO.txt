@@ -22,12 +22,4 @@ github.com/pure-data/pure-data/issues/2446
 
 Theres latency but we can work to reduce it later
 
-Make scale menu work with those selectable menus so it's easeier to select values
-Add visual feedback to scale button
-
-Replace the controls in Scale menu with new menus
-update the bit in seq_metro to conform with new format - should read the control value not menu value
-make sure it saves and loads proper - should 'just work'
-
-
 added label to the menu defs, needs to be documented along with other chagnes like the modmatrix param
