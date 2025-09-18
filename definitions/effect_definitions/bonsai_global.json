@@ -53,7 +53,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "2",
-						"address": "//param/fx/global/1/param4",
+						"address": "/param/fx/global/1/param4",
 						"value": 1
 					}
 				}
