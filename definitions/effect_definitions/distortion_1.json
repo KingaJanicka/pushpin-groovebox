@@ -40,6 +40,7 @@
 		},
 		{
 			"$type": "control-menu",
+			"menu_label": "Sat. Type",
 			"items": [
 				{
 					"$type": "menu-item",

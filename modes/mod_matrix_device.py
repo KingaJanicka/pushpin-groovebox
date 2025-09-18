@@ -965,7 +965,7 @@ class ModMatrixDevice(definitions.PyshaMode):
 
     def on_encoder_rotated(self, encoder_name, increment):
         #This if statement is for setting post-synth volume levels
-        if encoder_name == push2_python.constants.ENCODER_MASTER_ENCODER:
+        if encoder_name == push2_python.constants.ENCODER_SWING_ENCODER:
             instrument = self.app.osc_mode.get_current_instrument()
             all_volumes = self.app.volumes
             instrument_idx = instrument.osc_in_port % 10
@@ -985,7 +985,7 @@ class ModMatrixDevice(definitions.PyshaMode):
             all_volumes[instrument_idx*2] = track_L_volume
             all_volumes[instrument_idx*2 +1] = track_R_volume
             self.app.volumes = all_volumes
-            self.app.set_master_volumes()
+            self.app.set_main_volumes()
 
         
         try:

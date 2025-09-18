@@ -213,7 +213,8 @@ class SequencerMode(MelodicMode):
     def update_octave_buttons(self):
         # Rhythmic does not have octave buttons
         pass
-
+    
+    
     def sequencer_on_tick(self, instrument_name, length):
         # if seq is active
         if self.app.is_mode_active(self.app.sequencer_mode):

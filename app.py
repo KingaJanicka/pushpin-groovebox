@@ -103,7 +103,8 @@ class PyshaApp(object):
     volumes = [ 0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6]
     volume_client = None
     volume_node = None
-    global_timeline = iso.Timeline(tempo, output_device=iso.DummyOutputDevice())
+    iso_midi_in = None
+    global_timeline = None
     pwcli = None
     puredata_process_id = None
     puredata_client_id = None
@@ -136,6 +137,17 @@ class PyshaApp(object):
         self.init_midi_out(
             device_name=settings.get("default_midi_out_device_name", None)
         )
+        iso_midi_in_device_name = None
+        for port in iso.get_midi_input_names():
+            if settings.get("default_midi_in_device_name") in port:
+                iso_midi_in_device_name = port
+                self.iso_midi_in = iso.MidiInputDevice(device_name=iso_midi_in_device_name)
+                self.global_timeline = iso.Timeline(output_device=iso.DummyOutputDevice(), clock_source=self.iso_midi_in)
+                # self.global_timeline.background()
+        if iso_midi_in_device_name == None:
+            self.global_timeline = iso.Timeline(self.tempo, output_device=iso.DummyOutputDevice())
+    
+    
         self.init_notes_midi_in(
             device_name=settings.get("default_notes_midi_in_device_name", None)
         )
@@ -401,18 +413,12 @@ class PyshaApp(object):
 
     def toggle_melodic_rhythmic_slice_modes(self):
         if self.is_mode_active(self.metro_sequencer_mode):
-            self.set_rhythmic_mode()
-        elif self.is_mode_active(self.rhythmic_mode):
-            self.set_slice_notes_mode()
-        elif self.is_mode_active(self.slice_notes_mode):
             self.set_melodic_mode()
         elif self.is_mode_active(self.melodic_mode):
-            self.set_sequencer_mode()
-        elif self.is_mode_active(self.sequencer_mode) or self.is_mode_active(self.mute_mode):
             self.set_metro_sequencer_mode()
         else:
             # If none of melodic or rhythmic or slice modes were active, enable melodic by default
-            self.set_melodic_mode()
+            self.set_metro_sequencer_mode()
 
     def set_melodic_mode(self):
         self.set_mode_for_xor_group(self.melodic_mode)
@@ -721,6 +727,40 @@ class PyshaApp(object):
             self.send_osc(address, val, instrument_short_name)
 
     def midi_in_handler(self, msg):
+        # if msg.type != 'clock':
+        #     print(msg.type)
+        
+        # TODO: Does this work without midi in? I think it should
+        # TODO: I think we need to reset the seq playhead_track on start or maybe stop
+        # so that the clocks line up proper
+        if msg.type == "stop":
+            self.metro_sequencer_mode.sequencer_is_playing = False
+            for (instrument_short_name) in self.metro_sequencer_mode.get_all_distinct_instrument_short_names_helper():
+                sequencer = self.metro_sequencer_mode.instrument_sequencers[instrument_short_name]
+                # sequencer.reschedule_playhead_track()
+        
+        if msg.type == "start" or msg.type == "continue":
+            self.metro_sequencer_mode.sequencer_is_playing = True
+            # self.metro_sequencer_mode.reschedule_playhead_tracks()
+        
+        if msg.type == "songpos" or msg.type == "stop":
+            # self.metro_sequencer_mode.sequencer_is_playing = False
+            for (instrument_short_name) in self.metro_sequencer_mode.get_all_distinct_instrument_short_names_helper():
+                
+                try:
+                    sequencer = self.metro_sequencer_mode.instrument_sequencers[instrument_short_name]
+                    sequencer.reset_index()
+                    sequencer.scale_count = 0
+                    sequencer.next_step_index = 0
+                except Exception as e:
+                    print(e)
+                try:
+                    self.global_timeline.reset()
+                except Exception as e:
+                    print(e)
+            # shouldn't this be just update_pads
+            self.metro_sequencer_mode.update_pads_to_seq_state()
+                
         if hasattr(msg, "channel"):
             instrument = next(
                 (
@@ -1047,8 +1087,10 @@ class PyshaApp(object):
             "puredata",
             "-jack",
             "-nogui",
+            "-rt",
             "-channels",
             "16",
+            "-nocallback",
             f"./puredata_nodes/passthrough_{file_index}.pd",
             stdin=asyncio.subprocess.PIPE,
             stdout=asyncio.subprocess.PIPE,
@@ -1098,7 +1140,7 @@ class PyshaApp(object):
     
         # print("disconnected __________")
     
-    def set_master_volumes(self, *args):
+    def set_main_volumes(self, *args):
         # TODO: need to make a client for all them nodes
         # This is done in instrument, just copy
         for idx, instrument in enumerate(self.instruments):
@@ -1246,20 +1288,20 @@ def on_midi_connected(_):
         # traceback.print_exc()
 
 async def main():
+    # ow = await asyncio.create_subprocess_exec("overwitch-cli","-l", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+    # stdout, stderr = await ow.communicate()
+    # overwitch_devices = []
     
-    ow = await asyncio.create_subprocess_exec("overwitch-cli","-l", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-    stdout, stderr = await ow.communicate()
-    overwitch_devices = []
-    
-    for dev in stdout.splitlines():
-        """
-        String Template:
-        0: Analog Heat (ID 1935:000a) at bus 001, address 002
-        """
-        m = re.search(r'(?P<device_number>\d+):\s(?P<device_name>[^\(]+)\(ID (?P<device_id>\d+:[^\)]+)\) at bus (?P<device_bus>\d+), address (?P<device_address>\d+)', dev)
+    # for dev in stdout.splitlines():
+    #     """
+    #     String Template:
+    #     0: Analog Heat (ID 1935:000a) at bus 001, address 002
+    #     """
+    #     # TODO: this splitline will be key to state recall of overwitch connections
+    #     m = re.search(r'(?P<device_number>\d+):\s(?P<device_name>[^\(]+)\(ID (?P<device_id>\d+:[^\)]+)\) at bus (?P<device_bus>\d+), address (?P<device_address>\d+)', dev)
         
-        overwitch_devices.append({'idx': m.group('device_number'), 'name': m.group('device_name')})
-        print(overwitch_devices)
+    #     overwitch_devices.append({'idx': m.group('device_number'), 'name': m.group('device_name')})
+    #     print(overwitch_devices)
     # Initialise OSC sockets
     loop = asyncio.get_event_loop()
 
@@ -1268,8 +1310,8 @@ async def main():
         await app.instruments[instrument].start(loop)
         # await app.instruments[instrument].engine.start_pd_node()
 
-    for instrument in app.external_instruments:
-        await instrument.start(loop)
+    # for instrument in app.external_instruments:
+    #     await instrument.start(loop)
         
     print("Initialising Pipewire support...")
     await asyncio.sleep(5)
@@ -1278,7 +1320,7 @@ async def main():
     app.get_volume_client()
     app.get_volume_node()
     await app.disconnect_links_from_volume_node()
-    app.set_master_volumes()
+    app.set_main_volumes()
     
     #Querry controls to update initial state
 
