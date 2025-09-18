@@ -475,15 +475,33 @@ class MetroSequencerMode(MelodicMode):
     def activate(self):
         self.disable_controls = False
         self.draw_pads = True
-        self.app.steps_held = []
+        self.app.steps_held = []            
+        self.active_track_button_on()
 
     def deactivate(self):
         self.app.steps_held = []
         self.show_scale_menu = False
         self.draw_pads = False
         self.disable_controls = False
+        self.all_track_buttons_off()
         
+    def active_track_button_on(self):
+        track_button = None
+        track_color = None
+
         
+        for idx in range(0, 6):
+            if TRACK_NAMES_METRO[idx] == self.selected_track:
+                track_color = TRACK_COLORS[self.selected_track]
+            else: 
+                track_color = definitions.GRAY_DARK    
+            track_button = track_button_names[idx]
+            self.push.buttons.set_button_color(track_button, track_color)
+
+    def all_track_buttons_off(self):
+        for idx in range(0, 6):
+            track_button = track_button_names[idx]
+            self.push.buttons.set_button_color(track_button, definitions.BLACK)
         
     def get_settings_to_save(self):
         return {}
@@ -989,6 +1007,8 @@ class MetroSequencerMode(MelodicMode):
         self.save_state()
         self.app.osc_mode.update_buttons()
         self.app.pads_need_update = True
+    def update_modulation_wheel_mode_button(self):
+        pass
 
     def on_button_pressed(self, button_name):
         seq = self.instrument_sequencers[
@@ -998,8 +1018,20 @@ class MetroSequencerMode(MelodicMode):
             idx = track_button_names.index(button_name)
             self.selected_track = TRACK_NAMES_METRO[idx]
             self.app.trig_edit_mode.update_state()
+            try:
+                self.all_track_buttons_off()
+            except Exception as e:
+                print(e)
+            self.active_track_button_on()
             self.app.buttons_need_update = True
             self.app.pads_need_update = True
+            
+            if button_name == push2_constants.BUTTON_1_16:
+                self.push.buttons.set_button_color(push2_constants.BUTTON_SHIFT, definitions.WHITE)
+                self.push.buttons.set_button_color(push2_constants.BUTTON_SELECT, definitions.WHITE)
+            else:
+                self.push.buttons.set_button_color(push2_constants.BUTTON_SHIFT, definitions.BLACK)
+                self.push.buttons.set_button_color(push2_constants.BUTTON_SELECT, definitions.BLACK)
 
         elif button_name == push2_constants.BUTTON_1_8:
             self.button_1_8_pressed = True
