@@ -2934,6 +2934,10 @@ class MetroSequencerMode(MelodicMode):
     def update_modulation_wheel_mode_button(self):
         pass
 
+
+    def update_accent_button(self):
+        pass
+
     def on_button_pressed(self, button_name):
         seq = self.instrument_sequencers[
             self.get_current_instrument_short_name_helper()
