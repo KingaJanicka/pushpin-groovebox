@@ -477,6 +477,7 @@ class MetroSequencerMode(MelodicMode):
         self.draw_pads = True
         self.app.steps_held = []            
         self.active_track_button_on()
+        self.push.buttons.set_button_color(push2_constants.BUTTON_SCALE, definitions.GRAY_DARK)
 
     def deactivate(self):
         self.app.steps_held = []
@@ -484,6 +485,7 @@ class MetroSequencerMode(MelodicMode):
         self.draw_pads = False
         self.disable_controls = False
         self.all_track_buttons_off()
+        self.push.buttons.set_button_color(push2_constants.BUTTON_SCALE, definitions.BLACK)
         
     def active_track_button_on(self):
         track_button = None
@@ -673,7 +675,7 @@ class MetroSequencerMode(MelodicMode):
                 )
 
     def on_pad_pressed(self, pad_n, pad_ij, velocity):
-        # VERY RUDE but IG it works???
+        # TODO: VERY RUDE but IG it works???
         self.app.queue.append(self.async_pad_pressed(pad_n=pad_n))
     
     async def async_pad_pressed(self, pad_n):
@@ -1083,9 +1085,20 @@ class MetroSequencerMode(MelodicMode):
                 self.stop_timeline()
                 self.sequencer_is_playing = False
         elif button_name == push2_constants.BUTTON_SCALE:
-            self.disable_controls = True if self.show_scale_menu == False else False
-            self.show_scale_menu = True if self.show_scale_menu == False else False
-
+            # self.disable_controls = True if self.show_scale_menu == False else False
+            # self.show_scale_menu = True if self.show_scale_menu == False else False
+            try:
+                if self.show_scale_menu == False:
+                    self.disable_controls = True
+                    self.show_scale_menu = True
+                    self.push.buttons.set_button_color(push2_constants.BUTTON_SCALE, definitions.WHITE, animation=definitions.DEFAULT_ANIMATION)
+                
+                else: 
+                    self.disable_controls = False
+                    self.show_scale_menu = False
+                    self.push.buttons.set_button_color(push2_constants.BUTTON_SCALE, definitions.GRAY_DARK)
+            except Exception as e:
+                print("Error in on_button_pressed, metro", e)
         else:
             # For the other buttons, refer to the base class
             super().on_button_pressed(button_name)
