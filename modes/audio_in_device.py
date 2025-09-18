@@ -472,10 +472,9 @@ class AudioInDevice(PyshaMode):
                 disconnect_L = self.engine.connections[column_index]["L"]
                 disconnect_R = self.engine.connections[column_index]["R"]
                 for port in current_instrument_ports['input']:
-                    # print(port)
-                    if port['info']['props']['audio.channel'] == "Surge XT:input_0":
+                    if port.get("info", []).get("props",[]).get("object.path", None) == "Surge XT:input_0":
                         dest_L = port['id']
-                    elif port['info']['props']['audio.channel'] == "Surge XT:input_1":
+                    elif port.get("info", []).get("props",[]).get("object.path", None) == "Surge XT:input_1":
                         dest_R = port['id']
                 if (disconnect_L != None) and (disconnect_R != None):
                         self.app.queue.append(disconnectPipewireSourceFromPipewireDest(disconnect_L, duplex_in_L))
