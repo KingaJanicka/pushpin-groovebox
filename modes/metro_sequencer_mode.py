@@ -56,7 +56,7 @@ class MetroSequencerMode(MelodicMode):
     ]
     button_1_8_pressed = False
     button_1_4t_pressed = False
-    button_1_4_pressed = False
+    button_gate_stack = False
     playhead = 0
     seq_tick = 0
     sequencer_is_playing = False
@@ -803,15 +803,15 @@ class MetroSequencerMode(MelodicMode):
             if len(self.steps_held) != 0: 
                 
                 # Sets rachet state for the column
-                if self.button_1_4t_pressed == True and self.button_1_4_pressed == True:
+                if self.button_tie_pressed == True and self.button_gate_stack == True:
                     rachet_state[idx_j] = True
 
-                elif self.button_1_4t_pressed == False and self.button_1_4_pressed == True:
+                elif self.button_tie_pressed == False and self.button_gate_stack == True:
                     rachet_state[idx_j] = False
                     
             self.app.pads_need_update = True
                         # For chaning height of the stack
-            if (self.button_1_4_pressed == True):
+            if (self.button_gate_stack == True):
 
                 # Turn all pads above step black, below grey
                 for x in range(8):
@@ -831,7 +831,7 @@ class MetroSequencerMode(MelodicMode):
                 seq_pad_state[idx_i][idx_j] == True
                 or seq_pad_state[idx_i][idx_j] == "Tie"
             ):
-                if self.button_1_4t_pressed == True and seq_pad_state[idx_i][idx_j] != "Tie":
+                if self.button_tie_pressed == True and seq_pad_state[idx_i][idx_j] != "Tie":
                     seq_pad_state[idx_i][idx_j] = "Tie"
                 else:                        
                     self.pads_press_time[idx_n] = time.time()
@@ -847,7 +847,7 @@ class MetroSequencerMode(MelodicMode):
                 # Turn pad on
                 if seq_pad_state[idx_i][idx_j] != False:
                     # for inputing a tie (green pad)
-                    if self.button_1_4t_pressed == True:
+                    if self.button_tie_pressed == True:
                         seq_pad_state[idx_i][idx_j] = "Tie"
                     # Normal step
                     else:
@@ -1004,11 +1004,11 @@ class MetroSequencerMode(MelodicMode):
         elif button_name == push2_constants.BUTTON_1_8:
             self.button_1_8_pressed = True
 
-        elif button_name == push2_constants.BUTTON_1_4T:
-            self.button_1_4t_pressed = True
+        elif button_name == push2_constants.BUTTON_SHIFT:
+            self.button_tie_pressed = True
 
-        elif button_name == push2_constants.BUTTON_1_4:
-            self.button_1_4_pressed = True
+        elif button_name == push2_constants.BUTTON_SELECT:
+            self.button_gate_stack = True
 
         elif (
             button_name == push2_constants.BUTTON_OCTAVE_UP
@@ -1043,11 +1043,11 @@ class MetroSequencerMode(MelodicMode):
         if button_name == push2_constants.BUTTON_1_8:
             self.button_1_8_pressed = False
 
-        elif button_name == push2_constants.BUTTON_1_4T:
-            self.button_1_4t_pressed = False
+        elif button_name == push2_constants.BUTTON_SHIFT:
+            self.button_tie_pressed = False
 
-        elif button_name == push2_constants.BUTTON_1_4:
-            self.button_1_4_pressed = False
+        elif button_name == push2_constants.BUTTON_SELECT:
+            self.button_gate_stack = False
         else:
             super().on_button_released(button_name)
 
