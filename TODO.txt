@@ -21,10 +21,8 @@ I think this might have to do with some error regarding the visible/all in osc_d
 
 Locks broke again? IDK why, maybe pad was stuck?
 
-check if min value of the plock is the knob val
-Should be fixed but check to be sure (preset_sel line 330)
-
 vocoder borken, clouds too
+
 needds a reset of held pads on inst change for the sequencer
 
 

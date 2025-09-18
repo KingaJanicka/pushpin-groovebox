@@ -1057,6 +1057,8 @@ class MetroSequencerMode(MelodicMode):
                 return
             if encoder_name == push2_constants.ENCODER_TEMPO_ENCODER:
                 return
+            if encoder_name == push2_constants.ENCODER_MASTER_ENCODER:
+                return
             encoder_idx = [
                 push2_python.constants.ENCODER_TRACK1_ENCODER,
                 push2_python.constants.ENCODER_TRACK2_ENCODER,
