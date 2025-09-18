@@ -2932,10 +2932,11 @@ class MetroSequencerMode(MelodicMode):
         self.app.osc_mode.update_buttons()
         self.app.pads_need_update = True
     def update_modulation_wheel_mode_button(self):
+        # Passing because we need to make this inherited func inert
         pass
 
-
     def update_accent_button(self):
+        # Passing because we need to make this inherited func inert
         pass
 
     def on_button_pressed(self, button_name):
