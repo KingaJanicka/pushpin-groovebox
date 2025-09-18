@@ -55,7 +55,7 @@ class MetroSequencerMode(MelodicMode):
         range(36, 44),
     ]
     button_1_8_pressed = False
-    button_1_4t_pressed = False
+    button_tie_pressed = False
     button_gate_stack = False
     playhead = 0
     seq_tick = 0
@@ -611,9 +611,6 @@ class MetroSequencerMode(MelodicMode):
                 gate_idx_x = int(gate_idx / 8)
                 gate_idx_y = 7 - gate_idx % 8    
                 
-                # pitch_and_oct_idx = 
-                
-                
                 for i, value in enumerate(seq_pad_state):
                     # Gets the entire row
                     for j, value in enumerate(value):
@@ -676,246 +673,268 @@ class MetroSequencerMode(MelodicMode):
                 )
 
     def on_pad_pressed(self, pad_n, pad_ij, velocity):
-        pad_state = self.metro_seq_pad_state[
-            self.get_current_instrument_short_name_helper()
-        ]
-        idx_n = pad_n - 36
-        self.steps_held.append(idx_n)
-        seq = self.instrument_sequencers[self.get_current_instrument_short_name_helper()]
-        seq_pad_state = pad_state[self.selected_track]
-        n = self.steps_held[-1]
-        idx_ij = self.index_to_pad_ij(n)
-        idx_i = idx_ij[0]
-        idx_j = idx_ij[1]
-        self.app.steps_held.append(idx_j)
-        self.disable_controls = True
+        # VERY RUDE but IG it works???
+        self.app.queue.append(self.async_pad_pressed(pad_n=pad_n))
+    
+    async def async_pad_pressed(self, pad_n):
+        try:
+            pad_state = self.metro_seq_pad_state[
+                self.get_current_instrument_short_name_helper()
+            ]
+            idx_n = pad_n - 36
+            self.steps_held.append(idx_n)
+            seq = self.instrument_sequencers[self.get_current_instrument_short_name_helper()]
+            seq_pad_state = pad_state[self.selected_track]
+            n = self.steps_held[-1]
+            idx_ij = self.index_to_pad_ij(n)
+            idx_i = idx_ij[0]
+            idx_j = idx_ij[1]
+            self.app.steps_held.append(idx_j)
+            self.disable_controls = True
+        except Exception as e:
+            print("Exception on_pad_pressed, init", e)
         # Pitch track
         if self.selected_track == TRACK_NAMES_METRO[0]:
-            pitch_value = None
-            if len(self.steps_held) == 2:
-                step_0_ij = self.index_to_pad_ij(self.steps_held[-1])
-                step_1_ij = self.index_to_pad_ij(self.steps_held[-2])
-            # Two pads, this is so the if only activates when
-            # the two pads are in the same column
-            # for all other cases see else statement
-            if len(self.steps_held) == 2 and step_0_ij[1] == step_1_ij[1]:
-                # print("two pads")
-                step_a_idx = self.steps_held[-1]
-                step_a_ij = self.index_to_pad_ij(step_a_idx)
-                step_a_i = step_a_ij[0]
-                step_a_j = step_a_ij[1]
+            try:
+                pitch_value = None
+                if len(self.steps_held) == 2:
+                    step_0_ij = self.index_to_pad_ij(self.steps_held[-1])
+                    step_1_ij = self.index_to_pad_ij(self.steps_held[-2])
+                # Two pads, this is so the if only activates when
+                # the two pads are in the same column
+                # for all other cases see else statement
+                if len(self.steps_held) == 2 and step_0_ij[1] == step_1_ij[1]:
+                    # print("two pads")
+                    step_a_idx = self.steps_held[-1]
+                    step_a_ij = self.index_to_pad_ij(step_a_idx)
+                    step_a_i = step_a_ij[0]
+                    step_a_j = step_a_ij[1]
 
-                step_b_idx = self.steps_held[-2]
-                step_b_ij = self.index_to_pad_ij(step_b_idx)
-                step_b_i = step_b_ij[0]
-                step_b_j = step_b_ij[1]
+                    step_b_idx = self.steps_held[-2]
+                    step_b_ij = self.index_to_pad_ij(step_b_idx)
+                    step_b_i = step_b_ij[0]
+                    step_b_j = step_b_ij[1]
+                    
+                    # For both take the value of the lower step and sharpen it
+                    pitch_value = self.major_scale[min(7-step_a_i, 7-step_b_i)] + 1
+                    
+                    # check pad_i for both to see if they're adjecent
+                    if abs(step_a_i - step_b_i) == 1:
+
+                        # If either pad if off turn both on
+                        if (
+                            seq_pad_state[step_a_i][step_a_j] == True
+                            or seq_pad_state[step_b_i][step_b_j] == True
+                        ):
+
+                            # Turn off all other pads in the column
+                            for x in range(8):
+                                seq_pad_state[x][idx_j] = False
+
+                            # Turn on target pads
+                            seq_pad_state[step_a_i][step_a_j] = True
+                            seq_pad_state[step_b_i][step_b_j] = True
+
+                        # if both are on save time and cont in on_pad_released
+                        elif (
+                            seq_pad_state[step_a_i][step_a_j] == True
+                            and seq_pad_state[step_b_i][step_b_j] == True
+                        ):
+                            self.pads_press_time[step_a_idx] = time.time()
+                            self.pads_press_time[step_b_idx] = time.time()
+
+                    # if they're not adjecent turn on just the latest one
+                    if abs(step_a_i - step_b_i) > 1:
+
+                        if seq_pad_state[step_a_i][step_a_j] == False:
+                            # Turn off all other pads in the column
+                            for x in range(8):
+                                seq_pad_state[x][idx_j] = False
+
+                            # Turn on target pads
+                            seq_pad_state[step_a_i][step_a_j] = True
+
+                        # If it's on save time and cont in on_pad_released
+                        elif seq_pad_state[step_a_i][step_a_j] == False:
+                            self.pads_press_time[step_a_idx] = time.time()
+                    self.app.pads_need_update = True
                 
-                # For both take the value of the lower step and sharpen it
-                pitch_value = self.major_scale[min(7-step_a_i, 7-step_b_i)] + 1
-                
-                # check pad_i for both to see if they're adjecent
-                if abs(step_a_i - step_b_i) == 1:
+                else:
+                    # print("Single pad")
+                    # Turn off all other pads in the column
+                    for x in range(8):
+                        seq_pad_state[x][idx_j] = False
+                    # If a pad is off, turn it on
+                    seq_pad_state[idx_i][idx_j] = True
+                    
+                    # Set pitch step according to scale
+                    idx = 7 - idx_i
+                    pitch_value = self.major_scale[idx]
+                    
+                    # If it's on, save the time and cont in on_pad_released
+                    if seq_pad_state[idx_i][idx_j] == True:
+                        self.pads_press_time[idx_n] = time.time()
+                        #TODO: call func to show lock here
 
-                    # If either pad if off turn both on
-                    if (
-                        seq_pad_state[step_a_i][step_a_j] == True
-                        or seq_pad_state[step_b_i][step_b_j] == True
-                    ):
-
-                        # Turn off all other pads in the column
-                        for x in range(8):
-                            seq_pad_state[x][idx_j] = False
-
-                        # Turn on target pads
-                        seq_pad_state[step_a_i][step_a_j] = True
-                        seq_pad_state[step_b_i][step_b_j] = True
-
-                    # if both are on save time and cont in on_pad_released
-                    elif (
-                        seq_pad_state[step_a_i][step_a_j] == True
-                        and seq_pad_state[step_b_i][step_b_j] == True
-                    ):
-                        self.pads_press_time[step_a_idx] = time.time()
-                        self.pads_press_time[step_b_idx] = time.time()
-
-                # if they're not adjecent turn on just the latest one
-                if abs(step_a_i - step_b_i) > 1:
-
-                    if seq_pad_state[step_a_i][step_a_j] == False:
-                        # Turn off all other pads in the column
-                        for x in range(8):
-                            seq_pad_state[x][idx_j] = False
-
-                        # Turn on target pads
-                        seq_pad_state[step_a_i][step_a_j] = True
-
-                    # If it's on save time and cont in on_pad_released
-                    elif seq_pad_state[step_a_i][step_a_j] == False:
-                        self.pads_press_time[step_a_idx] = time.time()
-                self.app.pads_need_update = True
-            
-            else:
-                # print("Single pad")
-                # Turn off all other pads in the column
+                # Set the pitches
                 for x in range(8):
-                    seq_pad_state[x][idx_j] = False
-                # If a pad is off, turn it on
-                seq_pad_state[idx_i][idx_j] = True
-                
-                # Set pitch step according to scale
-                idx = 7 - idx_i
-                pitch_value = self.major_scale[idx]
-                
-                # If it's on, save the time and cont in on_pad_released
-                if seq_pad_state[idx_i][idx_j] == True:
-                    self.pads_press_time[idx_n] = time.time()
-                    #TODO: call func to show lock here
-
-            # Set the pitches
-            for x in range(8):
-                seq.set_state([TRACK_NAMES_METRO[0]], idx_j*8 + x, pitch_value)
-
+                    seq.set_state([TRACK_NAMES_METRO[0]], idx_j*8 + x, pitch_value)
+            except Exception as e:
+                print("Exception in on_pad_pressed, pitch", e)
+        
         # Octaves track
         elif self.selected_track == TRACK_NAMES_METRO[1]:
-            # If a pad is off, turn it on
-            if seq_pad_state[idx_i][idx_j] == False:
-                # Turn off all other pads in the column
-                for x in range(8):
-                    seq_pad_state[x][idx_j] = False
-                seq_pad_state[idx_i][idx_j] = True
+            try:
+                # If a pad is off, turn it on
+                if seq_pad_state[idx_i][idx_j] == False:
+                    # Turn off all other pads in the column
+                    for x in range(8):
+                        seq_pad_state[x][idx_j] = False
+                    seq_pad_state[idx_i][idx_j] = True
 
-            # If it's on, save the time and cont in on_pad_released
-            elif seq_pad_state[idx_i][idx_j] == True:
-                self.pads_press_time[idx_n] = time.time()
-                #TODO: call func to show lock here
-            # Set the oct values
-            for x in range(8):
-                seq.set_state([TRACK_NAMES_METRO[1]], idx_j*8 + x, 7- idx_i)
-                    
+                # If it's on, save the time and cont in on_pad_released
+                elif seq_pad_state[idx_i][idx_j] == True:
+                    self.pads_press_time[idx_n] = time.time()
+                    #TODO: call func to show lock here
+                # Set the oct values
+                for x in range(8):
+                    seq.set_state([TRACK_NAMES_METRO[1]], idx_j*8 + x, 7- idx_i)
+            except Exception as e:   
+                print("Exception in on_pad_pressed, oct", e) 
         # Vel track
         elif self.selected_track == TRACK_NAMES_METRO[2]:
-            # If a pad is off, turn it on
-            if seq_pad_state[idx_i][idx_j] == False:
-                # Turn off all other pads in the column
-                for x in range(8):
-                    seq_pad_state[x][idx_j] = False
-                seq_pad_state[idx_i][idx_j] = True
+            try:
+                # If a pad is off, turn it on
+                if seq_pad_state[idx_i][idx_j] == False:
+                    # Turn off all other pads in the column
+                    for x in range(8):
+                        seq_pad_state[x][idx_j] = False
+                    seq_pad_state[idx_i][idx_j] = True
 
-            # If it's on, save the time and cont in on_pad_released
-            elif seq_pad_state[idx_i][idx_j] == True:
-                self.pads_press_time[idx_n] = time.time()
-                #TODO: call func to show lock here
-            # Set the oct values
-            for x in range(8):
-                seq.set_state([TRACK_NAMES_METRO[2]], idx_j*8 + x, 7- idx_i)
+                # If it's on, save the time and cont in on_pad_released
+                elif seq_pad_state[idx_i][idx_j] == True:
+                    self.pads_press_time[idx_n] = time.time()
+                    #TODO: call func to show lock here
+                # Set the oct values
+                for x in range(8):
+                    seq.set_state([TRACK_NAMES_METRO[2]], idx_j*8 + x, 7- idx_i)
+            except Exception as e:
+                print("Exceptio in on_pad_pressed, vel", e)
 
         # Gates track
         elif self.selected_track == TRACK_NAMES_METRO[3]:
-            instrument_shortname = self.get_current_instrument_short_name_helper()
-            
-            # TODO: bug with rachet state logic, needs an empty pad to engage
-            rachet_state = self.rachets[instrument_shortname]
-
-            # Make sure pads and right buttons are held,
-            # Set rachets on or off
-            if len(self.steps_held) != 0: 
+            try:
+                instrument_shortname = self.get_current_instrument_short_name_helper()
                 
-                # Sets rachet state for the column
-                if self.button_tie_pressed == True and self.button_gate_stack == True:
-                    rachet_state[idx_j] = True
+                # TODO: bug with rachet state logic, needs an empty pad to engage
+                rachet_state = self.rachets[instrument_shortname]
 
-                elif self.button_tie_pressed == False and self.button_gate_stack == True:
-                    rachet_state[idx_j] = False
+                # Make sure pads and right buttons are held,
+                # Set rachets on or off
+                if len(self.steps_held) != 0: 
                     
-            self.app.pads_need_update = True
-                        # For chaning height of the stack
-            if (self.button_gate_stack == True):
+                    # Sets rachet state for the column
+                    if self.button_tie_pressed == True and self.button_gate_stack == True:
+                        rachet_state[idx_j] = True
 
-                # Turn all pads above step black, below grey
-                for x in range(8):
-                    if x < idx_i:
-                        seq_pad_state[x][idx_j] = False
-                    if x == idx_i:
-                        seq_pad_state[x][idx_j] = True
-                    if x > idx_i:
-                        # Makes sure we always have pads in off state
-                        # While not overriding current state
-                        if seq_pad_state[x][idx_j] == False:
-                            seq_pad_state[x][idx_j] = "Off"
-                        else:
-                            pass
-            # If it's on, save the time and cont in on_pad_released
-            elif (
-                seq_pad_state[idx_i][idx_j] == True
-                or seq_pad_state[idx_i][idx_j] == "Tie"
-            ):
-                if self.button_tie_pressed == True and seq_pad_state[idx_i][idx_j] != "Tie":
-                    seq_pad_state[idx_i][idx_j] = "Tie"
-                else:                        
-                    self.pads_press_time[idx_n] = time.time()
-                    return
-                #TODO: call func to show lock here
-
-
-            # For normal step edit
-            if (
-                seq_pad_state[idx_i][idx_j] != True
-            ):
-
-                # Turn pad on
-                if seq_pad_state[idx_i][idx_j] != False:
-                    # for inputing a tie (green pad)
-                    if self.button_tie_pressed == True:
-                        seq_pad_state[idx_i][idx_j] = "Tie"
-                    # Normal step
-                    else:
-                        seq_pad_state[idx_i][idx_j] = True
+                    elif self.button_tie_pressed == False and self.button_gate_stack == True:
+                        rachet_state[idx_j] = False
                         
+                self.app.pads_need_update = True
+                            # For chaning height of the stack
+                if (self.button_gate_stack == True):
 
-            # sets pad state
-            for idx_i, i in enumerate(seq_pad_state):
-                for idx_j, j in enumerate(i):
-                    seq.set_state([TRACK_NAMES_METRO[3]], idx_j*8 + 7 - idx_i, j)
-         
+                    # Turn all pads above step black, below grey
+                    for x in range(8):
+                        if x < idx_i:
+                            seq_pad_state[x][idx_j] = False
+                        if x == idx_i:
+                            seq_pad_state[x][idx_j] = True
+                        if x > idx_i:
+                            # Makes sure we always have pads in off state
+                            # While not overriding current state
+                            if seq_pad_state[x][idx_j] == False:
+                                seq_pad_state[x][idx_j] = "Off"
+                            else:
+                                pass
+                # If it's on, save the time and cont in on_pad_released
+                elif (
+                    seq_pad_state[idx_i][idx_j] == True
+                    or seq_pad_state[idx_i][idx_j] == "Tie"
+                ):
+                    if self.button_tie_pressed == True and seq_pad_state[idx_i][idx_j] != "Tie":
+                        seq_pad_state[idx_i][idx_j] = "Tie"
+                    else:                        
+                        self.pads_press_time[idx_n] = time.time()
+                        return
+                    #TODO: call func to show lock here
+
+
+                # For normal step edit
+                if (
+                    seq_pad_state[idx_i][idx_j] != True
+                ):
+
+                    # Turn pad on
+                    if seq_pad_state[idx_i][idx_j] != False:
+                        # for inputing a tie (green pad)
+                        if self.button_tie_pressed == True:
+                            seq_pad_state[idx_i][idx_j] = "Tie"
+                        # Normal step
+                        else:
+                            seq_pad_state[idx_i][idx_j] = True
+                            
+
+                # sets pad state
+                for idx_i, i in enumerate(seq_pad_state):
+                    for idx_j, j in enumerate(i):
+                        seq.set_state([TRACK_NAMES_METRO[3]], idx_j*8 + 7 - idx_i, j)
+            except Exception as e:
+                print("Exception in on_pad_pressed, gate", e)
         # Skips track 
         elif self.selected_track == TRACK_NAMES_METRO[4]:
-            # If a pad is off
-            if seq_pad_state[idx_i][idx_j] == False:
-                
-                # for skips
-                if idx_i == 7: 
-                    seq.set_state([TRACK_NAMES_METRO[4]], idx_j*8 + 7- idx_i, True)
-                    seq_pad_state[idx_i][idx_j] = True
-                # for probability
-                else:
-                    for x in range(7):
-                        seq.set_state([TRACK_NAMES_METRO[4]], idx_j*8 + 7- x, False)
-                        seq_pad_state[x][idx_j] = False
+            try:
+                # If a pad is off
+                if seq_pad_state[idx_i][idx_j] == False:
                     
-                    seq.set_state([TRACK_NAMES_METRO[4]], idx_j*8 + 7- idx_i, True)
-                    seq_pad_state[idx_i][idx_j] = True
-            # If it's on, save the time and cont in on_pad_released
-            elif seq_pad_state[idx_i][idx_j] == True:
-                self.pads_press_time[idx_n] = time.time()
-                #TODO: call func to show lock here
+                    # for skips
+                    if idx_i == 7: 
+                        seq.set_state([TRACK_NAMES_METRO[4]], idx_j*8 + 7- idx_i, True)
+                        seq_pad_state[idx_i][idx_j] = True
+                    # for probability
+                    else:
+                        for x in range(7):
+                            seq.set_state([TRACK_NAMES_METRO[4]], idx_j*8 + 7- x, False)
+                            seq_pad_state[x][idx_j] = False
+                        
+                        seq.set_state([TRACK_NAMES_METRO[4]], idx_j*8 + 7- idx_i, True)
+                        seq_pad_state[idx_i][idx_j] = True
+                # If it's on, save the time and cont in on_pad_released
+                elif seq_pad_state[idx_i][idx_j] == True:
+                    self.pads_press_time[idx_n] = time.time()
+                    #TODO: call func to show lock here
+            except Exception as e:
+                print("Exception in on_pad_pressed, skips", e)
         
         # Plock track
         elif self.selected_track == TRACK_NAMES_METRO[5]:
-            # If a pad is off, turn it on
-            if seq_pad_state[idx_i][idx_j] == False:
-                # Turn off all other pads in the column
-                for x in range(8):
-                    seq_pad_state[x][idx_j] = False
-                seq_pad_state[idx_i][idx_j] = True
+            try:
+                # If a pad is off, turn it on
+                if seq_pad_state[idx_i][idx_j] == False:
+                    # Turn off all other pads in the column
+                    for x in range(8):
+                        seq_pad_state[x][idx_j] = False
+                    seq_pad_state[idx_i][idx_j] = True
 
-            # If it's on, save the time and cont in on_pad_released
-            elif seq_pad_state[idx_i][idx_j] == True:
-                self.pads_press_time[idx_n] = time.time()
-                #TODO: call func to show lock here
-            # Set the oct values
-            for x in range(8):
-                seq.set_state([TRACK_NAMES_METRO[5]], idx_j*8 + x, 7- idx_i)
-                   
+                # If it's on, save the time and cont in on_pad_released
+                elif seq_pad_state[idx_i][idx_j] == True:
+                    self.pads_press_time[idx_n] = time.time()
+                    #TODO: call func to show lock here
+                # Set the oct values
+                for x in range(8):
+                    seq.set_state([TRACK_NAMES_METRO[5]], idx_j*8 + x, 7- idx_i)
+            except Exception as e:
+                print("Exception in on_pad_pressed, plocks", e)
         else:
             # If a pad is off, turn it on
             if seq_pad_state[idx_i][idx_j] == False:
@@ -930,8 +949,8 @@ class MetroSequencerMode(MelodicMode):
                 self.pads_press_time[idx_n] = time.time()
                 #TODO: call func to show lock here
         # self.update_pads()
-        self.app.osc_mode.update_buttons()
         self.app.pads_need_update = True
+        self.app.osc_mode.update_buttons()
 
     def on_pad_released(self, pad_n, pad_ij, velocity):
         pad_state = self.metro_seq_pad_state[

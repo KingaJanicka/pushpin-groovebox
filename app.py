@@ -758,6 +758,7 @@ class PyshaApp(object):
                     self.global_timeline.reset()
                 except Exception as e:
                     print(e)
+            # shouldn't this be just update_pads
             self.metro_sequencer_mode.update_pads_to_seq_state()
                 
         if hasattr(msg, "channel"):

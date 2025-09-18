@@ -30,3 +30,6 @@ watchdog: signaling pd... puredata dies???
 github.com/pure-data/pure-data/issues/2446
 
 Theres latency but we can work to reduce it later
+
+Make scale menu work with those selectable menus so it's easeier to select values
+Add visual feedback to scale button
