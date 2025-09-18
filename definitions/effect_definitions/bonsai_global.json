@@ -35,10 +35,11 @@
 		},
 		{
 			"$type": "control-menu",
+			"menu_label":"Sat. Bass Fil",
 			"items": [
 				{
 					"$type": "menu-item",
-					"label": "Sat. Tilt Fil.",
+					"label": "Tilt",
 					"onselect": {
 						"$type": "message",
 						"$comment": "1",
@@ -48,11 +49,11 @@
 				},
 				{
 					"$type": "menu-item",
-					"label": "Sat. Pull Mids",
+					"label": "Pull Mids",
 					"onselect": {
 						"$type": "message",
 						"$comment": "2",
-						"address": "/param/fx/global/1/param4",
+						"address": "//param/fx/global/1/param4",
 						"value": 1
 					}
 				}
@@ -60,10 +61,11 @@
 		},
 		{
 			"$type": "control-menu",
+			"menu_label":"Sat. Type",
 			"items": [
 				{
 					"$type": "menu-item",
-					"label": "Sat. Gentle",
+					"label": "Gentle",
 					"onselect": {
 						"$type": "message",
 						"$comment": "1",
@@ -73,7 +75,7 @@
 				},
 				{
 					"$type": "menu-item",
-					"label": "Sat .Normal",
+					"label": "Normal",
 					"onselect": {
 						"$type": "message",
 						"$comment": "2",
@@ -83,7 +85,7 @@
 				},
 				{
 					"$type": "menu-item",
-					"label": "Sat. Hard",
+					"label": "Hard",
 					"onselect": {
 						"$type": "message",
 						"$comment": "3",
@@ -93,7 +95,7 @@
 				},
 				{
 					"$type": "menu-item",
-					"label": "Sat .Harsh",
+					"label": "Harsh",
 					"onselect": {
 						"$type": "message",
 						"$comment": "4",

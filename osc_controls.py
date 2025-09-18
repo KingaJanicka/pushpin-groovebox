@@ -273,7 +273,7 @@ class OSCControl(object):
         
             display_w = push2_python.constants.DISPLAY_LINE_PIXELS
             x = (display_w // 8) * x_part
-            y = 95
+            y = 110
             x_witdh = 118
             y_height = 30
             ctx.move_to(x,y)
@@ -286,7 +286,7 @@ class OSCControl(object):
             # ctx.restore()
         
         
-        margin_top = 95
+        margin_top = 110
         line_padding = 4
         line_width = 80
         # Param name
@@ -621,7 +621,7 @@ class OSCControlSwitch(object):
         )
 
     def draw_submenu(self, ctx, offset, draw_lock=False, lock_value=None):
-        margin_top = 95
+        margin_top = 110
         val_height = 15
 
         # Param value
@@ -767,7 +767,7 @@ class OSCControlMenu(object):
         self.get_color_func = get_color_func
         self.send_osc_func = send_osc_func
         self.modmatrix = config.get("modmatrix", True)
-        self.tip = config.get("tip", None)
+        self.menu_label = config.get("menu_label", None)
         self.message = config.get("onselect", None)
         self.address = self.message["address"] if self.message else None
         self.value = self.message["value"] if self.message else None
@@ -865,7 +865,7 @@ class OSCControlMenu(object):
             prev_label = self.items[idx - 1].label
 
         # If a tip is present
-        if self.tip != None:
+        if self.menu_label != None:
             # Show tip
             tip_top = 25
             tip_height = 20
@@ -873,7 +873,7 @@ class OSCControlMenu(object):
                 ctx,
                 offset,
                 tip_top,
-                self.tip,
+                self.menu_label,
                 height=tip_height,
                 font_color=font_color,
                 center_horizontally=True,
@@ -916,7 +916,7 @@ class OSCControlMenu(object):
             )
 
     def draw_submenu(self, ctx, offset, draw_lock=False, lock_value=None):
-        margin_top = 95
+        margin_top = 110
         val_height = 15
         # TODO: need to add the lock drawing stuff here
         # Current param value

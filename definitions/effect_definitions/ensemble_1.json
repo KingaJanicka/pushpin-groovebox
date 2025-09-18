@@ -19,6 +19,7 @@
 		},
 		{
 			"$type": "control-menu",
+			"menu_label": "Delay Type",
 			"items": [
 				{
 					"$type": "menu-item",

@@ -214,7 +214,7 @@ class MetroSequencerMode(MelodicMode):
                 param_5 = OSCControlMenu(
                 {
                     "$type": "control-menu",
-                    "tip": "Seq Time Scale",
+                    "menu_label": "Seq Time Scale",
                     "items": [
                         {
                             "$type": "menu-item",
@@ -546,7 +546,7 @@ class MetroSequencerMode(MelodicMode):
                 param_6 = OSCControlMenu(
                 {
                     "$type": "control-menu",
-                    "tip": "Seq Steps",
+                    "menu_label": "Seq Steps",
                     "items": [
 
                         {
@@ -1189,7 +1189,7 @@ class MetroSequencerMode(MelodicMode):
                 seq_scale = OSCControlMenu(
                 {
                     "$type": "control-menu",
-                    "tip": "Main Time Scale",
+                    "menu_label": "Main Time Scale",
                     "items": [
                         {
                             "$type": "menu-item",
@@ -1522,7 +1522,7 @@ class MetroSequencerMode(MelodicMode):
                 len = OSCControlMenu(
                 {
                     "$type": "control-menu",
-                    "tip": "Main Steps",
+                    "menu_label": "Main Steps",
                     "items": [
 
                         {
