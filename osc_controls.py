@@ -767,6 +767,7 @@ class OSCControlMenu(object):
         self.get_color_func = get_color_func
         self.send_osc_func = send_osc_func
         self.modmatrix = config.get("modmatrix", True)
+        self.tip = config.get("tip", None)
         self.message = config.get("onselect", None)
         self.address = self.message["address"] if self.message else None
         self.value = self.message["value"] if self.message else None
@@ -825,6 +826,8 @@ class OSCControlMenu(object):
 
     def draw(self, ctx, offset, draw_lock=False, lock_value=None):
         margin_top = 30
+        tip_top = 0
+        tip_height = 0
         next_prev_height = 15
         val_height = 25
         next_label = ""
@@ -862,12 +865,27 @@ class OSCControlMenu(object):
         if (idx - 1) >= 0:
             prev_label = self.items[idx - 1].label
 
+        # If a tip is present
+        if self.tip != None:
+            # Show tip
+            tip_top = 25
+            tip_height = 20
+            show_text(
+                ctx,
+                offset,
+                tip_top,
+                self.tip,
+                height=tip_height,
+                font_color=font_color,
+                center_horizontally=True,
+            )
+        
         if prev_label:
             # Last param name
             show_text(
                 ctx,
                 offset,
-                margin_top,
+                margin_top + tip_top,
                 prev_label,
                 height=next_prev_height,
                 font_color=font_color,
@@ -879,7 +897,7 @@ class OSCControlMenu(object):
         show_text(
             ctx,
             offset,
-            margin_top + next_prev_height,
+            margin_top + next_prev_height + tip_top,
             current_label,
             height=val_height,
             font_color=color,
@@ -891,7 +909,7 @@ class OSCControlMenu(object):
             show_text(
                 ctx,
                 offset,
-                margin_top + next_prev_height + val_height,
+                margin_top + next_prev_height + val_height + tip_top,
                 next_label,
                 height=next_prev_height,
                 font_color=font_color,

@@ -164,6 +164,7 @@ class SequencerMetro(object):
 
     def seq_playhead_update(self):
         if self.app.metro_sequencer_mode.sequencer_is_playing == True:
+            # TODO: replace the values hwre when changing the control type
             self.playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01))
             controls = self.app.metro_sequencer_mode.instrument_scale_edit_controls[self.name]
             seq_time_scale = controls[4].value
