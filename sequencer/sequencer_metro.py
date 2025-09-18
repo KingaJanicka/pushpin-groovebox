@@ -167,17 +167,27 @@ class SequencerMetro(object):
             # TODO: replace the values hwre when changing the control type
             self.playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01))
             controls = self.app.metro_sequencer_mode.instrument_scale_edit_controls[self.name]
-            seq_time_scale = controls[4].value
-            pattern_len = controls[5].value
-            master_seq_time_scale = controls[6].value
-            master_pattern_len = controls[7].value
-            master_step_count = round((self.app.global_timeline.current_time + 0.1)* int(master_seq_time_scale)/2, 1)
-            # print(master_step_count)
+            
+            seq_time_scale_control = controls[4].get_active_menu_item()
+            seq_time_scale = seq_time_scale_control.value
+            
+            pattern_len_control = controls[5].get_active_menu_item()
+            pattern_len = pattern_len_control.value
+            
+            main_seq_time_scale_control = controls[6].get_active_menu_item()
+            main_seq_time_scale = main_seq_time_scale_control.value
+            
+            main_pattern_control = controls[7].get_active_menu_item()
+            main_pattern_len = main_pattern_control.value
+            # print(f'Seq time scale: {seq_time_scale}, Pat Len: {pattern_len}, main eq time scale: {main_seq_time_scale}, main pat len: {main_pattern_len}')
+            
+            main_step_count = round((self.app.global_timeline.current_time + 0.1)* int(main_seq_time_scale)/2, 1)
+            # print(main_step_count)
             # Same as below but for master counter
             
             # print(master_timeline.current_time * 4)
-            # print(master_step_count, int(master_pattern_len), int(master_seq_time_scale)/2)
-            if master_step_count >= int(master_pattern_len) * int(master_seq_time_scale)/2 :
+            # print(main_step_count, int(main_pattern_len), int(main_seq_time_scale)/2)
+            if main_step_count >= int(main_pattern_len) * int(main_seq_time_scale)/2 :
 
                 self.reset_index()
                 self.scale_count = 0

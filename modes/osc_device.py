@@ -266,7 +266,7 @@ class OSCDevice(PyshaMode):
                 all_volumes[instrument_idx*2] = track_L_volume
                 all_volumes[instrument_idx*2 +1] = track_R_volume
                 self.app.volumes = all_volumes
-                self.app.set_master_volumes()
+                self.app.set_main_volumes()
             else: 
                 encoder_idx = [
                     push2_python.constants.ENCODER_TRACK1_ENCODER,

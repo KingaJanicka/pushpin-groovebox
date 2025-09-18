@@ -1,18 +1,11 @@
 twist is broken on osc1
 control-menu does not set properly
 
-Improve visual feedback with buttons
-esp the sequencer track buttons
-
-modmatrix should send the mapping as soon as the knob is turned i think
-
 the debug on engine.py for messages sent from submenus looks SUS
 
 This is the config line needed to set smaller blocksize with pw-jack
 to be used only once, val=32 in samples
 pw-metadata -n settings 0 clock.quantum <VALUE> 
-
-
 
 
 TODO: 
@@ -22,8 +15,6 @@ I think this might have to do with some error regarding the visible/all in osc_d
 Locks broke again? IDK why, maybe pad was stuck?
 
 vocoder borken, clouds too
-
-needds a reset of held pads on inst change for the sequencer
 
 
 watchdog: signaling pd... puredata dies???

@@ -856,7 +856,6 @@ class OSCControlMenu(object):
             ctx.restore()
 
             
-
         if len(self.items) > idx + 1:
             next_label = self.items[idx + 1].label
 

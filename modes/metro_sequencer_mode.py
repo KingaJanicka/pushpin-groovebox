@@ -198,7 +198,20 @@ class MetroSequencerMode(MelodicMode):
                 )
                 menu.append(param_3)
 
-                param_4 = OSCControlMenu(
+                param_4 = OSCControl(
+                    {
+                        "$type": "control-range",
+                        "label": "Param 3",
+                        "address": f"/",
+                        "min": 2,
+                        "max": 64,
+                    },
+                    self.get_current_instrument_color_helper,
+                    None,
+                )
+                menu.append(param_4)
+
+                param_5 = OSCControlMenu(
                 {
                     "$type": "control-menu",
                     "tip": "Seq Time Scale",
@@ -528,58 +541,1628 @@ class MetroSequencerMode(MelodicMode):
                     self.get_current_instrument_color_helper,
                     None,
                 )
-                menu.append(param_4)
-
-                param_5 = OSCControl(
-                    {
-                        "$type": "control-range",
-                        "label": "Seq Time Scale",
-                        "address": f"/",
-                        "min": 1,
-                        "max": 32,
-                    },
-                    self.get_current_instrument_color_helper,
-                    None,
-                )
                 menu.append(param_5)
-                param_6 = OSCControl(
-                    {
-                        "$type": "control-range",
-                        "label": "Seq Steps",
-                        "address": f"/",
-                        "min": 2,
-                        "max": 64,
-                    },
+                
+                param_6 = OSCControlMenu(
+                {
+                    "$type": "control-menu",
+                    "tip": "Seq Steps",
+                    "items": [
+
+                        {
+                            "$type": "menu-item",
+                            "label": "2/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "3",
+                                "address": "/",
+                                "value": 2
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "3/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "4",
+                                "address": "/",
+                                "value": 3
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "4/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "5",
+                                "address": "/",
+                                "value": 4
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "5/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "6",
+                                "address": "/",
+                                "value": 5
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "6/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "7",
+                                "address": "/",
+                                "value": 6
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "7/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "8",
+                                "address": "/",
+                                "value": 7
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "8/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "9",
+                                "address": "/",
+                                "value": 8
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "9/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "10",
+                                "address": "/",
+                                "value": 9
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "10/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "11",
+                                "address": "/",
+                                "value": 10
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "11/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "12",
+                                "address": "/",
+                                "value": 11
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "12/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "13",
+                                "address": "/",
+                                "value": 12
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "13/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "14",
+                                "address": "/",
+                                "value": 13
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "14/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "15",
+                                "address": "/",
+                                "value": 14
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "15/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "16",
+                                "address": "/",
+                                "value": 15
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "16/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "17",
+                                "address": "/",
+                                "value": 16
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "17/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "18",
+                                "address": "/",
+                                "value": 17
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "18/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "19",
+                                "address": "/",
+                                "value": 18
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "19/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "20",
+                                "address": "/",
+                                "value": 19
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "20/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "21",
+                                "address": "/",
+                                "value": 20
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "21/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "22",
+                                "address": "/",
+                                "value": 21
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "22/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "23",
+                                "address": "/",
+                                "value": 22
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "23/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "24",
+                                "address": "/",
+                                "value": 23
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "24/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "25",
+                                "address": "/",
+                                "value": 24
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "25/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "26",
+                                "address": "/",
+                                "value": 25
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "26/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "27",
+                                "address": "/",
+                                "value": 26
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "27/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "28",
+                                "address": "/",
+                                "value": 27
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "28/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 28
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "29/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 29
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "30/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 30
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "31/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 31
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "32/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 32
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+1/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 33
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+2/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 34
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+3/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 35
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+4/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 36
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+5/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 37
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+6/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 38
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+7/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 39
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+8/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 40
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+9/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 41
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+10/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 42
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+11/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 43
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+12/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 44
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+13/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 45
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+14/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 46
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+15/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 47
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+16/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 48
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+17/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 49
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+18/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 50
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+19/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 51
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+20/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 52
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+21/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 53
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+22/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 54
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+23/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 55
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+24/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 56
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+25/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 57
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+26/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 58
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+27/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 59
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+28/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 60
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+29/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 61
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+30/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 62
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+31/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 63
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+32/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 64
+                            }
+                        }
+                    ]
+                },
                     self.get_current_instrument_color_helper,
                     None,
                 )
                 menu.append(param_6)
-                seq_scale = OSCControl(
-                    {
-                        "$type": "control-range",
-                        "label": "Main Time Scale",
-                        "address": f"/",
-                        "min": 1,
-                        "max": 32,
-                    },
+                
+                seq_scale = OSCControlMenu(
+                {
+                    "$type": "control-menu",
+                    "tip": "Main Time Scale",
+                    "items": [
+                        {
+                            "$type": "menu-item",
+                            "label": "1/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "2",
+                                "address": "/",
+                                "value": 1
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "2/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "3",
+                                "address": "/",
+                                "value": 2
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "3/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "4",
+                                "address": "/",
+                                "value": 3
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "4/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "5",
+                                "address": "/",
+                                "value": 4
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "5/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "6",
+                                "address": "/",
+                                "value": 5
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "6/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "7",
+                                "address": "/",
+                                "value": 6
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "7/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "8",
+                                "address": "/",
+                                "value": 7
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "8/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "9",
+                                "address": "/",
+                                "value": 8
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "9/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "10",
+                                "address": "/",
+                                "value": 9
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "10/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "11",
+                                "address": "/",
+                                "value": 10
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "11/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "12",
+                                "address": "/",
+                                "value": 11
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "12/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "13",
+                                "address": "/",
+                                "value": 12
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "13/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "14",
+                                "address": "/",
+                                "value": 13
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "14/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "15",
+                                "address": "/",
+                                "value": 14
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "15/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "16",
+                                "address": "/",
+                                "value": 15
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "16/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "17",
+                                "address": "/",
+                                "value": 16
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "17/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "18",
+                                "address": "/",
+                                "value": 17
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "18/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "19",
+                                "address": "/",
+                                "value": 18
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "19/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "20",
+                                "address": "/",
+                                "value": 19
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "20/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "21",
+                                "address": "/",
+                                "value": 20
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "21/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "22",
+                                "address": "/",
+                                "value": 21
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "22/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "23",
+                                "address": "/",
+                                "value": 22
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "23/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "24",
+                                "address": "/",
+                                "value": 23
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "24/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "25",
+                                "address": "/",
+                                "value": 24
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "25/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "26",
+                                "address": "/",
+                                "value": 25
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "26/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "27",
+                                "address": "/",
+                                "value": 26
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "27/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "28",
+                                "address": "/",
+                                "value": 27
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "28/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 28
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "29/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 29
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "30/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 30
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "31/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 31
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "32/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 32
+                            }
+                        }
+                    ]
+                },
                     self.get_current_instrument_color_helper,
                     None,
                 )
                 seq_scale.value = 2
                 menu.append(seq_scale)
-                len = OSCControl(
-                    {
-                        "$type": "control-range",
-                        "label": "Main Steps",
-                        "address": f"/",
-                        "min": 2,
-                        "max": 64,
-                    },
+                
+                len = OSCControlMenu(
+                {
+                    "$type": "control-menu",
+                    "tip": "Main Steps",
+                    "items": [
+
+                        {
+                            "$type": "menu-item",
+                            "label": "2/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "3",
+                                "address": "/",
+                                "value": 2
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "3/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "4",
+                                "address": "/",
+                                "value": 3
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "4/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "5",
+                                "address": "/",
+                                "value": 4
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "5/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "6",
+                                "address": "/",
+                                "value": 5
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "6/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "7",
+                                "address": "/",
+                                "value": 6
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "7/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "8",
+                                "address": "/",
+                                "value": 7
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "8/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "9",
+                                "address": "/",
+                                "value": 8
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "9/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "10",
+                                "address": "/",
+                                "value": 9
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "10/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "11",
+                                "address": "/",
+                                "value": 10
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "11/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "12",
+                                "address": "/",
+                                "value": 11
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "12/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "13",
+                                "address": "/",
+                                "value": 12
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "13/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "14",
+                                "address": "/",
+                                "value": 13
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "14/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "15",
+                                "address": "/",
+                                "value": 14
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "15/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "16",
+                                "address": "/",
+                                "value": 15
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "16/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "17",
+                                "address": "/",
+                                "value": 16
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "17/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "18",
+                                "address": "/",
+                                "value": 17
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "18/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "19",
+                                "address": "/",
+                                "value": 18
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "19/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "20",
+                                "address": "/",
+                                "value": 19
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "20/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "21",
+                                "address": "/",
+                                "value": 20
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "21/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "22",
+                                "address": "/",
+                                "value": 21
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "22/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "23",
+                                "address": "/",
+                                "value": 22
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "23/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "24",
+                                "address": "/",
+                                "value": 23
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "24/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "25",
+                                "address": "/",
+                                "value": 24
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "25/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "26",
+                                "address": "/",
+                                "value": 25
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "26/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "27",
+                                "address": "/",
+                                "value": 26
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "27/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "28",
+                                "address": "/",
+                                "value": 27
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "28/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 28
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "29/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 29
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "30/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 30
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "31/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 31
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "32/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 32
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+1/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 33
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+2/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 34
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+3/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 35
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+4/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 36
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+5/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 37
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+6/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 38
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+7/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 39
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+8/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 40
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+9/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 41
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+10/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 42
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+11/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 43
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+12/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 44
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+13/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 45
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+14/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 46
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+15/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 47
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+16/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 48
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+17/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 49
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+18/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 50
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+19/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 51
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+20/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 52
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+21/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 53
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+22/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 54
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+23/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 55
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+24/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 56
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+25/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 57
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+26/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 58
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+27/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 59
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+28/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 60
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+29/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 61
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+30/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 62
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+31/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 63
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+32/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 64
+                            }
+                        }
+                    ]
+                },
                     self.get_current_instrument_color_helper,
                     None,
                 )
                 len.value = 64
                 menu.append(len)
+                
                 self.instrument_scale_edit_controls[instrument_short_name] = menu
                 self.metro_seq_pad_state[instrument_short_name][track_name] = [
                     [False, False, False, False, False, False, False, False],
@@ -1528,7 +3111,7 @@ class MetroSequencerMode(MelodicMode):
                         control = controls[encoder_idx]
                         control_final = control
                         min = control.min if hasattr(control, "min") else 0
-                        max = control.max if hasattr(control, "max") else len(control.items) - 1
+                        max = control.max if hasattr(control, "max") else len(control.items) - 0.1
                         range = max - min
                
                         # if control.name == "Menu":
