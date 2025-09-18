@@ -542,6 +542,17 @@ class PresetSelectionMode(definitions.PyshaMode):
             preset_number = self.last_pad_in_column_pressed[instrument_short_name][0]
             self.presets[instrument_short_name][preset_number] = self.current_address
             self.save_presets()
+        
+        elif button_name == push2_python.constants.BUTTON_PLAY:
+            metro = self.app.metro_sequencer_mode
+            if metro.sequencer_is_playing == False:
+                metro.start_timeline()
+                metro.sequencer_is_playing = True
+
+            elif metro.sequencer_is_playing == True:
+                metro.stop_timeline()
+                metro.sequencer_is_playing = False
+
 
     def on_encoder_rotated(self, encoder_name, increment):
         try:

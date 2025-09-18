@@ -21,9 +21,6 @@ I think this might have to do with some error regarding the visible/all in osc_d
 
 Locks broke again? IDK why, maybe pad was stuck?
 
-
-Audio in broken (overwitch)
-
 check if min value of the plock is the knob val
 Should be fixed but check to be sure (preset_sel line 330)
 
@@ -34,9 +31,4 @@ needds a reset of held pads on inst change for the sequencer
 watchdog: signaling pd... puredata dies???
 github.com/pure-data/pure-data/issues/2446
 
-Something weird is happening with the overwitch-service client when we launch the app
-conenctions in audio in device need to happen on knob release
-
 Theres latency but we can work to reduce it later
-
-We need to add some sort of MIDI sync back in. Important if we want to demo it with Rytm
