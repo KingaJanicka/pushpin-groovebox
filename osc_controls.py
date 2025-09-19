@@ -344,7 +344,6 @@ class OSCControl(object):
         value, *rest = args
         self.log.debug((address, value))
         self.value = value
-        
         # this human readable string doesn't change with knob movements, querry fixes it but makes it glitchy
         # self.string = string
 
@@ -781,15 +780,23 @@ class OSCControlMenu(object):
             self.value = 0
         if self.address is None and len(self.items) > 0:
             self.address = self.items[0].address  # assumes all items have same address
-
+        
     def set_state(self, address, value, *args):
         self.log.debug((address, value))
-        self.value = self.get_closest_idx(self.value)
-
+        self.value = self.get_closest_idx(value)
+        # if self.menu_label != None:
+            # print(f'Set State called for {self.menu_label}, address: {address}, value: {value}, {self.value}')
+            # print(args)
+        # active_item = self.get_active_menu_item()
+        # if hasattr(active_item, "select"):
+        #     active_item.select()
+        
     def query(self):
+        # print("Control menu querry")
         self.send_osc_func("/q" + self.address, None)
 
     def update_value(self, increment, **kwargs):
+        # print("Update val called")
         if not self.value:
             pass
 
@@ -813,13 +820,14 @@ class OSCControlMenu(object):
             return self.items[math.floor(self.value)]
 
     def get_closest_idx(self, value):
+        
         closest_value = closest([item.value for item in self.items], value)
-        idx, item = next(
-            enumerate([item for item in self.items if item.value == closest_value])
-        )
-        return idx
+        for idx, item in enumerate(self.items ) :
+            if item.value == closest_value:
+                return idx
 
     def select(self):
+        print("Select called")
         active = self.get_active_menu_item()
         self.log.debug((self.value, active.address, active.value))
         self.send_osc_func(active.address, float(active.value))
@@ -965,4 +973,5 @@ class OSCMenuItem(object):
         self.send_osc_func = send_osc_func
 
     def select(self):
+        print("menu item select, ", self.address, self.value)
         self.send_osc_func(self.address, float(self.value))

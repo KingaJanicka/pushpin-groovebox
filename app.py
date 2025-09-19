@@ -1140,7 +1140,7 @@ class PyshaApp(object):
     
         # print("disconnected __________")
     
-    def set_master_volumes(self, *args):
+    def set_main_volumes(self, *args):
         # TODO: need to make a client for all them nodes
         # This is done in instrument, just copy
         for idx, instrument in enumerate(self.instruments):
@@ -1320,7 +1320,7 @@ async def main():
     app.get_volume_client()
     app.get_volume_node()
     await app.disconnect_links_from_volume_node()
-    app.set_master_volumes()
+    app.set_main_volumes()
     
     #Querry controls to update initial state
 
@@ -1328,9 +1328,6 @@ async def main():
         # IDK why the fuck but after switch to JACK
         # The config_pw call makes surge-xt instances crash
         await app.instruments[instrument].engine.configure_pipewire()
-        await asyncio.sleep(0.1)
-        app.instruments[instrument].query_all_controls()
-        app.instruments[instrument].query_devices()
         
         app.queue.append(app.instruments[instrument].init_devices_sync())
         app.global_timeline.add_output_device(app.instruments[instrument].midi_out_device)    

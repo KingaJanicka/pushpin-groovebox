@@ -24,3 +24,4 @@ Theres latency but we can work to reduce it later
 
 added label to the menu defs, needs to be documented along with other chagnes like the modmatrix param
 
+update the menus so the set proper with presets

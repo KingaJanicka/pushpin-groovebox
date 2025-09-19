@@ -109,24 +109,21 @@ class PresetSelectionMode(definitions.PyshaMode):
         print("saved presets to state")
 
     async def load_init_state(self, instrument_shortname):
+       
         # Check if there is a preset in the state dir
         # If yes load that
         # If not then load the normal patch and save to the state
     
         preset_name = f"{instrument_shortname}_{0}"            
         preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
-        self.send_osc("/patch/load", preset_path, instrument_shortname=instrument_shortname)
-        self.send_osc("/q/all_params",preset_path, instrument_shortname=instrument_shortname)
         instrument = self.app.instruments[instrument_shortname]
+        self.send_osc("/patch/load", preset_path, instrument_shortname=instrument_shortname)
         await asyncio.sleep(0.5)
         instrument.query_slots()
         await asyncio.sleep(0.5)
         instrument.update_current_devices()
         await asyncio.sleep(0.5)
         instrument.query_all_controls()
-        self.send_osc("/q/all_params",preset_path, instrument_shortname=instrument_shortname)
-        instrument.query_all_controls()
-
         # Turns out we don't need those statements but leaving them in here just
         # in case this pattern is needed later 
         # if instrument.current_devices[0].label == "Audio In":

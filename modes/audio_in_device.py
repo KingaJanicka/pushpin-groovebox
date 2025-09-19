@@ -662,7 +662,7 @@ class AudioInDevice(PyshaMode):
             all_volumes[instrument_idx*2] = track_L_volume
             all_volumes[instrument_idx*2 +1] = track_R_volume
             self.app.volumes = all_volumes
-            self.app.set_master_volumes()
+            self.app.set_main_volumes()
 
         try:
             encoder_idx = [
