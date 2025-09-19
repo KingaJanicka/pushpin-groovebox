@@ -2351,12 +2351,12 @@ class MetroSequencerMode(MelodicMode):
     def activate(self):
         self.disable_controls = False
         self.draw_pads = True
-        self.app.steps_held = []            
+        self.app.steps_held.clear()     
         self.active_track_button_on()
         self.push.buttons.set_button_color(push2_constants.BUTTON_SCALE, definitions.GRAY_DARK)
 
     def deactivate(self):
-        self.app.steps_held = []
+        self.app.steps_held.clear()
         self.show_scale_menu = False
         self.draw_pads = False
         self.disable_controls = False

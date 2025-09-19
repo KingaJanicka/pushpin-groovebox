@@ -1140,7 +1140,7 @@ class PyshaApp(object):
     
         # print("disconnected __________")
     
-    def set_main_volumes(self, *args):
+    def set_master_volumes(self, *args):
         # TODO: need to make a client for all them nodes
         # This is done in instrument, just copy
         for idx, instrument in enumerate(self.instruments):
@@ -1320,7 +1320,7 @@ async def main():
     app.get_volume_client()
     app.get_volume_node()
     await app.disconnect_links_from_volume_node()
-    app.set_main_volumes()
+    app.set_master_volumes()
     
     #Querry controls to update initial state
 
