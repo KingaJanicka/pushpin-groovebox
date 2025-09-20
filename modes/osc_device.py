@@ -98,6 +98,8 @@ class OSCDevice(PyshaMode):
                     control = OSCControlSwitch(
                         control_def, get_color, self.send_message, self.dispatcher
                     )
+                    # print(f'ControlSwitch address: {control.address}, label: {control.label}')
+                    
                     if control.address:
                         self.dispatcher.map(control.address, control.set_state)
 
