@@ -98,6 +98,8 @@ class OSCDevice(PyshaMode):
                     control = OSCControlSwitch(
                         control_def, get_color, self.send_message, self.dispatcher
                     )
+                    # print(f'ControlSwitch address: {control.address}, label: {control.label}')
+                    
                     if control.address:
                         self.dispatcher.map(control.address, control.set_state)
 
@@ -124,9 +126,9 @@ class OSCDevice(PyshaMode):
         # self.query_visible_controls()
         # mapped_addresses = self.dispatcher
         # Select if it has a select attribute
-        for control in self.get_visible_controls():
-            if hasattr(control, "select"):
-                control.select()
+        # for control in self.get_visible_controls():
+        #     if hasattr(control, "select"):
+        #         control.select()
 
     def select_sync(self):
         for cmd in self.init:

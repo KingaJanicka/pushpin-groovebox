@@ -23,3 +23,10 @@ github.com/pure-data/pure-data/issues/2446
 Theres latency but we can work to reduce it later
 
 added label to the menu defs, needs to be documented along with other chagnes like the modmatrix param
+
+the dispatchers in menus should be fixed, there's too many of them ATM
+the set_state for OSCControlSwitch, ControlMenu case has some major kludge in it
+it's hardcoded to look for the first control for the address, so it knows where to switch
+we should add a "address" field somewhere there, that would fix twist/nimbus too I rekon
+
+

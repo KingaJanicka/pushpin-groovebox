@@ -1100,7 +1100,7 @@
 										"$type": "message",
 										"$comment": "Comb-",
 										"address": "/param/a/filter/1/type",
-										"value": 8
+										"value": 25
 									}
 								}
 							]
@@ -2306,7 +2306,7 @@
 										"$type": "message",
 										"$comment": "Comb-",
 										"address": "/param/a/filter/2/type",
-										"value": 8
+										"value": 25
 									}
 								}
 							]

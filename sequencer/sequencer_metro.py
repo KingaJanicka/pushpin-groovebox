@@ -76,7 +76,9 @@ class SequencerMetro(object):
         self.midi_in_device = instrument.midi_out_device
         self.midi_in_name = instrument.midi_in_name
         self.midi_out_device = instrument.midi_out_device
-        self.load_state()
+
+        # self.load_state()
+
         # We should use track.update() to update the sequencers to match the pad state
         self.playhead_track = self.timeline.schedule(
             {

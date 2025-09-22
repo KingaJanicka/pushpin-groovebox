@@ -344,7 +344,6 @@ class OSCControl(object):
         value, *rest = args
         self.log.debug((address, value))
         self.value = value
-        
         # this human readable string doesn't change with knob movements, querry fixes it but makes it glitchy
         # self.string = string
 
@@ -516,12 +515,10 @@ class OSCControlSwitch(object):
                 get_color_func=get_color_func,
                 send_osc_func=send_osc_func,
                 dispatcher=dispatcher,
+                set_parent_state=self.set_state
             )
 
             self.groups.append(group_control)
-
-            if group_control.address:
-                self.dispatcher.map(group_control.address, group_control.set_state)
 
         if (
             len(self.groups) > 0
@@ -529,6 +526,7 @@ class OSCControlSwitch(object):
             and hasattr(self.groups[int(self.value)], "select")
         ):
             self.groups[int(self.value)].select()
+            
 
     def query(self):
         if self.address:
@@ -547,8 +545,8 @@ class OSCControlSwitch(object):
             self.value += scaled
 
             active_group = self.get_active_group()
-            if hasattr(active_group, "select"):
-                active_group.select()
+            # if hasattr(active_group, "select"):
+            #     active_group.select()
 
     def get_active_group(self):
         if int(self.value) <= len(self.groups) - 1:
@@ -558,8 +556,10 @@ class OSCControlSwitch(object):
             # TODO: nasty but enables less-twitchy knobs, prob needs fixing
 
     def set_state(self, address, *args):
+        # print("Control switch args", args)
+        value, label = args
+        # print("switch val = ", value)
         self.log.debug((address, args))
-
         # TODO do we need the following?
         for idx, group in enumerate(self.groups):
             for control in group.controls:
@@ -573,7 +573,16 @@ class OSCControlSwitch(object):
                     any([item for item in control.items if item.address == address])
                     or control.address == address
                 ):
-                    self.value = float(idx)
+                    # print(address, value)
+                    # TODO: THis is hardcoded needs a fix
+                    try:
+                        item = group.controls[0].items[0]
+                        if int(item.message["value"]) == int(value) and item.address == address:
+                            # print(item.label, item.value)
+                            self.value = float(idx)
+                    except Exception as e:
+                        print("Exception in ControlSwitch set state", e)
+                    # control.set_state(address, value)
 
     def draw(self, ctx, offset):
         margin_top = 30
@@ -645,7 +654,7 @@ class OSCGroup(object):
         return sum([control.size for control in self.controls])
 
     def __init__(
-        self, config, get_color_func=None, send_osc_func=None, dispatcher=None
+        self, config, get_color_func=None, send_osc_func=None, dispatcher=None, set_parent_state=None
     ):
         if config["$type"] != "group":
             raise Exception("Invalid type passed to new OSCGroup")
@@ -697,9 +706,13 @@ class OSCGroup(object):
                         get_color_func=get_color_func,
                         send_osc_func=send_osc_func,
                     )
+                    
+                    def set_state(*args):
+                        control.set_state(*args)
+                        set_parent_state(*args)
 
                     if control.address:
-                        self.dispatcher.map(control.address, control.set_state)
+                        self.dispatcher.map(control.address, set_state)
 
                     self.controls.append(control)
                 case "control-spacer":
@@ -781,15 +794,19 @@ class OSCControlMenu(object):
             self.value = 0
         if self.address is None and len(self.items) > 0:
             self.address = self.items[0].address  # assumes all items have same address
-
+        
     def set_state(self, address, value, *args):
+        # if address == '/param/a/filter/1/type':
+        #     print("EL PROBLEMO")
         self.log.debug((address, value))
-        self.value = self.get_closest_idx(self.value)
-
+        self.value = self.get_closest_idx(value)
+        
     def query(self):
+        # print("Control menu querry")
         self.send_osc_func("/q" + self.address, None)
 
     def update_value(self, increment, **kwargs):
+        # print("Update val called")
         if not self.value:
             pass
 
@@ -813,13 +830,14 @@ class OSCControlMenu(object):
             return self.items[math.floor(self.value)]
 
     def get_closest_idx(self, value):
+        
         closest_value = closest([item.value for item in self.items], value)
-        idx, item = next(
-            enumerate([item for item in self.items if item.value == closest_value])
-        )
-        return idx
+        for idx, item in enumerate(self.items ) :
+            if item.value == closest_value:
+                return idx
 
     def select(self):
+        print("Select called")
         active = self.get_active_menu_item()
         self.log.debug((self.value, active.address, active.value))
         self.send_osc_func(active.address, float(active.value))

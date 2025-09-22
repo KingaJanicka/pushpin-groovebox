@@ -171,44 +171,16 @@ class MetroSequencerMode(MelodicMode):
                 menu.append(param_1)
                 
                 
-                param_2 = OSCControl(
-                    {
-                        "$type": "control-range",
-                        "label": "Param 2",
-                        "address": f"/",
-                        "min": 2,
-                        "max": 64,
-                    },
-                    self.get_current_instrument_color_helper,
-                    None,
-                )
+                param_2 = ControlSpacer()
                 menu.append(param_2)
 
 
-                param_3 = OSCControl(
-                    {
-                        "$type": "control-range",
-                        "label": "Param 3",
-                        "address": f"/",
-                        "min": 2,
-                        "max": 64,
-                    },
-                    self.get_current_instrument_color_helper,
-                    None,
-                )
+                param_3 = ControlSpacer()
                 menu.append(param_3)
 
-                param_4 = OSCControl(
-                    {
-                        "$type": "control-range",
-                        "label": "Param 3",
-                        "address": f"/",
-                        "min": 2,
-                        "max": 64,
-                    },
-                    self.get_current_instrument_color_helper,
-                    None,
-                )
+                param_4 = ControlSpacer()
+
+
                 menu.append(param_4)
 
                 param_5 = OSCControlMenu(
@@ -2320,7 +2292,10 @@ class MetroSequencerMode(MelodicMode):
                     for idx, control in enumerate(
                         self.instrument_scale_edit_controls[instrument_short_name]
                     ):
-                        control.value = dump[instrument_short_name][idx]
+                        try:
+                            control.value = dump[instrument_short_name][idx]
+                        except:
+                            print(e)
         except Exception as e:
             print("Exception in trig_edit load_state")
             traceback.print_exc()
@@ -2378,12 +2353,12 @@ class MetroSequencerMode(MelodicMode):
     def activate(self):
         self.disable_controls = False
         self.draw_pads = True
-        self.app.steps_held = []            
+        self.app.steps_held.clear()     
         self.active_track_button_on()
         self.push.buttons.set_button_color(push2_constants.BUTTON_SCALE, definitions.GRAY_DARK)
 
     def deactivate(self):
-        self.app.steps_held = []
+        self.app.steps_held.clear()
         self.show_scale_menu = False
         self.draw_pads = False
         self.disable_controls = False
@@ -2789,6 +2764,7 @@ class MetroSequencerMode(MelodicMode):
                         else:
                             seq_pad_state[idx_i][idx_j] = True
                             
+
 
                 # sets pad state
                 for idx_i, i in enumerate(seq_pad_state):
