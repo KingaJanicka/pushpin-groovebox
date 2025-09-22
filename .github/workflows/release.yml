@@ -18,7 +18,7 @@ jobs:
         run: echo "sha=$(git rev-parse --short HEAD)"  >> "$GITHUB_OUTPUT"
       - name: generate build name
         id: get_buildname
-        run: echo "IMAGE=pushpin-groovebox_${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+        run: echo "IMAGE=pushpin-groovebox_${{ github.ref_name }}.img" >> "$GITHUB_OUTPUT"
       - name: build image
         working-directory: ./scripts/image
         run: bash create-image-with-backports.sh
@@ -31,5 +31,5 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
           port: 22
-          source: "./scripts/image/${{ steps.get_buildname.outputs.IMAGE }}.img"
+          source: "./scripts/image/${{ steps.get_buildname.outputs.IMAGE }}"
           target: images
