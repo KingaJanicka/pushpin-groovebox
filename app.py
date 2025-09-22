@@ -146,6 +146,10 @@ class PyshaApp(object):
                     self.iso_midi_in = iso.MidiInputDevice(device_name=iso_midi_in_device_name)
                     self.global_timeline = iso.Timeline(output_device=iso.DummyOutputDevice(), clock_source=self.iso_midi_in)
                     # self.global_timeline.background()
+            
+            if iso_midi_in_device_name == None:
+                self.global_timeline = iso.Timeline(self.tempo, output_device=iso.DummyOutputDevice())
+    
         except:
             if iso_midi_in_device_name == None:
                 self.global_timeline = iso.Timeline(self.tempo, output_device=iso.DummyOutputDevice())
@@ -981,8 +985,8 @@ class PyshaApp(object):
 
     async def run_loop(self):
         print("Loading State ...")
+        # self.sequencer_mode.load_state()
         self.metro_sequencer_mode.load_state()
-        self.sequencer_mode.load_state()
         self.preset_selection_mode.init_surge_preset_state()
         
         for idx, instrument_shortname in enumerate(self.instruments):
