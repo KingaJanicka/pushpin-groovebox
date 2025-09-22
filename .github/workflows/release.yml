@@ -24,8 +24,6 @@ jobs:
         run: bash create-image-with-backports.sh
         env:
           IMAGE: ${{ steps.get_buildname.outputs.IMAGE }}
-      - name: compress file
-        run: xz -z9 "./scripts/image/${{ steps.get_buildname.outputs.IMAGE }}.img"
       - name: Copy files via SSH
         uses: appleboy/scp-action@v1
         with:
@@ -33,5 +31,5 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
           port: 22
-          source: "./scripts/image/${{ steps.get_buildname.outputs.IMAGE }}.img.xz"
+          source: "./scripts/image/${{ steps.get_buildname.outputs.IMAGE }}.img"
           target: images
