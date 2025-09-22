@@ -1,0 +1,37 @@
+name: Run tests
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: install SDM
+        run: curl -L https://raw.githubusercontent.com/gitbls/sdm/master/EZsdmInstaller | bash
+      - name: get hash
+        id: get_sha
+        run: echo "sha=$(git rev-parse --short HEAD)"  >> "$GITHUB_OUTPUT"
+      - name: generate build name
+        id: get_buildname
+        run: echo "IMAGE=pushpin-groovebox_${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+      - name: build image
+        working-directory: ./scripts/image
+        run: bash create-image-with-backports.sh
+        env:
+          IMAGE: ${{ steps.get_buildname.outputs.IMAGE }}
+      - name: compress file
+        run: xz -z9 "./scripts/image/${{ steps.get_buildname.outputs.IMAGE }}.img"
+      - name: Copy files via SSH
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          port: 22
+          source: "./scripts/image/${{ steps.get_buildname.outputs.IMAGE }}.img.xz"
+          target: images
