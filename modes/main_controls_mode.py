@@ -67,6 +67,18 @@ class MainControlsMode(definitions.PyshaMode):
         else:
             self.push.buttons.set_button_color(BROWSE_BUTTON, definitions.OFF_BTN_COLOR)
 
+        # Mute mode
+        if self.app.is_mode_active(self.app.mute_mode):
+            self.push.buttons.set_button_color(MUTE_BUTTON, definitions.BLACK)
+            self.push.buttons.set_button_color(
+                MUTE_BUTTON,
+                definitions.WHITE,
+                animation=definitions.DEFAULT_ANIMATION,
+            )
+        else:
+            self.push.buttons.set_button_color(MUTE_BUTTON, definitions.GRAY_DARK)
+
+
         # Menu mode
         if self.app.menu_mode.should_be_enabled():
             if self.app.is_mode_active(self.app.menu_mode):

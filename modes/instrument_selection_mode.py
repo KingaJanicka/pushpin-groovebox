@@ -160,7 +160,7 @@ class InstrumentSelectionMode(definitions.PyshaMode):
         # self.load_current_default_layout()
         # Commented out so that mode stays the same as intruments switch
         self.clean_currently_notes_being_played()
-        self.app.steps_held = []
+        self.app.steps_held.clear()
 
         try:
             # self.app.midi_cc_mode.new_instrument_selected()
@@ -205,19 +205,22 @@ class InstrumentSelectionMode(definitions.PyshaMode):
             instrument_color = self.instruments_info[i]["color"]
             volume = self.app.volumes[i*2]
             volume_parsed = int(volume*100)
+            global_volume = self.app.instruments[self.instruments_info[i]["instrument_name"]].instrument_global_volume
+            globlal_volume_rounded = int(global_volume *100)
             if self.selected_instrument % 8 == i:
                 background_color = instrument_color
                 font_color = definitions.BLACK
             else:
                 background_color = definitions.BLACK
                 font_color = instrument_color
+            instrument_index = f'Trk {self.instruments_info[i]["instrument_index"]}'
             instrument_short_name = f'{self.instruments_info[i]["instrument_short_name"]}    {volume_parsed}'
-
+            label = f'{instrument_index}  {volume_parsed} / {globlal_volume_rounded}'
             show_text(
                 ctx,
                 i,
                 h - height,
-                instrument_short_name,
+                label,
                 height=height,
                 font_color=font_color,
                 background_color=background_color,

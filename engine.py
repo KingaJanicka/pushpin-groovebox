@@ -109,11 +109,13 @@ class Engine(ABC):
         all_ports = filter(
             lambda x: x["type"] == "PipeWire:Interface:Port", self.app.pipewire
         )
+        if self.instrument["instrument_name"] == "Overwitch":
+            self.pw_ports["output"].clear()
+            self.pw_ports["input"].clear()
         for port in all_ports:
             # with nodes we can associate nodes with clients/instruments via PID
             # And ports with nodes via ID/node.id
             # With those IDs in place we can start calling pw-link
-
             for instrument_node in instrument_nodes:
                 if port.get("info", {}).get("props", {}).get(
                     "node.id", None
@@ -467,6 +469,7 @@ class SurgeXTEngine(Engine):
             f"surge-xt-cli",
             f"--audio-interface={'1.0'}",
             f"--audio-input-interface={'1.0'}",
+            # f"--audio-output-interface={'0.25'}",
             f"--midi-input={self.midi_device_idx}",
             f"--osc-in-port={self.osc_in_port}",
             f"--osc-out-port={self.osc_out_port}",
@@ -492,6 +495,7 @@ class SurgeXTEngine(Engine):
             "-rt",
             "-channels",
             "16",
+            "-nocallback",
             f"./puredata_nodes/passthrough_{self.instrument_index}.pd",
             stdin=asyncio.subprocess.PIPE,
             stdout=asyncio.subprocess.PIPE,
@@ -839,25 +843,27 @@ class ExternalEngine(Engine):
 
     async def start(self):
 
-        await asyncio.sleep(1)
-        self.process = await asyncio.create_subprocess_exec(
-            "pw-jack",
-            "overwitch-cli",
-            "-n",
-            "0",
-            f"-b",
-            f"8",
-            f"-q",
-            f"4",
-            stdin=asyncio.subprocess.PIPE,
-            stdout=asyncio.subprocess.PIPE,
-            # stderr=asyncio.subprocess.PIPE,
+        print("________External Engine Start Called________")
+        print("________You shoudln't be doing this_________")
+        # await asyncio.sleep(1)
+        # self.process = await asyncio.create_subprocess_exec(
+        #     "pw-jack",
+        #     "overwitch-cli",
+        #     "-n",
+        #     "0",
+        #     f"-b",
+        #     f"8",
+        #     f"-q",
+        #     f"4",
+        #     stdin=asyncio.subprocess.PIPE,
+        #     stdout=asyncio.subprocess.PIPE,
+        #     # stderr=asyncio.subprocess.PIPE,
             
-        )
+        # )
         
-        self.PID = self.process.pid
+        # self.PID = self.process.pid
 
-        await asyncio.sleep(2)
+        # await asyncio.sleep(2)
 
     async def updateConfig(self):
         self.PID = self.process.pid
@@ -865,3 +871,31 @@ class ExternalEngine(Engine):
         if pwConfig:
             self.pipewire = pwConfig
             self.pipewireID = pwConfig["id"]
+
+    async def get_instrument_nodes(self):
+        clients = filter(
+            lambda x: x["type"] == "PipeWire:Interface:Client", self.app.pipewire.copy()
+        )
+        nodes = filter(
+            lambda x: x["type"] == "PipeWire:Interface:Node", self.app.pipewire.copy()
+        )
+        client_id = [None]
+        try:
+            for client in clients:
+                if client and client.get("info", {}).get("props", {}).get("application.name", {}) == "overwitch-service":
+                    client_id.append(client["id"])
+                    self.PID = client["info"]["props"]["application.process.id"]
+            instrument_nodes = []
+            for node in nodes:
+                for id in client_id:
+                    if (
+                        node
+                        and id != None
+                        and node.get("info", {}).get("props", {}).get("client.id", None)
+                        == (id)
+                    ):
+                        instrument_nodes.append(node)
+            return instrument_nodes
+        except Exception as e:
+            print("Exception in get_instrument_nodes in engine.py")
+            traceback.print_exc()

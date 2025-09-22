@@ -149,4 +149,12 @@ class MuteMode(MelodicMode):
             self.app.buttons_need_update = True
             self.app.pads_need_update = True
             self.app.set_metro_sequencer_mode()
-            
+        elif button_name == push2_python.constants.BUTTON_PLAY:
+            metro = self.app.metro_sequencer_mode
+            if metro.sequencer_is_playing == False:
+                metro.start_timeline()
+                metro.sequencer_is_playing = True
+
+            elif metro.sequencer_is_playing == True:
+                metro.stop_timeline()
+                metro.sequencer_is_playing = False

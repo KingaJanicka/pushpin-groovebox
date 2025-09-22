@@ -32,6 +32,7 @@
 		},
 		{
 			"$type": "control-menu",
+			"menu_label":"Waveform",
 			"items": [
 				{
 					"$type": "menu-item",

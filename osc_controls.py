@@ -273,7 +273,7 @@ class OSCControl(object):
         
             display_w = push2_python.constants.DISPLAY_LINE_PIXELS
             x = (display_w // 8) * x_part
-            y = 95
+            y = 110
             x_witdh = 118
             y_height = 30
             ctx.move_to(x,y)
@@ -286,7 +286,7 @@ class OSCControl(object):
             # ctx.restore()
         
         
-        margin_top = 95
+        margin_top = 110
         line_padding = 4
         line_width = 80
         # Param name
@@ -344,7 +344,6 @@ class OSCControl(object):
         value, *rest = args
         self.log.debug((address, value))
         self.value = value
-        
         # this human readable string doesn't change with knob movements, querry fixes it but makes it glitchy
         # self.string = string
 
@@ -516,12 +515,10 @@ class OSCControlSwitch(object):
                 get_color_func=get_color_func,
                 send_osc_func=send_osc_func,
                 dispatcher=dispatcher,
+                set_parent_state=self.set_state
             )
 
             self.groups.append(group_control)
-
-            if group_control.address:
-                self.dispatcher.map(group_control.address, group_control.set_state)
 
         if (
             len(self.groups) > 0
@@ -529,6 +526,7 @@ class OSCControlSwitch(object):
             and hasattr(self.groups[int(self.value)], "select")
         ):
             self.groups[int(self.value)].select()
+            
 
     def query(self):
         if self.address:
@@ -547,8 +545,8 @@ class OSCControlSwitch(object):
             self.value += scaled
 
             active_group = self.get_active_group()
-            if hasattr(active_group, "select"):
-                active_group.select()
+            # if hasattr(active_group, "select"):
+            #     active_group.select()
 
     def get_active_group(self):
         if int(self.value) <= len(self.groups) - 1:
@@ -558,8 +556,10 @@ class OSCControlSwitch(object):
             # TODO: nasty but enables less-twitchy knobs, prob needs fixing
 
     def set_state(self, address, *args):
+        # print("Control switch args", args)
+        value, label = args
+        # print("switch val = ", value)
         self.log.debug((address, args))
-
         # TODO do we need the following?
         for idx, group in enumerate(self.groups):
             for control in group.controls:
@@ -573,7 +573,16 @@ class OSCControlSwitch(object):
                     any([item for item in control.items if item.address == address])
                     or control.address == address
                 ):
-                    self.value = float(idx)
+                    # print(address, value)
+                    # TODO: THis is hardcoded needs a fix
+                    try:
+                        item = group.controls[0].items[0]
+                        if int(item.message["value"]) == int(value) and item.address == address:
+                            # print(item.label, item.value)
+                            self.value = float(idx)
+                    except Exception as e:
+                        print("Exception in ControlSwitch set state", e)
+                    # control.set_state(address, value)
 
     def draw(self, ctx, offset):
         margin_top = 30
@@ -621,7 +630,7 @@ class OSCControlSwitch(object):
         )
 
     def draw_submenu(self, ctx, offset, draw_lock=False, lock_value=None):
-        margin_top = 95
+        margin_top = 110
         val_height = 15
 
         # Param value
@@ -645,7 +654,7 @@ class OSCGroup(object):
         return sum([control.size for control in self.controls])
 
     def __init__(
-        self, config, get_color_func=None, send_osc_func=None, dispatcher=None
+        self, config, get_color_func=None, send_osc_func=None, dispatcher=None, set_parent_state=None
     ):
         if config["$type"] != "group":
             raise Exception("Invalid type passed to new OSCGroup")
@@ -697,9 +706,13 @@ class OSCGroup(object):
                         get_color_func=get_color_func,
                         send_osc_func=send_osc_func,
                     )
+                    
+                    def set_state(*args):
+                        control.set_state(*args)
+                        set_parent_state(*args)
 
                     if control.address:
-                        self.dispatcher.map(control.address, control.set_state)
+                        self.dispatcher.map(control.address, set_state)
 
                     self.controls.append(control)
                 case "control-spacer":
@@ -767,6 +780,7 @@ class OSCControlMenu(object):
         self.get_color_func = get_color_func
         self.send_osc_func = send_osc_func
         self.modmatrix = config.get("modmatrix", True)
+        self.menu_label = config.get("menu_label", None)
         self.message = config.get("onselect", None)
         self.address = self.message["address"] if self.message else None
         self.value = self.message["value"] if self.message else None
@@ -780,15 +794,19 @@ class OSCControlMenu(object):
             self.value = 0
         if self.address is None and len(self.items) > 0:
             self.address = self.items[0].address  # assumes all items have same address
-
+        
     def set_state(self, address, value, *args):
+        # if address == '/param/a/filter/1/type':
+        #     print("EL PROBLEMO")
         self.log.debug((address, value))
-        self.value = self.get_closest_idx(self.value)
-
+        self.value = self.get_closest_idx(value)
+        
     def query(self):
+        # print("Control menu querry")
         self.send_osc_func("/q" + self.address, None)
 
     def update_value(self, increment, **kwargs):
+        # print("Update val called")
         if not self.value:
             pass
 
@@ -812,19 +830,22 @@ class OSCControlMenu(object):
             return self.items[math.floor(self.value)]
 
     def get_closest_idx(self, value):
+        
         closest_value = closest([item.value for item in self.items], value)
-        idx, item = next(
-            enumerate([item for item in self.items if item.value == closest_value])
-        )
-        return idx
+        for idx, item in enumerate(self.items ) :
+            if item.value == closest_value:
+                return idx
 
     def select(self):
+        print("Select called")
         active = self.get_active_menu_item()
         self.log.debug((self.value, active.address, active.value))
         self.send_osc_func(active.address, float(active.value))
 
     def draw(self, ctx, offset, draw_lock=False, lock_value=None):
         margin_top = 30
+        tip_top = 0
+        tip_height = 0
         next_prev_height = 15
         val_height = 25
         next_label = ""
@@ -853,7 +874,6 @@ class OSCControlMenu(object):
             ctx.restore()
 
             
-
         if len(self.items) > idx + 1:
             next_label = self.items[idx + 1].label
 
@@ -862,12 +882,27 @@ class OSCControlMenu(object):
         if (idx - 1) >= 0:
             prev_label = self.items[idx - 1].label
 
+        # If a tip is present
+        if self.menu_label != None:
+            # Show tip
+            tip_top = 25
+            tip_height = 20
+            show_text(
+                ctx,
+                offset,
+                tip_top,
+                self.menu_label,
+                height=tip_height,
+                font_color=font_color,
+                center_horizontally=True,
+            )
+        
         if prev_label:
             # Last param name
             show_text(
                 ctx,
                 offset,
-                margin_top,
+                margin_top + tip_top,
                 prev_label,
                 height=next_prev_height,
                 font_color=font_color,
@@ -879,7 +914,7 @@ class OSCControlMenu(object):
         show_text(
             ctx,
             offset,
-            margin_top + next_prev_height,
+            margin_top + next_prev_height + tip_top,
             current_label,
             height=val_height,
             font_color=color,
@@ -891,7 +926,7 @@ class OSCControlMenu(object):
             show_text(
                 ctx,
                 offset,
-                margin_top + next_prev_height + val_height,
+                margin_top + next_prev_height + val_height + tip_top,
                 next_label,
                 height=next_prev_height,
                 font_color=font_color,
@@ -899,7 +934,7 @@ class OSCControlMenu(object):
             )
 
     def draw_submenu(self, ctx, offset, draw_lock=False, lock_value=None):
-        margin_top = 95
+        margin_top = 110
         val_height = 15
         # TODO: need to add the lock drawing stuff here
         # Current param value

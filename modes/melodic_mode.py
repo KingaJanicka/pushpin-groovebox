@@ -415,3 +415,13 @@ class MelodicMode(definitions.PyshaMode):
                 )
             )
             return True
+        
+        elif button_name == push2_python.constants.BUTTON_PLAY:
+            metro = self.app.metro_sequencer_mode
+            if metro.sequencer_is_playing == False:
+                metro.start_timeline()
+                metro.sequencer_is_playing = True
+
+            elif metro.sequencer_is_playing == True:
+                metro.stop_timeline()
+                metro.sequencer_is_playing = False

@@ -14,8 +14,6 @@ function errexit() {
 
 [ $EUID -eq 0 ] && sudo="" || sudo="sudo"
 
-IMAGE="$(date +'%Y-%m-%d')_pushpin-groovebox_$(git rev-parse --short HEAD).img"
-
 # service dbus start
 
 if ! test -f $IMAGE; then

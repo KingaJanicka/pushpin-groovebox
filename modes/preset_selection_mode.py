@@ -109,24 +109,30 @@ class PresetSelectionMode(definitions.PyshaMode):
         print("saved presets to state")
 
     async def load_init_state(self, instrument_shortname):
+       
         # Check if there is a preset in the state dir
         # If yes load that
         # If not then load the normal patch and save to the state
     
         preset_name = f"{instrument_shortname}_{0}"            
         preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
-        self.send_osc("/patch/load", preset_path, instrument_shortname=instrument_shortname)
-        self.send_osc("/q/all_params",preset_path, instrument_shortname=instrument_shortname)
         instrument = self.app.instruments[instrument_shortname]
-        await asyncio.sleep(1)
+        self.send_osc("/patch/load", preset_path, instrument_shortname=instrument_shortname)
+        await asyncio.sleep(0.5)
         instrument.query_slots()
-        await asyncio.sleep(1)
+        await asyncio.sleep(0.5)
         instrument.update_current_devices()
-        await asyncio.sleep(2)
+        await asyncio.sleep(0.5)
         instrument.query_all_controls()
-        self.send_osc("/q/all_params",preset_path, instrument_shortname=instrument_shortname)
-        instrument.query_all_controls()
-        
+
+        # Turns out we don't need those statements but leaving them in here just
+        # in case this pattern is needed later 
+        # if instrument.current_devices[0].label == "Audio In":
+        #     print(instrument.name)
+
+        # elif instrument.current_devices[1].label == "Audio In":
+        #     print(instrument.name)
+
         # time.sleep(1)
         # instrument.init_devices_sync()
         # print("end of load init presets")
@@ -534,6 +540,17 @@ class PresetSelectionMode(definitions.PyshaMode):
             preset_number = self.last_pad_in_column_pressed[instrument_short_name][0]
             self.presets[instrument_short_name][preset_number] = self.current_address
             self.save_presets()
+        
+        elif button_name == push2_python.constants.BUTTON_PLAY:
+            metro = self.app.metro_sequencer_mode
+            if metro.sequencer_is_playing == False:
+                metro.start_timeline()
+                metro.sequencer_is_playing = True
+
+            elif metro.sequencer_is_playing == True:
+                metro.stop_timeline()
+                metro.sequencer_is_playing = False
+
 
     def on_encoder_rotated(self, encoder_name, increment):
         try:

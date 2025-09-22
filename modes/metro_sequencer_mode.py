@@ -15,6 +15,7 @@ from osc_controls import (
     ControlSpacer,
     OSCControlSwitch,
     OSCGroup,
+    OSCControlMenu,
 )
 from definitions import TRACK_NAMES_METRO
 
@@ -55,11 +56,11 @@ class MetroSequencerMode(MelodicMode):
         range(36, 44),
     ]
     button_1_8_pressed = False
-    button_1_4t_pressed = False
-    button_1_4_pressed = False
+    button_tie_pressed = False
+    button_gate_stack = False
     playhead = 0
     seq_tick = 0
-    timeline_is_playing = False
+    sequencer_is_playing = False
     current_selected_section_and_page = {}
     instrument_sequencers = {}
     tempo = 120
@@ -170,96 +171,1970 @@ class MetroSequencerMode(MelodicMode):
                 menu.append(param_1)
                 
                 
-                param_2 = OSCControl(
-                    {
-                        "$type": "control-range",
-                        "label": "Param 2",
-                        "address": f"/",
-                        "min": 2,
-                        "max": 64,
-                    },
-                    self.get_current_instrument_color_helper,
-                    None,
-                )
+                param_2 = ControlSpacer()
                 menu.append(param_2)
 
 
-                param_3 = OSCControl(
-                    {
-                        "$type": "control-range",
-                        "label": "Param 3",
-                        "address": f"/",
-                        "min": 2,
-                        "max": 64,
-                    },
-                    self.get_current_instrument_color_helper,
-                    None,
-                )
+                param_3 = ControlSpacer()
                 menu.append(param_3)
 
-                param_4 = OSCControl(
-                    {
-                        "$type": "control-range",
-                        "label": "Param 4",
-                        "address": f"/",
-                        "min": 2,
-                        "max": 64,
-                    },
-                    self.get_current_instrument_color_helper,
-                    None,
-                )
+                param_4 = ControlSpacer()
+
+
                 menu.append(param_4)
 
-                param_5 = OSCControl(
-                    {
-                        "$type": "control-range",
-                        "label": "Seq Time Scale",
-                        "address": f"/",
-                        "min": 1,
-                        "max": 32,
-                    },
+                param_5 = OSCControlMenu(
+                {
+                    "$type": "control-menu",
+                    "menu_label": "Seq Time Scale",
+                    "items": [
+                        {
+                            "$type": "menu-item",
+                            "label": "1/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "2",
+                                "address": "/",
+                                "value": 1
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "2/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "3",
+                                "address": "/",
+                                "value": 2
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "3/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "4",
+                                "address": "/",
+                                "value": 3
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "4/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "5",
+                                "address": "/",
+                                "value": 4
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "5/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "6",
+                                "address": "/",
+                                "value": 5
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "6/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "7",
+                                "address": "/",
+                                "value": 6
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "7/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "8",
+                                "address": "/",
+                                "value": 7
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "8/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "9",
+                                "address": "/",
+                                "value": 8
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "9/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "10",
+                                "address": "/",
+                                "value": 9
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "10/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "11",
+                                "address": "/",
+                                "value": 10
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "11/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "12",
+                                "address": "/",
+                                "value": 11
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "12/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "13",
+                                "address": "/",
+                                "value": 12
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "13/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "14",
+                                "address": "/",
+                                "value": 13
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "14/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "15",
+                                "address": "/",
+                                "value": 14
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "15/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "16",
+                                "address": "/",
+                                "value": 15
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "16/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "17",
+                                "address": "/",
+                                "value": 16
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "17/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "18",
+                                "address": "/",
+                                "value": 17
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "18/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "19",
+                                "address": "/",
+                                "value": 18
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "19/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "20",
+                                "address": "/",
+                                "value": 19
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "20/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "21",
+                                "address": "/",
+                                "value": 20
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "21/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "22",
+                                "address": "/",
+                                "value": 21
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "22/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "23",
+                                "address": "/",
+                                "value": 22
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "23/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "24",
+                                "address": "/",
+                                "value": 23
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "24/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "25",
+                                "address": "/",
+                                "value": 24
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "25/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "26",
+                                "address": "/",
+                                "value": 25
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "26/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "27",
+                                "address": "/",
+                                "value": 26
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "27/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "28",
+                                "address": "/",
+                                "value": 27
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "28/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 28
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "29/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 29
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "30/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 30
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "31/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 31
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "32/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 32
+                            }
+                        }
+                    ]
+                },
                     self.get_current_instrument_color_helper,
                     None,
                 )
                 menu.append(param_5)
-                param_6 = OSCControl(
-                    {
-                        "$type": "control-range",
-                        "label": "Seq Steps",
-                        "address": f"/",
-                        "min": 2,
-                        "max": 64,
-                    },
+                
+                param_6 = OSCControlMenu(
+                {
+                    "$type": "control-menu",
+                    "menu_label": "Seq Steps",
+                    "items": [
+
+                        {
+                            "$type": "menu-item",
+                            "label": "2/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "3",
+                                "address": "/",
+                                "value": 2
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "3/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "4",
+                                "address": "/",
+                                "value": 3
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "4/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "5",
+                                "address": "/",
+                                "value": 4
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "5/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "6",
+                                "address": "/",
+                                "value": 5
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "6/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "7",
+                                "address": "/",
+                                "value": 6
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "7/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "8",
+                                "address": "/",
+                                "value": 7
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "8/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "9",
+                                "address": "/",
+                                "value": 8
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "9/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "10",
+                                "address": "/",
+                                "value": 9
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "10/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "11",
+                                "address": "/",
+                                "value": 10
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "11/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "12",
+                                "address": "/",
+                                "value": 11
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "12/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "13",
+                                "address": "/",
+                                "value": 12
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "13/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "14",
+                                "address": "/",
+                                "value": 13
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "14/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "15",
+                                "address": "/",
+                                "value": 14
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "15/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "16",
+                                "address": "/",
+                                "value": 15
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "16/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "17",
+                                "address": "/",
+                                "value": 16
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "17/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "18",
+                                "address": "/",
+                                "value": 17
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "18/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "19",
+                                "address": "/",
+                                "value": 18
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "19/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "20",
+                                "address": "/",
+                                "value": 19
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "20/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "21",
+                                "address": "/",
+                                "value": 20
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "21/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "22",
+                                "address": "/",
+                                "value": 21
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "22/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "23",
+                                "address": "/",
+                                "value": 22
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "23/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "24",
+                                "address": "/",
+                                "value": 23
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "24/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "25",
+                                "address": "/",
+                                "value": 24
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "25/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "26",
+                                "address": "/",
+                                "value": 25
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "26/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "27",
+                                "address": "/",
+                                "value": 26
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "27/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "28",
+                                "address": "/",
+                                "value": 27
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "28/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 28
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "29/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 29
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "30/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 30
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "31/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 31
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "32/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 32
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+1/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 33
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+2/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 34
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+3/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 35
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+4/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 36
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+5/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 37
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+6/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 38
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+7/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 39
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+8/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 40
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+9/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 41
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+10/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 42
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+11/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 43
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+12/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 44
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+13/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 45
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+14/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 46
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+15/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 47
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+16/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 48
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+17/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 49
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+18/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 50
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+19/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 51
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+20/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 52
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+21/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 53
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+22/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 54
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+23/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 55
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+24/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 56
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+25/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 57
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+26/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 58
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+27/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 59
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+28/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 60
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+29/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 61
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+30/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 62
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+31/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 63
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+32/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 64
+                            }
+                        }
+                    ]
+                },
                     self.get_current_instrument_color_helper,
                     None,
                 )
                 menu.append(param_6)
-                seq_scale = OSCControl(
-                    {
-                        "$type": "control-range",
-                        "label": "Master Time Scale",
-                        "address": f"/",
-                        "min": 1,
-                        "max": 32,
-                    },
+                
+                seq_scale = OSCControlMenu(
+                {
+                    "$type": "control-menu",
+                    "menu_label": "Main Time Scale",
+                    "items": [
+                        {
+                            "$type": "menu-item",
+                            "label": "1/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "2",
+                                "address": "/",
+                                "value": 1
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "2/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "3",
+                                "address": "/",
+                                "value": 2
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "3/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "4",
+                                "address": "/",
+                                "value": 3
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "4/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "5",
+                                "address": "/",
+                                "value": 4
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "5/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "6",
+                                "address": "/",
+                                "value": 5
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "6/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "7",
+                                "address": "/",
+                                "value": 6
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "7/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "8",
+                                "address": "/",
+                                "value": 7
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "8/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "9",
+                                "address": "/",
+                                "value": 8
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "9/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "10",
+                                "address": "/",
+                                "value": 9
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "10/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "11",
+                                "address": "/",
+                                "value": 10
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "11/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "12",
+                                "address": "/",
+                                "value": 11
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "12/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "13",
+                                "address": "/",
+                                "value": 12
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "13/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "14",
+                                "address": "/",
+                                "value": 13
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "14/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "15",
+                                "address": "/",
+                                "value": 14
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "15/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "16",
+                                "address": "/",
+                                "value": 15
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "16/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "17",
+                                "address": "/",
+                                "value": 16
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "17/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "18",
+                                "address": "/",
+                                "value": 17
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "18/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "19",
+                                "address": "/",
+                                "value": 18
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "19/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "20",
+                                "address": "/",
+                                "value": 19
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "20/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "21",
+                                "address": "/",
+                                "value": 20
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "21/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "22",
+                                "address": "/",
+                                "value": 21
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "22/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "23",
+                                "address": "/",
+                                "value": 22
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "23/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "24",
+                                "address": "/",
+                                "value": 23
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "24/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "25",
+                                "address": "/",
+                                "value": 24
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "25/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "26",
+                                "address": "/",
+                                "value": 25
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "26/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "27",
+                                "address": "/",
+                                "value": 26
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "27/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "28",
+                                "address": "/",
+                                "value": 27
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "28/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 28
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "29/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 29
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "30/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 30
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "31/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 31
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "32/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 32
+                            }
+                        }
+                    ]
+                },
                     self.get_current_instrument_color_helper,
                     None,
                 )
                 seq_scale.value = 2
                 menu.append(seq_scale)
-                len = OSCControl(
-                    {
-                        "$type": "control-range",
-                        "label": "Master Steps",
-                        "address": f"/",
-                        "min": 2,
-                        "max": 64,
-                    },
+                
+                len = OSCControlMenu(
+                {
+                    "$type": "control-menu",
+                    "menu_label": "Main Steps",
+                    "items": [
+
+                        {
+                            "$type": "menu-item",
+                            "label": "2/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "3",
+                                "address": "/",
+                                "value": 2
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "3/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "4",
+                                "address": "/",
+                                "value": 3
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "4/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "5",
+                                "address": "/",
+                                "value": 4
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "5/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "6",
+                                "address": "/",
+                                "value": 5
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "6/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "7",
+                                "address": "/",
+                                "value": 6
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "7/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "8",
+                                "address": "/",
+                                "value": 7
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "8/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "9",
+                                "address": "/",
+                                "value": 8
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "9/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "10",
+                                "address": "/",
+                                "value": 9
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "10/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "11",
+                                "address": "/",
+                                "value": 10
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "11/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "12",
+                                "address": "/",
+                                "value": 11
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "12/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "13",
+                                "address": "/",
+                                "value": 12
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "13/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "14",
+                                "address": "/",
+                                "value": 13
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "14/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "15",
+                                "address": "/",
+                                "value": 14
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "15/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "16",
+                                "address": "/",
+                                "value": 15
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "16/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "17",
+                                "address": "/",
+                                "value": 16
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "17/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "18",
+                                "address": "/",
+                                "value": 17
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "18/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "19",
+                                "address": "/",
+                                "value": 18
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "19/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "20",
+                                "address": "/",
+                                "value": 19
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "20/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "21",
+                                "address": "/",
+                                "value": 20
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "21/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "22",
+                                "address": "/",
+                                "value": 21
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "22/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "23",
+                                "address": "/",
+                                "value": 22
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "23/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "24",
+                                "address": "/",
+                                "value": 23
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "24/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "25",
+                                "address": "/",
+                                "value": 24
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "25/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "26",
+                                "address": "/",
+                                "value": 25
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "26/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "27",
+                                "address": "/",
+                                "value": 26
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "27/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "28",
+                                "address": "/",
+                                "value": 27
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "28/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 28
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "29/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 29
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "30/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 30
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "31/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 31
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "32/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 32
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+1/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 33
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+2/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 34
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+3/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 35
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+4/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 36
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+5/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 37
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+6/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 38
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+7/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 39
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+8/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 40
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+9/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 41
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+10/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 42
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+11/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 43
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+12/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 44
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+13/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 45
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+14/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 46
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+15/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 47
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+16/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 48
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+17/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 49
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+18/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 50
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+19/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 51
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+20/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 52
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+21/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 53
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+22/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 54
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+23/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 55
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+24/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 56
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+25/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 57
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+26/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 58
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+27/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 59
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+28/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 60
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+29/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 61
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+30/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 62
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+31/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 63
+                            }
+                        },
+                        {
+                            "$type": "menu-item",
+                            "label": "1+32/32",
+                            "onselect": {
+                                "$type": "message",
+                                "$comment": "29",
+                                "address": "/",
+                                "value": 64
+                            }
+                        }
+                    ]
+                },
                     self.get_current_instrument_color_helper,
                     None,
                 )
                 len.value = 64
                 menu.append(len)
+                
                 self.instrument_scale_edit_controls[instrument_short_name] = menu
                 self.metro_seq_pad_state[instrument_short_name][track_name] = [
                     [False, False, False, False, False, False, False, False],
@@ -271,6 +2146,29 @@ class MetroSequencerMode(MelodicMode):
                     [False, False, False, False, False, False, False, False],
                     [True, True, True, True, True, True, True, True],
                 ]
+
+    def reschedule_playhead_tracks(self):
+        # unschedule
+        # TODO: finish this func
+        try:
+            
+            self.app.global_timeline.clear()
+            
+            for (instrument_short_name) in self.get_all_distinct_instrument_short_names_helper():
+                sequencer = self.instrument_sequencers[instrument_short_name]
+                sequencer.playhead_track = sequencer.timeline.schedule(
+                    {
+                        "action": lambda: (
+                            # tick_callback(self.name, len(self.pitch)),
+                            sequencer.seq_playhead_update(),
+                        ),
+                        "duration": 0.0625,
+                    }, 
+                )
+            print("after callbacks")
+        except Exception as e:
+            print("Exception in reschedule_playhead_tracks", e)
+        # self.timeline.unschedule(self.playhead_track)
 
     def update_pads_to_seq_state(self):
         for (
@@ -394,7 +2292,10 @@ class MetroSequencerMode(MelodicMode):
                     for idx, control in enumerate(
                         self.instrument_scale_edit_controls[instrument_short_name]
                     ):
-                        control.value = dump[instrument_short_name][idx]
+                        try:
+                            control.value = dump[instrument_short_name][idx]
+                        except:
+                            print(e)
         except Exception as e:
             print("Exception in trig_edit load_state")
             traceback.print_exc()
@@ -452,15 +2353,35 @@ class MetroSequencerMode(MelodicMode):
     def activate(self):
         self.disable_controls = False
         self.draw_pads = True
-        self.app.steps_held = []
+        self.app.steps_held.clear()     
+        self.active_track_button_on()
+        self.push.buttons.set_button_color(push2_constants.BUTTON_SCALE, definitions.GRAY_DARK)
 
     def deactivate(self):
-        self.app.steps_held = []
+        self.app.steps_held.clear()
         self.show_scale_menu = False
         self.draw_pads = False
         self.disable_controls = False
+        self.all_track_buttons_off()
+        self.push.buttons.set_button_color(push2_constants.BUTTON_SCALE, definitions.BLACK)
         
+    def active_track_button_on(self):
+        track_button = None
+        track_color = None
+
         
+        for idx in range(0, 6):
+            if TRACK_NAMES_METRO[idx] == self.selected_track:
+                track_color = TRACK_COLORS[self.selected_track]
+            else: 
+                track_color = definitions.GRAY_DARK    
+            track_button = track_button_names[idx]
+            self.push.buttons.set_button_color(track_button, track_color)
+
+    def all_track_buttons_off(self):
+        for idx in range(0, 6):
+            track_button = track_button_names[idx]
+            self.push.buttons.set_button_color(track_button, definitions.BLACK)
         
     def get_settings_to_save(self):
         return {}
@@ -570,9 +2491,6 @@ class MetroSequencerMode(MelodicMode):
                 gate_idx_x = int(gate_idx / 8)
                 gate_idx_y = 7 - gate_idx % 8    
                 
-                # pitch_and_oct_idx = 
-                
-                
                 for i, value in enumerate(seq_pad_state):
                     # Gets the entire row
                     for j, value in enumerate(value):
@@ -635,246 +2553,269 @@ class MetroSequencerMode(MelodicMode):
                 )
 
     def on_pad_pressed(self, pad_n, pad_ij, velocity):
-        pad_state = self.metro_seq_pad_state[
-            self.get_current_instrument_short_name_helper()
-        ]
-        idx_n = pad_n - 36
-        self.steps_held.append(idx_n)
-        seq = self.instrument_sequencers[self.get_current_instrument_short_name_helper()]
-        seq_pad_state = pad_state[self.selected_track]
-        n = self.steps_held[-1]
-        idx_ij = self.index_to_pad_ij(n)
-        idx_i = idx_ij[0]
-        idx_j = idx_ij[1]
-        self.app.steps_held.append(idx_j)
-        self.disable_controls = True
+        # TODO: VERY RUDE but IG it works???
+        self.app.queue.append(self.async_pad_pressed(pad_n=pad_n))
+    
+    async def async_pad_pressed(self, pad_n):
+        try:
+            pad_state = self.metro_seq_pad_state[
+                self.get_current_instrument_short_name_helper()
+            ]
+            idx_n = pad_n - 36
+            self.steps_held.append(idx_n)
+            seq = self.instrument_sequencers[self.get_current_instrument_short_name_helper()]
+            seq_pad_state = pad_state[self.selected_track]
+            n = self.steps_held[-1]
+            idx_ij = self.index_to_pad_ij(n)
+            idx_i = idx_ij[0]
+            idx_j = idx_ij[1]
+            self.app.steps_held.append(idx_j)
+            self.disable_controls = True
+        except Exception as e:
+            print("Exception on_pad_pressed, init", e)
         # Pitch track
         if self.selected_track == TRACK_NAMES_METRO[0]:
-            pitch_value = None
-            if len(self.steps_held) == 2:
-                step_0_ij = self.index_to_pad_ij(self.steps_held[-1])
-                step_1_ij = self.index_to_pad_ij(self.steps_held[-2])
-            # Two pads, this is so the if only activates when
-            # the two pads are in the same column
-            # for all other cases see else statement
-            if len(self.steps_held) == 2 and step_0_ij[1] == step_1_ij[1]:
-                # print("two pads")
-                step_a_idx = self.steps_held[-1]
-                step_a_ij = self.index_to_pad_ij(step_a_idx)
-                step_a_i = step_a_ij[0]
-                step_a_j = step_a_ij[1]
+            try:
+                pitch_value = None
+                if len(self.steps_held) == 2:
+                    step_0_ij = self.index_to_pad_ij(self.steps_held[-1])
+                    step_1_ij = self.index_to_pad_ij(self.steps_held[-2])
+                # Two pads, this is so the if only activates when
+                # the two pads are in the same column
+                # for all other cases see else statement
+                if len(self.steps_held) == 2 and step_0_ij[1] == step_1_ij[1]:
+                    # print("two pads")
+                    step_a_idx = self.steps_held[-1]
+                    step_a_ij = self.index_to_pad_ij(step_a_idx)
+                    step_a_i = step_a_ij[0]
+                    step_a_j = step_a_ij[1]
 
-                step_b_idx = self.steps_held[-2]
-                step_b_ij = self.index_to_pad_ij(step_b_idx)
-                step_b_i = step_b_ij[0]
-                step_b_j = step_b_ij[1]
+                    step_b_idx = self.steps_held[-2]
+                    step_b_ij = self.index_to_pad_ij(step_b_idx)
+                    step_b_i = step_b_ij[0]
+                    step_b_j = step_b_ij[1]
+                    
+                    # For both take the value of the lower step and sharpen it
+                    pitch_value = self.major_scale[min(7-step_a_i, 7-step_b_i)] + 1
+                    
+                    # check pad_i for both to see if they're adjecent
+                    if abs(step_a_i - step_b_i) == 1:
+
+                        # If either pad if off turn both on
+                        if (
+                            seq_pad_state[step_a_i][step_a_j] == True
+                            or seq_pad_state[step_b_i][step_b_j] == True
+                        ):
+
+                            # Turn off all other pads in the column
+                            for x in range(8):
+                                seq_pad_state[x][idx_j] = False
+
+                            # Turn on target pads
+                            seq_pad_state[step_a_i][step_a_j] = True
+                            seq_pad_state[step_b_i][step_b_j] = True
+
+                        # if both are on save time and cont in on_pad_released
+                        elif (
+                            seq_pad_state[step_a_i][step_a_j] == True
+                            and seq_pad_state[step_b_i][step_b_j] == True
+                        ):
+                            self.pads_press_time[step_a_idx] = time.time()
+                            self.pads_press_time[step_b_idx] = time.time()
+
+                    # if they're not adjecent turn on just the latest one
+                    if abs(step_a_i - step_b_i) > 1:
+
+                        if seq_pad_state[step_a_i][step_a_j] == False:
+                            # Turn off all other pads in the column
+                            for x in range(8):
+                                seq_pad_state[x][idx_j] = False
+
+                            # Turn on target pads
+                            seq_pad_state[step_a_i][step_a_j] = True
+
+                        # If it's on save time and cont in on_pad_released
+                        elif seq_pad_state[step_a_i][step_a_j] == False:
+                            self.pads_press_time[step_a_idx] = time.time()
+                    self.app.pads_need_update = True
                 
-                # For both take the value of the lower step and sharpen it
-                pitch_value = self.major_scale[min(7-step_a_i, 7-step_b_i)] + 1
-                
-                # check pad_i for both to see if they're adjecent
-                if abs(step_a_i - step_b_i) == 1:
+                else:
+                    # print("Single pad")
+                    # Turn off all other pads in the column
+                    for x in range(8):
+                        seq_pad_state[x][idx_j] = False
+                    # If a pad is off, turn it on
+                    seq_pad_state[idx_i][idx_j] = True
+                    
+                    # Set pitch step according to scale
+                    idx = 7 - idx_i
+                    pitch_value = self.major_scale[idx]
+                    
+                    # If it's on, save the time and cont in on_pad_released
+                    if seq_pad_state[idx_i][idx_j] == True:
+                        self.pads_press_time[idx_n] = time.time()
+                        #TODO: call func to show lock here
 
-                    # If either pad if off turn both on
-                    if (
-                        seq_pad_state[step_a_i][step_a_j] == True
-                        or seq_pad_state[step_b_i][step_b_j] == True
-                    ):
-
-                        # Turn off all other pads in the column
-                        for x in range(8):
-                            seq_pad_state[x][idx_j] = False
-
-                        # Turn on target pads
-                        seq_pad_state[step_a_i][step_a_j] = True
-                        seq_pad_state[step_b_i][step_b_j] = True
-
-                    # if both are on save time and cont in on_pad_released
-                    elif (
-                        seq_pad_state[step_a_i][step_a_j] == True
-                        and seq_pad_state[step_b_i][step_b_j] == True
-                    ):
-                        self.pads_press_time[step_a_idx] = time.time()
-                        self.pads_press_time[step_b_idx] = time.time()
-
-                # if they're not adjecent turn on just the latest one
-                if abs(step_a_i - step_b_i) > 1:
-
-                    if seq_pad_state[step_a_i][step_a_j] == False:
-                        # Turn off all other pads in the column
-                        for x in range(8):
-                            seq_pad_state[x][idx_j] = False
-
-                        # Turn on target pads
-                        seq_pad_state[step_a_i][step_a_j] = True
-
-                    # If it's on save time and cont in on_pad_released
-                    elif seq_pad_state[step_a_i][step_a_j] == False:
-                        self.pads_press_time[step_a_idx] = time.time()
-                self.app.pads_need_update = True
-            
-            else:
-                # print("Single pad")
-                # Turn off all other pads in the column
+                # Set the pitches
                 for x in range(8):
-                    seq_pad_state[x][idx_j] = False
-                # If a pad is off, turn it on
-                seq_pad_state[idx_i][idx_j] = True
-                
-                # Set pitch step according to scale
-                idx = 7 - idx_i
-                pitch_value = self.major_scale[idx]
-                
-                # If it's on, save the time and cont in on_pad_released
-                if seq_pad_state[idx_i][idx_j] == True:
-                    self.pads_press_time[idx_n] = time.time()
-                    #TODO: call func to show lock here
-
-            # Set the pitches
-            for x in range(8):
-                seq.set_state([TRACK_NAMES_METRO[0]], idx_j*8 + x, pitch_value)
-
+                    seq.set_state([TRACK_NAMES_METRO[0]], idx_j*8 + x, pitch_value)
+            except Exception as e:
+                print("Exception in on_pad_pressed, pitch", e)
+        
         # Octaves track
         elif self.selected_track == TRACK_NAMES_METRO[1]:
-            # If a pad is off, turn it on
-            if seq_pad_state[idx_i][idx_j] == False:
-                # Turn off all other pads in the column
-                for x in range(8):
-                    seq_pad_state[x][idx_j] = False
-                seq_pad_state[idx_i][idx_j] = True
+            try:
+                # If a pad is off, turn it on
+                if seq_pad_state[idx_i][idx_j] == False:
+                    # Turn off all other pads in the column
+                    for x in range(8):
+                        seq_pad_state[x][idx_j] = False
+                    seq_pad_state[idx_i][idx_j] = True
 
-            # If it's on, save the time and cont in on_pad_released
-            elif seq_pad_state[idx_i][idx_j] == True:
-                self.pads_press_time[idx_n] = time.time()
-                #TODO: call func to show lock here
-            # Set the oct values
-            for x in range(8):
-                seq.set_state([TRACK_NAMES_METRO[1]], idx_j*8 + x, 7- idx_i)
-                    
+                # If it's on, save the time and cont in on_pad_released
+                elif seq_pad_state[idx_i][idx_j] == True:
+                    self.pads_press_time[idx_n] = time.time()
+                    #TODO: call func to show lock here
+                # Set the oct values
+                for x in range(8):
+                    seq.set_state([TRACK_NAMES_METRO[1]], idx_j*8 + x, 7- idx_i)
+            except Exception as e:   
+                print("Exception in on_pad_pressed, oct", e) 
         # Vel track
         elif self.selected_track == TRACK_NAMES_METRO[2]:
-            # If a pad is off, turn it on
-            if seq_pad_state[idx_i][idx_j] == False:
-                # Turn off all other pads in the column
-                for x in range(8):
-                    seq_pad_state[x][idx_j] = False
-                seq_pad_state[idx_i][idx_j] = True
+            try:
+                # If a pad is off, turn it on
+                if seq_pad_state[idx_i][idx_j] == False:
+                    # Turn off all other pads in the column
+                    for x in range(8):
+                        seq_pad_state[x][idx_j] = False
+                    seq_pad_state[idx_i][idx_j] = True
 
-            # If it's on, save the time and cont in on_pad_released
-            elif seq_pad_state[idx_i][idx_j] == True:
-                self.pads_press_time[idx_n] = time.time()
-                #TODO: call func to show lock here
-            # Set the oct values
-            for x in range(8):
-                seq.set_state([TRACK_NAMES_METRO[2]], idx_j*8 + x, 7- idx_i)
+                # If it's on, save the time and cont in on_pad_released
+                elif seq_pad_state[idx_i][idx_j] == True:
+                    self.pads_press_time[idx_n] = time.time()
+                    #TODO: call func to show lock here
+                # Set the oct values
+                for x in range(8):
+                    seq.set_state([TRACK_NAMES_METRO[2]], idx_j*8 + x, 7- idx_i)
+            except Exception as e:
+                print("Exceptio in on_pad_pressed, vel", e)
 
         # Gates track
         elif self.selected_track == TRACK_NAMES_METRO[3]:
-            instrument_shortname = self.get_current_instrument_short_name_helper()
-            
-            # TODO: bug with rachet state logic, needs an empty pad to engage
-            rachet_state = self.rachets[instrument_shortname]
-
-            # Make sure pads and right buttons are held,
-            # Set rachets on or off
-            if len(self.steps_held) != 0: 
+            try:
+                instrument_shortname = self.get_current_instrument_short_name_helper()
                 
-                # Sets rachet state for the column
-                if self.button_1_4t_pressed == True and self.button_1_4_pressed == True:
-                    rachet_state[idx_j] = True
+                # TODO: bug with rachet state logic, needs an empty pad to engage
+                rachet_state = self.rachets[instrument_shortname]
 
-                elif self.button_1_4t_pressed == False and self.button_1_4_pressed == True:
-                    rachet_state[idx_j] = False
+                # Make sure pads and right buttons are held,
+                # Set rachets on or off
+                if len(self.steps_held) != 0: 
                     
-            self.app.pads_need_update = True
-                        # For chaning height of the stack
-            if (self.button_1_4_pressed == True):
+                    # Sets rachet state for the column
+                    if self.button_tie_pressed == True and self.button_gate_stack == True:
+                        rachet_state[idx_j] = True
 
-                # Turn all pads above step black, below grey
-                for x in range(8):
-                    if x < idx_i:
-                        seq_pad_state[x][idx_j] = False
-                    if x == idx_i:
-                        seq_pad_state[x][idx_j] = True
-                    if x > idx_i:
-                        # Makes sure we always have pads in off state
-                        # While not overriding current state
-                        if seq_pad_state[x][idx_j] == False:
-                            seq_pad_state[x][idx_j] = "Off"
-                        else:
-                            pass
-            # If it's on, save the time and cont in on_pad_released
-            elif (
-                seq_pad_state[idx_i][idx_j] == True
-                or seq_pad_state[idx_i][idx_j] == "Tie"
-            ):
-                if self.button_1_4t_pressed == True and seq_pad_state[idx_i][idx_j] != "Tie":
-                    seq_pad_state[idx_i][idx_j] = "Tie"
-                else:                        
-                    self.pads_press_time[idx_n] = time.time()
-                    return
-                #TODO: call func to show lock here
-
-
-            # For normal step edit
-            if (
-                seq_pad_state[idx_i][idx_j] != True
-            ):
-
-                # Turn pad on
-                if seq_pad_state[idx_i][idx_j] != False:
-                    # for inputing a tie (green pad)
-                    if self.button_1_4t_pressed == True:
-                        seq_pad_state[idx_i][idx_j] = "Tie"
-                    # Normal step
-                    else:
-                        seq_pad_state[idx_i][idx_j] = True
+                    elif self.button_tie_pressed == False and self.button_gate_stack == True:
+                        rachet_state[idx_j] = False
                         
+                self.app.pads_need_update = True
+                            # For chaning height of the stack
+                if (self.button_gate_stack == True):
 
-            # sets pad state
-            for idx_i, i in enumerate(seq_pad_state):
-                for idx_j, j in enumerate(i):
-                    seq.set_state([TRACK_NAMES_METRO[3]], idx_j*8 + 7 - idx_i, j)
-         
+                    # Turn all pads above step black, below grey
+                    for x in range(8):
+                        if x < idx_i:
+                            seq_pad_state[x][idx_j] = False
+                        if x == idx_i:
+                            seq_pad_state[x][idx_j] = True
+                        if x > idx_i:
+                            # Makes sure we always have pads in off state
+                            # While not overriding current state
+                            if seq_pad_state[x][idx_j] == False:
+                                seq_pad_state[x][idx_j] = "Off"
+                            else:
+                                pass
+                # If it's on, save the time and cont in on_pad_released
+                elif (
+                    seq_pad_state[idx_i][idx_j] == True
+                    or seq_pad_state[idx_i][idx_j] == "Tie"
+                ):
+                    if self.button_tie_pressed == True and seq_pad_state[idx_i][idx_j] != "Tie":
+                        seq_pad_state[idx_i][idx_j] = "Tie"
+                    else:                        
+                        self.pads_press_time[idx_n] = time.time()
+                        return
+                    #TODO: call func to show lock here
+
+
+                # For normal step edit
+                if (
+                    seq_pad_state[idx_i][idx_j] != True
+                ):
+
+                    # Turn pad on
+                    if seq_pad_state[idx_i][idx_j] != False:
+                        # for inputing a tie (green pad)
+                        if self.button_tie_pressed == True:
+                            seq_pad_state[idx_i][idx_j] = "Tie"
+                        # Normal step
+                        else:
+                            seq_pad_state[idx_i][idx_j] = True
+                            
+
+
+                # sets pad state
+                for idx_i, i in enumerate(seq_pad_state):
+                    for idx_j, j in enumerate(i):
+                        seq.set_state([TRACK_NAMES_METRO[3]], idx_j*8 + 7 - idx_i, j)
+            except Exception as e:
+                print("Exception in on_pad_pressed, gate", e)
         # Skips track 
         elif self.selected_track == TRACK_NAMES_METRO[4]:
-            # If a pad is off
-            if seq_pad_state[idx_i][idx_j] == False:
-                
-                # for skips
-                if idx_i == 7: 
-                    seq.set_state([TRACK_NAMES_METRO[4]], idx_j*8 + 7- idx_i, True)
-                    seq_pad_state[idx_i][idx_j] = True
-                # for probability
-                else:
-                    for x in range(7):
-                        seq.set_state([TRACK_NAMES_METRO[4]], idx_j*8 + 7- x, False)
-                        seq_pad_state[x][idx_j] = False
+            try:
+                # If a pad is off
+                if seq_pad_state[idx_i][idx_j] == False:
                     
-                    seq.set_state([TRACK_NAMES_METRO[4]], idx_j*8 + 7- idx_i, True)
-                    seq_pad_state[idx_i][idx_j] = True
-            # If it's on, save the time and cont in on_pad_released
-            elif seq_pad_state[idx_i][idx_j] == True:
-                self.pads_press_time[idx_n] = time.time()
-                #TODO: call func to show lock here
+                    # for skips
+                    if idx_i == 7: 
+                        seq.set_state([TRACK_NAMES_METRO[4]], idx_j*8 + 7- idx_i, True)
+                        seq_pad_state[idx_i][idx_j] = True
+                    # for probability
+                    else:
+                        for x in range(7):
+                            seq.set_state([TRACK_NAMES_METRO[4]], idx_j*8 + 7- x, False)
+                            seq_pad_state[x][idx_j] = False
+                        
+                        seq.set_state([TRACK_NAMES_METRO[4]], idx_j*8 + 7- idx_i, True)
+                        seq_pad_state[idx_i][idx_j] = True
+                # If it's on, save the time and cont in on_pad_released
+                elif seq_pad_state[idx_i][idx_j] == True:
+                    self.pads_press_time[idx_n] = time.time()
+                    #TODO: call func to show lock here
+            except Exception as e:
+                print("Exception in on_pad_pressed, skips", e)
         
         # Plock track
         elif self.selected_track == TRACK_NAMES_METRO[5]:
-            # If a pad is off, turn it on
-            if seq_pad_state[idx_i][idx_j] == False:
-                # Turn off all other pads in the column
-                for x in range(8):
-                    seq_pad_state[x][idx_j] = False
-                seq_pad_state[idx_i][idx_j] = True
+            try:
+                # If a pad is off, turn it on
+                if seq_pad_state[idx_i][idx_j] == False:
+                    # Turn off all other pads in the column
+                    for x in range(8):
+                        seq_pad_state[x][idx_j] = False
+                    seq_pad_state[idx_i][idx_j] = True
 
-            # If it's on, save the time and cont in on_pad_released
-            elif seq_pad_state[idx_i][idx_j] == True:
-                self.pads_press_time[idx_n] = time.time()
-                #TODO: call func to show lock here
-            # Set the oct values
-            for x in range(8):
-                seq.set_state([TRACK_NAMES_METRO[5]], idx_j*8 + x, 7- idx_i)
-                   
+                # If it's on, save the time and cont in on_pad_released
+                elif seq_pad_state[idx_i][idx_j] == True:
+                    self.pads_press_time[idx_n] = time.time()
+                    #TODO: call func to show lock here
+                # Set the oct values
+                for x in range(8):
+                    seq.set_state([TRACK_NAMES_METRO[5]], idx_j*8 + x, 7- idx_i)
+            except Exception as e:
+                print("Exception in on_pad_pressed, plocks", e)
         else:
             # If a pad is off, turn it on
             if seq_pad_state[idx_i][idx_j] == False:
@@ -889,8 +2830,8 @@ class MetroSequencerMode(MelodicMode):
                 self.pads_press_time[idx_n] = time.time()
                 #TODO: call func to show lock here
         # self.update_pads()
-        self.app.osc_mode.update_buttons()
         self.app.pads_need_update = True
+        self.app.osc_mode.update_buttons()
 
     def on_pad_released(self, pad_n, pad_ij, velocity):
         pad_state = self.metro_seq_pad_state[
@@ -966,6 +2907,13 @@ class MetroSequencerMode(MelodicMode):
         self.save_state()
         self.app.osc_mode.update_buttons()
         self.app.pads_need_update = True
+    def update_modulation_wheel_mode_button(self):
+        # Passing because we need to make this inherited func inert
+        pass
+
+    def update_accent_button(self):
+        # Passing because we need to make this inherited func inert
+        pass
 
     def on_button_pressed(self, button_name):
         seq = self.instrument_sequencers[
@@ -975,17 +2923,29 @@ class MetroSequencerMode(MelodicMode):
             idx = track_button_names.index(button_name)
             self.selected_track = TRACK_NAMES_METRO[idx]
             self.app.trig_edit_mode.update_state()
+            try:
+                self.all_track_buttons_off()
+            except Exception as e:
+                print(e)
+            self.active_track_button_on()
             self.app.buttons_need_update = True
             self.app.pads_need_update = True
+            
+            if button_name == push2_constants.BUTTON_1_16:
+                self.push.buttons.set_button_color(push2_constants.BUTTON_SHIFT, definitions.WHITE)
+                self.push.buttons.set_button_color(push2_constants.BUTTON_SELECT, definitions.WHITE)
+            else:
+                self.push.buttons.set_button_color(push2_constants.BUTTON_SHIFT, definitions.BLACK)
+                self.push.buttons.set_button_color(push2_constants.BUTTON_SELECT, definitions.BLACK)
 
         elif button_name == push2_constants.BUTTON_1_8:
             self.button_1_8_pressed = True
 
-        elif button_name == push2_constants.BUTTON_1_4T:
-            self.button_1_4t_pressed = True
+        elif button_name == push2_constants.BUTTON_SHIFT:
+            self.button_tie_pressed = True
 
-        elif button_name == push2_constants.BUTTON_1_4:
-            self.button_1_4_pressed = True
+        elif button_name == push2_constants.BUTTON_SELECT:
+            self.button_gate_stack = True
 
         elif (
             button_name == push2_constants.BUTTON_OCTAVE_UP
@@ -1000,17 +2960,29 @@ class MetroSequencerMode(MelodicMode):
                 for step in self.steps_held:
                     seq.clear_all_locks_for_step(step%8)
         elif button_name == push2_constants.BUTTON_PLAY:
-            if self.timeline_is_playing == False:
+            
+            if self.sequencer_is_playing == False:
                 self.start_timeline()
-                self.timeline_is_playing = True
+                self.sequencer_is_playing = True
 
-            elif self.timeline_is_playing == True:
+            elif self.sequencer_is_playing == True:
                 self.stop_timeline()
-                self.timeline_is_playing = False
+                self.sequencer_is_playing = False
         elif button_name == push2_constants.BUTTON_SCALE:
-            self.disable_controls = True if self.show_scale_menu == False else False
-            self.show_scale_menu = True if self.show_scale_menu == False else False
-
+            # self.disable_controls = True if self.show_scale_menu == False else False
+            # self.show_scale_menu = True if self.show_scale_menu == False else False
+            try:
+                if self.show_scale_menu == False:
+                    self.disable_controls = True
+                    self.show_scale_menu = True
+                    self.push.buttons.set_button_color(push2_constants.BUTTON_SCALE, definitions.WHITE, animation=definitions.DEFAULT_ANIMATION)
+                
+                else: 
+                    self.disable_controls = False
+                    self.show_scale_menu = False
+                    self.push.buttons.set_button_color(push2_constants.BUTTON_SCALE, definitions.GRAY_DARK)
+            except Exception as e:
+                print("Error in on_button_pressed, metro", e)
         else:
             # For the other buttons, refer to the base class
             super().on_button_pressed(button_name)
@@ -1019,17 +2991,21 @@ class MetroSequencerMode(MelodicMode):
         if button_name == push2_constants.BUTTON_1_8:
             self.button_1_8_pressed = False
 
-        elif button_name == push2_constants.BUTTON_1_4T:
-            self.button_1_4t_pressed = False
+        elif button_name == push2_constants.BUTTON_SHIFT:
+            self.button_tie_pressed = False
 
-        elif button_name == push2_constants.BUTTON_1_4:
-            self.button_1_4_pressed = False
+        elif button_name == push2_constants.BUTTON_SELECT:
+            self.button_gate_stack = False
         else:
             super().on_button_released(button_name)
 
     def on_encoder_rotated(self, encoder_name, increment):
         try:
-            if encoder_name == "Master Encoder":
+            if encoder_name == push2_constants.ENCODER_SWING_ENCODER:
+                return
+            if encoder_name == push2_constants.ENCODER_TEMPO_ENCODER:
+                return
+            if encoder_name == push2_constants.ENCODER_MASTER_ENCODER:
                 return
             encoder_idx = [
                 push2_python.constants.ENCODER_TRACK1_ENCODER,
@@ -1089,6 +3065,7 @@ class MetroSequencerMode(MelodicMode):
                     seq.set_lock_state(idx, encoder_idx + page_offset, value)
                     return
                 if self.show_scale_menu == True:
+                    
                     # Update scale menu controls
                     if encoder_idx == 6 or encoder_idx == 7:
                         for instrument_name in self.instrument_scale_edit_controls:
@@ -1097,7 +3074,7 @@ class MetroSequencerMode(MelodicMode):
                             control = controls[encoder_idx]
                             current_control = self.instrument_scale_edit_controls[instrument_name][encoder_idx]
                             min = control.min if hasattr(control, "min") else 0
-                            max = control.max if hasattr(control, "max") else len(control.items)
+                            max = control.max if hasattr(control, "max") else len(control.items) - 1
                             range = max - min
                             incr = increment * range / 100
                             if min < control.value + incr < max:
@@ -1113,9 +3090,14 @@ class MetroSequencerMode(MelodicMode):
                         instrument_name = self.get_current_instrument_short_name_helper()
                         controls = self.instrument_scale_edit_controls[instrument_name]
                         control = controls[encoder_idx]
+                        control_final = control
                         min = control.min if hasattr(control, "min") else 0
-                        max = control.max if hasattr(control, "max") else len(control.items)
+                        max = control.max if hasattr(control, "max") else len(control.items) - 0.1
                         range = max - min
+               
+                        # if control.name == "Menu":
+                            # x = control.get_active_menu_item()
+               
                         incr = increment * range / 100
                         if min < control.value + incr < max:
                             control.value = control.value + incr

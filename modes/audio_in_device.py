@@ -213,7 +213,8 @@ class AudioInDevice(PyshaMode):
 
     def update(self):
         self.controls.clear()
-        self.controls = self.page_one_controls
+        for control in self.page_one_controls:
+            self.controls.append(control)
         name = self.engine.instrument["instrument_name"]
         control_def = {
             "$type": "control-switch",
@@ -282,41 +283,44 @@ class AudioInDevice(PyshaMode):
             }
             control_def["groups"].append(dest)
 
-        # overwitch = self.app.external_instruments[0]
+        overwitch = self.app.external_instruments[0]
         # print("Overwitch engine PID, ", overwitch.engine.PID) 
-        # overwitch_def = None
-        # overwitch_def = {
-        #     "$type": "group",
-        #     "label": f'{overwitch.name}',
-        #     "pid": f'{overwitch.engine.PID or 0}',
-        #     "onselect": {
-        #         "$type": "message",
-        #         "$comment": "",
-        #         "address": "/bla",
-        #         "value": overwitch.engine.PID or 0,
-        #     },
-        #     "controls": [
-        #         {
-        #             "$type": "control-menu",
-        #             "items": [
-        #             ],
-        #         }
-        #     ],
-        # }
-        # print(len(overwitch.engine.pw_ports))
-        # for port in overwitch.engine.pw_ports["output"]:
-        #     control = {
-        #                     "$type": "menu-item",
-        #                     "label": port["info"]["props"]["port.name"],
-        #                     "onselect": {
-        #                         "$type": "message",
-        #                         "$comment": "RingMod",
-        #                         "address": "/bla",
-        #                         "value": overwitch.engine.PID or 0,
-        #                     },
-        #                 }
-        #     overwitch_def["controls"][0]["items"].append(control)
-        # control_def["groups"].append(overwitch_def)
+        
+        if overwitch.engine.PID != None:
+            overwitch_def = None
+            overwitch_def = {
+                "$type": "group",
+                "label": f'{overwitch.name}',
+                "pid": f'{overwitch.engine.PID or 0}',
+                "onselect": {
+                    "$type": "message",
+                    "$comment": "",
+                    "address": "/bla",
+                    "value": overwitch.engine.PID or 0,
+                },
+                "controls": [
+                    {
+                        "$type": "control-menu",
+                        "items": [
+                        ],
+                    }
+                ],
+            }
+            for port in overwitch.engine.pw_ports["output"]:
+                # print(port["info"]["props"]["port.direction"])
+                
+                control = {
+                                "$type": "menu-item",
+                                "label": port["info"]["props"]["port.name"],
+                                "onselect": {
+                                    "$type": "message",
+                                    "$comment": "RingMod",
+                                    "address": "/bla",
+                                    "value": overwitch.engine.PID or 0,
+                                },
+                            }
+                overwitch_def["controls"][0]["items"].append(control)
+            control_def["groups"].append(overwitch_def)
         for out in range(1, 5):
             try:
                 menu = OSCControlSwitch(
@@ -327,6 +331,8 @@ class AudioInDevice(PyshaMode):
                 print("Exception in update in audio_in_device")
                 traceback.print_exc()
 
+    def empty_func(self, *args):
+        pass
 
     async def select(self):
         # self.query_visible_controls()
@@ -361,7 +367,6 @@ class AudioInDevice(PyshaMode):
     def send_message(self, *args):
         self.log_out.debug(args)
         return self.osc["client"].send_message(*args)
-    
     
     def set_duplex_volumes(self, *args):
         duplex_node = self.engine.duplex_node
@@ -419,7 +424,28 @@ class AudioInDevice(PyshaMode):
                 device.input_gains[6] = value_7
                 device.input_gains[7] = value_8
 
+    def reconnect_all_duplex_ports(self):
+        # Getting all links
+        links = filter(
+            lambda x: x["type"] == "PipeWire:Interface:Link", self.app.pipewire.copy()
+        )
+        # Filter links for ones connected to the duplex
+        old_links_to_duplex = []
+        for link in links:
+            # need to get the ID for the duplex and compare with input_id
+            # if it's the same it means it goes into the duplex
+            print(link["info"]["input-node-id"], link["info"]["input-node-id"])
+        
+        # Determine where the new links would go, based on the position of the knobs
+        
+        # Disconnect links, but only if the new link is different (isn't the same as the old link)
+        # best to avoid disconnecting all as that would cause a dropout in other channels
+        
+        # Connect new links 
+
+
     def connect_ports_duplex(self, *args):
+        
         [addr, val] = args
         if val != None:
             column_index = None 
@@ -446,9 +472,9 @@ class AudioInDevice(PyshaMode):
                 disconnect_L = self.engine.connections[column_index]["L"]
                 disconnect_R = self.engine.connections[column_index]["R"]
                 for port in current_instrument_ports['input']:
-                    if port['info']['props']['audio.channel'] == "FL":
+                    if port.get("info", []).get("props",[]).get("object.path", None) == "Surge XT:input_0":
                         dest_L = port['id']
-                    elif port['info']['props']['audio.channel'] == "FR":
+                    elif port.get("info", []).get("props",[]).get("object.path", None) == "Surge XT:input_1":
                         dest_R = port['id']
                 if (disconnect_L != None) and (disconnect_R != None):
                         self.app.queue.append(disconnectPipewireSourceFromPipewireDest(disconnect_L, duplex_in_L))
@@ -616,7 +642,7 @@ class AudioInDevice(PyshaMode):
 
     def on_encoder_rotated(self, encoder_name, increment):
         #This if statement is for setting post-synth volume levels
-        if encoder_name == push2_python.constants.ENCODER_MASTER_ENCODER:
+        if encoder_name == push2_python.constants.ENCODER_SWING_ENCODER:
             instrument = self.app.osc_mode.get_current_instrument()
             all_volumes = self.app.volumes
             instrument_idx = instrument.osc_in_port % 10
@@ -636,7 +662,7 @@ class AudioInDevice(PyshaMode):
             all_volumes[instrument_idx*2] = track_L_volume
             all_volumes[instrument_idx*2 +1] = track_R_volume
             self.app.volumes = all_volumes
-            self.app.set_master_volumes()
+            self.app.set_main_volumes()
 
         try:
             encoder_idx = [
@@ -674,6 +700,11 @@ class AudioInDevice(PyshaMode):
                 push2_python.constants.ENCODER_TRACK8_ENCODER,
             ].index(encoder_name)
             if self.page == 1:
+                # try:
+                #     self.connect_ports_duplex("Dummy", "dummy")
+                # except Exception as e:
+                #     print(e)
+                # print("after connect")
                 pass
         
         except ValueError:

@@ -54,6 +54,7 @@
 		},
 		{
 			"$type": "control-menu",
+			"menu_label": "Output Mode",
 			"items": [
 				{
 					"$type": "menu-item",
