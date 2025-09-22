@@ -179,6 +179,8 @@ class MetroSequencerMode(MelodicMode):
                 menu.append(param_3)
 
                 param_4 = ControlSpacer()
+
+
                 menu.append(param_4)
 
                 param_5 = OSCControlMenu(
@@ -2762,6 +2764,7 @@ class MetroSequencerMode(MelodicMode):
                         else:
                             seq_pad_state[idx_i][idx_j] = True
                             
+
 
                 # sets pad state
                 for idx_i, i in enumerate(seq_pad_state):

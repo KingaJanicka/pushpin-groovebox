@@ -124,6 +124,7 @@ class PresetSelectionMode(definitions.PyshaMode):
         instrument.update_current_devices()
         await asyncio.sleep(0.5)
         instrument.query_all_controls()
+
         # Turns out we don't need those statements but leaving them in here just
         # in case this pattern is needed later 
         # if instrument.current_devices[0].label == "Audio In":

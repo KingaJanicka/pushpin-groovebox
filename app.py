@@ -153,6 +153,7 @@ class PyshaApp(object):
         except:
             if iso_midi_in_device_name == None:
                 self.global_timeline = iso.Timeline(self.tempo, output_device=iso.DummyOutputDevice())
+
     
     
         self.init_notes_midi_in(
