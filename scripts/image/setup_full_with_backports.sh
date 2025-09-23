@@ -207,6 +207,8 @@ EOF
 chown $USER_NAME:audio $USER_HOME_PATH/start_pushpin.sh
 chmod +x $USER_HOME_PATH/start_pushpin.sh
 
+echo "\n./start_pushpin.sh\n\n" >> .profile
+
 echo "---------------------------------------------"
 echo "Script completed at: $(date)"
 echo "---------------------------------------------"
