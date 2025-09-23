@@ -71,4 +71,4 @@ EOF
     ) | bash -c "cat >|$assets/my.plugins"
 echo $assets/my.plugins
 
-$sudo sdm --batch --customize --plugin @$assets/my.plugins --extend --xmb 4096 --bootscripts --restart --regen-ssh-host-keys $IMAGE
+$sudo sdm --batch --customize --autologin --plugin @$assets/my.plugins --extend --xmb 4096 --bootscripts --restart --regen-ssh-host-keys $IMAGE
