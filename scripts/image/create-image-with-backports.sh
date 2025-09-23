@@ -58,7 +58,7 @@ trim-enable
 # graphics:graphics=wayland
 
 # Set Boot to console.
-raspiconfig:boot_behavior=B1
+raspiconfig:boot_behavior=B2
 
 # Configure localization settings to the same as this system
 # https://github.com/gitbls/sdm/blob/master/Docs/Plugins.md#l10n
