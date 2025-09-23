@@ -12,7 +12,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
       - name: Deps
-        run: apt install -y binfmt-support
+        run: sudo apt install -y binfmt-support
       - name: install SDM
         run: curl -L https://raw.githubusercontent.com/gitbls/sdm/master/EZsdmInstaller | bash
       - name: get hash
