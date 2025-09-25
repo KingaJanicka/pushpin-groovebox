@@ -189,23 +189,25 @@ VENV_PATH="$PYTHON_ENVIRONMENT_PATH/venv_pushpin_groovebox"
 PUSHPIN_PATH="$INSTALL_PATH/pushpin-groovebox"
 
 # Activate the virtual environment
-if [ -f "${VENV_PATH}/bin/activate" ]; then
-    source "${VENV_PATH}/bin/activate"
-    echo "Virtual environment activated: $(which python)"
+if [ -f "\${VENV_PATH}/bin/activate" ]; then
+    source "\${VENV_PATH}/bin/activate"
+    echo "Virtual environment activated: \$(which python)"
 else
-    echo "Error: Virtual environment not found at ${VENV_PATH}"
+    echo "Error: Virtual environment not found at \${VENV_PATH}"
     exit 1
 fi
 
 # Run Python commands or scripts within the virtual environment
 python --version
-cd "${PUSHPIN_PATH}"
+cd "\${PUSHPIN_PATH}"
 ./run.sh
 
 EOF
 
 chown $USER_NAME:audio $USER_HOME_PATH/start_pushpin.sh
 chmod +x $USER_HOME_PATH/start_pushpin.sh
+
+echo "\n./start_pushpin.sh\n\n" >> .profile
 
 echo "---------------------------------------------"
 echo "Script completed at: $(date)"
