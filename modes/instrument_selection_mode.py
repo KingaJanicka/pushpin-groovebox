@@ -160,7 +160,7 @@ class InstrumentSelectionMode(definitions.PyshaMode):
         # self.load_current_default_layout()
         # Commented out so that mode stays the same as intruments switch
         self.clean_currently_notes_being_played()
-        self.app.steps_held.clear()
+        self.app.steps_held = []
 
         try:
             # self.app.midi_cc_mode.new_instrument_selected()
