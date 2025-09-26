@@ -58,7 +58,7 @@ Pushpin runs a separate instance of Surge XT per instrument track. This means th
 
 _"Raspberry Pi" is a trademark of Raspberry Pi Ltd. "Ableton" and "Ableton Push" are trademarks of Ableton AG. "Elektron" is a trademark of Elektron Music Machines MAV AB. All trademarks used with permission. Nothing on this page is intended to imply any association with the aforementioned trademark holders._
 
-[kinga]: https://soundcloud.com/kingajanicka
+[kinga]: https://instagram.com/kingajanickaofficial
 [surge]: https://surge-synthesizer.github.io/
 [ffont]: http://www.github.com/ffont
 [pysha]: https://github.com/ffont/pysha
