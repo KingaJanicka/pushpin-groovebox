@@ -4,9 +4,11 @@ permalink: /
 layout: home
 ---
 
-> **Pushpin** is an open-source groovebox project by improvisational electronic musician [Kinga Janicka][kinga].
+> **Pushpin** is a fully-featured open-source groovebox project by improvisational electronic musician [Kinga Janicka][kinga].
 
-**[Sign up for our mailing list here, we'll let you know once v1 is ready (coming very soon!)](https://forms.gle/PMqjw9pWcNyjHAYd6)**
+## Check out [pushpin-images.kinga.dev](https://pushpin-images.kinga.dev) for the latest burnable image!
+
+**[Join our Discord for support and for announcements!](https://discord.gg/CDCUF9uePy)**
 
 Building upon Kinga's experience in the field performing live improvised techno, Pushpin seeks to marry the versatility of the
 award-winning open-source [Surge XT][surge] soft-synth with the form-factor of the Ableton® Push® 2, powered as a standalone unit
@@ -22,10 +24,10 @@ by [Raspberry Pi® 5][rpi5].
 - Dynamic instrument routing directly from the Ableton® Push® 2 for longer effect chains, sends and master effects
 - [Overwitch support][overwitch] built-in for routing Elektron® Overbridge 2-compatible devices
 - Designed to be used without a laptop on a Raspberry Pi® 5
-- Attach a screen to see each Surge instance at a glance (coming soon)
 - Customise Pushpin's layout using a simple JSON-based format
 - Use any Surge XT preset or patch
 - Built to be extensible and easily fork-able
+- Fully-featured sequencer
 
 <div style="text-align: center">
     <iframe width="560" height="315" src="https://www.youtube.com/embed/2ezX6MCOlo8?si=CztI3rN82s1jOuJb&controls=0&rel=0&iv_load_policy=3" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
@@ -38,10 +40,10 @@ an interface for communicating with [Surge XT][surge] via the [Open Source Contr
 a standard Ableton® Push® 2. It controls 8 instances of Surge XT, and sequences them via either external or built-in sequencer
 (coming soon).
 
-This allows an enormous degree of creative expression, with Surge's powerful modules accessible in a ergonomic layout
+This allows an enormous degree of creative expression, with SurgeXT's powerful modules accessible in a ergonomic layout
 that's optimised for live performance.
 
-For the cost of an Ableton® Push® 2, a Raspberry Pi 5 and an audio interface, you can have a fully-featured groovebox with powerful features rivalling the most expensive devices on the market. Even better, with a little bit of Python knowledge you can hack it to do _literally anything you can dream of._
+For the cost of an Ableton® Push® 2, a Raspberry Pi 5 and an audio interface (we recommend the [Raspberry Pi DAC+ HAT](https://thepihut.com/products/iqaudio-dac), though it's also compatible with USB audio interfaces), you can have a fully-featured groovebox with powerful features rivalling the most expensive devices on the market. Even better, with a little bit of Python knowledge, you can hack it to do _literally anything you can dream of._
 
 # Surge XT specifications
 
