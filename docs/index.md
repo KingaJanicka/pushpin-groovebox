@@ -37,8 +37,7 @@ by [Raspberry Pi® 5][rpi5].
 
 Pushpin is a Python application that builds heavily upon [Frederick Font][ffont]'s open source [Pysha][pysha] framework by creating
 an interface for communicating with [Surge XT][surge] via the [Open Source Control (OSC)][osc_wiki] standard, using
-a standard Ableton® Push® 2. It controls 8 instances of Surge XT, and sequences them via either external or built-in sequencer
-(coming soon).
+a standard Ableton® Push® 2. It controls 8 instances of Surge XT, and sequences them via either external or built-in sequencer.
 
 This allows an enormous degree of creative expression, with SurgeXT's powerful modules accessible in a ergonomic layout
 that's optimised for live performance.
