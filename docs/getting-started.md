@@ -8,18 +8,12 @@ To use Pushpin, you need the following things:
 
 - A Raspberry Pi 5
 - An Ableton Push 2
-- A USB audio interface of some variety
-- A way to burn disk images to SSD card
-
-We're working on adding a sequencer to Pushpin, but currently it lacks any ability to sequence.
-Until we release that feature, we recommend the following for sequencing notes:
-
-- Any MIDI-based sequencer (Kinga's a fan of the Elektron Rytm mk II and uses that in demos)
-- A USB midi interface
+- An [audio interface](https://thepihut.com/products/iqaudio-dac) of some variety
+- A way to burn disk images to SD card
 
 ## 1. Download Pushpin image
 
-Please see our [Releases page on GitHub](https://github.com/KingaJanicka/pushpin-groovebox/releases)
+Please see [pushpin-images.kinga.dev](https://pushpin-images.kinga.dev)
 
 ## 2. Burn to SD card
 
@@ -35,7 +29,7 @@ need to do if you don't have a keyboard and mouse plugged into the Pi.
 Connect everything together; how you do this depends on what sequencer and soundcard you're using.
 
 Insert the SD card into your Raspberry Pi 5 device and hit power; the Linux distribution will boot and
-you will automatically be logged in as the user `pushpin` (default password: `groovebox`).
+you will automatically be logged in as the user `ladmin` (default password: `numark234`).
 
 Power on the Ableton Push 2 device if you have not yet done so.
 
@@ -43,7 +37,7 @@ You should hopefully now be running Pushpin!
 
 ## 4. Configure MIDI devices
 
-To sequence, you currently need to connect a MIDI sequencer. To select this:
+You can optionally connect a MIDI sequencer to sequence instead of using the built-in one. To select this:
 
 1. Press the "Setup" button twice. This will bring you to the MIDI setup page.
 2. Twist the first encoder to set your "in" device to your MIDI sequencer.
@@ -51,11 +45,13 @@ To sequence, you currently need to connect a MIDI sequencer. To select this:
 # Troubleshooting
 
 This is very in-development software so usually the easiest way to resolve an issue is to update the latest version.
-You can change the version of Pushpin by navigating to `/pushpin` and typing:
+You can change the version of Pushpin by navigating to `/s/music_devices/pushpin_groovebox` and typing:
 
 ```
-$ git fetch origin && git tag
+$ git stash save && git pull origin main
 ```
+
+You can also use the "Update to latest version" button in **SETTINGS** on the Push 2.
 
 To check out a different version, type:
 
