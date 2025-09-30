@@ -161,11 +161,11 @@ class PyshaApp(object):
         )
         self.tasks = set()
         self.queue = []
-        self.init_push()
-        self.init_modes(settings)
+        await self.init_push()
+        await self.init_modes(settings)
 
 
-    def init_modes(self, settings):
+    async def init_modes(self, settings):
         self.instrument_selection_mode = InstrumentSelectionMode(
             self, settings=settings
         )
@@ -214,35 +214,35 @@ class PyshaApp(object):
             }
         self.external_instruments = [ExternalInstrument(self, 'Overwitch', overwitch_def)]
         
-    def get_all_modes(self):
+    async def get_all_modes(self):
         return [
             getattr(self, element)
             for element in vars(self)
             if isinstance(getattr(self, element), definitions.PyshaMode)
         ]
 
-    def is_mode_active(self, mode):
+    async def is_mode_active(self, mode):
         return mode in self.active_modes
 
-    def toggle_and_rotate_settings_mode(self):
+    async def toggle_and_rotate_settings_mode(self):
         if self.is_mode_active(self.settings_mode):
-            rotation_finished = self.settings_mode.move_to_next_page()
+            rotation_finished = await self.settings_mode.move_to_next_page()
             if rotation_finished:
                 self.active_modes = [
                     mode for mode in self.active_modes if mode != self.settings_mode
                 ]
-                self.settings_mode.deactivate()
+                await self.settings_mode.deactivate()
         else:
             self.active_modes.append(self.settings_mode)
-            self.settings_mode.activate()
+            await self.settings_mode.activate()
 
-    def toggle_menu_mode(self):
+    async def toggle_menu_mode(self):
         # print("toggle menu mode")
         previous_mode = self.previously_active_mode_for_xor_group
         # print("modes:",previous_mode)
         # instrument = self.osc_mode.get_current_instrument()
         # instrument.query_slots()
-        if self.is_mode_active(self.menu_mode):
+        if await self.is_mode_active(self.menu_mode):
             # Deactivate (replace ddrm tone selector mode by midi cc and instrument selection mode)
             new_active_modes = []
             for mode in self.active_modes:
@@ -252,7 +252,7 @@ class PyshaApp(object):
             self.active_modes = new_active_modes
             # new_active_modes.append(previous_mode)
             
-            self.menu_mode.deactivate()
+            await self.menu_mode.deactivate()
         else:
             # Activate (replace midi cc and instrument selection mode by ddrm tone selector mode)
             # print(self.active_modes)
@@ -265,17 +265,17 @@ class PyshaApp(object):
 
             new_active_modes.append(self.menu_mode)
             self.active_modes = new_active_modes
-            self.preset_selection_mode.deactivate()
-            self.trig_edit_mode.deactivate()
-            self.menu_mode.activate()
+            await self.preset_selection_mode.deactivate()
+            await self.trig_edit_mode.deactivate()
+            await self.menu_mode.activate()
 
     # TODO: preset sel/trig edit get wonky when switching from one to another
     # One triggering needs to shut down another
 
-    def toggle_preset_selection_mode(self):
+    async def toggle_preset_selection_mode(self):
         
         previous_mode = self.previously_active_mode_for_xor_group
-        if self.is_mode_active(self.preset_selection_mode):
+        if await self.is_mode_active(self.preset_selection_mode):
             # Deactivate (replace ddrm tone selector mode by midi cc and instrument selection mode)
             new_active_modes = []
             for mode in self.active_modes:
@@ -284,9 +284,9 @@ class PyshaApp(object):
             new_active_modes.append(self.osc_mode)
             # new_active_modes.append(previous_mode)
             self.active_modes = new_active_modes
-            self.preset_selection_mode.deactivate()
-            self.metro_sequencer_mode.activate()
-            self.osc_mode.activate()
+            await self.preset_selection_mode.deactivate()
+            await self.metro_sequencer_mode.activate()
+            await self.osc_mode.activate()
         else:
             # Activate (replace midi cc and instrument selection mode by ddrm tone selector mode)
             # self.previously_active_mode_for_xor_group = self.active_modes[-1]
@@ -296,28 +296,28 @@ class PyshaApp(object):
                     new_active_modes.append(mode)
             new_active_modes.append(self.preset_selection_mode)
             self.active_modes = new_active_modes
-            self.menu_mode.deactivate()
-            self.osc_mode.deactivate()
-            self.trig_edit_mode.deactivate()
-            self.metro_sequencer_mode.deactivate()
-            self.preset_selection_mode.activate()
+            await self.menu_mode.deactivate()
+            await self.osc_mode.deactivate()
+            await self.trig_edit_mode.deactivate()
+            await self.metro_sequencer_mode.deactivate()
+            await self.preset_selection_mode.activate()
             # print(self.active_modes, "active modes")
 
 
-    def toggle_trig_edit_mode(self):
+    async def toggle_trig_edit_mode(self):
         previous_mode = self.previously_active_mode_for_xor_group
-        if self.is_mode_active(self.trig_edit_mode):
+        if await self.is_mode_active(self.trig_edit_mode):
             # Deactivate (replace ddrm tone selector mode by midi cc and instrument selection mode)
             new_active_modes = []
             for mode in self.active_modes:
                 if mode != self.trig_edit_mode:
                     new_active_modes.append(mode)
 
-            new_active_modes.append(self.osc_mode)
-            new_active_modes.append(previous_mode)
+            await new_active_modes.append(self.osc_mode)
+            await new_active_modes.append(previous_mode)
             self.active_modes = new_active_modes
-            self.osc_mode.activate()
-            self.trig_edit_mode.deactivate()
+            await self.osc_mode.activate()
+            await self.trig_edit_mode.deactivate()
         else:
             # Activate (replace midi cc and instrument selection mode by ddrm tone selector mode)
             self.previously_active_mode_for_xor_group = self.active_modes[-1]
@@ -328,16 +328,16 @@ class PyshaApp(object):
 
             new_active_modes.append(self.trig_edit_mode)
             self.active_modes = new_active_modes
-            self.menu_mode.deactivate()
-            self.osc_mode.deactivate()
-            self.trig_edit_mode.activate()
-            self.metro_sequencer_mode.deactivate()
-            self.preset_selection_mode.deactivate()
+            await self.menu_mode.deactivate()
+            await self.osc_mode.deactivate()
+            await self.trig_edit_mode.activate()
+            await self.metro_sequencer_mode.deactivate()
+            await self.preset_selection_mode.deactivate()
             # print(self.active_modes, "active modes")
 
-    def toggle_ddrm_tone_selector_mode(self):
+    async def toggle_ddrm_tone_selector_mode(self):
         previous_mode = self.previously_active_mode_for_xor_group
-        if self.is_mode_active(self.ddrm_tone_selector_mode):
+        if await self.is_mode_active(self.ddrm_tone_selector_mode):
             # Deactivate (replace ddrm tone selector mode by midi cc and instrument selection mode)
             new_active_modes = []
             for mode in self.active_modes:
@@ -348,9 +348,9 @@ class PyshaApp(object):
                     new_active_modes.append(self.osc_mode)
             self.active_modes = new_active_modes
             new_active_modes.append(previous_mode)
-            self.ddrm_tone_selector_mode.deactivate()
-            self.osc_mode.activate()
-            self.instrument_selection_mode.activate()
+            await self.ddrm_tone_selector_mode.deactivate()
+            await self.osc_mode.activate()
+            await self.instrument_selection_mode.activate()
         else:
             # Activate (replace midi cc and instrument selection mode by ddrm tone selector mode)
             self.previously_active_mode_for_xor_group = self.active_modes[-1]
@@ -361,17 +361,17 @@ class PyshaApp(object):
                 elif mode == self.osc_mode:
                     new_active_modes.append(self.ddrm_tone_selector_mode)
             self.active_modes = new_active_modes
-            self.osc_mode.deactivate()
-            self.metro_sequencer_mode.deactivate()
-            self.instrument_selection_mode.deactivate()
-            self.ddrm_tone_selector_mode.activate()
+            await self.osc_mode.deactivate()
+            await self.metro_sequencer_mode.deactivate()
+            await self.instrument_selection_mode.deactivate()
+            await self.ddrm_tone_selector_mode.activate()
 
-    def set_mode_for_xor_group(self, mode_to_set):
+    async def set_mode_for_xor_group(self, mode_to_set):
         """This activates the mode_to_set, but makes sure that if any other modes are currently activated
         for the same xor_group, these other modes get deactivated. This also stores a reference to the
         latest active mode for xor_group, so once a mode gets unset, the previously active one can be
         automatically set"""
-        if not self.is_mode_active(mode_to_set):
+        if not await self.is_mode_active(mode_to_set):
             # First deactivate all existing modes for that xor group
             new_active_modes = []
             for mode in self.active_modes:
@@ -380,7 +380,7 @@ class PyshaApp(object):
                         mode.xor_group is not None
                         and mode.xor_group == mode_to_set.xor_group
                     ):
-                        mode.deactivate()
+                        await mode.deactivate()
                         self.previously_active_mode_for_xor_group[mode.xor_group] = (
                             mode  # Store last mode that was active for the group
                         )
@@ -392,19 +392,19 @@ class PyshaApp(object):
 
             # Now add the mode to set to the active modes list and activate it
             new_active_modes.append(mode_to_set)
-            mode_to_set.activate()
+            await mode_to_set.activate()
 
-    def unset_mode_for_xor_group(self, mode_to_unset):
+    async def unset_mode_for_xor_group(self, mode_to_unset):
         """This deactivates the mode_to_unset and reactivates the previous mode that was active for this xor_group.
         This allows to make sure that one (and onyl one) mode will be always active for a given xor_group.
         """
-        if self.is_mode_active(mode_to_unset):
+        if await self.is_mode_active(mode_to_unset):
 
             # Deactivate the mode to unset
             self.active_modes = [
                 mode for mode in self.active_modes if mode != mode_to_unset
             ]
-            mode_to_unset.deactivate()
+            await mode_to_unset.deactivate()
 
             # Activate the previous mode that was activated for the same xor_group. If none listed, activate a default one
             previous_mode = self.previously_active_mode_for_xor_group.get(
@@ -412,54 +412,54 @@ class PyshaApp(object):
             )
             if previous_mode is not None:
                 del self.previously_active_mode_for_xor_group[mode_to_unset.xor_group]
-                self.set_mode_for_xor_group(previous_mode)
+                await self.set_mode_for_xor_group(previous_mode)
             else:
                 # Enable default
                 # TODO: here we hardcoded the default mode for a specific xor_group, I should clean this a little bit in the future...
                 if mode_to_unset.xor_group == "pads":
-                    self.set_mode_for_xor_group(self.melodic_mode)
+                    await self.set_mode_for_xor_group(self.melodic_mode)
 
-    def toggle_melodic_rhythmic_slice_modes(self):
-        if self.is_mode_active(self.metro_sequencer_mode):
-            self.set_melodic_mode()
-        elif self.is_mode_active(self.melodic_mode):
-            self.set_metro_sequencer_mode()
+    async def toggle_melodic_rhythmic_slice_modes(self):
+        if await self.is_mode_active(self.metro_sequencer_mode):
+            await self.set_melodic_mode()
+        elif await self.is_mode_active(self.melodic_mode):
+            await self.set_metro_sequencer_mode()
         else:
             # If none of melodic or rhythmic or slice modes were active, enable melodic by default
-            self.set_metro_sequencer_mode()
+            await self.set_metro_sequencer_mode()
 
-    def set_melodic_mode(self):
-        self.set_mode_for_xor_group(self.melodic_mode)
+    async def set_melodic_mode(self):
+        await self.set_mode_for_xor_group(self.melodic_mode)
 
-    def set_rhythmic_mode(self):
-        self.set_mode_for_xor_group(self.rhythmic_mode)
+    async def set_rhythmic_mode(self):
+        await self.set_mode_for_xor_group(self.rhythmic_mode)
 
-    def set_slice_notes_mode(self):
-        self.set_mode_for_xor_group(self.slice_notes_mode)
+    async def set_slice_notes_mode(self):
+        await self.set_mode_for_xor_group(self.slice_notes_mode)
 
-    def set_sequencer_mode(self):
+    async def set_sequencer_mode(self):
         # pass
-        self.set_mode_for_xor_group(self.sequencer_mode)
+        await self.set_mode_for_xor_group(self.sequencer_mode)
 
-    def set_metro_sequencer_mode(self):
+    async def set_metro_sequencer_mode(self):
         # pass
-        self.set_mode_for_xor_group(self.metro_sequencer_mode)
+        await self.set_mode_for_xor_group(self.metro_sequencer_mode)
 
-    def set_mute_mode(self):
-        if self.is_mode_active(self.preset_selection_mode):
-            self.toggle_preset_selection_mode()
+    async def set_mute_mode(self):
+        if await self.is_mode_active(self.preset_selection_mode):
+            await self.toggle_preset_selection_mode()
         try:
-            self.set_mode_for_xor_group(self.mute_mode)
+            await self.set_mode_for_xor_group(self.mute_mode)
         except Exception as e:
             print(e)
 
-    def set_preset_selection_mode(self):
+    async def set_preset_selection_mode(self):
         self.set_mode_for_xor_group(self.preset_selection_mode)
 
-    def unset_preset_selection_mode(self):
+    async def unset_preset_selection_mode(self):
         self.unset_mode_for_xor_group(self.preset_selection_mode)
 
-    def save_current_settings_to_file(self):
+    async def save_current_settings_to_file(self):
         # NOTE: when saving device names, eliminate the last bit with XX:Y numbers as this might vary across runs
         # if different devices are connected
         settings = {
@@ -477,13 +477,13 @@ class PyshaApp(object):
             "use_push2_display": self.use_push2_display,
             "target_frame_rate": self.target_frame_rate,
         }
-        for mode in self.get_all_modes():
-            mode_settings = mode.get_settings_to_save()
+        for mode in await self.get_all_modes():
+            mode_settings = await mode.get_settings_to_save()
             if mode_settings:
-                settings.update(mode_settings)
+                await settings.update(mode_settings)
         json.dump(settings, open("settings.json", "w"))
 
-    def init_midi_in(self, device_name=None):
+    async def init_midi_in(self, device_name=None):
         print("Configuring MIDI in to {}...".format(device_name))
         self.available_midi_in_device_names = [
             name
@@ -527,7 +527,7 @@ class PyshaApp(object):
         if self.midi_in is None:
             print("Not receiving from any MIDI input")
 
-    def init_midi_out(self, device_name=None):
+    async def init_midi_out(self, device_name=None):
         pass
         # print("Configuring MIDI out to {}...".format(device_name))
         # self.available_midi_out_device_names = [
@@ -591,7 +591,7 @@ class PyshaApp(object):
         # if self.midi_out is None:
         #     print("Won't send MIDI to any device")
 
-    def init_notes_midi_in(self, device_name=None):
+    async def init_notes_midi_in(self, device_name=None):
         print("Configuring notes MIDI in to {}...".format(device_name))
         self.available_midi_in_device_names = [
             name
@@ -638,14 +638,14 @@ class PyshaApp(object):
         if self.notes_midi_in is None:
             print("Could not configures notes MIDI input")
 
-    def set_midi_in_channel(self, channel, wrap=False):
+    async def set_midi_in_channel(self, channel, wrap=False):
         self.midi_in_channel = channel
         if self.midi_in_channel < -1:  # Use "-1" for "all channels"
             self.midi_in_channel = -1 if not wrap else 15
         elif self.midi_in_channel > 15:
             self.midi_in_channel = 15 if not wrap else -1
 
-    def set_midi_out_channel(self, channel, wrap=False):
+    async def set_midi_out_channel(self, channel, wrap=False):
         # We use channel -1 for the "instrument setting" in which midi channel is taken from currently selected instrument
         self.midi_out_channel = channel
         if self.midi_out_channel < -1:
@@ -653,7 +653,7 @@ class PyshaApp(object):
         elif self.midi_out_channel > 15:
             self.midi_out_channel = 15 if not wrap else -1
 
-    def set_osc_in_port(self, port, wrap=False):
+    async def set_osc_in_port(self, port, wrap=False):
         # We use channel -1 for the "instrument setting" in which midi channel is taken from currently selected instrument
         self.osc_in_port = port
         if self.osc_in_port < 1030:
@@ -661,32 +661,32 @@ class PyshaApp(object):
         elif self.osc_in_port > 1038:
             self.osc_in_port = 15 if not wrap else -1
 
-    def set_midi_in_device_by_index(self, device_idx):
+    async def set_midi_in_device_by_index(self, device_idx):
         if device_idx >= 0 and device_idx < len(self.available_midi_in_device_names):
-            self.init_midi_in(self.available_midi_in_device_names[device_idx])
+            await self.init_midi_in(self.available_midi_in_device_names[device_idx])
         else:
-            self.init_midi_in(None)
+            await self.init_midi_in(None)
 
-    def set_midi_out_device_by_index(self, device_idx):
+    async def set_midi_out_device_by_index(self, device_idx):
         if device_idx >= 0 and device_idx < len(self.available_midi_out_device_names):
-            self.init_midi_out(self.available_midi_out_device_names[device_idx])
+            await self.init_midi_out(self.available_midi_out_device_names[device_idx])
         else:
-            self.init_midi_out(None)
+            await self.init_midi_out(None)
 
-    def set_notes_midi_in_device_by_index(self, device_idx):
+    async def set_notes_midi_in_device_by_index(self, device_idx):
         if device_idx >= 0 and device_idx < len(self.available_midi_in_device_names):
-            self.init_notes_midi_in(self.available_midi_in_device_names[device_idx])
+            await self.init_notes_midi_in(self.available_midi_in_device_names[device_idx])
         else:
-            self.init_notes_midi_in(None)
+            await self.init_notes_midi_in(None)
 
-    def send_midi(self, msg, use_original_msg_channel=False):
+    async def send_midi(self, msg, use_original_msg_channel=False):
         # Unless we specifically say we want to use the original msg mnidi channel, set it to global midi out channel or to the channel of the current instrument
         if not use_original_msg_channel and hasattr(msg, "channel"):
             midi_out_channel = self.midi_out_channel
             if self.midi_out_channel == -1:
                 # Send the message to the midi channel of the currently selected instrument (or to instrument 1 if selected instrument has no midi channel information)
                 instrument_midi_channel = (
-                    self.instrument_selection_mode.get_current_instrument_info()[
+                    await self.instrument_selection_mode.get_current_instrument_info()[
                         "midi_channel"
                     ]
                 )
@@ -701,7 +701,7 @@ class PyshaApp(object):
         if self.midi_out is not None:
             self.midi_out.send(msg)
 
-    def send_osc(self, address, value, instrument_short_name=None):
+    async def send_osc(self, address, value, instrument_short_name=None):
         # print(
         #     instrument_short_name,
         #     self.instrument_selection_mode.get_current_instrument_short_name(),
@@ -719,22 +719,22 @@ class PyshaApp(object):
             else:
                 # This is for wiggling knobs
                 client = self.instruments[
-                    self.instrument_selection_mode.get_current_instrument_short_name()
+                    await self.instrument_selection_mode.get_current_instrument_short_name()
                 ].get("client", None)
 
                 if client:
-                    client.send_message(address, value)
+                    await client.send_message(address, value)
                 # print("adress", address, value)
         except Exception as e:
             print("Exception in app.py send_osc")
             traceback.print_exc()
 
-    def send_osc_multi(self, commands, instrument_short_name=None):
+    async def send_osc_multi(self, commands, instrument_short_name=None):
         for command in commands:
             address, val = command
-            self.send_osc(address, val, instrument_short_name)
+            await self.send_osc(address, val, instrument_short_name)
 
-    def midi_in_handler(self, msg):
+    async def midi_in_handler(self, msg):
         # if msg.type != 'clock':
         #     print(msg.type)
         
@@ -743,7 +743,7 @@ class PyshaApp(object):
         # so that the clocks line up proper
         if msg.type == "stop":
             self.metro_sequencer_mode.sequencer_is_playing = False
-            for (instrument_short_name) in self.metro_sequencer_mode.get_all_distinct_instrument_short_names_helper():
+            for (instrument_short_name) in await self.metro_sequencer_mode.get_all_distinct_instrument_short_names_helper():
                 sequencer = self.metro_sequencer_mode.instrument_sequencers[instrument_short_name]
                 # sequencer.reschedule_playhead_track()
         
@@ -753,21 +753,21 @@ class PyshaApp(object):
         
         if msg.type == "songpos" or msg.type == "stop":
             # self.metro_sequencer_mode.sequencer_is_playing = False
-            for (instrument_short_name) in self.metro_sequencer_mode.get_all_distinct_instrument_short_names_helper():
+            for (instrument_short_name) in await self.metro_sequencer_mode.get_all_distinct_instrument_short_names_helper():
                 
                 try:
                     sequencer = self.metro_sequencer_mode.instrument_sequencers[instrument_short_name]
-                    sequencer.reset_index()
+                    await sequencer.reset_index()
                     sequencer.scale_count = 0
                     sequencer.next_step_index = 0
                 except Exception as e:
                     print(e)
                 try:
-                    self.global_timeline.reset()
+                    await self.global_timeline.reset()
                 except Exception as e:
                     print(e)
             # shouldn't this be just update_pads
-            self.metro_sequencer_mode.update_pads_to_seq_state()
+            await self.metro_sequencer_mode.update_pads_to_seq_state()
                 
         if hasattr(msg, "channel"):
             instrument = next(
@@ -806,12 +806,12 @@ class PyshaApp(object):
             #         for mode in self.active_modes:
             #             mode.on_midi_in(msg, source=self.midi_in.name)
 
-    def notes_midi_in_handler(self, msg):
+    async def notes_midi_in_handler(self, msg):
         # Check if message is note on or off and check if the MIDI channel is the one assigned to the currently selected instrument
         # Then, send message to the melodic/rhythmic active modes so the notes are shown in pads/keys
         if msg.type == "note_on" or msg.type == "note_off":
             instrument_midi_channel = (
-                self.instrument_selection_mode.get_current_instrumentument_info()[
+                await self.instrument_selection_mode.get_current_instrumentument_info()[
                     "midi_channel"
                 ]
             )
@@ -821,7 +821,7 @@ class PyshaApp(object):
                         mode.on_midi_in(msg, source=self.notes_midi_in.name)
 
 
-    def add_display_notification(self, text):
+    async def add_display_notification(self, text):
         self.notification_text = text
         self.notification_time = time.time()
 
@@ -895,7 +895,7 @@ class PyshaApp(object):
         # code block is reached, or because an exception was raised inside),
         # client.deactivate() and client.close() are called automatically.
 
-    def init_push(self):
+    async def init_push(self):
         print("Configuring Push...")
         self.push = push2_python.Push2()
         if platform.system() == "Linux":
@@ -903,21 +903,21 @@ class PyshaApp(object):
             #  I've overved problems trying to reconnect many times withotu success on the Raspberrypi, resulting in
             # "ALSA lib seq_hw.c:466:(snd_seq_hw_open) open /dev/snd/seq failed: Cannot allocate memory" issues.
             # A work around is make the reconnection time bigger, but a better solution should probably be found.
-            self.push.set_push2_reconnect_call_interval(2)
+            await self.push.set_push2_reconnect_call_interval(2)
             
         # for y in range(0, 8):
         #     for x in range(0, 8):
         #         self.push.pads.set_pad_color((x, y), color=definitions.OFF_BTN_COLOR)
 
-    def update_push2_pads(self):
+    async def update_push2_pads(self):
         for mode in self.active_modes:
-            mode.update_pads()
+            await mode.update_pads()
 
-    def update_push2_buttons(self):
+    async def update_push2_buttons(self):
         for mode in self.active_modes:
-            mode.update_buttons()
+            await mode.update_buttons()
 
-    def update_push2_display(self):
+    async def update_push2_display(self):
         if self.use_push2_display:
             # Prepare cairo canvas
             w, h = (
@@ -929,10 +929,10 @@ class PyshaApp(object):
 
             # Call all active modes to write to context
             for mode in self.active_modes:
-                    mode.update_display(ctx, w, h)
+                    await mode.update_display(ctx, w, h)
             # Makes seq submenus always draw on top of other modes
-            self.sequencer_mode.update_display(ctx, w, h)
-            self.metro_sequencer_mode.update_display(ctx, w, h)
+            await self.sequencer_mode.update_display(ctx, w, h)
+            await self.metro_sequencer_mode.update_display(ctx, w, h)
 
             # Show any notifications that should be shown
             if self.notification_text is not None:
@@ -953,25 +953,25 @@ class PyshaApp(object):
             frame = numpy.ndarray(
                 shape=(h, w), dtype=numpy.uint16, buffer=buf
             ).transpose()
-            self.push.display.display_frame(
+            await self.push.display.display_frame(
                 frame, input_format=push2_python.constants.FRAME_FORMAT_RGB565
             )
 
-    def check_for_delayed_actions(self):
+    async def check_for_delayed_actions(self):
         # If MIDI not configured, make sure we try sending messages so it gets configured
-        if not self.push.midi_is_configured():
-            self.push.configure_midi()
+        if not await self.push.midi_is_configured():
+            await self.push.configure_midi()
 
         # Call dalyed actions in active modes
         for mode in self.active_modes:
-            mode.check_for_delayed_actions()
+            await mode.check_for_delayed_actions()
 
         if self.pads_need_update:
-            self.update_push2_pads()
+            await self.update_push2_pads()
             self.pads_need_update = False
 
         if self.buttons_need_update:
-            self.update_push2_buttons()
+            await self.update_push2_buttons()
             self.buttons_need_update = False
     
     async def queue_tasks(self):
@@ -987,13 +987,13 @@ class PyshaApp(object):
     async def run_loop(self):
         print("Loading State ...")
         # self.sequencer_mode.load_state()
-        self.metro_sequencer_mode.load_state()
-        self.preset_selection_mode.init_surge_preset_state()
+        await self.metro_sequencer_mode.load_state()
+        await self.preset_selection_mode.init_surge_preset_state()
         
         for idx, instrument_shortname in enumerate(self.instruments):
             instrument = self.instruments[instrument_shortname]
                 
-            self.queue.append(self.preset_selection_mode.load_init_state(instrument_shortname=instrument_shortname))
+            await self.preset_selection_mode.load_init_state(instrument_shortname=instrument_shortname)
             # instrument.update_current_devices()
 
 
@@ -1004,7 +1004,7 @@ class PyshaApp(object):
             before_draw_time = time.time()
 
             # Draw ui
-            self.update_push2_display()
+            await self.update_push2_display()
 
             # Frame rate measurement
             now = time.time()
@@ -1017,7 +1017,7 @@ class PyshaApp(object):
                 # print('{0} fps'.format(self.actual_frame_rate))
 
             # Check if any delayed actions need to be applied
-            self.check_for_delayed_actions()
+            await self.check_for_delayed_actions()
 
             # Schedule tasks from queue
             await self.queue_tasks()
@@ -1034,7 +1034,7 @@ class PyshaApp(object):
             else:
                 await asyncio.sleep(0)
 
-    def on_midi_push_connection_established(self):
+    async def on_midi_push_connection_established(self):
         # Do initial configuration of Push
         print("Doing initial Push config...")
 
@@ -1061,8 +1061,8 @@ class PyshaApp(object):
             mode.activate()
 
         # Update buttons and pads (just in case something was missing!)
-        app.update_push2_buttons()
-        app.update_push2_pads()
+        await app.update_push2_buttons()
+        await app.update_push2_pads()
 
     async def get_pipewire_config(self):
         try:
@@ -1108,7 +1108,7 @@ class PyshaApp(object):
         
         self.puredata_process_id = self.pd_process.pid
         
-    def get_volume_client(self):
+    async def get_volume_client(self):
         for item in self.pipewire:
             if item["type"] == "PipeWire:Interface:Client":
                 # print(item.get("info", {}).get("props", {}).get("application.process.id",None), self.puredata_process_id)
@@ -1123,7 +1123,7 @@ class PyshaApp(object):
         return self.volume_client
 
 
-    def get_volume_node(self):
+    async def get_volume_node(self):
         for node in self.pipewire:
             if node["type"] == "PipeWire:Interface:Node":
                 try:
@@ -1148,7 +1148,7 @@ class PyshaApp(object):
     
         # print("disconnected __________")
     
-    def set_main_volumes(self, *args):
+    async def set_main_volumes(self, *args):
         # TODO: need to make a client for all them nodes
         # This is done in instrument, just copy
         for idx, instrument in enumerate(self.instruments):
@@ -1156,17 +1156,17 @@ class PyshaApp(object):
             right_channel_idx = left_channel_idx + 1
             # Value only from left because we want to have it center
             volume_value = self.volumes[left_channel_idx]
-            self.volume_node_osc_client.send_message(f"/vol_{left_channel_idx}", float(volume_value))
-            self.volume_node_osc_client.send_message(f"/vol_{right_channel_idx}", float(volume_value))
+            await self.volume_node_osc_client.send_message(f"/vol_{left_channel_idx}", float(volume_value))
+            await self.volume_node_osc_client.send_message(f"/vol_{right_channel_idx}", float(volume_value))
         
   
 
 # Bind push action handlers with class methods
 @push2_python.on_encoder_rotated()
-def on_encoder_rotated(_, encoder_name, increment):
+async def on_encoder_rotated(_, encoder_name, increment):
     try:
         for mode in app.active_modes[::-1]:
-            action_performed = mode.on_encoder_rotated(encoder_name, increment)
+            action_performed = await mode.on_encoder_rotated(encoder_name, increment)
             if action_performed:
                 break  # If mode took action, stop event propagation
     except NameError as e:
@@ -1175,10 +1175,10 @@ def on_encoder_rotated(_, encoder_name, increment):
 
 
 @push2_python.on_encoder_touched()
-def on_encoder_touched(_, encoder_name):
+async def on_encoder_touched(_, encoder_name):
     try:
         for mode in app.active_modes[::-1]:
-            action_performed = mode.on_encoder_touched(encoder_name)
+            action_performed = await mode.on_encoder_touched(encoder_name)
             if action_performed:
                 break  # If mode took action, stop event propagation
     except NameError as e:
@@ -1187,10 +1187,10 @@ def on_encoder_touched(_, encoder_name):
 
 
 @push2_python.on_encoder_released()
-def on_encoder_released(_, encoder_name):
+async def on_encoder_released(_, encoder_name):
     try:
         for mode in app.active_modes[::-1]:
-            action_performed = mode.on_encoder_released(encoder_name)
+            action_performed = await mode.on_encoder_released(encoder_name)
             if action_performed:
                 break  # If mode took action, stop event propagation
     except NameError as e:
@@ -1199,10 +1199,10 @@ def on_encoder_released(_, encoder_name):
 
 
 @push2_python.on_pad_pressed()
-def on_pad_pressed(_, pad_n, pad_ij, velocity):
+async def on_pad_pressed(_, pad_n, pad_ij, velocity):
     try:
         for mode in app.active_modes[::-1]:
-            action_performed = mode.on_pad_pressed(pad_n, pad_ij, velocity)
+            action_performed = await mode.on_pad_pressed(pad_n, pad_ij, velocity)
             if action_performed:
                 break  # If mode took action, stop event propagation
     except NameError as e:
@@ -1211,10 +1211,10 @@ def on_pad_pressed(_, pad_n, pad_ij, velocity):
 
 
 @push2_python.on_pad_released()
-def on_pad_released(_, pad_n, pad_ij, velocity):
+async def on_pad_released(_, pad_n, pad_ij, velocity):
     try:
         for mode in app.active_modes[::-1]:
-            action_performed = mode.on_pad_released(pad_n, pad_ij, velocity)
+            action_performed = await mode.on_pad_released(pad_n, pad_ij, velocity)
             if action_performed:
                 break  # If mode took action, stop event propagation
     except NameError as e:
@@ -1223,10 +1223,10 @@ def on_pad_released(_, pad_n, pad_ij, velocity):
 
 
 @push2_python.on_pad_aftertouch()
-def on_pad_aftertouch(_, pad_n, pad_ij, velocity):
+async def on_pad_aftertouch(_, pad_n, pad_ij, velocity):
     try:
         for mode in app.active_modes[::-1]:
-            action_performed = mode.on_pad_aftertouch(pad_n, pad_ij, velocity)
+            action_performed = await mode.on_pad_aftertouch(pad_n, pad_ij, velocity)
             if action_performed:
                 break  # If mode took action, stop event propagation
     except NameError as e:
@@ -1235,10 +1235,10 @@ def on_pad_aftertouch(_, pad_n, pad_ij, velocity):
 
 
 @push2_python.on_button_pressed()
-def on_button_pressed(_, name):
+async def on_button_pressed(_, name):
     try:
         for mode in app.active_modes[::-1]:
-            action_performed = mode.on_button_pressed(name)
+            action_performed = await mode.on_button_pressed(name)
             if action_performed:
                 break  # If mode took action, stop event propagation
     except NameError as e:
@@ -1247,10 +1247,10 @@ def on_button_pressed(_, name):
 
 
 @push2_python.on_button_released()
-def on_button_released(_, name):
+async def on_button_released(_, name):
     try:
         for mode in app.active_modes[::-1]:
-            action_performed = mode.on_button_released(name)
+            action_performed = await mode.on_button_released(name)
             if action_performed:
                 break  # If mode took action, stop event propagation
     except NameError as e:
@@ -1259,10 +1259,10 @@ def on_button_released(_, name):
 
 
 @push2_python.on_touchstrip()
-def on_touchstrip(_, value):
+async def on_touchstrip(_, value):
     try:
         for mode in app.active_modes[::-1]:
-            action_performed = mode.on_touchstrip(value)
+            action_performed = await mode.on_touchstrip(value)
             if action_performed:
                 break  # If mode took action, stop event propagation
     except NameError as e:
@@ -1271,10 +1271,10 @@ def on_touchstrip(_, value):
 
 
 @push2_python.on_sustain_pedal()
-def on_sustain_pedal(_, sustain_on):
+async def on_sustain_pedal(_, sustain_on):
     try:
         for mode in app.active_modes[::-1]:
-            action_performed = mode.on_sustain_pedal(sustain_on)
+            action_performed = await mode.on_sustain_pedal(sustain_on)
             if action_performed:
                 break  # If mode took action, stop event propagation
     except NameError as e:
@@ -1286,9 +1286,9 @@ midi_connected_received_before_app = False
 
 
 @push2_python.on_midi_connected()
-def on_midi_connected(_):
+async def on_midi_connected(_):
     try:
-        app.on_midi_push_connection_established()
+        await app.on_midi_push_connection_established()
     except NameError as e:
         global midi_connected_received_before_app
         midi_connected_received_before_app = True
@@ -1325,10 +1325,10 @@ async def main():
     await asyncio.sleep(5)
     await app.get_pipewire_config()
     
-    app.get_volume_client()
-    app.get_volume_node()
+    await app.get_volume_client()
+    await app.get_volume_node()
     await app.disconnect_links_from_volume_node()
-    app.set_main_volumes()
+    await app.set_main_volumes()
     
     #Querry controls to update initial state
 
@@ -1337,7 +1337,7 @@ async def main():
         # The config_pw call makes surge-xt instances crash
         await app.instruments[instrument].engine.configure_pipewire()
         
-        app.queue.append(app.instruments[instrument].init_devices_sync())
+        await app.instruments[instrument].init_devices_sync()
         app.global_timeline.add_output_device(app.instruments[instrument].midi_out_device)    
     for instrument in app.external_instruments:
         await instrument.engine.configure_pipewire()
@@ -1352,7 +1352,7 @@ if __name__ == "__main__":
         if midi_connected_received_before_app:
             # App received the "on_midi_connected" call before it was initialized. Do it now!
             print("Missed MIDI initialization call, doing it now...")
-            app.on_midi_push_connection_established()
+            await app.on_midi_push_connection_established()
 
         asyncio.run(main())
     except KeyboardInterrupt:

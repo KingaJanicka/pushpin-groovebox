@@ -27,7 +27,7 @@ class AudioInDevice(PyshaMode):
         return i
 
     @property
-    def pages(self):
+    async def pages(self):
         pages = [[]]
         idx = 0
         for control in self.controls:
@@ -46,16 +46,16 @@ class AudioInDevice(PyshaMode):
 
             current_page.append(control)
             if isinstance(control, OSCControlSwitch):
-                active_group: OSCGroup = control.get_active_group()
+                active_group: OSCGroup = await control.get_active_group()
                 for c in active_group.controls:
                     current_page.append(c)
         return pages
 
     @property
-    def instrument(self):
-        return self.get_instrument_for_pid(self.engine.PID)
+    async def instrument(self):
+        return await self.get_instrument_for_pid(self.engine.PID)
 
-    def __init__(
+    async def __init__(
         self,
         config,
         osc={"client": {}, "server": {}, "dispatcher": {}},
@@ -206,12 +206,12 @@ class AudioInDevice(PyshaMode):
         self.dispatcher.map(high_cut_control.address, high_cut_control.set_state)
         self.controls.append(high_cut_control)
         self.page_one_controls.append(high_cut_control)
-        for control in self.get_visible_controls():
+        for control in await self.get_visible_controls():
             if hasattr(control, "select"):
-                control.select()
+                await control.select()
         # self.update()
 
-    def update(self):
+    async def update(self):
         self.controls.clear()
         for control in self.page_one_controls:
             self.controls.append(control)
@@ -248,7 +248,7 @@ class AudioInDevice(PyshaMode):
             }],
         }
 
-        for instrument in self.app.instruments.values():
+        for instrument in await self.app.instruments.values():
             # print(client["info"]["props"]["object.serial"])
             # dest_instrument = self.get_instrument_for_pid(
             #     client["info"]["props"]["object.serial"]
@@ -331,14 +331,14 @@ class AudioInDevice(PyshaMode):
                 print("Exception in update in audio_in_device")
                 traceback.print_exc()
 
-    def empty_func(self, *args):
+    async def empty_func(self, *args):
         pass
 
     async def select(self):
         # self.query_visible_controls()
-        self.update()
+        await self.update()
         for cmd in self.init:
-            self.send_message(cmd["address"], float(cmd["value"]))
+            await self.send_message(cmd["address"], float(cmd["value"]))
             await asyncio.sleep(0.2)
 
     async def spawn_puredata_node(self):
@@ -351,24 +351,24 @@ class AudioInDevice(PyshaMode):
         await self.app.instruments[instrument_name].engine.kill_pd_node()
 
     
-    def select_sync(self):
+    async def select_sync(self):
         # self.query_visible_controls()
-        self.update()
+        await self.update()
         for cmd in self.init:
-            self.send_message(cmd["address"], float(cmd["value"]))
+            await self.send_message(cmd["address"], float(cmd["value"]))
             
     
-    def select_sync(self):
+    async def select_sync(self):
         # self.query_visible_controls()
-        self.update()
+        await self.update()
         for cmd in self.init:
-            self.send_message(cmd["address"], float(cmd["value"]))
+            await self.send_message(cmd["address"], float(cmd["value"]))
             
-    def send_message(self, *args):
+    async def send_message(self, *args):
         self.log_out.debug(args)
         return self.osc["client"].send_message(*args)
     
-    def set_duplex_volumes(self, *args):
+    async def set_duplex_volumes(self, *args):
         duplex_node = self.engine.duplex_node
         channel_volumes = []
         for val in self.input_gains:
@@ -385,12 +385,12 @@ class AudioInDevice(PyshaMode):
             right_channel_idx = left_channel_idx + 1
             # Value only from left because we want to have it center
             volume_value = channel_volumes[left_channel_idx]
-            self.engine.duplex_node_osc_client.send_message(f"/vol_{left_channel_idx}", float(volume_value))
-            self.engine.duplex_node_osc_client.send_message(f"/vol_{right_channel_idx}", float(volume_value))
+            await self.engine.duplex_node_osc_client.send_message(f"/vol_{left_channel_idx}", float(volume_value))
+            await self.engine.duplex_node_osc_client.send_message(f"/vol_{right_channel_idx}", float(volume_value))
 
 
-    def update_input_gains(self):
-        devices = self.app.osc_mode.get_current_instrument_devices()
+    async def update_input_gains(self):
+        devices = await self.app.osc_mode.get_current_instrument_devices()
         value_1 = None 
         value_2 = None 
         value_3 = None 
@@ -424,7 +424,7 @@ class AudioInDevice(PyshaMode):
                 device.input_gains[6] = value_7
                 device.input_gains[7] = value_8
 
-    def reconnect_all_duplex_ports(self):
+    async def reconnect_all_duplex_ports(self):
         # Getting all links
         links = filter(
             lambda x: x["type"] == "PipeWire:Interface:Link", self.app.pipewire.copy()
@@ -444,7 +444,7 @@ class AudioInDevice(PyshaMode):
         # Connect new links 
 
 
-    def connect_ports_duplex(self, *args):
+    async def connect_ports_duplex(self, *args):
         
         [addr, val] = args
         if val != None:
@@ -477,16 +477,16 @@ class AudioInDevice(PyshaMode):
                     elif port.get("info", []).get("props",[]).get("object.path", None) == "Surge XT:input_1":
                         dest_R = port['id']
                 if (disconnect_L != None) and (disconnect_R != None):
-                        self.app.queue.append(disconnectPipewireSourceFromPipewireDest(disconnect_L, duplex_in_L))
-                        self.app.queue.append(disconnectPipewireSourceFromPipewireDest(disconnect_R, duplex_in_R))
-                        self.app.queue.append(disconnectPipewireSourceFromPipewireDest(duplex_out_L, dest_L))
-                        self.app.queue.append(disconnectPipewireSourceFromPipewireDest(duplex_out_R, dest_R))
+                        await disconnectPipewireSourceFromPipewireDest(disconnect_L, duplex_in_L)
+                        await disconnectPipewireSourceFromPipewireDest(disconnect_R, duplex_in_R)
+                        await disconnectPipewireSourceFromPipewireDest(duplex_out_L, dest_L)
+                        await disconnectPipewireSourceFromPipewireDest(duplex_out_R, dest_R)
                 self.engine.connections[column_index]["L"] = None
                 self.engine.connections[column_index]["R"] = None
                 return
              
             try:
-                source_instrument = self.get_instrument_for_pid(val)
+                source_instrument = await self.get_instrument_for_pid(val)
                 source_instrument_ports = source_instrument.engine.pw_ports
                 current_instrument_ports = self.engine.pw_ports
                 source_L = None
@@ -533,20 +533,20 @@ class AudioInDevice(PyshaMode):
                         disconnect_L = self.engine.connections[column_index]["L"]
                         disconnect_R = self.engine.connections[column_index]["R"]
                         if disconnect_L and disconnect_R is not None:
-                            self.app.queue.append(disconnectPipewireSourceFromPipewireDest(disconnect_L, duplex_in_L))
-                            self.app.queue.append(disconnectPipewireSourceFromPipewireDest(disconnect_R, duplex_in_R))
-                            self.app.queue.append(disconnectPipewireSourceFromPipewireDest(duplex_out_L, dest_L))
-                            self.app.queue.append(disconnectPipewireSourceFromPipewireDest(duplex_out_R, dest_R))
+                            await disconnectPipewireSourceFromPipewireDest(disconnect_L, duplex_in_L)
+                            await disconnectPipewireSourceFromPipewireDest(disconnect_R, duplex_in_R)
+                            await disconnectPipewireSourceFromPipewireDest(duplex_out_L, dest_L)
+                            await disconnectPipewireSourceFromPipewireDest(duplex_out_R, dest_R)
                     
                     # Connects to currently selected instance, assigns the port IDs for later reference
                     for index, connection in enumerate(self.engine.connections):
                         if index == column_index:
                             connection["L"] = source_L
                             connection["R"] = source_R
-                    self.app.queue.append(connectPipewireSourceToPipewireDest(source_L, duplex_in_L))
-                    self.app.queue.append(connectPipewireSourceToPipewireDest(source_R, duplex_in_R))
-                    self.app.queue.append(connectPipewireSourceToPipewireDest(duplex_out_L, dest_L))
-                    self.app.queue.append(connectPipewireSourceToPipewireDest(duplex_out_R, dest_R))
+                    await connectPipewireSourceToPipewireDest(source_L, duplex_in_L)
+                    await connectPipewireSourceToPipewireDest(source_R, duplex_in_R)
+                    await connectPipewireSourceToPipewireDest(duplex_out_L, dest_L)
+                    await connectPipewireSourceToPipewireDest(duplex_out_R, dest_R)
                     
             except Exception as e:
                 print("Error in connect_ports_duplex in audio_in_device")
@@ -555,33 +555,33 @@ class AudioInDevice(PyshaMode):
       
 
 
-    def query(self):
-        for control in self.get_visible_controls():
-            control.query()
+    async def query(self):
+        for control in await self.get_visible_controls():
+            await control.query()
 
-    def query_all(self):
-        for control in self.controls:
-            control.query()
+    async def query_all(self):
+        for control in await self.controls:
+            await control.query()
 
-    def draw(self, ctx):
-        visible_controls = self.get_visible_controls()
+    async def draw(self, ctx):
+        visible_controls = await self.get_visible_controls()
         all_controls = self.pages
         offset = 0
         for control in all_controls[self.page]:
             if offset + 1 <= 8:
-                control.draw(ctx, offset)
+                await control.draw(ctx, offset)
                 offset += 1
         offset = 0
         other_page = (self.page + 1) % 2
         try:
             for control in all_controls[other_page]:
                 if offset + 1 <= 8:
-                    control.draw_submenu(ctx, offset)
+                    await control.draw_submenu(ctx, offset)
                     offset += 1
         except:
             pass
 
-    def get_next_prev_pages(self):
+    async def get_next_prev_pages(self):
         show_prev = False
         if self.page > 0:
             show_prev = True
@@ -592,33 +592,33 @@ class AudioInDevice(PyshaMode):
 
         return show_prev, show_next
 
-    def set_page(self, page):
+    async def set_page(self, page):
         self.page = page
         
         # self.query_visible_controls()
         # print("PAGE: ", self.page)
         # print(*self.pages[self.page], sep="\n")
 
-    def query_visible_controls(self):
-        visible_controls = self.get_visible_controls()
+    async def query_visible_controls(self):
+        visible_controls = await self.get_visible_controls()
         for control in visible_controls:
             if hasattr(control, "address") and control.address is not None:
-                self.send_message("/q" + control.address, None)
+                await self.send_message("/q" + control.address, None)
 
-    def query_all_controls(self):
-        all_controls = self.get_all_controls()
-        self.update()
+    async def query_all_controls(self):
+        all_controls = await self.get_all_controls()
+        await self.update()
         for control in all_controls:
             if hasattr(control, "address") and control.address is not None:
-                self.send_message("/q" + control.address, None)
+                await self.send_message("/q" + control.address, None)
 
-    def get_pipewire_config(self):
+    async def get_pipewire_config(self):
         for item in self.clients:
             pid = item["info"]["props"].get("application.process.id")
             if pid == self.engine.PID:
                 return item
 
-    def get_instrument_for_pid(self, pid):
+    async def get_instrument_for_pid(self, pid):
         instruments = self.app.instruments
         external = self.app.external_instruments
         for instrument in instruments.values():
@@ -629,21 +629,21 @@ class AudioInDevice(PyshaMode):
                 return instrument
         return None
 
-    def get_visible_controls(self):
+    async def get_visible_controls(self):
         return self.pages[self.page]
 
 
-    def get_all_controls(self):
+    async def get_all_controls(self):
         try:
             all_controls = self.pages[0] + self.pages[1]
         except:
             all_controls = self.pages[0]
         return all_controls
 
-    def on_encoder_rotated(self, encoder_name, increment):
+    async def on_encoder_rotated(self, encoder_name, increment):
         #This if statement is for setting post-synth volume levels
         if encoder_name == push2_python.constants.ENCODER_SWING_ENCODER:
-            instrument = self.app.osc_mode.get_current_instrument()
+            instrument =  await self.app.osc_mode.get_current_instrument()
             all_volumes = self.app.volumes
             instrument_idx = instrument.osc_in_port % 10
             track_L_volume = all_volumes[instrument_idx * 2]
@@ -662,7 +662,7 @@ class AudioInDevice(PyshaMode):
             all_volumes[instrument_idx*2] = track_L_volume
             all_volumes[instrument_idx*2 +1] = track_R_volume
             self.app.volumes = all_volumes
-            self.app.set_main_volumes()
+            await self.app.set_main_volumes()
 
         try:
             encoder_idx = [
@@ -676,18 +676,19 @@ class AudioInDevice(PyshaMode):
                 push2_python.constants.ENCODER_TRACK8_ENCODER,
             ].index(encoder_name)
             if self.app.sequencer_mode.disable_controls == False and self.app.metro_sequencer_mode.disable_controls == False:
-                visible_controls = self.get_visible_controls()
+                visible_controls = await self.get_visible_controls()
                 control = visible_controls[encoder_idx]
-                control.update_value(increment)
+                await control.update_value(increment)
                 self.last_knob_turned = encoder_idx
                 match encoder_idx:
                     case 2 | 3 | 4 | 5:
-                        self.update_input_gains()
+                        await self.update_input_gains()
 
         
         except ValueError:
             pass  # Encoder not in list
-    def on_encoder_released(self, encoder_name):
+    
+    async def on_encoder_released(self, encoder_name):
         try:
             encoder_idx = [
                 push2_python.constants.ENCODER_TRACK1_ENCODER,

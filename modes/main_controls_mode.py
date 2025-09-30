@@ -21,10 +21,10 @@ class MainControlsMode(definitions.PyshaMode):
     preset_selection_button_pressing_time = None
     button_quick_press_time = 0.400
 
-    def activate(self):
-        self.update_buttons()
+    async def activate(self):
+        await self.update_buttons()
 
-    def deactivate(self):
+    async def deactivate(self):
         self.push.buttons.set_button_color(NOTE_BUTTON, definitions.BLACK)
         self.push.buttons.set_button_color(TOGGLE_DISPLAY_BUTTON, definitions.BLACK)
         self.push.buttons.set_button_color(SETUP_BUTTON, definitions.BLACK)
@@ -33,7 +33,7 @@ class MainControlsMode(definitions.PyshaMode):
         self.push.buttons.set_button_color(DEVICE_BUTTON, definitions.BLACK)
         self.push.buttons.set_button_color(CLIP_BUTTON, definitions.BLACK)
 
-    def update_buttons(self):
+    async def update_buttons(self):
         # Note button, to toggle melodic/rhythmic mode
         self.push.buttons.set_button_color(NOTE_BUTTON, definitions.WHITE)
 
@@ -97,23 +97,23 @@ class MainControlsMode(definitions.PyshaMode):
         else:
             self.push.buttons.set_button_color(ADD_DEVICE_BUTTON, definitions.BLACK)
 
-    def on_button_pressed(self, button_name):
+    async def on_button_pressed(self, button_name):
         if button_name == NOTE_BUTTON:
-            self.app.toggle_melodic_rhythmic_slice_modes()
+            await self.app.toggle_melodic_rhythmic_slice_modes()
             self.app.pads_need_update = True
             self.app.buttons_need_update = True
             return True
         elif button_name == MUTE_BUTTON:
-            if self.app.is_mode_active(self.app.mute_mode) != True:
-                self.app.set_mute_mode()
+            if await self.app.is_mode_active(self.app.mute_mode) != True:
+                await self.app.set_mute_mode()
             else:
-                self.app.set_metro_sequencer_mode()
+                await self.app.set_metro_sequencer_mode()
             
             self.app.pads_need_update = True
             self.app.buttons_need_update = True
             return True
         elif button_name == SETUP_BUTTON:
-            self.app.toggle_and_rotate_settings_mode()
+            await self.app.toggle_and_rotate_settings_mode()
             self.app.buttons_need_update = True
             return True
         elif button_name == TOGGLE_DISPLAY_BUTTON:
@@ -127,23 +127,23 @@ class MainControlsMode(definitions.PyshaMode):
             self.app.buttons_need_update = True
             return True
         elif button_name == BROWSE_BUTTON:
-            if self.app.preset_selection_mode.should_be_enabled():
-                self.app.toggle_preset_selection_mode()
+            if await self.app.preset_selection_mode.should_be_enabled():
+                await self.app.toggle_preset_selection_mode()
                 self.app.buttons_need_update = True
             return True
         elif button_name == ADD_DEVICE_BUTTON:
-            if self.app.menu_mode.should_be_enabled():
-                self.app.toggle_menu_mode()
+            if await self.app.menu_mode.should_be_enabled():
+                await self.app.toggle_menu_mode()
                 self.app.buttons_need_update = True
             return True
         elif button_name  == CLIP_BUTTON:
-            if self.app.trig_edit_mode.should_be_enabled():
+            if await self.app.trig_edit_mode.should_be_enabled():
                 # TODO: commented out beause it's broken with the current seq model
                 # self.app.toggle_trig_edit_mode()
                 self.app.buttons_need_update = True
             return True
 
-    def on_button_released(self, button_name):
+    async def on_button_released(self, button_name):
         if button_name == BROWSE_BUTTON:
             # Decide if short press or long press
             pressing_time = self.preset_selection_button_pressing_time
@@ -159,7 +159,7 @@ class MainControlsMode(definitions.PyshaMode):
 
             if is_long_press:
                 # If long press, deactivate preset selection mode, else do nothing
-                self.app.unset_preset_selection_mode()
+                await self.app.unset_preset_selection_mode()
                 self.app.buttons_need_update = True
 
             return True

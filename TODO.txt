@@ -30,3 +30,4 @@ it's hardcoded to look for the first control for the address, so it knows where 
 we should add a "address" field somewhere there, that would fix twist/nimbus too I rekon
 
 
+THe pad on/off behaviour should be copied from the melodic mode, on_pad_pressed

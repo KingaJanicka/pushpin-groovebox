@@ -89,7 +89,7 @@ class SequencerMetro(object):
                 "duration": 0.0625,
             }, 
         )
-    def reschedule_playhead_tracks(self):
+    async def reschedule_playhead_tracks(self):
         # unschedule
         # TODO: finish this func
         self.timeline.unschedule(self.playhead_track)
@@ -104,7 +104,7 @@ class SequencerMetro(object):
         #     }, 
         # )
 
-    def get_track_by_name(self, name):
+    async def get_track_by_name(self, name):
         if name == TRACK_NAMES_METRO[0]:
             return self.pitch
         elif name == TRACK_NAMES_METRO[1]:
@@ -122,7 +122,7 @@ class SequencerMetro(object):
         elif name == TRACK_NAMES_METRO[7]:
             return self.aux_3
         
-    def load_state(self):
+    async def load_state(self):
         try:
             if os.path.exists(self.seq_filename):
                 dump = json.load(open(self.seq_filename))
@@ -142,7 +142,7 @@ class SequencerMetro(object):
             print("Exception in seq load_state")
             traceback.print_exc()
 
-    def save_state(self):
+    async def save_state(self):
         try:
             # pass
             sequencer_state = {
@@ -164,7 +164,7 @@ class SequencerMetro(object):
             print("Exception in seq save_state")
             traceback.print_exc()
 
-    def seq_playhead_update(self):
+    async def seq_playhead_update(self):
         if self.app.metro_sequencer_mode.sequencer_is_playing == True:
             # TODO: replace the values hwre when changing the control type
             self.playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01))
@@ -191,11 +191,11 @@ class SequencerMetro(object):
             # print(main_step_count, int(main_pattern_len), int(main_seq_time_scale)/2)
             if main_step_count >= int(main_pattern_len) * int(main_seq_time_scale)/2 :
 
-                self.reset_index()
+                await self.reset_index()
                 self.scale_count = 0
                 self.next_step_index = 0
                 try:
-                    self.app.global_timeline.reset()
+                    await self.app.global_timeline.reset()
                 except Exception as e:
                     print(e)
                     
@@ -203,7 +203,7 @@ class SequencerMetro(object):
             if self.scale_count == 0:
                 # Play the note, reset the counter for the time scale
                 self.step_count += 1
-                self.evaluate_and_play_notes()
+                await self.evaluate_and_play_notes()
                 self.scale_count = int(seq_time_scale) + 1
             
             elif self.scale_count != 0:
@@ -218,18 +218,18 @@ class SequencerMetro(object):
                 # And to prevent visual glitches with the playhead
                 
                 if self.step_count == int(pattern_len):
-                    self.reset_index()
+                    await self.reset_index()
                     self.next_step_index = 0
                 else:
-                    self.increment_index()
-                    self.increment_next_step_index(index=self.step_index)
+                    await self.increment_index()
+                    await self.increment_next_step_index(index=self.step_index)
         else: 
             return
                 
     
 
 
-    def increment_index(self, index = None):
+    async def increment_index(self, index = None):
         
         current_index = index if index != None else self.step_index
         next_step_index = (current_index + 1) % 64
@@ -240,13 +240,13 @@ class SequencerMetro(object):
         
         if self.gate[next_step_index] != False and self.mutes_skips[skips_idx] != True:
             self.step_index = next_step_index
-            if self.app.is_mode_active(self.app.metro_sequencer_mode):
-                self.app.metro_sequencer_mode.update_pads()
+            if await self.app.is_mode_active(self.app.metro_sequencer_mode):
+                await self.app.metro_sequencer_mode.update_pads()
                 return
         else:
-            self.increment_index(index=next_step_index)
+            await self.increment_index(index=next_step_index)
             
-    def increment_next_step_index(self, index = None):
+    async def increment_next_step_index(self, index = None):
         current_index = index if index != None else self.step_index
         next_step_index = (current_index + 1) % 64
         
@@ -258,9 +258,9 @@ class SequencerMetro(object):
             return 
         
         else:
-            self.increment_next_step_index(index=next_step_index)
+            await self.increment_next_step_index(index=next_step_index)
             
-    def increment_previous_step_index(self, index = None):
+    async def increment_previous_step_index(self, index = None):
         current_index = index if index != None else self.step_index
         prev_step_index = (current_index - 1) % 64
         column = int(prev_step_index / 8)
@@ -272,14 +272,14 @@ class SequencerMetro(object):
             return 
         
         else:
-            self.get_previous_active_step(index=prev_step_index)
+            await self.get_previous_active_step(index=prev_step_index)
         
-    def reset_index(self):
+    async def reset_index(self):
         self.step_count = 0
         self.step_index = 0
         self.next_step_index = 1
         
-    def evaluate_and_play_notes(self):
+    async def evaluate_and_play_notes(self):
         try:
             gate_track_active = self.app.mute_mode.tracks_active[self.name][
                 "gate_1"
@@ -324,11 +324,11 @@ class SequencerMetro(object):
                 if prob >= random.randint(1, 6):
                     # We need to reset values that were changed by param locks
                     for control in self.controls_to_reset:
-                        self.app.send_osc(control.address, float(control.value), instrument.name)
+                        await self.app.send_osc(control.address, float(control.value), instrument.name)
                     self.timeline.schedule(
                         {"note": pitch_and_octave, "gate": gate, "amplitude": velocity}, count=1, output_device=self.midi_out_device
                     )
-                    self.controls_to_reset.clear()
+                    self.controls_to_reset = []
             
             
             # This sends the param locks, out of the prev if statement
@@ -356,7 +356,7 @@ class SequencerMetro(object):
                                             lock_offset = lock_value - control.value
                                             value_after_scale = lock_offset * lock_scale_value + control.value
                                             if lock_value != None:
-                                                self.app.send_osc(lock_address, value_after_scale, instrument.name)
+                                                await self.app.send_osc(lock_address, value_after_scale, instrument.name)
                                                 self.controls_to_reset.append(control)
                                     else:
                                         lock_value = 0
@@ -375,7 +375,7 @@ class SequencerMetro(object):
                                     lock_offset = lock_value - control.value
                                     value_after_scale = lock_offset * lock_scale_value + control.value
                                     if lock_value != None and lock_address != None:
-                                        self.app.send_osc(lock_address, value_after_scale, instrument.name)
+                                        await self.app.send_osc(lock_address, value_after_scale, instrument.name)
                                         self.controls_to_reset.append(control)
                             else:
                                 lock_value = 0
@@ -386,7 +386,7 @@ class SequencerMetro(object):
             traceback.print_exc()
 
 
-    def update_notes(self):
+    async def update_notes(self):
         for idx, note in enumerate(self.note):
             if self.pitch[idx] == True:
                 self.note[idx] = 64
@@ -394,7 +394,7 @@ class SequencerMetro(object):
             if self.pitch[idx] == False:
                 self.note[idx] = None
 
-    def get_track(self, lane):
+    async def get_track(self, lane):
         if lane == TRACK_NAMES_METRO[0]:
             return self.pitch
         elif lane == TRACK_NAMES_METRO[1]:
@@ -412,18 +412,18 @@ class SequencerMetro(object):
         elif lane == TRACK_NAMES_METRO[7]:
             return self.aux_3
 
-    def get_current_instrument_short_name_helper(self):
-        return self.app.instrument_selection_mode.get_current_instrument_short_name()
+    async def get_current_instrument_short_name_helper(self):
+        return await self.app.instrument_selection_mode.get_current_instrument_short_name()
 
-    def set_states(self, lane, values):
+    async def set_states(self, lane, values):
         for index, value in enumerate(values):
-            self.set_state(lane, index, value)
+            await self.set_state(lane, index, value)
 
-    def set_state(self, lane, index, value):
+    async def set_state(self, lane, index, value):
         # print(f"lane: {lane} index: {index} value: {value}")s
         
         # print(device.label, device.slot)
-        self.update_notes()
+        await self.update_notes()
         lane = lane[0]
         if lane == TRACK_NAMES_METRO[0]:
             self.pitch[index] = value
@@ -442,9 +442,9 @@ class SequencerMetro(object):
         elif lane == TRACK_NAMES_METRO[7]:
             self.aux_3[index] = value
 
-    def set_lock_state(self, index, parameter_idx, value):
-        trig_edit_active = self.app.is_mode_active(self.app.trig_edit_mode)
-        device = self.app.osc_mode.get_current_instrument_device()
+    async def set_lock_state(self, index, parameter_idx, value):
+        trig_edit_active = await self.app.is_mode_active(self.app.trig_edit_mode)
+        device = await self.app.osc_mode.get_current_instrument_device()
         device_idx = None
         
         if trig_edit_active == True:
@@ -459,10 +459,10 @@ class SequencerMetro(object):
 
 
 
-    def get_lock_state(self, index, parameter_idx):
+    async def get_lock_state(self, index, parameter_idx):
         # print(f"Get_lock_state: index {index}, param_idx {parameter_idx}")
-        trig_edit_active = self.app.is_mode_active(self.app.trig_edit_mode)
-        device = self.app.osc_mode.get_current_instrument_device()
+        trig_edit_active = await self.app.is_mode_active(self.app.trig_edit_mode)
+        device = await self.app.osc_mode.get_current_instrument_device()
         device_idx = None
         
         if trig_edit_active == True:
@@ -473,8 +473,8 @@ class SequencerMetro(object):
         selected_track = self.app.sequencer_mode.selected_track
         return self.locks[index * 8][device_idx][parameter_idx]
 
-    def clear_all_locks_for_step(self, index):
-        device = self.app.osc_mode.get_current_instrument_device()
+    async def clear_all_locks_for_step(self, index):
+        device = await self.app.osc_mode.get_current_instrument_device()
         for x in range(8):
             for device_idx in range(17):
                 for parameter_idx in range(16):

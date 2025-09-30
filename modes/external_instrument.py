@@ -10,7 +10,7 @@ logger = logging.getLogger("osc_instrument")
 class ExternalInstrument(PyshaMode):
     engine = None
     
-    def __init__(
+    async def __init__(
         self,
         app,
         instrument_short_name,

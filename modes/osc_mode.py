@@ -60,7 +60,8 @@ class OSCMode(PyshaMode):
     transports = []
     cli_needs_update = False
     osc_mode_filename = "osc_mode.json"
-    def initialize(self, settings=None):
+
+    async def initialize(self, settings=None):
         device_names = [
             Path(device_file).stem
             for device_file in glob("./definitions/device_definitions/*.json")
@@ -117,7 +118,7 @@ class OSCMode(PyshaMode):
 
         for (
             instrument_short_name
-        ) in self.get_all_distinct_instrument_short_names_helper():
+        ) in await self.get_all_distinct_instrument_short_names_helper():
             print(
                 os.path.join(
                     definitions.INSTRUMENT_DEFINITION_FOLDER,
@@ -141,7 +142,8 @@ class OSCMode(PyshaMode):
                 app=self.app,
             )
 
-    def load_state(self):
+    async def load_state(self):
+        # TODO: does this work?
         try:
             print("Loading Osc_mode state")
             if os.path.exists(self.osc_mode_filename):
@@ -150,11 +152,11 @@ class OSCMode(PyshaMode):
                 self.state = dump
                 for (
                 instrument_short_name
-                ) in self.get_all_distinct_instrument_short_names_helper():
-                    devices = self.get_instrument_devices(instrument_short_name)
+                ) in await self.get_all_distinct_instrument_short_names_helper():
+                    devices = await self.get_instrument_devices(instrument_short_name)
                     
                     # Unpacking patch
-                    path = self.app.preset_selection_mode.get_preset_path_for_instrument(instrument_short_name)
+                    path = await self.app.preset_selection_mode.get_preset_path_for_instrument(instrument_short_name)
                     patch = path + ".fxp"
                     with open(patch, mode='rb') as patchFile:
                         patchContent = patchFile.read()
@@ -191,26 +193,26 @@ class OSCMode(PyshaMode):
                             elif isinstance(control, OSCControlSwitch):
                                 # Nested items need more care with saving their state
                                 control.value = state_value[0]
-                                active_group = control.get_active_group()
+                                active_group = await control.get_active_group()
                                 for idx, active_group_control in enumerate(active_group.controls):
                                     active_group_control.value = state_value[idx + 1]
-                                    self.app.send_osc(active_group_control.address, int(state_value[idx + 1]), instrument_short_name)
-                                active_group.select()
+                                    await self.app.send_osc(active_group_control.address, int(state_value[idx + 1]), instrument_short_name)
+                                await active_group.select()
                                     
             else:
                 # if file does not exist, create one
-                self.save_state()
+                await self.save_state()
         except Exception as e:
             print("Exception in trig_edit load_state")
             traceback.print_exc()
 
-    def save_state(self):
+    async def save_state(self):
         try:
             state = {}
             for (
             instrument_short_name
-            ) in self.get_all_distinct_instrument_short_names_helper():
-                devices = self.get_instrument_devices(instrument_short_name)
+            ) in await self.get_all_distinct_instrument_short_names_helper():
+                devices = await self.get_instrument_devices(instrument_short_name)
                 instrument_state = {instrument_short_name: []}
                 # TODO: This breaks with Switches
                 # Getting the right device for slot
@@ -223,7 +225,7 @@ class OSCMode(PyshaMode):
                         elif isinstance(control, OSCControlSwitch):
                             nested_values = []
                             nested_values.append(control.value)
-                            active_group = control.get_active_group()
+                            active_group = await control.get_active_group()
                             for nested_control in active_group.controls:
                                 nested_values.append(nested_control.value)
                             # print(control.label, nested_values)
@@ -243,65 +245,65 @@ class OSCMode(PyshaMode):
 
 
 
-    def close_transports(self):
+    async def close_transports(self):
         for instrument in self.app.instruments:
-            self.app.instruments[instrument].close_transports()
+            await self.app.instruments[instrument].close_transports()
 
-    def get_all_distinct_instrument_short_names_helper(self):
+    async def get_all_distinct_instrument_short_names_helper(self):
         return (
-            self.app.instrument_selection_mode.get_all_distinct_instrument_short_names()
+            await self.app.instrument_selection_mode.get_all_distinct_instrument_short_names()
         )
 
-    def get_current_instrument_color_helper(self):
-        return self.app.instrument_selection_mode.get_current_instrument_color()
+    async def get_current_instrument_color_helper(self):
+        return await self.app.instrument_selection_mode.get_current_instrument_color()
 
-    def get_current_instrument_short_name_helper(self):
-        return self.app.instrument_selection_mode.get_current_instrument_short_name()
+    async def get_current_instrument_short_name_helper(self):
+        return await self.app.instrument_selection_mode.get_current_instrument_short_name()
 
-    def get_current_instrument_devices(self):
-        instrument_shortname = self.get_current_instrument_short_name_helper()
+    async def get_current_instrument_devices(self):
+        instrument_shortname = await self.get_current_instrument_short_name_helper()
         instrument = self.app.instruments.get(instrument_shortname, None)
         return instrument.current_devices
 
-    def get_instrument_devices(self, instrument_short_name):
+    async def get_instrument_devices(self, instrument_short_name):
         instrument = self.app.instruments.get(instrument_short_name, None)
         return instrument.current_devices
 
-    def get_current_instrument_page_devices(self):
-        instrument_shortname = self.get_current_instrument_short_name_helper()
+    async def get_current_instrument_page_devices(self):
+        instrument_shortname = await self.get_current_instrument_short_name_helper()
         instrument = self.app.instruments.get(instrument_shortname, None)
         if self.instrument_page == 0:
             return instrument.current_devices
         elif self.instrument_page == 1:
             return instrument.devices_modulation
 
-    def query_devices(self):
-        self.app.instruments[self.get_current_instrument_short_name_helper()].query_slots()
+    async def query_devices(self):
+        await self.app.instruments[self.get_current_instrument_short_name_helper()].query_slots()
         # devices = self.get_current_instrument_devices()
         # for device in devices:
         #     device.query()
 
-    def get_current_instrument(self):
-        instrument = self.app.instruments[self.get_current_instrument_short_name_helper()]
+    async def get_current_instrument(self):
+        instrument = self.app.instruments[await self.get_current_instrument_short_name_helper()]
         if instrument:
             return instrument
 
-    def get_current_instrument_device(self):
-        device, __ = self.get_current_instrument_device_and_page()
+    async def get_current_instrument_device(self):
+        device, __ = await self.get_current_instrument_device_and_page()
         return device
 
-    def get_current_instrument_device_and_page(self):
+    async def get_current_instrument_device_and_page(self):
         device_idx, page = self.current_device_index_and_page
-        devices = self.get_current_instrument_page_devices()
+        devices = await self.get_current_instrument_page_devices()
         current_device = devices[device_idx]
         return (current_device, page)
 
-    def get_current_slot_devices(self):
+    async def get_current_slot_devices(self):
         instrument_shortname = (
-            self.app.osc_mode.get_current_instrument_short_name_helper()
+            await self.app.osc_mode.get_current_instrument_short_name_helper()
         )
         instrument = self.app.instruments.get(instrument_shortname, None)
-        current_device = self.app.osc_mode.get_current_instrument_device()
+        current_device = await self.app.osc_mode.get_current_instrument_device()
         current_device_slot = current_device.slot
 
         devices_in_current_slot = []
@@ -315,7 +317,7 @@ class OSCMode(PyshaMode):
 
         return devices_in_current_slot_sorted
 
-    def update_current_device_page(self, new_device=None, new_page=None):
+    async def update_current_device_page(self, new_device=None, new_page=None):
         current_device_idx, current_page = self.current_device_index_and_page
         result = [current_device_idx, current_page]
 
@@ -330,27 +332,27 @@ class OSCMode(PyshaMode):
             result[1] = new_page
 
         self.current_device_index_and_page = result
-        new_current_device = self.get_current_instrument_device()
+        new_current_device = await self.get_current_instrument_device()
         # self.query_devices()
         new_current_device.set_page(new_page)
         self.app.buttons_need_update = True
 
-    def update_current_instrument_page(self, new_device=None, new_instrument_page=None):
+    async def update_current_instrument_page(self, new_device=None, new_instrument_page=None):
         # TODO: Make this page switching work with more instrument pages
         # if for some reason someone wants more than 16 devices
         
         # Only pages when you're not trying to pick a new device
-        if self.app.is_mode_active(self.app.menu_mode) == False:
+        if await self.app.is_mode_active(self.app.menu_mode) == False:
             self.instrument_page = new_instrument_page
             self.app.buttons_need_update = True
-            self.query_all_instrument_page_params()
+            await self.query_all_instrument_page_params()
 
-    def query_all_instrument_page_params(self):
-        current_instrument_devices = self.get_current_instrument_page_devices()
+    async def query_all_instrument_page_params(self):
+        current_instrument_devices = await self.get_current_instrument_page_devices()
         for device in current_instrument_devices:
-            device.query_all_controls()
+            await device.query_all_controls()
 
-    def new_instrument_selected(self):
+    async def new_instrument_selected(self):
         pass
         # self.query_devices()
         # if new_instrument:
@@ -358,23 +360,23 @@ class OSCMode(PyshaMode):
         #         print(device)
         #         device.query_visible_controls()
 
-    def activate(self):
+    async def activate(self):
         # self.query_devices()
-        self.update_buttons()
+        await self.update_buttons()
 
-    def deactivate(self):
+    async def deactivate(self):
         for button_name in self.upper_row_button_names + [
             push2_python.constants.BUTTON_PAGE_LEFT,
             push2_python.constants.BUTTON_PAGE_RIGHT,
         ]:
-            self.push.buttons.set_button_color(button_name, definitions.BLACK)
+            await self.push.buttons.set_button_color(button_name, definitions.BLACK)
 
-    def update_buttons(self):
-        current_device = self.get_current_instrument_device()
-        instrument_name = self.get_current_instrument_short_name_helper()
+    async def update_buttons(self):
+        current_device = await self.get_current_instrument_device()
+        instrument_name = await self.get_current_instrument_short_name_helper()
         pad_state = self.app.metro_sequencer_mode.metro_seq_pad_state[instrument_name]
         seq_pad_state = pad_state[self.app.metro_sequencer_mode.selected_track]
-        seq = self.app.metro_sequencer_mode.instrument_sequencers[self.get_current_instrument_short_name_helper()]
+        seq = self.app.metro_sequencer_mode.instrument_sequencers[await self.get_current_instrument_short_name_helper()]
         index = None
         try:
             index = self.app.steps_held[0]
@@ -385,13 +387,13 @@ class OSCMode(PyshaMode):
                 if index != None:
                     for value in seq.locks[index*8][count+self.instrument_page]:
                         if value != None:
-                            self.push.buttons.set_button_color(name, definitions.WHITE)
+                            await self.push.buttons.set_button_color(name, definitions.WHITE)
                 else:
-                    self.push.buttons.set_button_color(name, self.get_current_instrument_color_helper())
+                    await self.push.buttons.set_button_color(name,await self.get_current_instrument_color_helper())
             else:
-                self.push.buttons.set_button_color(name, definitions.BLACK)
+                await self.push.buttons.set_button_color(name, definitions.BLACK)
 
-        show_prev, show_next = current_device.get_next_prev_pages()
+        show_prev, show_next = await current_device.get_next_prev_pages()
         if show_prev:
             self.push.buttons.set_button_color(
                 push2_python.constants.BUTTON_PAGE_LEFT, definitions.WHITE
@@ -426,26 +428,26 @@ class OSCMode(PyshaMode):
                 push2_python.constants.BUTTON_RIGHT, definitions.BLACK
             )
 
-    def update_display(self, ctx, w, h):
+    async def update_display(self, ctx, w, h):
         """
         If settings mode is active, don't draw the upper parts of the screen
         because settings page will "cover them"
         """
-        if not self.app.is_mode_active(self.app.settings_mode):
+        if not await self.app.is_mode_active(self.app.settings_mode):
             # Draw OSCDevice names
-            devices = self.get_current_instrument_page_devices()
+            devices = await  self.get_current_instrument_page_devices()
             if devices:
                 height = 20
                 for i, device in enumerate(devices):
                     show_text(ctx, i, 0, device.label, background_color=definitions.RED)
 
                     is_selected = False
-                    selected_device, _ = self.get_current_instrument_device_and_page()
+                    selected_device, _ = await self.get_current_instrument_device_and_page()
                     if selected_device == device:
                         is_selected = True
 
                     current_instrument_color = (
-                        self.get_current_instrument_color_helper()
+                        await self.get_current_instrument_color_helper()
                     )
                     if is_selected:
                         background_color = current_instrument_color
@@ -464,20 +466,20 @@ class OSCMode(PyshaMode):
                     )
 
             # Draw OSCControls
-            device = self.get_current_instrument_device()
+            device = await self.get_current_instrument_device()
             if device:
-                device.draw(ctx)
+                await device.draw(ctx)
 
-    def on_button_pressed(self, button_name):
-        selected_device, _ = self.get_current_instrument_device_and_page()
-        show_prev, show_next = selected_device.get_next_prev_pages()
-        _, current_page = self.get_current_instrument_device_and_page()
+    async def on_button_pressed(self, button_name):
+        selected_device, _ = await self.get_current_instrument_device_and_page()
+        show_prev, show_next = await selected_device.get_next_prev_pages()
+        _, current_page = await self.get_current_instrument_device_and_page()
 
         if button_name in self.upper_row_button_names:
             if self.app.sequencer_mode.show_scale_menu != True:
                 if self.app.metro_sequencer_mode.show_scale_menu != True:
-                    current_instrument_devices = self.get_current_instrument_page_devices()
-                    _, current_page = self.get_current_instrument_device_and_page()
+                    current_instrument_devices = await self.get_current_instrument_page_devices()
+                    _, current_page = await self.get_current_instrument_device_and_page()
 
                     idx = self.upper_row_button_names.index(button_name)
                     if idx < len(current_instrument_devices):
@@ -494,35 +496,35 @@ class OSCMode(PyshaMode):
                             )
                         )
 
-                        self.update_current_device_page(idx, new_page=new_page)
+                        await self.update_current_device_page(idx, new_page=new_page)
                     return True
         elif button_name in self.lower_row_button_names:
-            self.update_current_device_page(new_page=0)  # Reset page on new instrument
+            await self.update_current_device_page(new_page=0)  # Reset page on new instrument
         elif button_name in [
             push2_python.constants.BUTTON_PAGE_LEFT,
             push2_python.constants.BUTTON_PAGE_RIGHT,
         ]:
             if button_name == push2_python.constants.BUTTON_PAGE_LEFT and show_prev:
-                self.update_current_device_page(new_page=current_page - 1)
+                await self.update_current_device_page(new_page=current_page - 1)
             elif button_name == push2_python.constants.BUTTON_PAGE_RIGHT and show_next:
-                self.update_current_device_page(new_page=current_page + 1)
+                await self.update_current_device_page(new_page=current_page + 1)
             return True
 
         elif button_name in [
             push2_python.constants.BUTTON_LEFT,
             push2_python.constants.BUTTON_RIGHT,
         ]:
-            instrument_shortname = self.get_current_instrument_short_name_helper()
+            instrument_shortname = await self.get_current_instrument_short_name_helper()
             instrument = self.app.instruments.get(instrument_shortname, None)
-            instrument.update_current_devices()
+            await instrument.update_current_devices()
             if button_name == push2_python.constants.BUTTON_LEFT:
-                self.update_current_instrument_page(new_instrument_page=0)
+                await self.update_current_instrument_page(new_instrument_page=0)
             elif button_name == push2_python.constants.BUTTON_RIGHT:
-                self.update_current_instrument_page(new_instrument_page=1)
-            instrument.update_current_devices()
+                await self.update_current_instrument_page(new_instrument_page=1)
+            await instrument.update_current_devices()
             return True
 
-    def on_encoder_rotated(self, encoder_name, increment):
+    async def on_encoder_rotated(self, encoder_name, increment):
         try:
             metro = self.app.metro_sequencer_mode
             if encoder_name == push2_python.constants.ENCODER_TEMPO_ENCODER:
@@ -531,7 +533,7 @@ class OSCMode(PyshaMode):
                 self.app.global_timeline.tempo = self.app.tempo
                 self.app.add_display_notification(f'Tempo: {self.app.tempo}')
             if encoder_name == push2_python.constants.ENCODER_MASTER_ENCODER:
-                instrument_shortname = self.get_current_instrument_short_name_helper()
+                instrument_shortname = await self.get_current_instrument_short_name_helper()
                 instrument = self.app.instruments.get(instrument_shortname, None)
                 
                 if 0 < instrument.instrument_global_volume + 0.01 * increment < 1:
@@ -543,14 +545,14 @@ class OSCMode(PyshaMode):
                 if instrument.instrument_global_volume + 0.01 * increment > 1:
                     instrument.instrument_global_volume = 1
                     
-                instrument.send_message("/param/global/volume", float(instrument.instrument_global_volume))
+                await instrument.send_message("/param/global/volume", float(instrument.instrument_global_volume))
             # This call makes sure we always use the right enc_rot call
             # Because the seq has its own due to how param locks work
             elif len(self.app.steps_held) == 0 and metro.show_scale_menu == False:
-                current_device = self.get_current_instrument_device()
-                current_device.on_encoder_rotated(encoder_name, increment)
+                current_device = await self.get_current_instrument_device()
+                await current_device.on_encoder_rotated(encoder_name, increment)
             else:
-                metro.on_encoder_rotated(encoder_name, increment)
+                await metro.on_encoder_rotated(encoder_name, increment)
         except RateLimitException:
             pass
         except Exception as err:
@@ -559,12 +561,12 @@ class OSCMode(PyshaMode):
 
         return True  # Always return True because encoder should not be used in any other mode if this is first active
 
-    def on_encoder_touched(self, encoder_name):
+    async def on_encoder_touched(self, encoder_name):
         try:
-            current_device = self.get_current_instrument_device()
+            current_device = await self.get_current_instrument_device()
             if current_device.label == "Mod Matrix":
                 # TODO: something is bugged when this func gets called, only with encoder 7 (one for deleting)
-                current_device.on_encoder_touched(encoder_name)
+                await current_device.on_encoder_touched(encoder_name)
 
             else:
                 pass
@@ -573,12 +575,13 @@ class OSCMode(PyshaMode):
             print("Exception in on_encoder_touched in osc_mode")
             traceback.print_exc()
             pass  # Encoder not in list
-    def on_encoder_released(self, encoder_name):
+    
+    async def on_encoder_released(self, encoder_name):
         try:
-            current_device = self.get_current_instrument_device()
+            current_device = await self.get_current_instrument_device()
             if current_device.label == "Audio In":
                 # TODO: something is bugged when this func gets called, only with encoder 7 (one for deleting)
-                current_device.on_encoder_released(encoder_name)
+                await current_device.on_encoder_released(encoder_name)
 
             else:
                 pass

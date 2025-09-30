@@ -51,7 +51,7 @@ class OSCDevice(PyshaMode):
                     current_page.append(c)
         return pages
 
-    def __init__(
+    async def __init__(
         self, config, osc={"client": {}, "server": {}, "dispatcher": {}}, engine=None, **kwargs
     ):
         self.app = kwargs["app"]
@@ -136,33 +136,33 @@ class OSCDevice(PyshaMode):
 
     async def select(self):
 
-        instrument_shortname = self.app.osc_mode.get_current_instrument_short_name_helper()
+        instrument_shortname = await self.app.osc_mode.get_current_instrument_short_name_helper()
         instrument = self.app.instruments[instrument_shortname]
 
         await asyncio.sleep(0.1)
         for cmd in self.init:
-            self.send_message(cmd["address"], float(cmd["value"]))
+            await self.send_message(cmd["address"], float(cmd["value"]))
             # instrument.set_slot_state(cmd["address"], float(cmd["value"]))
             await asyncio.sleep(0.1)
     
 
 
-    def send_message(self, *args):
+    async def send_message(self, *args):
         self.log_out.debug(args)
-        return self.osc["client"].send_message(*args)
+        return await self.osc["client"].send_message(*args)
 
-    def query(self):
+    async def query(self):
         for control in self.get_visible_controls():
-            control.query()
+            await control.query()
 
-    def query_all(self):
+    async def query_all(self):
         print("device q all")
         for control in self.controls:
-            control.query()
+            await control.query()
 
-    def draw(self, ctx):
-        visible_controls = self.get_visible_controls()
-        instrument_name = self.app.metro_sequencer_mode.get_current_instrument_short_name_helper()
+    async def draw(self, ctx):
+        visible_controls = await self.get_visible_controls()
+        instrument_name = await self.app.metro_sequencer_mode.get_current_instrument_short_name_helper()
         
         seq = self.app.metro_sequencer_mode.instrument_sequencers[instrument_name]
         draw_lock = False
@@ -182,11 +182,11 @@ class OSCDevice(PyshaMode):
             if offset + 1 <= 8:
                 
                 # Draw the lock but only if the lock value is not None and pad is pressed
-                if step != None and seq.get_lock_state(step, offset + self.page * 8) != None:
-                    lock_value = seq.get_lock_state(step, offset + self.page * 8)
-                    control.draw(ctx, offset, draw_lock=draw_lock, lock_value=lock_value)
+                if step != None and await seq.get_lock_state(step, offset + self.page * 8) != None:
+                    lock_value = await seq.get_lock_state(step, offset + self.page * 8)
+                    await control.draw(ctx, offset, draw_lock=draw_lock, lock_value=lock_value)
                 else:
-                    control.draw(ctx, offset)
+                    await control.draw(ctx, offset)
                 offset += 1
         offset = 0
         try:
@@ -194,18 +194,18 @@ class OSCDevice(PyshaMode):
                 if offset + 1 <= 8:
                 
                     # Draw the lock but only if the lock value is not None and pad is pressed
-                    if step != None and seq.get_lock_state(step, offset+ other_page*8) != None:
-                        lock_value = seq.get_lock_state(step, offset+other_page*8)
-                        control.draw_submenu(ctx, offset, draw_lock=draw_lock, lock_value=lock_value)
+                    if step != None and await seq.get_lock_state(step, offset+ other_page*8) != None:
+                        lock_value = await seq.get_lock_state(step, offset+other_page*8)
+                        await control.draw_submenu(ctx, offset, draw_lock=draw_lock, lock_value=lock_value)
                     else:
-                        control.draw_submenu(ctx, offset)
+                        await control.draw_submenu(ctx, offset)
                     offset += 1
         except:
             pass
         
 
     
-    def get_next_prev_pages(self):
+    async def get_next_prev_pages(self):
         show_prev = False
         if self.page > 0:
             show_prev = True
@@ -216,28 +216,28 @@ class OSCDevice(PyshaMode):
 
         return show_prev, show_next
 
-    def set_page(self, page):
+    async def set_page(self, page):
         self.page = page
         # self.query_visible_controls()
         # print("PAGE: ", self.page)
         # print(*self.pages[self.page], sep="\n")
 
-    def query_visible_controls(self):
-        visible_controls = self.get_visible_controls()
+    async def query_visible_controls(self):
+        visible_controls = await self.get_visible_controls()
         for control in visible_controls:
             if hasattr(control, "address") and control.address is not None:
-                self.send_message("/q" + control.address, None)
+                await self.send_message("/q" + control.address, None)
 
-    def query_all_controls(self):
-        all_controls = self.get_all_controls()
+    async def query_all_controls(self):
+        all_controls = await self.get_all_controls()
         for control in all_controls:
             if hasattr(control, "address") and control.address is not None:
-                self.send_message("/q" + control.address, None)
+                await self.send_message("/q" + control.address, None)
 
-    def get_visible_controls(self):
+    async def get_visible_controls(self):
         return self.pages[self.page]
 
-    def get_all_controls(self):
+    async def get_all_controls(self):
         try:
             all_controls = self.pages[0] + self.pages[1]
         except:
@@ -245,11 +245,11 @@ class OSCDevice(PyshaMode):
         return all_controls
 
 
-    def on_encoder_rotated(self, encoder_name, increment):
+    async def on_encoder_rotated(self, encoder_name, increment):
         try:
             #This if statement is for setting post-synth volume levels
             if encoder_name == push2_python.constants.ENCODER_SWING_ENCODER:
-                instrument = self.app.osc_mode.get_current_instrument()
+                instrument = await self.app.osc_mode.get_current_instrument()
                 all_volumes = self.app.volumes
                 instrument_idx = instrument.osc_in_port % 10
                 track_L_volume = all_volumes[instrument_idx * 2]
@@ -268,7 +268,7 @@ class OSCDevice(PyshaMode):
                 all_volumes[instrument_idx*2] = track_L_volume
                 all_volumes[instrument_idx*2 +1] = track_R_volume
                 self.app.volumes = all_volumes
-                self.app.set_main_volumes()
+                await self.app.set_main_volumes()
             else: 
                 encoder_idx = [
                     push2_python.constants.ENCODER_TRACK1_ENCODER,
@@ -281,9 +281,9 @@ class OSCDevice(PyshaMode):
                     push2_python.constants.ENCODER_TRACK8_ENCODER,
                 ].index(encoder_name)
                 if self.app.sequencer_mode.disable_controls == False and self.app.metro_sequencer_mode.disable_controls == False:
-                    visible_controls = self.get_visible_controls()
+                    visible_controls = await self.get_visible_controls()
                     control = visible_controls[encoder_idx]
-                    control.update_value(increment)
+                    await control.update_value(increment)
                     
                     # Update state with current control value
                     # instrument_shortname = self.app.osc_mode.get_current_instrument_short_name_helper()

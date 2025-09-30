@@ -47,57 +47,57 @@ class MuteMode(MelodicMode):
     disable_controls = False
     tracks_active ={}
     
-    def initialize(self, settings):
-        super().initialize(settings)
+    async def initialize(self, settings):
+        await super().initialize(settings)
     
         for (
             instrument_short_name
-        ) in self.get_all_distinct_instrument_short_names_helper():
+        ) in await self.get_all_distinct_instrument_short_names_helper():
             self.tracks_active[instrument_short_name] = {}
             for track_name in TRACK_NAMES:
                 self.tracks_active[instrument_short_name][track_name] = True
 
-    def get_settings_to_save(self):
+    async def get_settings_to_save(self):
         return {}
 
-    def pad_ij_to_midi_note(self, pad_ij):
+    async def pad_ij_to_midi_note(self, pad_ij):
         return self.sequencer_pad_matrix[pad_ij[0]][pad_ij[1]]
 
-    def update_octave_buttons(self):
+    async def update_octave_buttons(self):
         # Rhythmic does not have octave buttons
         pass
 
-    def get_all_distinct_instrument_short_names_helper(self):
+    async def get_all_distinct_instrument_short_names_helper(self):
         return (
-            self.app.instrument_selection_mode.get_all_distinct_instrument_short_names()
+            await self.app.instrument_selection_mode.get_all_distinct_instrument_short_names()
         )
 
-    def get_current_instrument_short_name_helper(self):
+    async def get_current_instrument_short_name_helper(self):
         return self.app.instrument_selection_mode.get_current_instrument_short_name()
 
-    def get_current_instrument_osc_port(self):
-        return self.app.instrument_selection_mode.get_current_instrument_info()[
+    async def get_current_instrument_osc_port(self):
+        return await self.app.instrument_selection_mode.get_current_instrument_info()[
             "osc_out_port"
         ]
 
-    def get_current_instrument_color_helper(self):
-        return self.app.instrument_selection_mode.get_current_instrument_color()
+    async def get_current_instrument_color_helper(self):
+        return await self.app.instrument_selection_mode.get_current_instrument_color()
 
-    def new_instrument_selected(self):
+    async def new_instrument_selected(self):
         pass
 
-    def update_display(self, ctx, w, h):
+    async def update_display(self, ctx, w, h):
         pass
 
-    def update_pads(self):
+    async def update_pads(self):
         try:
-            instrument_name = self.get_current_instrument_short_name_helper()
+            instrument_name = await self.get_current_instrument_short_name_helper()
             seq_pad_state = self.tracks_active
             button_colors = [definitions.OFF_BTN_COLOR] * 64
             # Takes state of mutes and lights up the pads accordingly
             for (inst_index, 
                 instrument_short_name
-                ) in enumerate(self.get_all_distinct_instrument_short_names_helper()):
+                ) in enumerate(await self.get_all_distinct_instrument_short_names_helper()):
                 for track_index, track_name in enumerate(TRACK_NAMES):
                     pad_idx = inst_index + 8 * track_index
 
@@ -114,7 +114,7 @@ class MuteMode(MelodicMode):
                 chunk, button_colors = button_colors[:8], button_colors[8:]
                 button_colors_array.append(chunk)
 
-            self.push.pads.set_pads_color(button_colors_array)
+            await self.push.pads.set_pads_color(button_colors_array)
         except Exception as exception:
             exception_message = str(exception)
             exception_type, exception_object, exception_traceback = sys.exc_info()
@@ -124,11 +124,11 @@ class MuteMode(MelodicMode):
                 f"{exception_message} {exception_type} {filename}, Line {exception_traceback.tb_lineno}"
             )
 
-    def on_pad_pressed(self, pad_n, pad_ij, velocity):
+    async def on_pad_pressed(self, pad_n, pad_ij, velocity):
 
         for (inst_index, 
                 instrument_short_name
-                ) in enumerate(self.get_all_distinct_instrument_short_names_helper()):
+                ) in enumerate(await self.get_all_distinct_instrument_short_names_helper()):
                 for track_index, track_name in enumerate(TRACK_NAMES):
                     # print(pad_ij[1], inst_index, "ssss",pad_ij[0], track_index)
                     if pad_ij[1] == inst_index and pad_ij[0] == track_index:
@@ -141,20 +141,21 @@ class MuteMode(MelodicMode):
                             self.tracks_active[instrument_short_name][track_name] = False
         self.app.pads_need_update = True
 
-    def on_button_pressed(self, button_name):
+    async def on_button_pressed(self, button_name):
         if button_name in track_button_names:
             idx = track_button_names.index(button_name)
             self.app.metro_sequencer_mode.selected_track = TRACK_NAMES_METRO[idx]
-            self.app.trig_edit_mode.update_state()
+            await self.app.trig_edit_mode.update_state()
             self.app.buttons_need_update = True
             self.app.pads_need_update = True
-            self.app.set_metro_sequencer_mode()
+            await self.app.set_metro_sequencer_mode()
+        
         elif button_name == push2_python.constants.BUTTON_PLAY:
             metro = self.app.metro_sequencer_mode
             if metro.sequencer_is_playing == False:
-                metro.start_timeline()
+                await metro.start_timeline()
                 metro.sequencer_is_playing = True
 
             elif metro.sequencer_is_playing == True:
-                metro.stop_timeline()
+                await metro.stop_timeline()
                 metro.sequencer_is_playing = False

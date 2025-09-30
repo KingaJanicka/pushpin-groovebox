@@ -19,7 +19,7 @@ class Instrument(PyshaMode):
     engine = None
     timeline = None
 
-    def __init__(
+    async def __init__(
         self,
         instrument_short_name,
         instrument_definition,
@@ -157,9 +157,9 @@ class Instrument(PyshaMode):
                 if 8 <= slot_idx <= 15:
                     self.devices_modulation.append(device)
 
-        self.update_current_devices()
+        await self.update_current_devices()
 
-    def update_current_devices(self):
+    async def update_current_devices(self):
         updated_devices = []
         for slot_idx, slot_devices in enumerate(self.devices):
             for device in slot_devices:
@@ -175,7 +175,7 @@ class Instrument(PyshaMode):
     
 
 
-    def set_slot_state(self, *resp):
+    async def set_slot_state(self, *resp):
         address, value, *rest = resp
         # print(f"Setting state of slot {address} to {value}")
         for slot in self.slots:
@@ -186,9 +186,9 @@ class Instrument(PyshaMode):
                     instrument_name = self.name
                     engine = self.app.instruments[instrument_name].engine
                     for external_instrument in self.app.external_instruments:
-                        self.app.queue.append(external_instrument.engine.configure_pipewire())
+                        await external_instrument.engine.configure_pipewire()
                     if engine.puredata_process_id == None:
-                        self.app.queue.append(engine.start_pd_node())
+                        await engine.start_pd_node()
 
                 if 'param/a/osc/' in slot["address"] and value != 4 and slot["value"] == 4:
                     instrument_name = self.name
@@ -197,13 +197,13 @@ class Instrument(PyshaMode):
                     # This if statemant is so that we don't kill a duplex node if 
                     # another instance of audio-in device is active
                     if self.slots[0]["value"] != 4 or self.slots[1]["value"] != 4:
-                        self.app.queue.append(engine.kill_pd_node())
+                        await engine.kill_pd_node()
 
 
                 if float(slot["value"]) != float(value):
                     slot["value"] = float(value)
                     break
-        self.update_current_devices()
+        await self.update_current_devices()
                 
 
     async def init_devices(self):
@@ -234,31 +234,31 @@ class Instrument(PyshaMode):
 
 
 
-    def query_devices(self):
+    async def query_devices(self):
         for slot_idx, slot_devices in enumerate(self.devices):
             for device in slot_devices:
                 if slot_idx == 2 or slot_idx == 3 or slot_idx == 4:
-                    device.query_visible_controls()
+                    await device.query_visible_controls()
                 else:
                     slot = self.slots[slot_idx]
                     for init in device.init:
                         if init["address"] == slot["address"] and int(
                             init["value"]
                         ) == float(slot["value"]):
-                            device.query_visible_controls()
+                            await device.query_visible_controls()
 
-    def query_all_controls(self):
+    async def query_all_controls(self):
         for slot_idx, slot_devices in enumerate(self.devices):
             for device in slot_devices:
                 if slot_idx == 2 or slot_idx == 3 or slot_idx == 4:
-                    device.query_all_controls()
+                    await device.query_all_controls()
                 else:
                     slot = self.slots[slot_idx]
                     for init in device.init:
                         if init["address"] == slot["address"] and int(
                             init["value"]
                         ) == float(slot["value"]):
-                            device.query_all_controls()
+                            await device.query_all_controls()
 
     """
     Initialise OSC servers and add to transport array so they can be gracefully closed
@@ -276,13 +276,13 @@ class Instrument(PyshaMode):
 
             self.transports.append(transport)
             self.log_out.debug(f"Receiving OSC on port {self.osc_out_port}")
-            self.query_slots()
-            self.query_devices()
+            await self.query_slots()
+            await self.query_devices()
             
             # This starts the Surge-XT instances
             asyncio.create_task(self.engine.start())
 
-    def query_all_params(self):
+    async def query_all_params(self):
         # TODO: this is broken
         # # print(self.devices)
         # for device in self.devices:
@@ -291,15 +291,15 @@ class Instrument(PyshaMode):
         client = self.osc["client"]
         if client:
             # print(f"Querying all_params on {self.name}")
-            client.send_message("/q/all_params", None)
+            await client.send_message("/q/all_params", None)
 
-    def query_slots(self):
+    async def query_slots(self):
         client = self.osc["client"]
         if client:
             for slot in self.slots:
                 if slot:
                     # print(f'querrying slot /q{slot["address"]}')
-                    client.send_message(f'/q{slot["address"]}', None)
+                    await client.send_message(f'/q{slot["address"]}', None)
 
     """
     Close transports on ctrl+c
@@ -307,13 +307,13 @@ class Instrument(PyshaMode):
     @TODO is this still needed?
     """
 
-    def close_transports(self):
+    async def close_transports(self):
         # print("Closing transports")
         # for transport in self.transports:
         #     transport.close()
         pass
 
-    def send_message(self, *args):
+    async def send_message(self, *args):
         client = self.osc["client"]
         if client:
-            return client.send_message(*args)
+            return await client.send_message(*args)

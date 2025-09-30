@@ -160,50 +160,50 @@ class Engine(ABC):
                         #     self.pw_ports["input"].append(port)
 
 
-    def stop(self):
+    async def stop(self):
         self.process.kill()
 
-    def setVolume(self, volume):
+    async def setVolume(self, volume):
         setVolumeByPipewireID(pipewire_id=self.pipewireID, volume=volume)
 
-    def connectNodes(self, source_node_id, dest_node_id):
-        connectPipewireSourceToPipewireDest(
+    async def connectNodes(self, source_node_id, dest_node_id):
+        await connectPipewireSourceToPipewireDest(
             source_id=source_node_id, dest_id=dest_node_id
         )
 
-    def connectEngineToNode(self, dest_node_id):
+    async def connectEngineToNode(self, dest_node_id):
         if not self.pipewireID:
             raise Exception("Pipewire not instantiated")
 
         source_node_id = self.pipewireID  # TODO does this actually take a PWID?
-        connectPipewireSourceToPipewireDest(
+        await connectPipewireSourceToPipewireDest(
             source_id=source_node_id, dest_id=dest_node_id
         )
 
-    def connectNodeToEngine(self, source_node_id):
+    async def connectNodeToEngine(self, source_node_id):
         if not self.pipewireID:
             raise Exception("Pipewire not instantiated")
 
         dest_node_id = self.pipewireID  # TODO does this actually take a PWID?
-        connectPipewireSourceToPipewireDest(
+        await connectPipewireSourceToPipewireDest(
             source_id=source_node_id, dest_id=dest_node_id
         )
 
-    def disconnectEngineToNode(self, dest_node_id):
+    async def disconnectEngineToNode(self, dest_node_id):
         if not self.pipewireID:
             raise Exception("Pipewire not instantiated")
 
         source_node_id = self.pipewireID  # TODO does this actually take a PWID?
-        disconnectPipewireSourceFromPipewireDest(
+        await disconnectPipewireSourceFromPipewireDest(
             source_id=source_node_id, dest_id=dest_node_id
         )
 
-    def disconnectNodeToEngine(self, source_node_id):
+    async def disconnectNodeToEngine(self, source_node_id):
         if not self.pipewireID:
             raise Exception("Pipewire not instantiated")
 
         dest_node_id = self.pipewireID  # TODO does this actually take a PWID?
-        disconnectPipewireSourceFromPipewireDest(
+        await disconnectPipewireSourceFromPipewireDest(
             source_id=source_node_id, dest_id=dest_node_id
         )
 
@@ -451,9 +451,9 @@ class SurgeXTEngine(Engine):
             await disconnectPipewireLink(link['id'])
 
     async def configure_duplex_node(self):
-        self.get_duplex_client()
-        self.get_duplex_node()
-        self.get_duplex_ports()
+        await self.get_duplex_client()
+        await self.get_duplex_node()
+        await self.get_duplex_ports()
         await self.disconnect_links_from_duplex_node()
         await self.connect_links_to_duplex_node()
   
@@ -518,7 +518,7 @@ class SurgeXTEngine(Engine):
         self.pd_process.kill()
         self.puredata_process_id = None
     
-    def get_duplex_client(self):
+    async def get_duplex_client(self):
         for item in self.app.pipewire:
             if item["type"] == "PipeWire:Interface:Client":
                 # print(item.get("info", {}).get("props", {}).get("application.process.id",None), self.puredata_process_id)
@@ -533,7 +533,7 @@ class SurgeXTEngine(Engine):
         return self.duplex_client
 
 
-    def get_duplex_node(self):
+    async def get_duplex_node(self):
         for node in self.app.pipewire:
             if node["type"] == "PipeWire:Interface:Node":
                 try:
@@ -546,13 +546,13 @@ class SurgeXTEngine(Engine):
         
         
 
-    def get_duplex_ports(self):
+    async def get_duplex_ports(self):
         ports = filter(
             lambda x: x["type"] == "PipeWire:Interface:Port", self.app.pipewire
         )
         unsorted_duplex_ports = []
         if not self.duplex_node:
-            self.get_duplex_node()
+            await self.get_duplex_node()
             
         for port in ports:
             # print(port["info"]["props"]["node.id"],  self.duplex_node["id"])
@@ -686,13 +686,13 @@ class SurgeXTEngine(Engine):
         pass
 
 
-    def getPID(self):
+    async def getPID(self):
         return self.PID
 
-    def getInstrumentPipewireID(self):
+    async def getInstrumentPipewireID(self):
         return self.pipewire["id"]
 
-    def getObjectSerial(self):
+    async def getObjectSerial(self):
         return self.pipewire["info"]["props"]["object.serial"]
 
     async def updateConfigPureData(self,):
@@ -832,13 +832,13 @@ class ExternalEngine(Engine):
             instrument_definition=instrument_definition,
         )
 
-    def getPID(self):
+    async def getPID(self):
         return self.PID
 
-    def getInstrumentPipewireID(self):
+    async def getInstrumentPipewireID(self):
         return self.pipewire["id"]
 
-    def getObjectSerial(self):
+    async def getObjectSerial(self):
         return self.pipewire["info"]["props"]["object.serial"]
 
     async def start(self):

@@ -23,7 +23,7 @@ class ModMatrixDevice(definitions.PyshaMode):
     def size(self):
         return 8
 
-    def __init__(
+    async def __init__(
         self,
         osc={"client": {}, "server": {}, "dispatcher": {}},
         engine=None,
@@ -127,9 +127,9 @@ class ModMatrixDevice(definitions.PyshaMode):
         #     )
         #     self.controls.append(control)
 
-        self.map_dispatchers()
+        await self.map_dispatchers()
 
-    def map_dispatchers(self):
+    async def map_dispatchers(self):
         for source in self.mod_sources_macros:
             self.dispatcher.map(source["address"], self.set_state)
 
@@ -139,7 +139,7 @@ class ModMatrixDevice(definitions.PyshaMode):
         for source in self.mod_sources_lfos:
             self.dispatcher.map(source["address"], self.set_state)
 
-    def set_state(self, source, *args):
+    async def set_state(self, source, *args):
         dest, depth, *rest = args
         new_mapping = [source, dest, depth]
         # print("New mod matrix mapping")
@@ -155,10 +155,10 @@ class ModMatrixDevice(definitions.PyshaMode):
 
                     # Update existing mapping
                     if round(current_mapping[2], 4) != round(new_mapping[2], 4):
-                        print("Updated mapping")
-                        print(self.mod_matrix_mappings[idx])
+                        # print("Updated mapping")
+                        # print(self.mod_matrix_mappings[idx])
                         self.mod_matrix_mappings[idx] = new_mapping
-                        print(self.mod_matrix_mappings[idx])
+                        # print(self.mod_matrix_mappings[idx])
                         # current_mapping = new_mapping
                         return
 
@@ -181,38 +181,38 @@ class ModMatrixDevice(definitions.PyshaMode):
         # print(self.mod_matrix_mappings)
 
 
-    def select(self):
-        self.query_all_mods()
-        time.sleep(0.1)
+    async def select(self):
+        await self.query_all_mods()
+        asyncio.sleep(0.1)
         self.is_active = True
-        self.snap_knobs_to_mod_matrix()
+        await self.snap_knobs_to_mod_matrix()
 
-    def send_message(self, *args):
+    async def send_message(self, *args):
         self.log_out.debug(args)
-        return self.osc["client"].send_message(*args)
+        return await self.osc["client"].send_message(*args)
 
-    def query(self):
+    async def query(self):
         pass
 
-    def query_all_mods(self):
-        self.mod_matrix_mappings.clear()
-        self.send_message("/q/all_mods", 0.0)
-        self.snap_knobs_to_mod_matrix()
+    async def query_all_mods(self):
+        self.mod_matrix_mappings = []
+        await self.send_message("/q/all_mods", 0.0)
+        await self.snap_knobs_to_mod_matrix()
 
-    def get_all_active_devices(self):
-        instrument = self.app.osc_mode.get_current_instrument()
-        devices = self.app.osc_mode.get_current_instrument_devices()
+    async def get_all_active_devices(self):
+        instrument = await self.app.osc_mode.get_current_instrument()
+        devices = await self.app.osc_mode.get_current_instrument_devices()
         return devices
 
-    def get_all_mod_matrix_devices(self):
-        instrument = self.app.osc_mode.get_current_instrument()
-        devices = self.app.osc_mode.get_current_instrument_devices()
+    async def get_all_mod_matrix_devices(self):
+        instrument = await self.app.osc_mode.get_current_instrument()
+        devices = await self.app.osc_mode.get_current_instrument_devices()
         for device in devices.copy():
             if device.modmatrix == False:
                 devices.remove(device)
         return devices
 
-    def get_mod_src_label(self, search):
+    async def get_mod_src_label(self, search):
         for src in self.mod_sources_internal:
             if src["address"] == search:
                 return src["label"]
@@ -231,8 +231,8 @@ class ModMatrixDevice(definitions.PyshaMode):
 
         return EMPTY_STRING
 
-    def get_mod_dest_label(self, search):
-        devices = self.app.osc_mode.get_current_instrument_devices()
+    async def get_mod_dest_label(self, search):
+        devices = await self.app.osc_mode.get_current_instrument_devices()
         for device in devices:
             for control in device.controls:
                 try:
@@ -243,64 +243,64 @@ class ModMatrixDevice(definitions.PyshaMode):
 
         return EMPTY_STRING
 
-    def get_device_in_slot(self, slot):
-        instrument = self.app.osc_mode.get_current_instrument()
-        devices = self.app.osc_mode.get_current_instrument_devices()
+    async def get_device_in_slot(self, slot):
+        instrument = await self.app.osc_mode.get_current_instrument()
+        devices = await self.app.osc_mode.get_current_instrument_devices()
         for device in devices:
             if device.slot == slot:
                 return device
 
-    def get_controls_for_device_in_slot(self, slot):
-        instrument = self.app.osc_mode.get_current_instrument()
-        devices = self.app.osc_mode.get_current_instrument_devices()
+    async def get_controls_for_device_in_slot(self, slot):
+        instrument = await self.app.osc_mode.get_current_instrument()
+        devices = await self.app.osc_mode.get_current_instrument_devices()
         for device in devices:
             if device.slot == slot:
-                controls = device.get_all_controls()
+                controls = await device.get_all_controls()
                 return controls
 
-    def get_all_mod_matrix_controls_for_device_in_slot(self, slot):
-        instrument = self.app.osc_mode.get_current_instrument()
-        devices = self.app.osc_mode.get_current_instrument_devices()
+    async def get_all_mod_matrix_controls_for_device_in_slot(self, slot):
+        instrument = await self.app.osc_mode.get_current_instrument()
+        devices = await self.app.osc_mode.get_current_instrument_devices()
         for device in devices:
             if device.slot == slot:
-                controls = device.get_all_controls()
+                controls = await device.get_all_controls()
                 for control in controls.copy():
                     if control.modmatrix == False:
                         controls.remove(control)
                 return controls
 
-    def get_color_helper(self):
-        return self.app.osc_mode.get_current_instrument_color_helper()
+    async def get_color_helper(self):
+        return await self.app.osc_mode.get_current_instrument_color_helper()
 
-    def draw(self, ctx):
+    async def draw(self, ctx):
 
         selected_src_cat = int(self.controls[self.src_cat_column])
         selected_src_type = int(self.controls[self.src_type_column])
-        devices = self.get_all_mod_matrix_devices()
+        devices = await self.get_all_mod_matrix_devices()
         selected_device = int(self.controls[self.device_column])
-        controls = self.get_all_mod_matrix_controls_for_device_in_slot(selected_device)
+        controls = await self.get_all_mod_matrix_controls_for_device_in_slot(selected_device)
         selected_control = int(self.controls[self.control_column])
 
         # This draws the controls for selecting and setting mod mappings
-        self.draw_src_column(
+        await self.draw_src_column(
             ctx, self.src_cat_column, self.all_mod_src, selected_src_cat
         )
-        self.draw_src_column(
+        await self.draw_src_column(
             ctx,
             self.src_cat_column + 1,
             self.all_mod_src[selected_src_cat]["values"],
             selected_src_type,
         )
-        self.draw_dest_column(ctx, self.device_column, devices, selected_device)
-        self.draw_dest_column(ctx, self.control_column, controls, selected_control)
-        self.draw_depth_slider(ctx, 4)
+        await self.draw_dest_column(ctx, self.device_column, devices, selected_device)
+        await self.draw_dest_column(ctx, self.control_column, controls, selected_control)
+        await self.draw_depth_slider(ctx, 4)
         show_text(
             ctx,
             self.set_mapping_column,
             30,
             "Set Mapping",
             height=15,
-            font_color=self.get_color_helper(),
+            font_color= await self.get_color_helper(),
         )
         show_text(
             ctx,
@@ -308,7 +308,7 @@ class ModMatrixDevice(definitions.PyshaMode):
             30,
             "Delete Mapping",
             height=15,
-            font_color=self.get_color_helper(),
+            font_color= await self.get_color_helper(),
         )
         show_text(
             ctx,
@@ -316,22 +316,22 @@ class ModMatrixDevice(definitions.PyshaMode):
             30,
             "Scroll Mappings",
             height=15,
-            font_color=self.get_color_helper(),
+            font_color= await self.get_color_helper(),
         )
 
-        visible_controls = self.get_visible_controls()
+        visible_controls = await self.get_visible_controls()
         mod_control = visible_controls[7]
-        self.draw_mod_src(
+        await self.draw_mod_src(
             ctx, self.mod_src_column, self.mod_matrix_mappings, int(mod_control)
         )
-        self.draw_mod_dest(
+        await self.draw_mod_dest(
             ctx, self.mod_src_column + 1, self.mod_matrix_mappings, int(mod_control)
         )
-        self.draw_mod_depth(
+        await self.draw_mod_depth(
             ctx, self.mod_src_column + 2, self.mod_matrix_mappings, int(mod_control)
         )
 
-    def draw_src_column(self, ctx, offset, list, selected_idx):
+    async def draw_src_column(self, ctx, offset, list, selected_idx):
         # Draw Device Names
         margin_top = 30
         next_prev_height = 15
@@ -390,7 +390,7 @@ class ModMatrixDevice(definitions.PyshaMode):
         )
 
         # Cur sel value
-        color = self.get_color_helper()
+        color = await self.get_color_helper()
         show_text(
             ctx,
             offset,
@@ -420,7 +420,7 @@ class ModMatrixDevice(definitions.PyshaMode):
             font_color=definitions.WHITE,
         )
 
-    def draw_dest_column(self, ctx, offset, list, selected_idx):
+    async def draw_dest_column(self, ctx, offset, list, selected_idx):
         # Draw Device Names
         margin_top = 30
         next_prev_height = 15
@@ -484,7 +484,7 @@ class ModMatrixDevice(definitions.PyshaMode):
         )
 
         # Cur sel value
-        color = self.get_color_helper()
+        color = await self.get_color_helper()
         show_text(
             ctx,
             offset,
@@ -514,7 +514,7 @@ class ModMatrixDevice(definitions.PyshaMode):
             font_color=definitions.WHITE,
         )
 
-    def draw_depth_slider(self, ctx, x_part):
+    async def draw_depth_slider(self, ctx, x_part):
 
         margin_top = 25
         # Param name
@@ -528,11 +528,11 @@ class ModMatrixDevice(definitions.PyshaMode):
             font_color=definitions.WHITE,
             center_horizontally=True,
         )
-        visible_controls = self.get_visible_controls()
+        visible_controls = await self.get_visible_controls()
         value = visible_controls[self.depth_control_column]
         # Param value
         val_height = 20
-        color = self.get_color_helper()
+        color = await self.get_color_helper()
         show_text(
             ctx,
             x_part,
@@ -596,7 +596,7 @@ class ModMatrixDevice(definitions.PyshaMode):
         ctx.fill_preserve()
         ctx.restore()
 
-    def draw_mod_src(self, ctx, offset, list, selected_idx):
+    async def draw_mod_src(self, ctx, offset, list, selected_idx):
         # Draw Device Names
         margin_top = 50
         next_prev_height = 15
@@ -610,7 +610,7 @@ class ModMatrixDevice(definitions.PyshaMode):
         if selected_idx - 2 >= 0:
             try:
                 prev_prev_label = (
-                    self.get_mod_src_label(list[selected_idx - 2][0]) or EMPTY_STRING
+                    await self.get_mod_src_label(list[selected_idx - 2][0]) or EMPTY_STRING
                 )
             except IndexError:
                 pass
@@ -619,27 +619,27 @@ class ModMatrixDevice(definitions.PyshaMode):
 
         if selected_idx - 1 >= 0:
             try:
-                prev_label = self.get_mod_src_label(list[selected_idx - 1][0])
+                prev_label = await self.get_mod_src_label(list[selected_idx - 1][0])
             except IndexError:
                 pass
             except Exception as e:
                 traceback.print_exc()
         try:
-            sel_label = self.get_mod_src_label(list[selected_idx][0])
+            sel_label = await self.get_mod_src_label(list[selected_idx][0])
         except IndexError:
             pass
         except Exception as e:
             traceback.print_exc()
 
         try:
-            next_label = self.get_mod_src_label(list[selected_idx + 1][0])
+            next_label = await self.get_mod_src_label(list[selected_idx + 1][0])
         except IndexError:
             pass
         except Exception as e:
             traceback.print_exc()
 
         try:
-            next_next_label = self.get_mod_src_label(list[selected_idx + 2][0])
+            next_next_label = await self.get_mod_src_label(list[selected_idx + 2][0])
         except IndexError:
             pass
         except Exception as e:
@@ -666,7 +666,7 @@ class ModMatrixDevice(definitions.PyshaMode):
         )
 
         # Cur sel value
-        color = self.get_color_helper()
+        color = await self.get_color_helper()
         show_text(
             ctx,
             offset,
@@ -696,7 +696,7 @@ class ModMatrixDevice(definitions.PyshaMode):
             font_color=definitions.WHITE,
         )
 
-    def draw_mod_dest(self, ctx, offset, list, selected_idx):
+    async def draw_mod_dest(self, ctx, offset, list, selected_idx):
         # Draw Device Names
         margin_top = 50
         next_prev_height = 15
@@ -709,7 +709,7 @@ class ModMatrixDevice(definitions.PyshaMode):
 
         if selected_idx - 2 >= 0:
             try:
-                prev_prev_label = self.get_mod_dest_label(list[selected_idx - 2][1])
+                prev_prev_label = await self.get_mod_dest_label(list[selected_idx - 2][1])
             except IndexError:
                 pass
             except Exception as e:
@@ -717,26 +717,26 @@ class ModMatrixDevice(definitions.PyshaMode):
 
         if selected_idx - 1 >= 0:
             try:
-                prev_label = self.get_mod_dest_label(list[selected_idx - 1][1])
+                prev_label = await self.get_mod_dest_label(list[selected_idx - 1][1])
             except IndexError:
                 pass
             except Exception as e:
                 traceback.print_exc()
 
         try:
-            sel_label = self.get_mod_dest_label(list[selected_idx][1])
+            sel_label = await self.get_mod_dest_label(list[selected_idx][1])
         except IndexError:
             pass
         except Exception as e:
             traceback.print_exc()
         try:
-            next_label = self.get_mod_dest_label(list[selected_idx + 1][1])
+            next_label = await self.get_mod_dest_label(list[selected_idx + 1][1])
         except IndexError:
             pass
         except Exception as e:
             traceback.print_exc()
         try:
-            next_next_label = self.get_mod_dest_label(list[selected_idx + 2][1])
+            next_next_label = await self.get_mod_dest_label(list[selected_idx + 2][1])
         except IndexError:
             pass
         except Exception as e:
@@ -763,7 +763,7 @@ class ModMatrixDevice(definitions.PyshaMode):
         )
 
         # Cur sel value
-        color = self.get_color_helper()
+        color = await self.get_color_helper()
         show_text(
             ctx,
             offset,
@@ -793,7 +793,7 @@ class ModMatrixDevice(definitions.PyshaMode):
             font_color=definitions.WHITE,
         )
 
-    def draw_mod_depth(self, ctx, offset, list, selected_idx):
+    async def draw_mod_depth(self, ctx, offset, list, selected_idx):
         # Draw Device Names
         margin_top = 50
         next_prev_height = 15
@@ -858,7 +858,7 @@ class ModMatrixDevice(definitions.PyshaMode):
         )
 
         # Cur sel value
-        color = self.get_color_helper()
+        color = await self.get_color_helper()
         show_text(
             ctx,
             offset,
@@ -888,52 +888,52 @@ class ModMatrixDevice(definitions.PyshaMode):
             font_color=definitions.WHITE,
         )
 
-    def get_next_prev_pages(self):
+    async def get_next_prev_pages(self):
         return False, False
 
-    def set_page(self, page):
+    async def set_page(self, page):
         self.select()
 
-    def query_visible_controls(self):
+    async def query_visible_controls(self):
         pass
 
-    def update_current_device_page(self, page):
+    async def update_current_device_page(self, page):
         pass
 
-    def query_all_controls(self):
+    async def query_all_controls(self):
         pass
 
-    def get_visible_controls(self):
+    async def get_visible_controls(self):
         return self.controls
 
-    def get_all_controls(self):
+    async def get_all_controls(self):
         return self.controls
 
-    def send_delete_message(self):
+    async def send_delete_message(self):
         mod_mapping = self.all_mod_src[int(self.controls[self.src_cat_column])][
             "values"
         ][int(self.controls[self.src_type_column])]
 
         selected_device = int(self.controls[int(self.device_column)])
-        control = self.get_all_mod_matrix_controls_for_device_in_slot(selected_device)
+        control = await self.get_all_mod_matrix_controls_for_device_in_slot(selected_device)
 
         # Send delete mapping message to Surge
         selected_control = self.controls[self.control_column]
-        self.send_message(
+        await self.send_message(
             f'{mod_mapping["address"]}',
             [str(control[int(selected_control)].address), float(0)],
         )
 
-        visible_controls = self.get_visible_controls()
+        visible_controls = await self.get_visible_controls()
         if (
             int(visible_controls[7] + 0.2) >= len(self.mod_matrix_mappings)
             and len(self.mod_matrix_mappings) - 1 >= 0
         ):
             visible_controls[7] = visible_controls[7] - 1
-        self.snap_knobs_to_mod_matrix()
+        await self.snap_knobs_to_mod_matrix()
 
-    def snap_knobs_to_mod_matrix(self):
-        visible_controls = self.get_visible_controls()
+    async def snap_knobs_to_mod_matrix(self):
+        visible_controls = await self.get_visible_controls()
         selected_entry = False
         try:
             selected_entry = self.mod_matrix_mappings[int(visible_controls[7])]
@@ -942,7 +942,7 @@ class ModMatrixDevice(definitions.PyshaMode):
         if not selected_entry:
             return
 
-        devices = self.get_all_mod_matrix_devices()
+        devices = await self.get_all_mod_matrix_devices()
         # Sets Mod source knobs
         for idx_cat, category in enumerate(self.all_mod_src):
             for idx_type, type in enumerate(category["values"]):
@@ -963,10 +963,10 @@ class ModMatrixDevice(definitions.PyshaMode):
         visible_controls[self.depth_control_column] = mod_depth_scaled
     
 
-    def on_encoder_rotated(self, encoder_name, increment):
+    async def on_encoder_rotated(self, encoder_name, increment):
         #This if statement is for setting post-synth volume levels
         if encoder_name == push2_python.constants.ENCODER_SWING_ENCODER:
-            instrument = self.app.osc_mode.get_current_instrument()
+            instrument = await self.app.osc_mode.get_current_instrument()
             all_volumes = self.app.volumes
             instrument_idx = instrument.osc_in_port % 10
             track_L_volume = all_volumes[instrument_idx * 2]
@@ -985,7 +985,7 @@ class ModMatrixDevice(definitions.PyshaMode):
             all_volumes[instrument_idx*2] = track_L_volume
             all_volumes[instrument_idx*2 +1] = track_R_volume
             self.app.volumes = all_volumes
-            self.app.set_main_volumes()
+            await self.app.set_main_volumes()
 
         
         try:
@@ -1002,11 +1002,11 @@ class ModMatrixDevice(definitions.PyshaMode):
         except ValueError as e:
             return
 
-        visible_controls = self.get_visible_controls()
+        visible_controls = await self.get_visible_controls()
         new_value = visible_controls[encoder_idx] + increment * 0.1
-        devices = self.get_all_mod_matrix_devices()
+        devices = await self.get_all_mod_matrix_devices()
         selected_device = int(self.controls[self.device_column])
-        controls = self.get_all_mod_matrix_controls_for_device_in_slot(selected_device)
+        controls = await self.get_all_mod_matrix_controls_for_device_in_slot(selected_device)
         if self.app.sequencer_mode.disable_controls == False and self.app.metro_sequencer_mode.disable_controls == False:
             match encoder_idx:
                 # First encoder
@@ -1054,9 +1054,9 @@ class ModMatrixDevice(definitions.PyshaMode):
                     src_type_idx = int(self.controls[self.src_type_column])
                     mod_mapping = self.all_mod_src[src_cat_idx]["values"][src_type_idx]
 
-                    devices = self.get_all_mod_matrix_devices()
+                    devices = await self.get_all_mod_matrix_devices()
                     selected_device_slot = int(self.controls[int(self.device_column)])
-                    device_controls = self.get_all_mod_matrix_controls_for_device_in_slot(
+                    device_controls = await self.get_all_mod_matrix_controls_for_device_in_slot(
                         selected_device_slot
                     )
 
@@ -1064,7 +1064,7 @@ class ModMatrixDevice(definitions.PyshaMode):
 
                     depth_scaled = (visible_controls[self.depth_control_column] - 0.5) * 2
 
-                    self.send_message(
+                    await self.send_message(
                         f'{mod_mapping["address"]}',
                         [
                             str(device_controls[int(selected_control)].address),
@@ -1083,9 +1083,9 @@ class ModMatrixDevice(definitions.PyshaMode):
                         visible_controls[encoder_idx] = (
                             visible_controls[encoder_idx] + increment * 0.1
                         )
-                        self.snap_knobs_to_mod_matrix()
+                        await self.snap_knobs_to_mod_matrix()
 
-    def on_encoder_touched(self, encoder_name):
+    async def on_encoder_touched(self, encoder_name):
         try:
             encoder_idx = [
                 push2_python.constants.ENCODER_TRACK1_ENCODER,
@@ -1103,5 +1103,5 @@ class ModMatrixDevice(definitions.PyshaMode):
 
         if encoder_idx == self.delete_mapping_column :
             if self.app.sequencer_mode.disable_controls == False and self.app.metro_sequencer_mode.disable_controls == False:
-                self.snap_knobs_to_mod_matrix()
-                self.send_delete_message()
+                await self.snap_knobs_to_mod_matrix()
+                await self.send_delete_message()

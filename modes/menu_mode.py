@@ -38,33 +38,33 @@ class MenuMode(PyshaMode):
     inter_message_message_min_time_ms = 4  # ms wait time after each message to DDRM
     is_active = False
 
-    def __init__(self, app, settings=None, send_osc_func=None):
-        super().__init__(app, settings=settings)
+    async def __init__(self, app, settings=None, send_osc_func=None):
+        await super().__init__(app, settings=settings)
         self.send_osc_func = send_osc_func
 
-    def should_be_enabled(self):
+    async def should_be_enabled(self):
         return True
 
-    def get_should_show_next_prev(self):
+    async def get_should_show_next_prev(self):
         show_prev = self.page_n == 1
         show_next = self.page_n == 0
         return show_prev, show_next
 
-    def activate(self):
-        instrument = self.app.osc_mode.get_current_instrument()
-        device = self.app.osc_mode.get_current_instrument_device()
-        devices_in_current_slot = self.app.osc_mode.get_current_slot_devices()
+    async def activate(self):
+        instrument = await self.app.osc_mode.get_current_instrument()
+        device = await self.app.osc_mode.get_current_instrument_device()
+        devices_in_current_slot = await self.app.osc_mode.get_current_slot_devices()
         for idx, item in enumerate(devices_in_current_slot):
             if item == device:
                 self.selected_menu_item_index = idx
 
-        self.update_buttons()
+        await self.update_buttons()
 
-    def deactivate(self):
-        current_device = self.app.osc_mode.get_current_instrument_device()
-        current_device.set_page(0)
+    async def deactivate(self):
+        current_device = await self.app.osc_mode.get_current_instrument_device()
+        await current_device.set_page(0)
         self.app.osc_mode.current_device_index_and_page[1] = 0
-        instrument = self.app.osc_mode.get_current_instrument()
+        instrument = await self.app.osc_mode.get_current_instrument()
         # print("called q slots")
         # TODO: This needs to be revised with state rewrite
         # old: I have no clue why the fricity frick this sleep needs to be here
@@ -73,11 +73,11 @@ class MenuMode(PyshaMode):
         # TODO: Still a problem and now increase of sleep does not help
         # WELP
         
-        time.sleep(0.2)
-        instrument.query_slots()
-        instrument.update_current_devices()
-        time.sleep(0.1)
-        current_device.query_all_controls()
+        asyncio.sleep(0.2)
+        await instrument.query_slots()
+        await instrument.update_current_devices()
+        asyncio.sleep(0.1)
+        await current_device.query_all_controls()
         for button_name in (
             self.upper_row_button_names
             + self.lower_row_button_names
@@ -88,8 +88,8 @@ class MenuMode(PyshaMode):
         ):
             self.push.buttons.set_button_color(button_name, definitions.BLACK)
 
-    def update_display(self, ctx, w, h):
-        devices_in_current_slot = self.app.osc_mode.get_current_slot_devices()
+    async def update_display(self, ctx, w, h):
+        devices_in_current_slot = await self.app.osc_mode.get_current_slot_devices()
         for idx, device in enumerate(devices_in_current_slot):
             if idx == self.selected_menu_item_index:
                 background_color = definitions.YELLOW
@@ -166,13 +166,13 @@ class MenuMode(PyshaMode):
                     rectangle_padding=1,
                 )
 
-    def update_buttons(self):
+    async def update_buttons(self):
         pass
 
-    def on_button_pressed(self, button_name):
-        devices_in_current_slot = self.app.osc_mode.get_current_slot_devices()
+    async def on_button_pressed(self, button_name):
+        devices_in_current_slot = await self.app.osc_mode.get_current_slot_devices()
         instrument_shortname = (
-            self.app.osc_mode.get_current_instrument_short_name_helper()
+            await self.app.osc_mode.get_current_instrument_short_name_helper()
         )
 
         if button_name is push2_constants.BUTTON_LEFT:
@@ -211,12 +211,12 @@ class MenuMode(PyshaMode):
                 # Using the blocking select call here
                 # to prevent a data race
                 # self.app.queue.append(selected_device.select())
-                selected_device.select_sync()
-                devices = self.app.osc_mode.get_current_instrument_devices()
+                selected_device.select()
+                devices = await self.app.osc_mode.get_current_instrument_devices()
                 for device in devices:
                     if device.label == selected_device.label:
-                        device.query_all_controls()
-                self.app.toggle_menu_mode()
+                        await device.query_all_controls()
+                await self.app.toggle_menu_mode()
                 self.app.buttons_need_update = True
             except IndexError:
                 # Do nothing because the button has no assigned tone
@@ -227,7 +227,7 @@ class MenuMode(PyshaMode):
             push2_python.constants.BUTTON_PAGE_LEFT,
             push2_python.constants.BUTTON_PAGE_RIGHT,
         ]:
-            show_prev, show_next = self.get_should_show_next_prev()
+            show_prev, show_next = await self.get_should_show_next_prev()
             if button_name == push2_python.constants.BUTTON_PAGE_LEFT and show_prev:
                 self.page_n = 0
             elif button_name == push2_python.constants.BUTTON_PAGE_RIGHT and show_next:

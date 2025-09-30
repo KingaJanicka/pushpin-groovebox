@@ -36,7 +36,7 @@ class SettingsMode(definitions.PyshaMode):
     encoders_state = {}
     is_running_sw_update = False
 
-    def move_to_next_page(self):
+    async def move_to_next_page(self):
         self.app.buttons_need_update = True
         self.current_page += 1
         if self.current_page >= self.n_pages:
@@ -44,21 +44,21 @@ class SettingsMode(definitions.PyshaMode):
             return True  # Return true because page rotation finished
         return False
 
-    def initialize(self, settings=None):
+    async def initialize(self, settings=None):
         current_time = time.time()
         for encoder_name in self.push.encoders.available_names:
             self.encoders_state[encoder_name] = {
                 "last_message_received": current_time,
             }
 
-    def activate(self):
+    async def activate(self):
         self.current_page = 0
-        self.update_buttons()
+        await self.update_buttons()
 
-    def deactivate(self):
-        self.set_all_upper_row_buttons_off()
+    async def deactivate(self):
+        await self.set_all_upper_row_buttons_off()
 
-    def check_for_delayed_actions(self):
+    async def check_for_delayed_actions(self):
         current_time = time.time()
 
         if self.app.midi_in_tmp_device_idx is not None:
@@ -99,7 +99,7 @@ class SettingsMode(definitions.PyshaMode):
                 )
                 self.app.notes_midi_in_tmp_device_idx = None
 
-    def set_all_upper_row_buttons_off(self):
+    async def set_all_upper_row_buttons_off(self):
         self.push.buttons.set_button_color(
             push2_python.constants.BUTTON_UPPER_ROW_1, definitions.OFF_BTN_COLOR
         )
@@ -125,7 +125,7 @@ class SettingsMode(definitions.PyshaMode):
             push2_python.constants.BUTTON_UPPER_ROW_8, definitions.OFF_BTN_COLOR
         )
 
-    def update_buttons(self):
+    async def update_buttons(self):
         if self.current_page == 0:  # Performance settings
             self.push.buttons.set_button_color(
                 push2_python.constants.BUTTON_UPPER_ROW_1, definitions.WHITE
@@ -214,7 +214,7 @@ class SettingsMode(definitions.PyshaMode):
                 push2_python.constants.BUTTON_UPPER_ROW_8, definitions.OFF_BTN_COLOR
             )
 
-    def update_display(self, ctx, w, h):
+    async def update_display(self, ctx, w, h):
 
         # Divide display in 8 parts to show different settings
         part_w = w // 8
@@ -235,7 +235,7 @@ class SettingsMode(definitions.PyshaMode):
 
             if self.current_page == 0:  # Performance settings
                 if i == 0:  # Root note
-                    if not self.app.is_mode_active(self.app.melodic_mode):
+                    if not await self.app.is_mode_active(self.app.melodic_mode):
                         color = definitions.get_color_rgb_float(
                             definitions.FONT_COLOR_DISABLED
                         )
@@ -527,13 +527,13 @@ class SettingsMode(definitions.PyshaMode):
                     font_size=20,
                 )
 
-    def on_encoder_rotated(self, encoder_name, increment):
+    async def on_encoder_rotated(self, encoder_name, increment):
 
         self.encoders_state[encoder_name]["last_message_received"] = time.time()
 
         if self.current_page == 0:  # Performance settings
             if encoder_name == push2_python.constants.ENCODER_TRACK1_ENCODER:
-                self.app.melodic_mode.set_root_midi_note(
+                await self.app.melodic_mode.set_root_midi_note(
                     self.app.melodic_mode.root_midi_note + increment
                 )
                 self.app.pads_need_update = True  # Using async update method because we don't really need immediate response here
@@ -542,29 +542,29 @@ class SettingsMode(definitions.PyshaMode):
                 if increment >= 3:  # Only respond to "big" increments
                     if not self.app.melodic_mode.use_poly_at:
                         self.app.melodic_mode.use_poly_at = True
-                        self.app.push.pads.set_polyphonic_aftertouch()
+                        await self.app.push.pads.set_polyphonic_aftertouch()
                 elif increment <= -3:
                     if self.app.melodic_mode.use_poly_at:
                         self.app.melodic_mode.use_poly_at = False
-                        self.app.push.pads.set_channel_aftertouch()
+                        await self.app.push.pads.set_channel_aftertouch()
 
             elif encoder_name == push2_python.constants.ENCODER_TRACK3_ENCODER:
-                self.app.melodic_mode.set_channel_at_range_start(
+                await self.app.melodic_mode.set_channel_at_range_start(
                     self.app.melodic_mode.channel_at_range_start + increment
                 )
 
             elif encoder_name == push2_python.constants.ENCODER_TRACK4_ENCODER:
-                self.app.melodic_mode.set_channel_at_range_end(
+                await self.app.melodic_mode.set_channel_at_range_end(
                     self.app.melodic_mode.channel_at_range_end + increment
                 )
 
             elif encoder_name == push2_python.constants.ENCODER_TRACK5_ENCODER:
-                self.app.melodic_mode.set_poly_at_max_range(
+                await self.app.melodic_mode.set_poly_at_max_range(
                     self.app.melodic_mode.poly_at_max_range + increment
                 )
 
             elif encoder_name == push2_python.constants.ENCODER_TRACK6_ENCODER:
-                self.app.melodic_mode.set_poly_at_curve_bending(
+                await self.app.melodic_mode.set_poly_at_curve_bending(
                     self.app.melodic_mode.poly_at_curve_bending + increment
                 )
 
@@ -590,7 +590,7 @@ class SettingsMode(definitions.PyshaMode):
                     self.app.midi_in_tmp_device_idx = -1  # Will use -1 for "None"
 
             elif encoder_name == push2_python.constants.ENCODER_TRACK2_ENCODER:
-                self.app.set_midi_in_channel(
+                await self.app.set_midi_in_channel(
                     self.app.midi_in_channel + increment, wrap=False
                 )
 
@@ -615,7 +615,7 @@ class SettingsMode(definitions.PyshaMode):
                     self.app.midi_out_tmp_device_idx = -1  # Will use -1 for "None"
 
             elif encoder_name == push2_python.constants.ENCODER_TRACK4_ENCODER:
-                self.app.set_midi_out_channel(
+                await self.app.set_midi_out_channel(
                     self.app.midi_out_channel + increment, wrap=False
                 )
 
@@ -651,11 +651,11 @@ class SettingsMode(definitions.PyshaMode):
 
         return True  # Always return True because encoder should not be used in any other mode if this is first active
 
-    def on_button_pressed(self, button_name):
+    async def on_button_pressed(self, button_name):
 
         if self.current_page == 0:  # Performance settings
             if button_name == push2_python.constants.BUTTON_UPPER_ROW_1:
-                self.app.melodic_mode.set_root_midi_note(
+                await self.app.melodic_mode.set_root_midi_note(
                     self.app.melodic_mode.root_midi_note + 1
                 )
                 self.app.pads_need_update = True
@@ -666,9 +666,9 @@ class SettingsMode(definitions.PyshaMode):
                     not self.app.melodic_mode.use_poly_at
                 )
                 if self.app.melodic_mode.use_poly_at:
-                    self.app.push.pads.set_polyphonic_aftertouch()
+                    await self.app.push.pads.set_polyphonic_aftertouch()
                 else:
-                    self.app.push.pads.set_channel_aftertouch()
+                    await self.app.push.pads.set_channel_aftertouch()
                 return True
 
         elif self.current_page == 1:  # MIDI settings

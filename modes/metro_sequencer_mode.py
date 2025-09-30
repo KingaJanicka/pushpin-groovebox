@@ -81,12 +81,12 @@ class MetroSequencerMode(MelodicMode):
     encoder_short_press_time = 400000000
     rachets = {}
     major_scale = [0,2,4,5,7,9,11,12]
-    def initialize(self, settings):
-        super().initialize(settings)
+    async def initialize(self, settings):
+        await super().initialize(settings)
         self.global_timeline = self.app.global_timeline
         for (
             instrument_short_name
-        ) in self.get_all_distinct_instrument_short_names_helper():
+        ) in await self.get_all_distinct_instrument_short_names_helper():
             self.instrument_sequencers[instrument_short_name] = SequencerMetro(
                 self.app.instruments[instrument_short_name],
                 self.sequencer_on_tick,
@@ -2147,14 +2147,14 @@ class MetroSequencerMode(MelodicMode):
                     [True, True, True, True, True, True, True, True],
                 ]
 
-    def reschedule_playhead_tracks(self):
+    async def reschedule_playhead_tracks(self):
         # unschedule
         # TODO: finish this func
         try:
             
             self.app.global_timeline.clear()
             
-            for (instrument_short_name) in self.get_all_distinct_instrument_short_names_helper():
+            for (instrument_short_name) in await self.get_all_distinct_instrument_short_names_helper():
                 sequencer = self.instrument_sequencers[instrument_short_name]
                 sequencer.playhead_track = sequencer.timeline.schedule(
                     {
@@ -2170,15 +2170,15 @@ class MetroSequencerMode(MelodicMode):
             print("Exception in reschedule_playhead_tracks", e)
         # self.timeline.unschedule(self.playhead_track)
 
-    def update_pads_to_seq_state(self):
+    async def update_pads_to_seq_state(self):
         for (
             instrument_short_name
-        ) in self.get_all_distinct_instrument_short_names_helper():
+        ) in await self.get_all_distinct_instrument_short_names_helper():
             seq = self.instrument_sequencers[instrument_short_name]
             
             # this updates all the pitch tracks
             pitch_track_name = TRACK_NAMES_METRO[0]
-            pitch_seq_track = seq.get_track_by_name(pitch_track_name)
+            pitch_seq_track = await seq.get_track_by_name(pitch_track_name)
             pitch_pad_state = self.metro_seq_pad_state[instrument_short_name][pitch_track_name]
             
             for idx in range(8):
@@ -2206,7 +2206,7 @@ class MetroSequencerMode(MelodicMode):
             
             # this updates all the octave tracks
             octave_track_name = TRACK_NAMES_METRO[1]
-            octave_seq_track = seq.get_track_by_name(octave_track_name)
+            octave_seq_track = await seq.get_track_by_name(octave_track_name)
             octave_pad_state = self.metro_seq_pad_state[instrument_short_name][octave_track_name]
             
             for idx in range(8):
@@ -2219,7 +2219,7 @@ class MetroSequencerMode(MelodicMode):
                         
             # this updates all the velocity tracks
             velocity_track_name = TRACK_NAMES_METRO[2]
-            velocity_seq_track = seq.get_track_by_name(velocity_track_name)
+            velocity_seq_track = await seq.get_track_by_name(velocity_track_name)
             velocity_pad_state = self.metro_seq_pad_state[instrument_short_name][velocity_track_name]
             
             for idx in range(8):
@@ -2232,7 +2232,7 @@ class MetroSequencerMode(MelodicMode):
             
             # this loop updates all the gate tracks
             gate_track_name = TRACK_NAMES_METRO[3]
-            gate_seq_track = seq.get_track_by_name(gate_track_name)
+            gate_seq_track = await seq.get_track_by_name(gate_track_name)
             gate_pad_state = self.metro_seq_pad_state[instrument_short_name][gate_track_name]
             for step_idx, step in enumerate(gate_seq_track):
                 step_x = int(step_idx / 8)
@@ -2241,7 +2241,7 @@ class MetroSequencerMode(MelodicMode):
             
             # this loop updates all the mutes/skips tracks
             mute_skip_track_name = TRACK_NAMES_METRO[4]
-            mute_skip_seq_track = seq.get_track_by_name(mute_skip_track_name)
+            mute_skip_seq_track = await seq.get_track_by_name(mute_skip_track_name)
             mute_skip_pad_state = self.metro_seq_pad_state[instrument_short_name][mute_skip_track_name]
             for step_idx, step in enumerate(mute_skip_seq_track):
                 step_x = int(step_idx / 8)
@@ -2251,7 +2251,7 @@ class MetroSequencerMode(MelodicMode):
                 
             # this updates all the velocity tracks
             lock_scale_track_name = TRACK_NAMES_METRO[5]
-            lock_scale_seq_track = seq.get_track_by_name(lock_scale_track_name)
+            lock_scale_seq_track = await seq.get_track_by_name(lock_scale_track_name)
             lock_scale_pad_state = self.metro_seq_pad_state[instrument_short_name][lock_scale_track_name]
             
             for idx in range(8):
@@ -2263,19 +2263,19 @@ class MetroSequencerMode(MelodicMode):
                         lock_scale_pad_state[7 - y][idx] = False
             
                 
-            self.update_pads()
+            await self.update_pads()
             self.app.pads_need_update = True
     
-    def load_state(self):
+    async def load_state(self):
         # pass
         # Loads seq state
         for (
             instrument_short_name
-        ) in self.get_all_distinct_instrument_short_names_helper():
-            self.instrument_sequencers[instrument_short_name].load_state()
+        ) in await self.get_all_distinct_instrument_short_names_helper():
+            await self.instrument_sequencers[instrument_short_name].load_state()
 
         # Loads Trig edit state
-        self.app.trig_edit_mode.load_state()
+        await self.app.trig_edit_mode.load_state()
 
         # # Loads Osc mode state
         # self.app.osc_mode.load_state()
@@ -2287,7 +2287,7 @@ class MetroSequencerMode(MelodicMode):
                 dump = json.load(open(self.scale_menu_filename))
             for (
                 instrument_short_name
-            ) in self.get_all_distinct_instrument_short_names_helper():
+            ) in await self.get_all_distinct_instrument_short_names_helper():
                 for track_name in TRACK_NAMES_METRO:
                     for idx, control in enumerate(
                         self.instrument_scale_edit_controls[instrument_short_name]
@@ -2300,16 +2300,16 @@ class MetroSequencerMode(MelodicMode):
             print("Exception in trig_edit load_state")
             traceback.print_exc()
 
-    def save_state(self):
+    async def save_state(self):
         # pass
         # Saves seq state
         scale_edit_state = {}
         try:
             for (
                 instrument_short_name
-            ) in self.get_all_distinct_instrument_short_names_helper():
+            ) in await self.get_all_distinct_instrument_short_names_helper():
 
-                self.instrument_sequencers[instrument_short_name].save_state()
+                await self.instrument_sequencers[instrument_short_name].save_state()
                 scale_edit_state[instrument_short_name] = {}
                 # Populates the temp scale_edit_state array with current state
                 scale_edit_state[instrument_short_name] = [
@@ -2339,36 +2339,35 @@ class MetroSequencerMode(MelodicMode):
             traceback.print_exc()
 
         # Saves Trig edit state
-        self.app.trig_edit_mode.save_state()
+        await self.app.trig_edit_mode.save_state()
 
         # # Saves Osc mode state
         # self.app.osc_mode.save_state()
 
-    def start_timeline(self):
+    async def start_timeline(self):
         self.global_timeline.background()
 
-    def stop_timeline(self):
+    async def stop_timeline(self):
         self.global_timeline.stop()
 
-    def activate(self):
+    async def activate(self):
         self.disable_controls = False
         self.draw_pads = True
         self.app.steps_held = []   
-        self.active_track_button_on()
+        await self.active_track_button_on()
         self.push.buttons.set_button_color(push2_constants.BUTTON_SCALE, definitions.GRAY_DARK)
 
-    def deactivate(self):
+    async def deactivate(self):
         self.app.steps_held = []
         self.show_scale_menu = False
         self.draw_pads = False
         self.disable_controls = False
-        self.all_track_buttons_off()
+        await self.all_track_buttons_off()
         self.push.buttons.set_button_color(push2_constants.BUTTON_SCALE, definitions.BLACK)
         
-    def active_track_button_on(self):
+    async def active_track_button_on(self):
         track_button = None
         track_color = None
-
         
         for idx in range(0, 6):
             if TRACK_NAMES_METRO[idx] == self.selected_track:
@@ -2378,57 +2377,57 @@ class MetroSequencerMode(MelodicMode):
             track_button = track_button_names[idx]
             self.push.buttons.set_button_color(track_button, track_color)
 
-    def all_track_buttons_off(self):
+    async def all_track_buttons_off(self):
         for idx in range(0, 6):
             track_button = track_button_names[idx]
             self.push.buttons.set_button_color(track_button, definitions.BLACK)
         
-    def get_settings_to_save(self):
+    async def get_settings_to_save(self):
         return {}
 
-    def pad_ij_to_midi_note(self, pad_ij):
+    async def pad_ij_to_midi_note(self, pad_ij):
         return self.sequencer_pad_matrix[pad_ij[0]][pad_ij[1]]
 
-    def index_to_pad_ij(self, index):
+    async def index_to_pad_ij(self, index):
         pad_j = index % 8
         pad_i = 7 - int(index / 8)
         pad_ij = [pad_i, pad_j]
         return pad_ij
 
-    def ij_to_index(self, i, j):
+    async def ij_to_index(self, i, j):
         idx = self.sequencer_pad_matrix[i][j] - 36
         return idx
 
-    def update_octave_buttons(self):
+    async def update_octave_buttons(self):
         # Rhythmic does not have octave buttons
         pass
 
-    def sequencer_on_tick(self, instrument_name, length):
+    async def sequencer_on_tick(self, instrument_name, length):
         # if seq is active
         
-        if self.app.is_mode_active(self.app.metro_sequencer_mode):
-            self.update_pads()
-            self.app.trig_edit_mode.update_button_colours()
-        if self.get_current_instrument_short_name_helper() == instrument_name:
+        if await self.app.is_mode_active(self.app.metro_sequencer_mode):
+            await self.update_pads()
+            await self.app.trig_edit_mode.update_button_colours()
+        if await self.get_current_instrument_short_name_helper() == instrument_name:
             self.playhead = self.instrument_sequencers[instrument_name].playhead
 
-    def get_all_distinct_instrument_short_names_helper(self):
+    async def get_all_distinct_instrument_short_names_helper(self):
         return (
-            self.app.instrument_selection_mode.get_all_distinct_instrument_short_names()
+            await self.app.instrument_selection_mode.get_all_distinct_instrument_short_names()
         )
 
-    def get_current_instrument_short_name_helper(self):
-        return self.app.instrument_selection_mode.get_current_instrument_short_name()
+    async def get_current_instrument_short_name_helper(self):
+        return await self.app.instrument_selection_mode.get_current_instrument_short_name()
 
-    def get_current_instrument_osc_port(self):
-        return self.app.instrument_selection_mode.get_current_instrument_info()[
+    async def get_current_instrument_osc_port(self):
+        return await self.app.instrument_selection_mode.get_current_instrument_info()[
             "osc_out_port"
         ]
 
-    def get_current_instrument_color_helper(self):
-        return self.app.instrument_selection_mode.get_current_instrument_color()
+    async def get_current_instrument_color_helper(self):
+        return await self.app.instrument_selection_mode.get_current_instrument_color()
 
-    def new_instrument_selected(self):
+    async def new_instrument_selected(self):
         instrument_index = self.app.instrument_selection_mode.selected_instrument % 8
         instrument_index = int(
             (self.app.instrument_selection_mode.selected_instrument - instrument_index)
@@ -2437,12 +2436,12 @@ class MetroSequencerMode(MelodicMode):
 
         self.selected_instrument = TRACK_NAMES_METRO[0]
 
-        device = self.app.osc_mode.get_current_instrument_device()
+        device = await self.app.osc_mode.get_current_instrument_device()
         device.disable_controls = self.disable_controls
         # print(self.selected_instrument)
         # print(self.app.osc_mode.get_current_instrument_osc_address_sections())
 
-    def set_pitch_for_column(self, i):
+    async def set_pitch_for_column(self, i):
         
         # Get pitch pads value
         # get octave
@@ -2452,10 +2451,10 @@ class MetroSequencerMode(MelodicMode):
         
         pass
 
-    def update_display(self, ctx, w, h):
+    async def update_display(self, ctx, w, h):
         if self.show_scale_menu == True:
-            background_colour = self.get_current_instrument_color_helper()
-            instrument_name = self.get_current_instrument_short_name_helper()
+            background_colour = await self.get_current_instrument_color_helper()
+            instrument_name = await self.get_current_instrument_short_name_helper()
             controls = self.instrument_scale_edit_controls[instrument_name]
         
             # ctx.save()
@@ -2473,10 +2472,10 @@ class MetroSequencerMode(MelodicMode):
 
             # ctx.restore()
 
-    def update_pads(self):
+    async def update_pads(self):
         if self.draw_pads == True:
             try:
-                instrument_name = self.get_current_instrument_short_name_helper()
+                instrument_name = await self.get_current_instrument_short_name_helper()
                 pad_state = self.metro_seq_pad_state[instrument_name]
                 seq_pad_state = pad_state[self.selected_track]
                 button_colors = [definitions.OFF_BTN_COLOR] * 64
@@ -2552,18 +2551,14 @@ class MetroSequencerMode(MelodicMode):
                     f"{exception_message} {exception_type} {filename}, Line {exception_traceback.tb_lineno}"
                 )
 
-    def on_pad_pressed(self, pad_n, pad_ij, velocity):
-        # TODO: VERY RUDE but IG it works???
-        self.app.queue.append(self.async_pad_pressed(pad_n=pad_n))
-    
-    async def async_pad_pressed(self, pad_n):
+    async def on_pad_pressed(self, pad_n, pad_ij, velocity):
         try:
             pad_state = self.metro_seq_pad_state[
-                self.get_current_instrument_short_name_helper()
+                await self.get_current_instrument_short_name_helper()
             ]
             idx_n = pad_n - 36
             self.steps_held.append(idx_n)
-            seq = self.instrument_sequencers[self.get_current_instrument_short_name_helper()]
+            seq = self.instrument_sequencers[await self.get_current_instrument_short_name_helper()]
             seq_pad_state = pad_state[self.selected_track]
             n = self.steps_held[-1]
             idx_ij = self.index_to_pad_ij(n)
@@ -2658,7 +2653,7 @@ class MetroSequencerMode(MelodicMode):
 
                 # Set the pitches
                 for x in range(8):
-                    seq.set_state([TRACK_NAMES_METRO[0]], idx_j*8 + x, pitch_value)
+                    await seq.set_state([TRACK_NAMES_METRO[0]], idx_j*8 + x, pitch_value)
             except Exception as e:
                 print("Exception in on_pad_pressed, pitch", e)
         
@@ -2678,7 +2673,7 @@ class MetroSequencerMode(MelodicMode):
                     #TODO: call func to show lock here
                 # Set the oct values
                 for x in range(8):
-                    seq.set_state([TRACK_NAMES_METRO[1]], idx_j*8 + x, 7- idx_i)
+                    await seq.set_state([TRACK_NAMES_METRO[1]], idx_j*8 + x, 7- idx_i)
             except Exception as e:   
                 print("Exception in on_pad_pressed, oct", e) 
         # Vel track
@@ -2697,14 +2692,14 @@ class MetroSequencerMode(MelodicMode):
                     #TODO: call func to show lock here
                 # Set the oct values
                 for x in range(8):
-                    seq.set_state([TRACK_NAMES_METRO[2]], idx_j*8 + x, 7- idx_i)
+                    await seq.set_state([TRACK_NAMES_METRO[2]], idx_j*8 + x, 7- idx_i)
             except Exception as e:
                 print("Exceptio in on_pad_pressed, vel", e)
 
         # Gates track
         elif self.selected_track == TRACK_NAMES_METRO[3]:
             try:
-                instrument_shortname = self.get_current_instrument_short_name_helper()
+                instrument_shortname = await self.get_current_instrument_short_name_helper()
                 
                 # TODO: bug with rachet state logic, needs an empty pad to engage
                 rachet_state = self.rachets[instrument_shortname]
@@ -2769,7 +2764,7 @@ class MetroSequencerMode(MelodicMode):
                 # sets pad state
                 for idx_i, i in enumerate(seq_pad_state):
                     for idx_j, j in enumerate(i):
-                        seq.set_state([TRACK_NAMES_METRO[3]], idx_j*8 + 7 - idx_i, j)
+                        await seq.set_state([TRACK_NAMES_METRO[3]], idx_j*8 + 7 - idx_i, j)
             except Exception as e:
                 print("Exception in on_pad_pressed, gate", e)
         # Skips track 
@@ -2780,15 +2775,15 @@ class MetroSequencerMode(MelodicMode):
                     
                     # for skips
                     if idx_i == 7: 
-                        seq.set_state([TRACK_NAMES_METRO[4]], idx_j*8 + 7- idx_i, True)
+                        await seq.set_state([TRACK_NAMES_METRO[4]], idx_j*8 + 7- idx_i, True)
                         seq_pad_state[idx_i][idx_j] = True
                     # for probability
                     else:
                         for x in range(7):
-                            seq.set_state([TRACK_NAMES_METRO[4]], idx_j*8 + 7- x, False)
+                            await seq.set_state([TRACK_NAMES_METRO[4]], idx_j*8 + 7- x, False)
                             seq_pad_state[x][idx_j] = False
                         
-                        seq.set_state([TRACK_NAMES_METRO[4]], idx_j*8 + 7- idx_i, True)
+                        await seq.set_state([TRACK_NAMES_METRO[4]], idx_j*8 + 7- idx_i, True)
                         seq_pad_state[idx_i][idx_j] = True
                 # If it's on, save the time and cont in on_pad_released
                 elif seq_pad_state[idx_i][idx_j] == True:
@@ -2813,7 +2808,7 @@ class MetroSequencerMode(MelodicMode):
                     #TODO: call func to show lock here
                 # Set the oct values
                 for x in range(8):
-                    seq.set_state([TRACK_NAMES_METRO[5]], idx_j*8 + x, 7- idx_i)
+                    await seq.set_state([TRACK_NAMES_METRO[5]], idx_j*8 + x, 7- idx_i)
             except Exception as e:
                 print("Exception in on_pad_pressed, plocks", e)
         else:
@@ -2822,7 +2817,7 @@ class MetroSequencerMode(MelodicMode):
                 # Turn off all other pads in the column
                 for x in range(8):
                     seq_pad_state[x][idx_j] = False
-                    seq.set_state([TRACK_NAMES_METRO[4]], idx_j*8 + x, 7- idx_i)
+                    await seq.set_state([TRACK_NAMES_METRO[4]], idx_j*8 + x, 7- idx_i)
                 seq_pad_state[idx_i][idx_j] = True
 
             # If it's on, save the time and cont in on_pad_released
@@ -2831,11 +2826,11 @@ class MetroSequencerMode(MelodicMode):
                 #TODO: call func to show lock here
         # self.update_pads()
         self.app.pads_need_update = True
-        self.app.osc_mode.update_buttons()
+        await self.app.osc_mode.update_buttons()
 
-    def on_pad_released(self, pad_n, pad_ij, velocity):
+    async def on_pad_released(self, pad_n, pad_ij, velocity):
         pad_state = self.metro_seq_pad_state[
-            self.get_current_instrument_short_name_helper()
+            await self.get_current_instrument_short_name_helper()
         ]
         seq_pad_state = pad_state[self.selected_track]
         idx_i = pad_ij[0]
@@ -2843,7 +2838,7 @@ class MetroSequencerMode(MelodicMode):
         idx_n = pad_n - 36
         epoch_time = time.time()
         press_time = epoch_time - self.pads_press_time[idx_n]
-        seq = self.instrument_sequencers[self.get_current_instrument_short_name_helper()]
+        seq = self.instrument_sequencers[await self.get_current_instrument_short_name_helper()]
         self.app.steps_held.remove(idx_j)
 
         self.disable_controls = False
@@ -2904,30 +2899,31 @@ class MetroSequencerMode(MelodicMode):
                 pass
                 # seq.set_state(self.selected_track, idx, False
         self.steps_held.remove(idx_n)
-        self.save_state()
-        self.app.osc_mode.update_buttons()
+        await self.save_state()
+        await self.app.osc_mode.update_buttons()
         self.app.pads_need_update = True
-    def update_modulation_wheel_mode_button(self):
+    
+    async def update_modulation_wheel_mode_button(self):
         # Passing because we need to make this inherited func inert
         pass
 
-    def update_accent_button(self):
+    async def update_accent_button(self):
         # Passing because we need to make this inherited func inert
         pass
 
-    def on_button_pressed(self, button_name):
+    async def on_button_pressed(self, button_name):
         seq = self.instrument_sequencers[
-            self.get_current_instrument_short_name_helper()
+            await self.get_current_instrument_short_name_helper()
         ]
         if button_name in track_button_names:
             idx = track_button_names.index(button_name)
             self.selected_track = TRACK_NAMES_METRO[idx]
-            self.app.trig_edit_mode.update_state()
+            await self.app.trig_edit_mode.update_state()
             try:
-                self.all_track_buttons_off()
+                await self.all_track_buttons_off()
             except Exception as e:
                 print(e)
-            self.active_track_button_on()
+            await self.active_track_button_on()
             self.app.buttons_need_update = True
             self.app.pads_need_update = True
             
@@ -2953,21 +2949,24 @@ class MetroSequencerMode(MelodicMode):
         ):
             # Don't react to octave up/down buttons as these are not used in rhythm mode
             
-            seq = self.instrument_sequencers[self.get_current_instrument_short_name_helper()]
+            seq = await self.instrument_sequencers[self.get_current_instrument_short_name_helper()]
             pass
+        
         elif button_name == push2_constants.BUTTON_DELETE:
             if len(self.steps_held) != 0:
                 for step in self.steps_held:
-                    seq.clear_all_locks_for_step(step%8)
+                    await seq.clear_all_locks_for_step(step%8)
+        
         elif button_name == push2_constants.BUTTON_PLAY:
             
             if self.sequencer_is_playing == False:
-                self.start_timeline()
+                await self.start_timeline()
                 self.sequencer_is_playing = True
 
             elif self.sequencer_is_playing == True:
-                self.stop_timeline()
+                await self.stop_timeline()
                 self.sequencer_is_playing = False
+        
         elif button_name == push2_constants.BUTTON_SCALE:
             # self.disable_controls = True if self.show_scale_menu == False else False
             # self.show_scale_menu = True if self.show_scale_menu == False else False
@@ -2975,19 +2974,19 @@ class MetroSequencerMode(MelodicMode):
                 if self.show_scale_menu == False:
                     self.disable_controls = True
                     self.show_scale_menu = True
-                    self.push.buttons.set_button_color(push2_constants.BUTTON_SCALE, definitions.WHITE, animation=definitions.DEFAULT_ANIMATION)
+                    await self.push.buttons.set_button_color(push2_constants.BUTTON_SCALE, definitions.WHITE, animation=definitions.DEFAULT_ANIMATION)
                 
                 else: 
                     self.disable_controls = False
                     self.show_scale_menu = False
-                    self.push.buttons.set_button_color(push2_constants.BUTTON_SCALE, definitions.GRAY_DARK)
+                    await self.push.buttons.set_button_color(push2_constants.BUTTON_SCALE, definitions.GRAY_DARK)
             except Exception as e:
                 print("Error in on_button_pressed, metro", e)
         else:
             # For the other buttons, refer to the base class
             super().on_button_pressed(button_name)
 
-    def on_button_released(self, button_name):
+    async def on_button_released(self, button_name):
         if button_name == push2_constants.BUTTON_1_8:
             self.button_1_8_pressed = False
 
@@ -2997,9 +2996,9 @@ class MetroSequencerMode(MelodicMode):
         elif button_name == push2_constants.BUTTON_SELECT:
             self.button_gate_stack = False
         else:
-            super().on_button_released(button_name)
+            await super().on_button_released(button_name)
 
-    def on_encoder_rotated(self, encoder_name, increment):
+    async def on_encoder_rotated(self, encoder_name, increment):
         try:
             if encoder_name == push2_constants.ENCODER_SWING_ENCODER:
                 return
@@ -3019,7 +3018,7 @@ class MetroSequencerMode(MelodicMode):
             ].index(encoder_name)
             # Check for state of pads here, if pads are being touched, set lock
             seq = self.instrument_sequencers[
-                self.get_current_instrument_short_name_helper()
+                await self.get_current_instrument_short_name_helper()
             ]
             self.encoder_incr_since_held[encoder_idx] = True
             try:
@@ -3032,20 +3031,20 @@ class MetroSequencerMode(MelodicMode):
                         if mode == self.app.trig_edit_mode:
                             device = self.app.trig_edit_mode
                         else:
-                            device = self.app.osc_mode.get_current_instrument_device()
+                            device = await self.app.osc_mode.get_current_instrument_device()
 
                     idx = int(self.steps_held[0]%8)
                     value = None
                     page_offset = int(device.page) * 8
                     
-                    if seq.get_lock_state(idx, encoder_idx + page_offset) == None:
+                    if await seq.get_lock_state(idx, encoder_idx + page_offset) == None:
                         value = device.controls[
                             encoder_idx
                         ].value
                     else:
                         # calmping to min/max values, scaling
                         control = device.controls[encoder_idx + page_offset]
-                        lock_value = seq.get_lock_state(idx, encoder_idx + page_offset)
+                        lock_value = await seq.get_lock_state(idx, encoder_idx + page_offset)
 
                         min = 0 if hasattr(control, "items") else control.min
                         max = (
@@ -3062,14 +3061,14 @@ class MetroSequencerMode(MelodicMode):
                         else:
                             value = lock_value
                     # unindented to cover both branches
-                    seq.set_lock_state(idx, encoder_idx + page_offset, value)
+                    await seq.set_lock_state(idx, encoder_idx + page_offset, value)
                     return
                 if self.show_scale_menu == True:
                     
                     # Update scale menu controls
                     if encoder_idx == 6 or encoder_idx == 7:
                         for instrument_name in self.instrument_scale_edit_controls:
-                            current_instrument_name = self.get_current_instrument_short_name_helper()
+                            current_instrument_name = await self.get_current_instrument_short_name_helper()
                             controls = self.instrument_scale_edit_controls[instrument_name]
                             control = controls[encoder_idx]
                             current_control = self.instrument_scale_edit_controls[instrument_name][encoder_idx]
@@ -3084,10 +3083,8 @@ class MetroSequencerMode(MelodicMode):
                             if max < (control.value + incr):
                                 control.value = max
 
-                    
-                    
                     else:
-                        instrument_name = self.get_current_instrument_short_name_helper()
+                        instrument_name = await self.get_current_instrument_short_name_helper()
                         controls = self.instrument_scale_edit_controls[instrument_name]
                         control = controls[encoder_idx]
                         control_final = control
@@ -3106,11 +3103,11 @@ class MetroSequencerMode(MelodicMode):
                         if max < (control.value + incr):
                             control.value = max
 
-                    self.update_pads()
+                    await self.update_pads()
                 # elif len(self.app.steps_held) == 0 and self.show_scale_menu == False:
                 #     current_device = self.app.instrument_selection_mode.get_current_instrument_device()
                 #     current_device.on_encoder_rotated(encoder_name, increment)
-                self.app.trig_edit_mode.update_button_colours()
+                await self.app.trig_edit_mode.update_button_colours()
             except Exception as e:
                 print(e)
                 traceback.print_exc()
@@ -3118,7 +3115,7 @@ class MetroSequencerMode(MelodicMode):
         except Exception as e:
             traceback.print_exc()
             
-    def on_encoder_touched(self, encoder_name):
+    async def on_encoder_touched(self, encoder_name):
         try:
             encoder_idx = [
                 push2_python.constants.ENCODER_TRACK1_ENCODER,
@@ -3134,7 +3131,7 @@ class MetroSequencerMode(MelodicMode):
         except ValueError:
             pass
             
-    def on_encoder_released(self, encoder_name):
+    async def on_encoder_released(self, encoder_name):
         try:
             encoder_idx = [
                 push2_python.constants.ENCODER_TRACK1_ENCODER,
@@ -3150,11 +3147,11 @@ class MetroSequencerMode(MelodicMode):
                 if len(self.app.steps_held) != 0 and self.encoder_incr_since_held[encoder_idx] != True:
                     for step in self.app.steps_held:
                         seq = self.instrument_sequencers[
-                            self.get_current_instrument_short_name_helper()
+                            await self.get_current_instrument_short_name_helper()
                         ]
 
-                        device = self.app.osc_mode.get_current_instrument_device()
-                        seq.set_lock_state(step, encoder_idx + device.page*8, None)
+                        device = await self.app.osc_mode.get_current_instrument_device()
+                        await seq.set_lock_state(step, encoder_idx + device.page*8, None)
                         self.encoders_held[encoder_idx] = False
             
             self.encoder_incr_since_held[encoder_idx] = False
