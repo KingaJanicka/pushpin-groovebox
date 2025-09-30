@@ -159,7 +159,7 @@ class PyshaMode(object):
         return self.app.push
 
     # Method run only once when the mode object is created, may receive settings dictionary from main app
-    async def initialize(self, settings=None):
+    def initialize(self, settings=None):
         pass
 
     # Method to return a dictionary of properties to store in a settings file, and that will be passed to

@@ -23,15 +23,15 @@ class InstrumentSelectionMode(definitions.PyshaMode):
     selected_instrument = 0
     instrument_selection_quick_press_time = 0.400
 
-    async def initialize(self, settings=None):
+    def initialize(self, settings=None):
         # if settings is not None:
         #   self.pyramidi_channel = settings.get(
         #         "pyramidi_channel", self.pyramidi_channel
         #   )
 
-        await self.create_instruments()
+        self.create_instruments()
 
-    async def create_instruments(self):
+    def create_instruments(self):
         tmp_instruments_data = {}
 
         if os.path.exists(definitions.INSTRUMENT_LISTING_PATH):
@@ -101,25 +101,25 @@ class InstrumentSelectionMode(definitions.PyshaMode):
 
         return distinct
 
-    async def get_current_instrument_info(self):
+    def get_current_instrument_info(self):
         return self.instruments_info[self.selected_instrument]
 
-    async def get_current_instrument_osc_out_port(self):
+    def get_current_instrument_osc_out_port(self):
         return self.get_current_instrument_info()["osc_out_port"]
 
-    async def get_current_instrument_osc_in_port(self):
+    def get_current_instrument_osc_in_port(self):
         return self.get_current_instrument_info()["osc_in_port"]
 
-    async def get_current_instrument_short_name(self):
+    def get_current_instrument_short_name(self):
         return self.get_current_instrument_info()["instrument_short_name"]
 
-    async def get_instrument_color(self, i):
+    def get_instrument_color(self, i):
         return self.instruments_info[i]["color"]
 
-    async def get_current_instrument_color(self):
+    def get_current_instrument_color(self):
         return self.get_instrument_color(self.selected_instrument)
 
-    async def get_current_instrument_color_rgb(self):
+    def get_current_instrument_color_rgb(self):
         return definitions.get_color_rgb_float(self.get_current_instrument_color())
 
     async def load_current_default_layout(self):

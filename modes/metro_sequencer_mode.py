@@ -81,12 +81,13 @@ class MetroSequencerMode(MelodicMode):
     encoder_short_press_time = 400000000
     rachets = {}
     major_scale = [0,2,4,5,7,9,11,12]
-    async def initialize(self, settings):
-        await super().initialize(settings)
+    
+    def initialize(self, settings):
+        super().initialize(settings)
         self.global_timeline = self.app.global_timeline
         for (
             instrument_short_name
-        ) in await self.get_all_distinct_instrument_short_names_helper():
+        ) in self.get_all_distinct_instrument_short_names_helper():
             self.instrument_sequencers[instrument_short_name] = SequencerMetro(
                 self.app.instruments[instrument_short_name],
                 self.sequencer_on_tick,
@@ -2154,7 +2155,7 @@ class MetroSequencerMode(MelodicMode):
             
             self.app.global_timeline.clear()
             
-            for (instrument_short_name) in await self.get_all_distinct_instrument_short_names_helper():
+            for (instrument_short_name) in self.get_all_distinct_instrument_short_names_helper():
                 sequencer = self.instrument_sequencers[instrument_short_name]
                 sequencer.playhead_track = sequencer.timeline.schedule(
                     {
@@ -2173,7 +2174,7 @@ class MetroSequencerMode(MelodicMode):
     async def update_pads_to_seq_state(self):
         for (
             instrument_short_name
-        ) in await self.get_all_distinct_instrument_short_names_helper():
+        ) in self.get_all_distinct_instrument_short_names_helper():
             seq = self.instrument_sequencers[instrument_short_name]
             
             # this updates all the pitch tracks
@@ -2271,7 +2272,7 @@ class MetroSequencerMode(MelodicMode):
         # Loads seq state
         for (
             instrument_short_name
-        ) in await self.get_all_distinct_instrument_short_names_helper():
+        ) in self.get_all_distinct_instrument_short_names_helper():
             await self.instrument_sequencers[instrument_short_name].load_state()
 
         # Loads Trig edit state
@@ -2287,7 +2288,7 @@ class MetroSequencerMode(MelodicMode):
                 dump = json.load(open(self.scale_menu_filename))
             for (
                 instrument_short_name
-            ) in await self.get_all_distinct_instrument_short_names_helper():
+            ) in self.get_all_distinct_instrument_short_names_helper():
                 for track_name in TRACK_NAMES_METRO:
                     for idx, control in enumerate(
                         self.instrument_scale_edit_controls[instrument_short_name]
@@ -2307,7 +2308,7 @@ class MetroSequencerMode(MelodicMode):
         try:
             for (
                 instrument_short_name
-            ) in await self.get_all_distinct_instrument_short_names_helper():
+            ) in self.get_all_distinct_instrument_short_names_helper():
 
                 await self.instrument_sequencers[instrument_short_name].save_state()
                 scale_edit_state[instrument_short_name] = {}
@@ -2411,21 +2412,21 @@ class MetroSequencerMode(MelodicMode):
         if await self.get_current_instrument_short_name_helper() == instrument_name:
             self.playhead = self.instrument_sequencers[instrument_name].playhead
 
-    async def get_all_distinct_instrument_short_names_helper(self):
+    def get_all_distinct_instrument_short_names_helper(self):
         return (
-            await self.app.instrument_selection_mode.get_all_distinct_instrument_short_names()
+            self.app.instrument_selection_mode.get_all_distinct_instrument_short_names()
         )
 
-    async def get_current_instrument_short_name_helper(self):
-        return await self.app.instrument_selection_mode.get_current_instrument_short_name()
+    def get_current_instrument_short_name_helper(self):
+        return self.app.instrument_selection_mode.get_current_instrument_short_name()
 
-    async def get_current_instrument_osc_port(self):
-        return await self.app.instrument_selection_mode.get_current_instrument_info()[
+    def get_current_instrument_osc_port(self):
+        return self.app.instrument_selection_mode.get_current_instrument_info()[
             "osc_out_port"
         ]
 
-    async def get_current_instrument_color_helper(self):
-        return await self.app.instrument_selection_mode.get_current_instrument_color()
+    def get_current_instrument_color_helper(self):
+        return self.app.instrument_selection_mode.get_current_instrument_color()
 
     async def new_instrument_selected(self):
         instrument_index = self.app.instrument_selection_mode.selected_instrument % 8
@@ -2974,12 +2975,12 @@ class MetroSequencerMode(MelodicMode):
                 if self.show_scale_menu == False:
                     self.disable_controls = True
                     self.show_scale_menu = True
-                    await self.push.buttons.set_button_color(push2_constants.BUTTON_SCALE, definitions.WHITE, animation=definitions.DEFAULT_ANIMATION)
+                    self.push.buttons.set_button_color(push2_constants.BUTTON_SCALE, definitions.WHITE, animation=definitions.DEFAULT_ANIMATION)
                 
                 else: 
                     self.disable_controls = False
                     self.show_scale_menu = False
-                    await self.push.buttons.set_button_color(push2_constants.BUTTON_SCALE, definitions.GRAY_DARK)
+                    self.push.buttons.set_button_color(push2_constants.BUTTON_SCALE, definitions.GRAY_DARK)
             except Exception as e:
                 print("Error in on_button_pressed, metro", e)
         else:

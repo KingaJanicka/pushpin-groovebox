@@ -52,7 +52,7 @@ class MuteMode(MelodicMode):
     
         for (
             instrument_short_name
-        ) in await self.get_all_distinct_instrument_short_names_helper():
+        ) in self.get_all_distinct_instrument_short_names_helper():
             self.tracks_active[instrument_short_name] = {}
             for track_name in TRACK_NAMES:
                 self.tracks_active[instrument_short_name][track_name] = True
@@ -67,21 +67,21 @@ class MuteMode(MelodicMode):
         # Rhythmic does not have octave buttons
         pass
 
-    async def get_all_distinct_instrument_short_names_helper(self):
+    def get_all_distinct_instrument_short_names_helper(self):
         return (
-            await self.app.instrument_selection_mode.get_all_distinct_instrument_short_names()
+            self.app.instrument_selection_mode.get_all_distinct_instrument_short_names()
         )
 
-    async def get_current_instrument_short_name_helper(self):
+    def get_current_instrument_short_name_helper(self):
         return self.app.instrument_selection_mode.get_current_instrument_short_name()
 
-    async def get_current_instrument_osc_port(self):
-        return await self.app.instrument_selection_mode.get_current_instrument_info()[
+    def get_current_instrument_osc_port(self):
+        return self.app.instrument_selection_mode.get_current_instrument_info()[
             "osc_out_port"
         ]
 
-    async def get_current_instrument_color_helper(self):
-        return await self.app.instrument_selection_mode.get_current_instrument_color()
+    def get_current_instrument_color_helper(self):
+        return self.app.instrument_selection_mode.get_current_instrument_color()
 
     async def new_instrument_selected(self):
         pass
@@ -97,7 +97,7 @@ class MuteMode(MelodicMode):
             # Takes state of mutes and lights up the pads accordingly
             for (inst_index, 
                 instrument_short_name
-                ) in enumerate(await self.get_all_distinct_instrument_short_names_helper()):
+                ) in enumerate(self.get_all_distinct_instrument_short_names_helper()):
                 for track_index, track_name in enumerate(TRACK_NAMES):
                     pad_idx = inst_index + 8 * track_index
 
@@ -114,7 +114,7 @@ class MuteMode(MelodicMode):
                 chunk, button_colors = button_colors[:8], button_colors[8:]
                 button_colors_array.append(chunk)
 
-            await self.push.pads.set_pads_color(button_colors_array)
+            self.push.pads.set_pads_color(button_colors_array)
         except Exception as exception:
             exception_message = str(exception)
             exception_type, exception_object, exception_traceback = sys.exc_info()
@@ -128,7 +128,7 @@ class MuteMode(MelodicMode):
 
         for (inst_index, 
                 instrument_short_name
-                ) in enumerate(await self.get_all_distinct_instrument_short_names_helper()):
+                ) in enumerate(self.get_all_distinct_instrument_short_names_helper()):
                 for track_index, track_name in enumerate(TRACK_NAMES):
                     # print(pad_ij[1], inst_index, "ssss",pad_ij[0], track_index)
                     if pad_ij[1] == inst_index and pad_ij[0] == track_index:

@@ -118,7 +118,7 @@ class OSCMode(PyshaMode):
 
         for (
             instrument_short_name
-        ) in await self.get_all_distinct_instrument_short_names_helper():
+        ) in self.get_all_distinct_instrument_short_names_helper():
             print(
                 os.path.join(
                     definitions.INSTRUMENT_DEFINITION_FOLDER,
@@ -152,7 +152,7 @@ class OSCMode(PyshaMode):
                 self.state = dump
                 for (
                 instrument_short_name
-                ) in await self.get_all_distinct_instrument_short_names_helper():
+                ) in self.get_all_distinct_instrument_short_names_helper():
                     devices = await self.get_instrument_devices(instrument_short_name)
                     
                     # Unpacking patch
@@ -211,7 +211,7 @@ class OSCMode(PyshaMode):
             state = {}
             for (
             instrument_short_name
-            ) in await self.get_all_distinct_instrument_short_names_helper():
+            ) in self.get_all_distinct_instrument_short_names_helper():
                 devices = await self.get_instrument_devices(instrument_short_name)
                 instrument_state = {instrument_short_name: []}
                 # TODO: This breaks with Switches
@@ -249,28 +249,28 @@ class OSCMode(PyshaMode):
         for instrument in self.app.instruments:
             await self.app.instruments[instrument].close_transports()
 
-    async def get_all_distinct_instrument_short_names_helper(self):
+    def get_all_distinct_instrument_short_names_helper(self):
         return (
-            await self.app.instrument_selection_mode.get_all_distinct_instrument_short_names()
+            self.app.instrument_selection_mode.get_all_distinct_instrument_short_names()
         )
 
-    async def get_current_instrument_color_helper(self):
-        return await self.app.instrument_selection_mode.get_current_instrument_color()
+    def get_current_instrument_color_helper(self):
+        return self.app.instrument_selection_mode.get_current_instrument_color()
 
-    async def get_current_instrument_short_name_helper(self):
-        return await self.app.instrument_selection_mode.get_current_instrument_short_name()
+    def get_current_instrument_short_name_helper(self):
+        return self.app.instrument_selection_mode.get_current_instrument_short_name()
 
-    async def get_current_instrument_devices(self):
-        instrument_shortname = await self.get_current_instrument_short_name_helper()
+    def get_current_instrument_devices(self):
+        instrument_shortname = self.get_current_instrument_short_name_helper()
         instrument = self.app.instruments.get(instrument_shortname, None)
         return instrument.current_devices
 
-    async def get_instrument_devices(self, instrument_short_name):
+    def get_instrument_devices(self, instrument_short_name):
         instrument = self.app.instruments.get(instrument_short_name, None)
         return instrument.current_devices
 
     async def get_current_instrument_page_devices(self):
-        instrument_shortname = await self.get_current_instrument_short_name_helper()
+        instrument_shortname = self.get_current_instrument_short_name_helper()
         instrument = self.app.instruments.get(instrument_shortname, None)
         if self.instrument_page == 0:
             return instrument.current_devices
@@ -369,7 +369,7 @@ class OSCMode(PyshaMode):
             push2_python.constants.BUTTON_PAGE_LEFT,
             push2_python.constants.BUTTON_PAGE_RIGHT,
         ]:
-            await self.push.buttons.set_button_color(button_name, definitions.BLACK)
+            self.push.buttons.set_button_color(button_name, definitions.BLACK)
 
     async def update_buttons(self):
         current_device = await self.get_current_instrument_device()
@@ -387,11 +387,11 @@ class OSCMode(PyshaMode):
                 if index != None:
                     for value in seq.locks[index*8][count+self.instrument_page]:
                         if value != None:
-                            await self.push.buttons.set_button_color(name, definitions.WHITE)
+                            self.push.buttons.set_button_color(name, definitions.WHITE)
                 else:
-                    await self.push.buttons.set_button_color(name,await self.get_current_instrument_color_helper())
+                    self.push.buttons.set_button_color(name,await self.get_current_instrument_color_helper())
             else:
-                await self.push.buttons.set_button_color(name, definitions.BLACK)
+                self.push.buttons.set_button_color(name, definitions.BLACK)
 
         show_prev, show_next = await current_device.get_next_prev_pages()
         if show_prev:

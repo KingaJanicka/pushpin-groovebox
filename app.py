@@ -115,12 +115,16 @@ class PyshaApp(object):
     volume_node_osc = None
     log_in = None
     
+    settings = None
+    iso_midi_in_device_name = None
+   
+        
     def __init__(self):
         if os.path.exists("settings.json"):
-            settings = json.load(open("settings.json"))
+            print("Loaded Settings ......")
+            self.settings = json.load(open("settings.json"))
         else:
-            settings = {}
-
+            self.settings = {}
         # Setup stuff for the volume node osc client
         dispatcher = Dispatcher()
         self.log_in = logger.getChild(f"in-{self.volume_node_osc_address}")
@@ -128,43 +132,38 @@ class PyshaApp(object):
         self.volume_node_osc_client = SimpleUDPClient("127.0.0.1", int(self.volume_node_osc_address))
         self.volume_node_osc = {"client": self.volume_node_osc_client, "server": self.volume_node_osc_server, "dispatcher": dispatcher}
         
-        self.set_midi_in_channel(settings.get("midi_in_default_channel", 0))
-        self.set_midi_out_channel(settings.get("midi_out_default_channel", 0))
-        self.target_frame_rate = settings.get("target_frame_rate", 30)
-        self.use_push2_display = settings.get("use_push2_display", True)
+        self.target_frame_rate = self.settings.get("target_frame_rate", 30)
+        self.use_push2_display = self.settings.get("use_push2_display", True)
+        
+        self.tasks = set()
+        self.queue = []
 
-        self.init_midi_in(device_name=settings.get("default_midi_in_device_name", None))
-        self.init_midi_out(
+    async def init_midi_calls(self, settings):
+        await self.set_midi_in_channel(settings.get("midi_in_default_channel", 0))
+        await self.set_midi_out_channel(settings.get("midi_out_default_channel", 0))
+        await self.init_midi_in(device_name=settings.get("default_midi_in_device_name", None))
+        await self.init_midi_out(
             device_name=settings.get("default_midi_out_device_name", None)
         )
-        iso_midi_in_device_name = None
         # TODO: this is a bodge and should be made to work without the try/except
         try:
             for port in iso.get_midi_input_names():
                 if settings.get("default_midi_in_device_name") in port:
-                    iso_midi_in_device_name = port
-                    self.iso_midi_in = iso.MidiInputDevice(device_name=iso_midi_in_device_name)
+                    self.iso_midi_in_device_name = port
+                    self.iso_midi_in = iso.MidiInputDevice(device_name=self.iso_midi_in_device_name)
                     self.global_timeline = iso.Timeline(output_device=iso.DummyOutputDevice(), clock_source=self.iso_midi_in)
                     # self.global_timeline.background()
             
-            if iso_midi_in_device_name == None:
+            if self.iso_midi_in_device_name == None:
                 self.global_timeline = iso.Timeline(self.tempo, output_device=iso.DummyOutputDevice())
     
         except:
-            if iso_midi_in_device_name == None:
+            if self.iso_midi_in_device_name == None:
                 self.global_timeline = iso.Timeline(self.tempo, output_device=iso.DummyOutputDevice())
-
-    
-    
-        self.init_notes_midi_in(
+                
+        await self.init_notes_midi_in(
             device_name=settings.get("default_notes_midi_in_device_name", None)
         )
-        self.tasks = set()
-        self.queue = []
-        await self.init_push()
-        await self.init_modes(settings)
-
-
     async def init_modes(self, settings):
         self.instrument_selection_mode = InstrumentSelectionMode(
             self, settings=settings
@@ -178,7 +177,7 @@ class PyshaApp(object):
         )
         self.rhythmic_mode = RhythmicMode(self, settings=settings)
         self.slice_notes_mode = SliceNotesMode(self, settings=settings)
-        self.set_melodic_mode()
+        await self.set_melodic_mode()
 
         self.preset_selection_mode = PresetSelectionMode(self, settings=settings)
         self.trig_edit_mode = TrigEditMode(self, settings=settings)
@@ -903,7 +902,7 @@ class PyshaApp(object):
             #  I've overved problems trying to reconnect many times withotu success on the Raspberrypi, resulting in
             # "ALSA lib seq_hw.c:466:(snd_seq_hw_open) open /dev/snd/seq failed: Cannot allocate memory" issues.
             # A work around is make the reconnection time bigger, but a better solution should probably be found.
-            await self.push.set_push2_reconnect_call_interval(2)
+            self.push.set_push2_reconnect_call_interval(2)
             
         # for y in range(0, 8):
         #     for x in range(0, 8):
@@ -953,14 +952,14 @@ class PyshaApp(object):
             frame = numpy.ndarray(
                 shape=(h, w), dtype=numpy.uint16, buffer=buf
             ).transpose()
-            await self.push.display.display_frame(
+            self.push.display.display_frame(
                 frame, input_format=push2_python.constants.FRAME_FORMAT_RGB565
             )
 
     async def check_for_delayed_actions(self):
         # If MIDI not configured, make sure we try sending messages so it gets configured
-        if not await self.push.midi_is_configured():
-            await self.push.configure_midi()
+        if not self.push.midi_is_configured():
+            self.push.configure_midi()
 
         # Call dalyed actions in active modes
         for mode in self.active_modes:
@@ -1163,10 +1162,10 @@ class PyshaApp(object):
 
 # Bind push action handlers with class methods
 @push2_python.on_encoder_rotated()
-async def on_encoder_rotated(_, encoder_name, increment):
+def on_encoder_rotated(_, encoder_name, increment):
     try:
         for mode in app.active_modes[::-1]:
-            action_performed = await mode.on_encoder_rotated(encoder_name, increment)
+            action_performed = mode.on_encoder_rotated(encoder_name, increment)
             if action_performed:
                 break  # If mode took action, stop event propagation
     except NameError as e:
@@ -1175,10 +1174,10 @@ async def on_encoder_rotated(_, encoder_name, increment):
 
 
 @push2_python.on_encoder_touched()
-async def on_encoder_touched(_, encoder_name):
+def on_encoder_touched(_, encoder_name):
     try:
         for mode in app.active_modes[::-1]:
-            action_performed = await mode.on_encoder_touched(encoder_name)
+            action_performed = mode.on_encoder_touched(encoder_name)
             if action_performed:
                 break  # If mode took action, stop event propagation
     except NameError as e:
@@ -1187,10 +1186,10 @@ async def on_encoder_touched(_, encoder_name):
 
 
 @push2_python.on_encoder_released()
-async def on_encoder_released(_, encoder_name):
+def on_encoder_released(_, encoder_name):
     try:
         for mode in app.active_modes[::-1]:
-            action_performed = await mode.on_encoder_released(encoder_name)
+            action_performed = mode.on_encoder_released(encoder_name)
             if action_performed:
                 break  # If mode took action, stop event propagation
     except NameError as e:
@@ -1199,10 +1198,10 @@ async def on_encoder_released(_, encoder_name):
 
 
 @push2_python.on_pad_pressed()
-async def on_pad_pressed(_, pad_n, pad_ij, velocity):
+def on_pad_pressed(_, pad_n, pad_ij, velocity):
     try:
         for mode in app.active_modes[::-1]:
-            action_performed = await mode.on_pad_pressed(pad_n, pad_ij, velocity)
+            action_performed = mode.on_pad_pressed(pad_n, pad_ij, velocity)
             if action_performed:
                 break  # If mode took action, stop event propagation
     except NameError as e:
@@ -1211,10 +1210,10 @@ async def on_pad_pressed(_, pad_n, pad_ij, velocity):
 
 
 @push2_python.on_pad_released()
-async def on_pad_released(_, pad_n, pad_ij, velocity):
+def on_pad_released(_, pad_n, pad_ij, velocity):
     try:
         for mode in app.active_modes[::-1]:
-            action_performed = await mode.on_pad_released(pad_n, pad_ij, velocity)
+            action_performed = mode.on_pad_released(pad_n, pad_ij, velocity)
             if action_performed:
                 break  # If mode took action, stop event propagation
     except NameError as e:
@@ -1223,10 +1222,10 @@ async def on_pad_released(_, pad_n, pad_ij, velocity):
 
 
 @push2_python.on_pad_aftertouch()
-async def on_pad_aftertouch(_, pad_n, pad_ij, velocity):
+def on_pad_aftertouch(_, pad_n, pad_ij, velocity):
     try:
         for mode in app.active_modes[::-1]:
-            action_performed = await mode.on_pad_aftertouch(pad_n, pad_ij, velocity)
+            action_performed = mode.on_pad_aftertouch(pad_n, pad_ij, velocity)
             if action_performed:
                 break  # If mode took action, stop event propagation
     except NameError as e:
@@ -1235,10 +1234,10 @@ async def on_pad_aftertouch(_, pad_n, pad_ij, velocity):
 
 
 @push2_python.on_button_pressed()
-async def on_button_pressed(_, name):
+def on_button_pressed(_, name):
     try:
         for mode in app.active_modes[::-1]:
-            action_performed = await mode.on_button_pressed(name)
+            action_performed = mode.on_button_pressed(name)
             if action_performed:
                 break  # If mode took action, stop event propagation
     except NameError as e:
@@ -1247,10 +1246,10 @@ async def on_button_pressed(_, name):
 
 
 @push2_python.on_button_released()
-async def on_button_released(_, name):
+def on_button_released(_, name):
     try:
         for mode in app.active_modes[::-1]:
-            action_performed = await mode.on_button_released(name)
+            action_performed = mode.on_button_released(name)
             if action_performed:
                 break  # If mode took action, stop event propagation
     except NameError as e:
@@ -1259,10 +1258,10 @@ async def on_button_released(_, name):
 
 
 @push2_python.on_touchstrip()
-async def on_touchstrip(_, value):
+def on_touchstrip(_, value):
     try:
         for mode in app.active_modes[::-1]:
-            action_performed = await mode.on_touchstrip(value)
+            action_performed = mode.on_touchstrip(value)
             if action_performed:
                 break  # If mode took action, stop event propagation
     except NameError as e:
@@ -1271,10 +1270,10 @@ async def on_touchstrip(_, value):
 
 
 @push2_python.on_sustain_pedal()
-async def on_sustain_pedal(_, sustain_on):
+def on_sustain_pedal(_, sustain_on):
     try:
         for mode in app.active_modes[::-1]:
-            action_performed = await mode.on_sustain_pedal(sustain_on)
+            action_performed = mode.on_sustain_pedal(sustain_on)
             if action_performed:
                 break  # If mode took action, stop event propagation
     except NameError as e:
@@ -1286,9 +1285,10 @@ midi_connected_received_before_app = False
 
 
 @push2_python.on_midi_connected()
-async def on_midi_connected(_):
+def on_midi_connected(_):
     try:
-        await app.on_midi_push_connection_established()
+        # TODO: this append might need to be removed?
+        app.queue.append(app.on_midi_push_connection_established())
     except NameError as e:
         global midi_connected_received_before_app
         midi_connected_received_before_app = True
@@ -1312,7 +1312,14 @@ async def main():
     #     print(overwitch_devices)
     # Initialise OSC sockets
     loop = asyncio.get_event_loop()
-
+    await app.init_midi_calls(app.settings)
+    await app.init_push()
+    await app.init_modes(app.settings)
+    
+    if midi_connected_received_before_app:
+        # App received the "on_midi_connected" call before it was initialized. Do it now!
+        print("Missed MIDI initialization call, doing it now...")
+        await app.on_midi_push_connection_established()
     await app.start_pd_node()
     for index, instrument in enumerate(app.instruments):
         await app.instruments[instrument].start(loop)
@@ -1349,10 +1356,10 @@ async def main():
 if __name__ == "__main__":
     try:
         app = PyshaApp()
-        if midi_connected_received_before_app:
-            # App received the "on_midi_connected" call before it was initialized. Do it now!
-            print("Missed MIDI initialization call, doing it now...")
-            await app.on_midi_push_connection_established()
+        # if midi_connected_received_before_app:
+        #     # App received the "on_midi_connected" call before it was initialized. Do it now!
+        #     print("Missed MIDI initialization call, doing it now...")
+        #     await app.on_midi_push_connection_established()
 
         asyncio.run(main())
     except KeyboardInterrupt:

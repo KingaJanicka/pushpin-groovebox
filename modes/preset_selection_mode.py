@@ -31,7 +31,7 @@ class PresetSelectionMode(definitions.PyshaMode):
 
     async def initialize(self, settings=None):
         for idx, instrument_short_name in enumerate(
-            await self.get_all_distinct_instrument_short_names_helper()
+            self.get_all_distinct_instrument_short_names_helper()
         ):
             self.presets[instrument_short_name] = [
                 f"{definitions.FACTORY_PATCHES_FOLDER}/Templates/Init Saw"
@@ -179,13 +179,13 @@ class PresetSelectionMode(definitions.PyshaMode):
         self.presets[instrument_short_name].append((preset_number, bank_number))
         await self.save_presets()
 
-    async def get_all_distinct_instrument_short_names_helper(self):
+    def get_all_distinct_instrument_short_names_helper(self):
         return (
-            await self.app.instrument_selection_mode.get_all_distinct_instrument_short_names()
+            self.app.instrument_selection_mode.get_all_distinct_instrument_short_names()
         )
 
     async def get_current_instrument_short_name_helper(self):
-        return await self.app.instrument_selection_mode.get_current_instrument_short_name()
+        return self.app.instrument_selection_mode.get_current_instrument_short_name()
 
     async def get_preset_path_for_instrument(self, instrument_shortname):
         preset_tuple = self.last_pad_in_column_pressed[instrument_shortname]
@@ -370,7 +370,7 @@ class PresetSelectionMode(definitions.PyshaMode):
                     cell_color = definitions.WHITE
                 row_colors.append(cell_color)
             color_matrix.append(row_colors)
-        await self.push.pads.set_pads_color(color_matrix)
+        self.push.pads.set_pads_color(color_matrix)
 
     async def on_pad_pressed(self, pad_n, pad_ij, velocity):
         if pad_ij[1] != await self.app.instrument_selection_mode.selected_instrument:

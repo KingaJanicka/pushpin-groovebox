@@ -41,15 +41,15 @@ class MelodicMode(definitions.PyshaMode):
 
     send_osc_func = None
 
-    async def __init__(self, app, settings=None, send_osc_func=None):
+    def __init__(self, app, settings=None, send_osc_func=None):
         self.app = app
         self.send_osc_func = send_osc_func
         self.initialize(settings=settings)
 
-    async def initialize(self, settings=None):
+    def initialize(self, settings=None):
         if settings is not None:
             self.use_poly_at = settings.get("use_poly_at", True)
-            await self.set_root_midi_note(settings.get("root_midi_note", 64))
+            self.set_root_midi_note(settings.get("root_midi_note", 64))
             self.channel_at_range_start = settings.get("channel_at_range_start", 401)
             self.channel_at_range_end = settings.get("channel_at_range_end", 800)
             self.poly_at_max_range = settings.get("poly_at_max_range", 40)
@@ -148,7 +148,7 @@ class MelodicMode(definitions.PyshaMode):
         note_number = int(round(note_number))
         return semis[note_number % 12] + str(note_number // 12 - 2)
 
-    async def set_root_midi_note(self, note_number):
+    def set_root_midi_note(self, note_number):
         self.root_midi_note = note_number
         if self.root_midi_note < 0:
             self.root_midi_note = 0
@@ -159,20 +159,20 @@ class MelodicMode(definitions.PyshaMode):
 
         # Configure polyAT and AT
         if self.use_poly_at:
-            await self.push.pads.set_polyphonic_aftertouch()
+            self.push.pads.set_polyphonic_aftertouch()
         else:
-            await self.push.pads.set_channel_aftertouch()
-        await self.push.pads.set_channel_aftertouch_range(
+            self.push.pads.set_channel_aftertouch()
+        self.push.pads.set_channel_aftertouch_range(
             range_start=self.channel_at_range_start, range_end=self.channel_at_range_end
         )
-        await self.push.pads.set_velocity_curve(velocities=self.get_poly_at_curve())
+        self.push.pads.set_velocity_curve(velocities=self.get_poly_at_curve())
 
 
         # Configure touchstrip behaviour
         if self.modulation_wheel_mode:
-            await self.push.touchstrip.set_modulation_wheel_mode()
+            self.push.touchstrip.set_modulation_wheel_mode()
         else:
-            await self.push.touchstrip.set_pitch_bend_mode()
+            self.push.touchstrip.set_pitch_bend_mode()
 
         # Update buttons and pads
         await self.update_buttons()
@@ -199,11 +199,11 @@ class MelodicMode(definitions.PyshaMode):
             > definitions.DELAYED_ACTIONS_APPLY_TIME
         ):
             # Update channel and poly AT parameters
-            await self.push.pads.set_channel_aftertouch_range(
+            self.push.pads.set_channel_aftertouch_range(
                 range_start=self.channel_at_range_start,
                 range_end=self.channel_at_range_end,
             )
-            await self.push.pads.set_velocity_curve(velocities=self.get_poly_at_curve())
+            self.push.pads.set_velocity_curve(velocities=self.get_poly_at_curve())
             self.last_time_at_params_edited = None
 
     async def on_midi_in(self, msg, source=None):
@@ -282,7 +282,7 @@ class MelodicMode(definitions.PyshaMode):
                 row_colors.append(cell_color)
             color_matrix.append(row_colors)
 
-        await self.push.pads.set_pads_color(color_matrix)
+        self.push.pads.set_pads_color(color_matrix)
 
     async def on_pad_pressed(self, pad_n, pad_ij, velocity):
         midi_note = await self.pad_ij_to_midi_note(pad_ij)
@@ -405,9 +405,9 @@ class MelodicMode(definitions.PyshaMode):
         elif button_name == push2_python.constants.BUTTON_SHIFT:
             self.modulation_wheel_mode = not self.modulation_wheel_mode
             if self.modulation_wheel_mode:
-                await self.push.touchstrip.set_modulation_wheel_mode()
+                self.push.touchstrip.set_modulation_wheel_mode()
             else:
-                await self.push.touchstrip.set_pitch_bend_mode()
+                self.push.touchstrip.set_pitch_bend_mode()
             self.app.buttons_need_update = True
             await self.app.add_display_notification(
                 "Touchstrip mode: {0}".format(
