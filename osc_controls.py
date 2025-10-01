@@ -373,7 +373,7 @@ class OSCSpacerAddress(object):
         self.address = config["address"]
         self.log = logger.getChild(f"{self.label}:Range")
         self.modmatrix = False
-
+        self.items = []
         if send_osc_func:
             self.send_osc_func = send_osc_func
             # self.send_osc_func(f"/q{self.address}", None)

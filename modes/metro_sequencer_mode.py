@@ -2339,7 +2339,7 @@ class MetroSequencerMode(MelodicMode):
             traceback.print_exc()
 
         # Saves Trig edit state
-        self.app.trig_edit_mode.save_state()
+        # self.app.trig_edit_mode.save_state()
 
         # # Saves Osc mode state
         # self.app.osc_mode.save_state()

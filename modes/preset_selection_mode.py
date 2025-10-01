@@ -96,7 +96,7 @@ class PresetSelectionMode(definitions.PyshaMode):
         self.send_osc("/patch/save", preset_path, instrument_shortname=instrument_shortname)
 
     def save_all_presets_to_state(self):
-        print("saving presets")
+        # print("saving presets")
         for idx, instrument_shortname in enumerate(self.app.instruments):
             preset_index = self.last_pad_in_column_pressed[instrument_shortname][0]
             preset_name = f"{instrument_shortname}_{preset_index}"            
@@ -106,7 +106,7 @@ class PresetSelectionMode(definitions.PyshaMode):
             # time.sleep(1)
             
         # self.app.osc_mode.save_state()
-        print("saved presets to state")
+        # print("saved presets to state")
 
     async def load_init_state(self, instrument_shortname):
        
@@ -163,7 +163,7 @@ class PresetSelectionMode(definitions.PyshaMode):
 
     def new_instrument_selected(self):
         self.current_page = 0
-        self.save_all_presets_to_state()
+        # self.save_all_presets_to_state()
         self.app.pads_need_update = True
         self.app.buttons_need_update = True
 
@@ -482,6 +482,14 @@ class PresetSelectionMode(definitions.PyshaMode):
             height=15,
             font_color=definitions.WHITE,
         )
+        show_text(
+            ctx,
+            5,
+            15,
+            "Save Current State",
+            height=15,
+            font_color=definitions.WHITE,
+        )
 
     def set_knob_postions(self):
         # TODO: This funciton is not working corretly really
@@ -533,6 +541,9 @@ class PresetSelectionMode(definitions.PyshaMode):
             elif button_name == push2_python.constants.BUTTON_RIGHT and show_next:
                 self.next_page()
             return True
+        elif button_name in push2_python.constants.BUTTON_UPPER_ROW_6:
+            self.save_all_presets_to_state()
+        
         elif button_name in push2_python.constants.BUTTON_UPPER_ROW_7:
             instrument_short_name = (
                 self.app.instrument_selection_mode.get_current_instrument_short_name()
@@ -540,6 +551,7 @@ class PresetSelectionMode(definitions.PyshaMode):
             preset_number = self.last_pad_in_column_pressed[instrument_short_name][0]
             self.presets[instrument_short_name][preset_number] = self.current_address
             self.save_presets()
+            self.app.metro_sequencer_mode.save_state()
         
         elif button_name == push2_python.constants.BUTTON_PLAY:
             metro = self.app.metro_sequencer_mode
