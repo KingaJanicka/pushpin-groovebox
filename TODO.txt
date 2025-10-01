@@ -29,4 +29,4 @@ the set_state for OSCControlSwitch, ControlMenu case has some major kludge in it
 it's hardcoded to look for the first control for the address, so it knows where to switch
 we should add a "address" field somewhere there, that would fix twist/nimbus too I rekon
 
-
+should look into RT kernel etc for rpi5

@@ -395,7 +395,8 @@ class OSCSpacerAddress(object):
         self.log.debug((address, value))
         self.value = value
 
-
+    def query(self, *args, **kwargs):
+        pass
 class ControlSpacer(object):
     name = "Spacer"
 
@@ -420,7 +421,9 @@ class ControlSpacer(object):
     def update_value(self, *args, **kwargs):
         pass
 
-
+    def query(self, *args, **kwargs):
+        pass
+    
 class OSCControlMacro(object):
     name = "Macro"
     size = 1

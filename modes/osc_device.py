@@ -156,7 +156,7 @@ class OSCDevice(PyshaMode):
             control.query()
 
     def query_all(self):
-        print("device q all")
+        # print("device q all")
         for control in self.controls:
             control.query()
 
