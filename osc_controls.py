@@ -20,11 +20,11 @@ scale_value() -> float()
 """
 
 
-async def scale_value(value, min_val, max_val, decimals=DECIMAL_PLACES):
+def scale_value(value, min_val, max_val, decimals=DECIMAL_PLACES):
     return round(float(value / SCALING_FACTOR * (max_val - min_val)), decimals)
 
 
-async def closest(lst, K):
+def closest(lst, K):
     return lst[min(range(len(lst)), key=lambda i: abs(lst[i] - K))]
 
 
@@ -61,10 +61,10 @@ class OSCControl(object):
             self.send_osc_func = send_osc_func
             # self.send_osc_func(f"/q{self.address}", None)
 
-    async def query(self):
-        await self.send_osc_func("/q" + self.address, None)
+    def query(self):
+        self.send_osc_func("/q" + self.address, None)
 
-    async def send_osc_func(self, address, payload):
+    def send_osc_func(self, address, payload):
         pass
 
     async def draw(self, ctx, x_part, draw_lock=False, lock_value=None):
@@ -347,7 +347,7 @@ class OSCControl(object):
         # this human readable string doesn't change with knob movements, querry fixes it but makes it glitchy
         # self.string = string
 
-    async def update_value(self, increment, **kwargs):
+    def update_value(self, increment, **kwargs):
         scaled = scale_value(increment, self.min, self.max)
         if self.value + scaled > self.max:
             self.value = self.max
@@ -359,7 +359,7 @@ class OSCControl(object):
         # Send cc message, subtract 1 to number because MIDO works from 0 - 127
         # msg = mido.Message('control_change', control=self.address, value=self.value)
         # msg=f'control_change {self.address} {self.value}'
-        await self.send_osc_func(self.address, float(self.value))
+        self.send_osc_func(self.address, float(self.value))
 
 
 class OSCSpacerAddress(object):
@@ -387,10 +387,10 @@ class OSCSpacerAddress(object):
     async def update_value(self, *args, **kwargs):
         pass
 
-    async def query(self):
-        await self.send_osc_func("/q" + self.address, None)
+    def query(self):
+        self.send_osc_func("/q" + self.address, None)
 
-    async def set_state(self, address, *args):
+    def set_state(self, address, *args):
         value, *rest = args
         self.log.debug((address, value))
         self.value = value
@@ -445,8 +445,8 @@ class OSCControlMacro(object):
         self.send_osc_func = send_osc_func
         self.log = logger.getChild("Macro")
 
-    async def update_value(self, increment, **kwargs):
-        scaled = await scale_value(increment, self.min, self.max)
+    def update_value(self, increment, **kwargs):
+        scaled = scale_value(increment, self.min, self.max)
         if self.value + scaled > self.max:
             self.value = self.max
         elif self.value + scaled < self.min:
@@ -459,10 +459,10 @@ class OSCControlMacro(object):
         # msg=f'control_change {self.address} {self.value}'
 
         for param in self.params:
-            await self.send_osc_func(param["address"], float(self.value))
+            self.send_osc_func(param["address"], float(self.value))
 
-    async def query(self):
-        await self.send_osc_func("/q" + self.address, None)
+    def query(self):
+        self.send_osc_func("/q" + self.address, None)
 
     async def set_state(self, address, *args):
         value, *rest = args
@@ -528,34 +528,34 @@ class OSCControlSwitch(object):
             self.groups[int(self.value)].select()
             
 
-    async def query(self):
+    def query(self):
         if self.address:
             self.send_osc_func("/q" + self.address, None)
 
-        active_group = await self.get_active_group()
-        await active_group.query()
+        active_group = self.get_active_group()
+        active_group.query()
 
-    async def update_value(self, increment, **kwargs):
+    def update_value(self, increment, **kwargs):
         if not self.value:
             pass
 
-        scaled = await scale_value(increment, 0, len(self.groups))
+        scaled = scale_value(increment, 0, len(self.groups))
 
         if 0 <= (self.value + scaled) <= len(self.groups):
             self.value += scaled
 
-            active_group = await self.get_active_group()
+            active_group = self.get_active_group()
             # if hasattr(active_group, "select"):
             #     active_group.select()
 
-    async def get_active_group(self):
+    def get_active_group(self):
         if int(self.value) <= len(self.groups) - 1:
             return self.groups[
                 int(self.value)
             ]  
             # TODO: nasty but enables less-twitchy knobs, prob needs fixing
 
-    async def set_state(self, address, *args):
+    def set_state(self, address, *args):
         # print("Control switch args", args)
         value, label = args
         # print("switch val = ", value)
@@ -747,20 +747,19 @@ class OSCGroup(object):
             if el:
                 return el
 
-    async def query(self):
+    def query(self):
         if self.address:
-            await self.send_osc_func("/q" + self.address, None)
+            self.send_osc_func("/q" + self.address, None)
 
         for control in self.controls:
             if hasattr(control, "query"):
-                await control.query()
+                control.query()
 
-    async def select(self):
+    def select(self):
         unique_addresses = list(set([control.address for control in self.controls]))
         self.log.debug((unique_addresses, "!!!"))
         for address in unique_addresses:
-            await self.send_osc_func("/q" + address, None)
-
+            self.send_osc_func("/q" + address, None)
 
 class OSCControlMenu(object):
     name = "Menu"
@@ -801,9 +800,9 @@ class OSCControlMenu(object):
         self.log.debug((address, value))
         self.value = await self.get_closest_idx(value)
         
-    async def query(self):
+    def query(self):
         # print("Control menu querry")
-        await self.send_osc_func("/q" + self.address, None)
+        self.send_osc_func("/q" + self.address, None)
 
     async def update_value(self, increment, **kwargs):
         # print("Update val called")
@@ -825,7 +824,7 @@ class OSCControlMenu(object):
         if hasattr(active_item, "select"):
             await active_item.select()
 
-    async def get_active_menu_item(self):
+    def get_active_menu_item(self):
         if self.value != None and math.floor(self.value) < len(self.items):
             return self.items[math.floor(self.value)]
 
@@ -836,11 +835,11 @@ class OSCControlMenu(object):
             if item.value == closest_value:
                 return idx
 
-    async def select(self):
+    def select(self):
         print("Select called")
-        active = await self.get_active_menu_item()
+        active = self.get_active_menu_item()
         self.log.debug((self.value, active.address, active.value))
-        await self.send_osc_func(active.address, float(active.value))
+        self.send_osc_func(active.address, float(active.value))
 
     async def draw(self, ctx, offset, draw_lock=False, lock_value=None):
         margin_top = 30
@@ -982,5 +981,5 @@ class OSCMenuItem(object):
         self.value = self.message["value"] if self.message else None
         self.send_osc_func = send_osc_func
 
-    async def select(self):
+    def select(self):
         self.send_osc_func(self.address, float(self.value))

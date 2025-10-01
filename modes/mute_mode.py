@@ -47,8 +47,8 @@ class MuteMode(MelodicMode):
     disable_controls = False
     tracks_active ={}
     
-    async def initialize(self, settings):
-        await super().initialize(settings)
+    def initialize(self, settings):
+        super().initialize(settings)
     
         for (
             instrument_short_name

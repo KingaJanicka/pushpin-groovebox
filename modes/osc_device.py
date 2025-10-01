@@ -51,7 +51,7 @@ class OSCDevice(PyshaMode):
                     current_page.append(c)
         return pages
 
-    async def __init__(
+    def __init__(
         self, config, osc={"client": {}, "server": {}, "dispatcher": {}}, engine=None, **kwargs
     ):
         self.app = kwargs["app"]
@@ -141,15 +141,15 @@ class OSCDevice(PyshaMode):
 
         await asyncio.sleep(0.1)
         for cmd in self.init:
-            await self.send_message(cmd["address"], float(cmd["value"]))
+            self.send_message(cmd["address"], float(cmd["value"]))
             # instrument.set_slot_state(cmd["address"], float(cmd["value"]))
             await asyncio.sleep(0.1)
     
 
 
-    async def send_message(self, *args):
+    def send_message(self, *args):
         self.log_out.debug(args)
-        return await self.osc["client"].send_message(*args)
+        return self.osc["client"].send_message(*args)
 
     async def query(self):
         for control in self.get_visible_controls():
@@ -205,7 +205,7 @@ class OSCDevice(PyshaMode):
         
 
     
-    async def get_next_prev_pages(self):
+    def get_next_prev_pages(self):
         show_prev = False
         if self.page > 0:
             show_prev = True
@@ -216,28 +216,28 @@ class OSCDevice(PyshaMode):
 
         return show_prev, show_next
 
-    async def set_page(self, page):
+    def set_page(self, page):
         self.page = page
         # self.query_visible_controls()
         # print("PAGE: ", self.page)
         # print(*self.pages[self.page], sep="\n")
 
-    async def query_visible_controls(self):
-        visible_controls = await self.get_visible_controls()
+    def query_visible_controls(self):
+        visible_controls = self.get_visible_controls()
         for control in visible_controls:
             if hasattr(control, "address") and control.address is not None:
-                await self.send_message("/q" + control.address, None)
+                self.send_message("/q" + control.address, None)
 
-    async def query_all_controls(self):
-        all_controls = await self.get_all_controls()
+    def query_all_controls(self):
+        all_controls = self.get_all_controls()
         for control in all_controls:
             if hasattr(control, "address") and control.address is not None:
-                await self.send_message("/q" + control.address, None)
+                self.send_message("/q" + control.address, None)
 
-    async def get_visible_controls(self):
+    def get_visible_controls(self):
         return self.pages[self.page]
 
-    async def get_all_controls(self):
+    def get_all_controls(self):
         try:
             all_controls = self.pages[0] + self.pages[1]
         except:
@@ -281,9 +281,9 @@ class OSCDevice(PyshaMode):
                     push2_python.constants.ENCODER_TRACK8_ENCODER,
                 ].index(encoder_name)
                 if self.app.sequencer_mode.disable_controls == False and self.app.metro_sequencer_mode.disable_controls == False:
-                    visible_controls = await self.get_visible_controls()
+                    visible_controls = self.get_visible_controls()
                     control = visible_controls[encoder_idx]
-                    await control.update_value(increment)
+                    control.update_value(increment)
                     
                     # Update state with current control value
                     # instrument_shortname = self.app.osc_mode.get_current_instrument_short_name_helper()

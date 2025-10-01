@@ -38,8 +38,8 @@ class MenuMode(PyshaMode):
     inter_message_message_min_time_ms = 4  # ms wait time after each message to DDRM
     is_active = False
 
-    async def __init__(self, app, settings=None, send_osc_func=None):
-        await super().__init__(app, settings=settings)
+    def __init__(self, app, settings=None, send_osc_func=None):
+        super().__init__(app, settings=settings)
         self.send_osc_func = send_osc_func
 
     async def should_be_enabled(self):

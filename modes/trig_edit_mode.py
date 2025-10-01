@@ -414,7 +414,7 @@ class TrigEditMode(definitions.PyshaMode):
         self.update_buttons()
         self.update_pads()
 
-    def new_instrument_selected(self):
+    async def new_instrument_selected(self):
         self.current_page = 0
         self.app.pads_need_update = True
         self.app.buttons_need_update = True

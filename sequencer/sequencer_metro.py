@@ -324,7 +324,7 @@ class SequencerMetro(object):
                 if prob >= random.randint(1, 6):
                     # We need to reset values that were changed by param locks
                     for control in self.controls_to_reset:
-                        await self.app.send_osc(control.address, float(control.value), instrument.name)
+                        self.app.send_osc(control.address, float(control.value), instrument.name)
                     self.timeline.schedule(
                         {"note": pitch_and_octave, "gate": gate, "amplitude": velocity}, count=1, output_device=self.midi_out_device
                     )
@@ -356,7 +356,7 @@ class SequencerMetro(object):
                                             lock_offset = lock_value - control.value
                                             value_after_scale = lock_offset * lock_scale_value + control.value
                                             if lock_value != None:
-                                                await self.app.send_osc(lock_address, value_after_scale, instrument.name)
+                                                self.app.send_osc(lock_address, value_after_scale, instrument.name)
                                                 self.controls_to_reset.append(control)
                                     else:
                                         lock_value = 0
@@ -375,7 +375,7 @@ class SequencerMetro(object):
                                     lock_offset = lock_value - control.value
                                     value_after_scale = lock_offset * lock_scale_value + control.value
                                     if lock_value != None and lock_address != None:
-                                        await self.app.send_osc(lock_address, value_after_scale, instrument.name)
+                                        self.app.send_osc(lock_address, value_after_scale, instrument.name)
                                         self.controls_to_reset.append(control)
                             else:
                                 lock_value = 0
@@ -413,7 +413,7 @@ class SequencerMetro(object):
             return self.aux_3
 
     async def get_current_instrument_short_name_helper(self):
-        return await self.app.instrument_selection_mode.get_current_instrument_short_name()
+        return self.app.instrument_selection_mode.get_current_instrument_short_name()
 
     async def set_states(self, lane, values):
         for index, value in enumerate(values):

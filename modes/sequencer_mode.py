@@ -71,7 +71,7 @@ class SequencerMode(MelodicMode):
     instrument_scale_edit_controls = {}
     scale_edit_controls = []
 
-    async def initialize(self, settings):
+    def initialize(self, settings):
         super().initialize(settings)
         for (
             instrument_short_name
@@ -248,7 +248,7 @@ class SequencerMode(MelodicMode):
 
         self.selected_instrument = TRACK_NAMES[0]
 
-        device = self.app.osc_mode.get_current_instrument_device()
+        device = await self.app.osc_mode.get_current_instrument_device()
         device.disable_controls = self.disable_controls
         # print(self.selected_instrument)
         # print(self.app.osc_mode.get_current_instrument_osc_address_sections())

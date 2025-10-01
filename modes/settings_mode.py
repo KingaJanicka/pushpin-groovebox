@@ -44,7 +44,7 @@ class SettingsMode(definitions.PyshaMode):
             return True  # Return true because page rotation finished
         return False
 
-    async def initialize(self, settings=None):
+    def initialize(self, settings=None):
         current_time = time.time()
         for encoder_name in self.push.encoders.available_names:
             self.encoders_state[encoder_name] = {

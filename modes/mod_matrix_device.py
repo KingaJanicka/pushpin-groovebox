@@ -23,7 +23,7 @@ class ModMatrixDevice(definitions.PyshaMode):
     def size(self):
         return 8
 
-    async def __init__(
+    def __init__(
         self,
         osc={"client": {}, "server": {}, "dispatcher": {}},
         engine=None,
@@ -127,9 +127,9 @@ class ModMatrixDevice(definitions.PyshaMode):
         #     )
         #     self.controls.append(control)
 
-        await self.map_dispatchers()
+        self.map_dispatchers()
 
-    async def map_dispatchers(self):
+    def map_dispatchers(self):
         for source in self.mod_sources_macros:
             self.dispatcher.map(source["address"], self.set_state)
 

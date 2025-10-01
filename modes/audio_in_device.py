@@ -27,7 +27,7 @@ class AudioInDevice(PyshaMode):
         return i
 
     @property
-    async def pages(self):
+    def pages(self):
         pages = [[]]
         idx = 0
         for control in self.controls:
@@ -46,7 +46,7 @@ class AudioInDevice(PyshaMode):
 
             current_page.append(control)
             if isinstance(control, OSCControlSwitch):
-                active_group: OSCGroup = await control.get_active_group()
+                active_group: OSCGroup = control.get_active_group()
                 for c in active_group.controls:
                     current_page.append(c)
         return pages
@@ -55,7 +55,7 @@ class AudioInDevice(PyshaMode):
     async def instrument(self):
         return await self.get_instrument_for_pid(self.engine.PID)
 
-    async def __init__(
+    def __init__(
         self,
         config,
         osc={"client": {}, "server": {}, "dispatcher": {}},
@@ -206,9 +206,9 @@ class AudioInDevice(PyshaMode):
         self.dispatcher.map(high_cut_control.address, high_cut_control.set_state)
         self.controls.append(high_cut_control)
         self.page_one_controls.append(high_cut_control)
-        for control in await self.get_visible_controls():
+        for control in self.get_visible_controls():
             if hasattr(control, "select"):
-                await control.select()
+                control.select()
         # self.update()
 
     async def update(self):
@@ -599,18 +599,18 @@ class AudioInDevice(PyshaMode):
         # print("PAGE: ", self.page)
         # print(*self.pages[self.page], sep="\n")
 
-    async def query_visible_controls(self):
-        visible_controls = await self.get_visible_controls()
+    def query_visible_controls(self):
+        visible_controls = self.get_visible_controls()
         for control in visible_controls:
             if hasattr(control, "address") and control.address is not None:
-                await self.send_message("/q" + control.address, None)
+                self.send_message("/q" + control.address, None)
 
-    async def query_all_controls(self):
-        all_controls = await self.get_all_controls()
-        await self.update()
+    def query_all_controls(self):
+        all_controls = self.get_all_controls()
+        self.update()
         for control in all_controls:
             if hasattr(control, "address") and control.address is not None:
-                await self.send_message("/q" + control.address, None)
+                self.send_message("/q" + control.address, None)
 
     async def get_pipewire_config(self):
         for item in self.clients:
@@ -629,21 +629,21 @@ class AudioInDevice(PyshaMode):
                 return instrument
         return None
 
-    async def get_visible_controls(self):
+    def get_visible_controls(self):
         return self.pages[self.page]
 
 
-    async def get_all_controls(self):
+    def get_all_controls(self):
         try:
             all_controls = self.pages[0] + self.pages[1]
         except:
             all_controls = self.pages[0]
         return all_controls
 
-    async def on_encoder_rotated(self, encoder_name, increment):
+    def on_encoder_rotated(self, encoder_name, increment):
         #This if statement is for setting post-synth volume levels
         if encoder_name == push2_python.constants.ENCODER_SWING_ENCODER:
-            instrument =  await self.app.osc_mode.get_current_instrument()
+            instrument =  self.app.osc_mode.get_current_instrument()
             all_volumes = self.app.volumes
             instrument_idx = instrument.osc_in_port % 10
             track_L_volume = all_volumes[instrument_idx * 2]
@@ -662,7 +662,7 @@ class AudioInDevice(PyshaMode):
             all_volumes[instrument_idx*2] = track_L_volume
             all_volumes[instrument_idx*2 +1] = track_R_volume
             self.app.volumes = all_volumes
-            await self.app.set_main_volumes()
+            self.app.set_main_volumes()
 
         try:
             encoder_idx = [
@@ -676,13 +676,13 @@ class AudioInDevice(PyshaMode):
                 push2_python.constants.ENCODER_TRACK8_ENCODER,
             ].index(encoder_name)
             if self.app.sequencer_mode.disable_controls == False and self.app.metro_sequencer_mode.disable_controls == False:
-                visible_controls = await self.get_visible_controls()
+                visible_controls = self.get_visible_controls()
                 control = visible_controls[encoder_idx]
-                await control.update_value(increment)
+                control.update_value(increment)
                 self.last_knob_turned = encoder_idx
                 match encoder_idx:
                     case 2 | 3 | 4 | 5:
-                        await self.update_input_gains()
+                        self.update_input_gains()
 
         
         except ValueError:

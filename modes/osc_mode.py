@@ -61,7 +61,7 @@ class OSCMode(PyshaMode):
     cli_needs_update = False
     osc_mode_filename = "osc_mode.json"
 
-    async def initialize(self, settings=None):
+    def initialize(self, settings=None):
         device_names = [
             Path(device_file).stem
             for device_file in glob("./definitions/device_definitions/*.json")
@@ -193,11 +193,11 @@ class OSCMode(PyshaMode):
                             elif isinstance(control, OSCControlSwitch):
                                 # Nested items need more care with saving their state
                                 control.value = state_value[0]
-                                active_group = await control.get_active_group()
+                                active_group = control.get_active_group()
                                 for idx, active_group_control in enumerate(active_group.controls):
                                     active_group_control.value = state_value[idx + 1]
-                                    await self.app.send_osc(active_group_control.address, int(state_value[idx + 1]), instrument_short_name)
-                                await active_group.select()
+                                    self.app.send_osc(active_group_control.address, int(state_value[idx + 1]), instrument_short_name)
+                                active_group.select()
                                     
             else:
                 # if file does not exist, create one

@@ -92,7 +92,7 @@ class MelodicMode(definitions.PyshaMode):
         self.poly_at_max_range = value
         self.last_time_at_params_edited = time.time()
 
-    async def set_poly_at_curve_bending(self, value):
+    def set_poly_at_curve_bending(self, value):
         # Parameter in range [0, 100]
         if value < 0:
             value = 0
@@ -101,7 +101,7 @@ class MelodicMode(definitions.PyshaMode):
         self.poly_at_curve_bending = value
         self.last_time_at_params_edited = time.time()
 
-    async def get_poly_at_curve(self):
+    def get_poly_at_curve(self):
         pow_curve = [
             pow(e, 3 * self.poly_at_curve_bending / 100)
             for e in [
@@ -272,7 +272,7 @@ class MelodicMode(definitions.PyshaMode):
                 if await self.is_midi_note_root_octave(corresponding_midi_note):
                     try:
                         cell_color = (
-                            await self.app.instrument_selection_mode.get_current_instrument_color()
+                            self.app.instrument_selection_mode.get_current_instrument_color()
                         )
                     except AttributeError:
                         cell_color = definitions.YELLOW
@@ -292,7 +292,7 @@ class MelodicMode(definitions.PyshaMode):
             # print("Midi_note is not none")
             self.latest_velocity_value = (time.time(), velocity)
             if (
-                await self.app.instrument_selection_mode.get_current_instrument_info().get(
+                self.app.instrument_selection_mode.get_current_instrument_info().get(
                     "illuminate_local_notes", True
                 )
                 or self.app.notes_midi_in is None
@@ -311,8 +311,8 @@ class MelodicMode(definitions.PyshaMode):
                 velocity=velocity if not self.fixed_velocity_mode else 127,
             )
             await self.app.send_midi(msg)
-            instrument = await self.app.instrument_selection_mode.get_current_instrument_short_name()
-            await self.app.send_osc("/mnote", [float(midi_note), float(velocity)], instrument)
+            instrument = self.app.instrument_selection_mode.get_current_instrument_short_name()
+            self.app.send_osc("/mnote", [float(midi_note), float(velocity)], instrument)
             # print("after MIDO")
             # self.send_osc_func('/mnote', [float(midi_note), float(velocity)])
             await self.update_pads()  # Directly calling update pads method because we want user to feel feedback as quick as possible
@@ -323,7 +323,7 @@ class MelodicMode(definitions.PyshaMode):
         midi_note = await self.pad_ij_to_midi_note(pad_ij)
         if midi_note is not None:
             if (
-                await self.app.instrument_selection_mode.get_current_instrument_info().get(
+                self.app.instrument_selection_mode.get_current_instrument_info().get(
                     "illuminate_local_notes", True
                 )
                 or self.app.notes_midi_in is None
@@ -332,8 +332,8 @@ class MelodicMode(definitions.PyshaMode):
                 await self.remove_note_being_played(midi_note, "push")
             msg = mido.Message("note_off", note=midi_note, velocity=velocity)
             await self.app.send_midi(msg)
-            instrument = await self.app.instrument_selection_mode.get_current_instrument_short_name()
-            await self.app.send_osc("/mnote/rel", [float(midi_note), float(velocity)], instrument)
+            instrument = self.app.instrument_selection_mode.get_current_instrument_short_name()
+            self.app.send_osc("/mnote/rel", [float(midi_note), float(velocity)], instrument)
             # print("midi sent", pad_ij)
             # TODO: This send_osc_func makes so the sequencer pads don't update correctly
             # self.send_osc_func('/mnote/rel', [float(midi_note), float(velocity)])

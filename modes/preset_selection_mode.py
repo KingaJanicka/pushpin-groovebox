@@ -29,7 +29,7 @@ class PresetSelectionMode(definitions.PyshaMode):
     patches_dicts = []
     current_address = None
 
-    async def initialize(self, settings=None):
+    def initialize(self, settings=None):
         for idx, instrument_short_name in enumerate(
             self.get_all_distinct_instrument_short_names_helper()
         ):
@@ -64,9 +64,9 @@ class PresetSelectionMode(definitions.PyshaMode):
 
         try:
             
-            await self.load_presets()
+            self.load_presets()
         except:
-            await self.save_presets()
+            self.save_presets()
 
 
     async def init_surge_preset_state(self):
@@ -78,9 +78,9 @@ class PresetSelectionMode(definitions.PyshaMode):
                 does_file_exist = os.path.isfile(f"{preset_path}.fxp") 
                 if does_file_exist == False:
                     print('regen')
-                    await self.send_osc("/patch/load", self.presets[instrument][idx], instrument_shortname=instrument)
+                    self.send_osc("/patch/load", self.presets[instrument][idx], instrument_shortname=instrument)
                     asyncio.sleep(0.1)
-                    await self.send_osc("/patch/save", preset_path, instrument_shortname=instrument)
+                    self.send_osc("/patch/save", preset_path, instrument_shortname=instrument)
                     asyncio.sleep(0.1)
             
 
@@ -93,7 +93,7 @@ class PresetSelectionMode(definitions.PyshaMode):
         preset_name = f"{instrument_shortname}_{preset_index}"            
         preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
         print(preset_path)
-        await self.send_osc("/patch/save", preset_path, instrument_shortname=instrument_shortname)
+        self.send_osc("/patch/save", preset_path, instrument_shortname=instrument_shortname)
 
     async def save_all_presets_to_state(self):
         print("saving presets")
@@ -102,7 +102,7 @@ class PresetSelectionMode(definitions.PyshaMode):
             preset_name = f"{instrument_shortname}_{preset_index}"            
             preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
             # print(preset_path)
-            await self.send_osc("/patch/save", preset_path, instrument_shortname=instrument_shortname)
+            self.send_osc("/patch/save", preset_path, instrument_shortname=instrument_shortname)
             # time.sleep(1)
             
         # self.app.osc_mode.save_state()
@@ -117,7 +117,7 @@ class PresetSelectionMode(definitions.PyshaMode):
         preset_name = f"{instrument_shortname}_{0}"            
         preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
         instrument = self.app.instruments[instrument_shortname]
-        await self.send_osc("/patch/load", preset_path, instrument_shortname=instrument_shortname)
+        self.send_osc("/patch/load", preset_path, instrument_shortname=instrument_shortname)
         await asyncio.sleep(0.5)
         await instrument.query_slots()
         await asyncio.sleep(0.5)
@@ -154,11 +154,11 @@ class PresetSelectionMode(definitions.PyshaMode):
 
         return d
 
-    async def load_presets(self):
+    def load_presets(self):
         if os.path.exists(self.presets_filename):
             self.presets = json.load(open(self.presets_filename))
 
-    async def save_presets(self):
+    def save_presets(self):
         json.dump(self.presets, open(self.presets_filename, "w"))  # Save to file
 
     async def new_instrument_selected(self):
@@ -172,7 +172,7 @@ class PresetSelectionMode(definitions.PyshaMode):
 
     async def add_preset(self, preset_number, bank_number):
         instrument_short_name = (
-            await self.app.instrument_selection_mode.get_current_instrument_short_name()
+            self.app.instrument_selection_mode.get_current_instrument_short_name()
         )
         if instrument_short_name not in self.presets:
             self.presets[instrument_short_name] = []
@@ -184,7 +184,7 @@ class PresetSelectionMode(definitions.PyshaMode):
             self.app.instrument_selection_mode.get_all_distinct_instrument_short_names()
         )
 
-    async def get_current_instrument_short_name_helper(self):
+    def get_current_instrument_short_name_helper(self):
         return self.app.instrument_selection_mode.get_current_instrument_short_name()
 
     async def get_preset_path_for_instrument(self, instrument_shortname):
@@ -196,7 +196,7 @@ class PresetSelectionMode(definitions.PyshaMode):
 
     async def remove_preset(self, preset_number, bank_number):
         instrument_short_name = (
-            await self.app.instrument_selection_mode.get_current_instrument_short_name()
+            self.app.instrument_selection_mode.get_current_instrument_short_name()
         )
         if instrument_short_name in self.presets:
             self.presets[instrument_short_name] = [
@@ -231,13 +231,13 @@ class PresetSelectionMode(definitions.PyshaMode):
 
     async def get_num_banks(self):
         # Returns the number of available banks of the selected instrument
-        return await self.app.instrument_selection_mode.get_current_instrument_info()[
+        return self.app.instrument_selection_mode.get_current_instrument_info()[
             "n_banks"
         ]
 
     async def get_bank_names(self):
         # Returns list of bank names
-        return await self.app.instrument_selection_mode.get_current_instrument_info()[
+        return self.app.instrument_selection_mode.get_current_instrument_info()[
             "bank_names"
         ]
 
@@ -351,7 +351,7 @@ class PresetSelectionMode(definitions.PyshaMode):
 
     async def update_pads(self):
         instrument_short_name = (
-            await self.app.instrument_selection_mode.get_current_instrument_short_name()
+            self.app.instrument_selection_mode.get_current_instrument_short_name()
         )
         color_matrix = []
         for i in range(0, 8):
@@ -377,7 +377,7 @@ class PresetSelectionMode(definitions.PyshaMode):
             await self.app.instrument_selection_mode.select_instrument(pad_ij[1])
 
         instrument_short_name = (
-            await self.app.instrument_selection_mode.get_current_instrument_short_name()
+            self.app.instrument_selection_mode.get_current_instrument_short_name()
         )
         self.last_pad_in_column_pressed[instrument_short_name] = pad_ij
         await self.set_knob_postions()
@@ -488,7 +488,7 @@ class PresetSelectionMode(definitions.PyshaMode):
         # Presets won't draw correctly when switching instrumnents, some won't draw at all
         # Needs to set all knobs not just one
         instrument_short_name = (
-            await self.app.instrument_selection_mode.get_current_instrument_short_name()
+            self.app.instrument_selection_mode.get_current_instrument_short_name()
         )
         preset_number = self.last_pad_in_column_pressed[instrument_short_name][0]
         preset_address = self.presets[instrument_short_name][preset_number]
@@ -535,7 +535,7 @@ class PresetSelectionMode(definitions.PyshaMode):
             return True
         elif button_name in push2_python.constants.BUTTON_UPPER_ROW_7:
             instrument_short_name = (
-                await self.app.instrument_selection_mode.get_current_instrument_short_name()
+                self.app.instrument_selection_mode.get_current_instrument_short_name()
             )
             preset_number = self.last_pad_in_column_pressed[instrument_short_name][0]
             self.presets[instrument_short_name][preset_number] = self.current_address
@@ -588,10 +588,10 @@ class PresetSelectionMode(definitions.PyshaMode):
         except ValueError:
             pass  # Encoder not in list
 
-    async def send_osc(self, *args, instrument_shortname=None):
-        instrument = await self.app.instruments.get(
-            instrument_shortname or await self.app.osc_mode.get_current_instrument_short_name_helper(), None
+    def send_osc(self, *args, instrument_shortname=None):
+        instrument = self.app.instruments.get(
+            instrument_shortname or self.app.osc_mode.get_current_instrument_short_name_helper(), None
         )
         # print(instrument_shortname, instrument)
         if instrument:
-            return await instrument.send_message(*args)
+            return instrument.send_message(*args)

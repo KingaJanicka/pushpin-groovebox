@@ -86,7 +86,7 @@ class InstrumentSelectionMode(definitions.PyshaMode):
     async def get_settings_to_save(self):
         return {}
 
-    async def get_all_distinct_instrument_short_names(self):
+    def get_all_distinct_instrument_short_names(self):
         distinct = list(
             set(
                 [

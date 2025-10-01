@@ -199,7 +199,7 @@ class PyshaApp(object):
             self, settings=settings, send_osc_func=self.send_osc
         ) 
         self.active_modes += [self.instrument_selection_mode, self.osc_mode]
-        self.instrument_selection_mode.select_instrument(
+        await self.instrument_selection_mode.select_instrument(
             self.instrument_selection_mode.selected_instrument
         )  
         self.ddrm_tone_selector_mode = DDRMToneSelectorMode(self, settings=settings)
@@ -700,7 +700,7 @@ class PyshaApp(object):
         if self.midi_out is not None:
             self.midi_out.send(msg)
 
-    async def send_osc(self, address, value, instrument_short_name=None):
+    def send_osc(self, address, value, instrument_short_name=None):
         # print(
         #     instrument_short_name,
         #     self.instrument_selection_mode.get_current_instrument_short_name(),
@@ -718,20 +718,21 @@ class PyshaApp(object):
             else:
                 # This is for wiggling knobs
                 client = self.instruments[
-                    await self.instrument_selection_mode.get_current_instrument_short_name()
+                    self.instrument_selection_mode.get_current_instrument_short_name()
                 ].get("client", None)
 
                 if client:
-                    await client.send_message(address, value)
+                    client.send_message(address, value)
                 # print("adress", address, value)
         except Exception as e:
             print("Exception in app.py send_osc")
             traceback.print_exc()
+    
 
-    async def send_osc_multi(self, commands, instrument_short_name=None):
+    def send_osc_multi(self, commands, instrument_short_name=None):
         for command in commands:
             address, val = command
-            await self.send_osc(address, val, instrument_short_name)
+            self.send_osc(address, val, instrument_short_name)
 
     async def midi_in_handler(self, msg):
         # if msg.type != 'clock':
@@ -1147,7 +1148,7 @@ class PyshaApp(object):
     
         # print("disconnected __________")
     
-    async def set_main_volumes(self, *args):
+    def set_main_volumes(self, *args):
         # TODO: need to make a client for all them nodes
         # This is done in instrument, just copy
         for idx, instrument in enumerate(self.instruments):
@@ -1155,8 +1156,8 @@ class PyshaApp(object):
             right_channel_idx = left_channel_idx + 1
             # Value only from left because we want to have it center
             volume_value = self.volumes[left_channel_idx]
-            await self.volume_node_osc_client.send_message(f"/vol_{left_channel_idx}", float(volume_value))
-            await self.volume_node_osc_client.send_message(f"/vol_{right_channel_idx}", float(volume_value))
+            self.volume_node_osc_client.send_message(f"/vol_{left_channel_idx}", float(volume_value))
+            self.volume_node_osc_client.send_message(f"/vol_{right_channel_idx}", float(volume_value))
         
   
 
@@ -1335,7 +1336,7 @@ async def main():
     await app.get_volume_client()
     await app.get_volume_node()
     await app.disconnect_links_from_volume_node()
-    await app.set_main_volumes()
+    app.set_main_volumes()
     
     #Querry controls to update initial state
 
