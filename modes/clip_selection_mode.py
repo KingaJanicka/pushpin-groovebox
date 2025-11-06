@@ -9,12 +9,12 @@ from pathlib import Path
 import logging
 import time
 import asyncio
-log = logging.getLogger("preset_selection_mode")
+log = logging.getLogger("clip_selection_mode")
 
 # log.setLevel(level=logging.DEBUG)
 
 
-class PresetSelectionMode(definitions.PyshaMode):
+class ClipSelectionMode(definitions.PyshaMode):
 
     xor_group = "pads"
 
@@ -126,19 +126,7 @@ class PresetSelectionMode(definitions.PyshaMode):
         for device in instrument.current_devices:
             await device.select()
             device.query_all()
-        # Turns out we don't need those statements but leaving them in here just
-        # in case this pattern is needed later 
-        # if instrument.current_devices[0].label == "Audio In":
-        #     print(instrument.name)
-
-        # elif instrument.current_devices[1].label == "Audio In":
-        #     print(instrument.name)
-
-        # time.sleep(1)
-        # instrument.init_devices_sync()
-        # print("end of load init presets")
-        
-        
+            
     def create_dict_from_paths(self, arr):
         d = dict()
         for path in arr:
@@ -184,7 +172,25 @@ class PresetSelectionMode(definitions.PyshaMode):
         return (
             self.app.instrument_selection_mode.get_all_distinct_instrument_short_names()
         )
+    def get_current_page(self):
+        return self.current_page
 
+    def get_num_banks(self):
+        # Returns the number of available banks of the selected instrument
+        return self.app.instrument_selection_mode.get_current_instrument_info()[
+            "n_banks"
+        ]
+
+    def get_bank_names(self):
+        # Returns list of bank names
+        return self.app.instrument_selection_mode.get_current_instrument_info()[
+            "bank_names"
+        ]
+
+    def get_num_pages(self):
+        # Returns the number of available preset pages per instrument (2 per bank)
+        return self.get_num_banks() * 2
+    
     def get_current_instrument_short_name_helper(self):
         return self.app.instrument_selection_mode.get_current_instrument_short_name()
 
@@ -208,43 +214,6 @@ class PresetSelectionMode(definitions.PyshaMode):
                 if preset_number != fp_preset_number or bank_number != fp_bank_number
             ]
             self.save_presets()
-
-    def preset_num_in_favourites(self, preset_number, bank_number):
-        instrument_short_name = (
-            self.app.instrument_selection_mode.get_current_instrument_short_name()
-        )
-        if instrument_short_name not in self.presets:
-            return False
-        for fp_preset_number, fp_bank_number in self.presets[instrument_short_name]:
-            if preset_number == fp_preset_number and bank_number == fp_bank_number:
-                return True
-        return False
-
-    def get_current_page(self):
-        # Returns the current page of presets being displayed in the pad grid
-        # page 0 = bank 0, presets 0-63
-        # page 1 = bank 0, presets 64-127
-        # page 2 = bank 1, presets 0-63
-        # page 3 = bank 1, presets 64-127
-        # ...
-        # The number of total available pages depends on the synth.
-        return self.current_page
-
-    def get_num_banks(self):
-        # Returns the number of available banks of the selected instrument
-        return self.app.instrument_selection_mode.get_current_instrument_info()[
-            "n_banks"
-        ]
-
-    def get_bank_names(self):
-        # Returns list of bank names
-        return self.app.instrument_selection_mode.get_current_instrument_info()[
-            "bank_names"
-        ]
-
-    def get_num_pages(self):
-        # Returns the number of available preset pages per instrument (2 per bank)
-        return self.get_num_banks() * 2
 
     def next_page(self):
         if self.current_page < self.get_num_pages() - 1:
@@ -277,21 +246,7 @@ class PresetSelectionMode(definitions.PyshaMode):
         preset_num = (self.get_current_page() % 2) * 64 + pad_ij[0] * 8 + pad_ij[1]
         bank_num = self.get_current_page() // 2
         return (preset_num, bank_num)
-
-    # def send_select_new_preset(self, preset_num):
-    #     msg = mido.Message(
-    #         "program_change", program=preset_num
-    #     )  # Should this be 1-indexed?
-    #     self.app.send_midi(msg)
-
-    # def send_select_new_bank(self, bank_num):
-    #     # If synth only has 1 bank, don't send bank change messages
-    #     if self.get_num_banks() > 1:
-    #         msg = mido.Message(
-    #             "control_change", control=0, value=bank_num
-    #         )  # Should this be 1-indexed?
-    #         self.app.send_midi(msg)
-
+    
     def notify_status_in_display(self):
         bank_number = self.get_current_page() // 2 + 1
         bank_names = self.get_bank_names()
@@ -308,7 +263,6 @@ class PresetSelectionMode(definitions.PyshaMode):
     def activate(self):
         self.update_pads()
         self.notify_status_in_display()
-        self.set_knob_postions()
         
 
 
@@ -374,94 +328,27 @@ class PresetSelectionMode(definitions.PyshaMode):
         self.push.pads.set_pads_color(color_matrix)
 
     def on_pad_pressed(self, pad_n, pad_ij, velocity):
-        if pad_ij[1] != self.app.instrument_selection_mode.selected_instrument:
-            self.app.instrument_selection_mode.select_instrument(pad_ij[1])
-
         instrument_short_name = (
             self.app.instrument_selection_mode.get_current_instrument_short_name()
         )
+        
+        sequencer = self.app.metro_sequencer_mode.instrument_sequencers[instrument_short_name]
+        last_pad_pressed = self.last_pad_in_column_pressed[instrument_short_name]
+        sequencer.save_state(clip=last_pad_pressed[0])
+        
+        if pad_ij[1] != self.app.instrument_selection_mode.selected_instrument:
+            self.app.instrument_selection_mode.select_instrument(pad_ij[1])
+
         self.last_pad_in_column_pressed[instrument_short_name] = pad_ij
-        self.set_knob_postions()
-        log.debug(f"Loading {self.presets[instrument_short_name][pad_ij[0]]}")
-        self.send_osc("/patch/load", self.presets[instrument_short_name][pad_ij[0]])
         self.update_pads()
 
-        # Resets the last knob position on the mod matrix
-        # to avoid indexing OOB when switching presets
-        instrument = self.app.osc_mode.get_current_instrument()
-        devices = self.app.osc_mode.get_current_instrument_devices()
-        for device in devices:
-            if device.label == "Mod Matrix":
-                device.controls[7] = 0
+        sequencer.load_state(clip=pad_ij[0])
+        
 
         return True  # Prevent other modes to get this event
 
     def on_pad_released(self, pad_n, pad_ij, velocity):
-        instrument = self.app.osc_mode.get_current_instrument()
-        instrument.query_slots()
-        instrument.query_all_controls()
-        instrument.update_current_devices()
-        instrument.init_devices_sync()
-        self.update_pads()
         return True  # Prevent other modes to get this event
-
-    def nested_draw(
-        self,
-        ctx,
-        current,
-        level,
-        max_height,
-        item_height=20,
-        padding_top=5,
-        instrument_selector_height=20,
-    ):
-        for idx, entry in enumerate(current.items()):
-            key, val = entry
-            bg_color = (
-                definitions.YELLOW
-                if int(self.state[level]) == idx
-                else definitions.GREEN
-            )
-            text_color = (
-                definitions.BLACK
-                if int(self.state[level]) == idx
-                else definitions.WHITE
-            )
-
-            if isinstance(val, str) and idx - 2 <= self.state[level] <= idx + 3:
-                if idx == int(self.state[level]):
-                    self.current_address = os.path.splitext(self.get_preset_path(val))[
-                        0
-                    ]
-                show_text(
-                    ctx,
-                    level,
-                    item_height * (idx - int(self.state[level])) + padding_top + 60,
-                    Path(val).stem,
-                    height=item_height,
-                    font_color=text_color,
-                    background_color=bg_color,
-                    font_size_percentage=1,
-                    center_vertically=True,
-                    center_horizontally=True,
-                    rectangle_padding=1,
-                )
-            elif isinstance(val, dict) and idx - 2 <= self.state[level] <= idx + 3:
-                show_text(
-                    ctx,
-                    level,
-                    item_height * (idx - int(self.state[level])) + padding_top + 60,
-                    key,
-                    height=item_height,
-                    font_color=text_color,
-                    background_color=bg_color,
-                    font_size_percentage=1,
-                    center_vertically=True,
-                    center_horizontally=True,
-                    rectangle_padding=1,
-                )
-                if int(self.state[level]) == idx:
-                    self.nested_draw(ctx, val, level=level + 1, max_height=max_height)
 
     def get_preset_path(self, preset):
         chosen_folder = None
@@ -472,64 +359,6 @@ class PresetSelectionMode(definitions.PyshaMode):
         elif 2 <= self.state[0] < 3:
             chosen_folder = definitions.USER_PATCHES_FOLDER
         return chosen_folder + "/" + preset
-
-    def update_display(self, ctx, w, h):
-        self.nested_draw(ctx, self.patches, level=0, max_height=h)
-        show_text(
-            ctx,
-            6,
-            15,
-            "Set Preset",
-            height=15,
-            font_color=definitions.WHITE,
-        )
-        show_text(
-            ctx,
-            5,
-            15,
-            "Save Current State",
-            height=15,
-            font_color=definitions.WHITE,
-        )
-
-    def set_knob_postions(self):
-        # TODO: This funciton is not working corretly really
-        # Presets won't draw correctly when switching instrumnents, some won't draw at all
-        # Needs to set all knobs not just one
-        instrument_short_name = (
-            self.app.instrument_selection_mode.get_current_instrument_short_name()
-        )
-        preset_number = self.last_pad_in_column_pressed[instrument_short_name][0]
-        preset_address = self.presets[instrument_short_name][preset_number]
-
-        address_array = (
-            preset_address.replace(definitions.FACTORY_PATCHES_FOLDER, "")
-            .replace(definitions.THIRD_PARTY_PATCHES_FOLDER, "")
-            .replace(definitions.USER_PATCHES_FOLDER, "")[1:]
-            .split("/")
-        )
-        # address_array[-1] = address_array[-1] + ".fxp"
-        level = None
-
-        try:
-            if definitions.FACTORY_PATCHES_FOLDER in preset_address:
-                self.state[0] = 0
-                level = self.patches["Factory"]
-            elif definitions.THIRD_PARTY_PATCHES_FOLDER in preset_address:
-                self.state[0] = 1
-                level = self.patches["Third Party"]
-            elif definitions.USER_PATCHES_FOLDER in preset_address:
-                self.state[0] = 2
-                level = self.patches["User"]
-
-            for idx, piece in enumerate(address_array):
-                self.state[idx + 1] = list(level).index(piece)
-                level = level[piece]  # who knows what this line does? But it works!
-        except Exception as e:
-            print(
-                f"ERROR in preset_selection_mode set_knob_positions() at {preset_address}"
-            )
-            traceback.print_exc()
 
     def on_button_pressed(self, button_name):
         if button_name in [
@@ -563,43 +392,6 @@ class PresetSelectionMode(definitions.PyshaMode):
             elif metro.sequencer_is_playing == True:
                 metro.stop_timeline()
                 metro.sequencer_is_playing = False
-
-
-    def on_encoder_rotated(self, encoder_name, increment):
-        try:
-            encoder_idx = [
-                push2_python.constants.ENCODER_TRACK1_ENCODER,
-                push2_python.constants.ENCODER_TRACK2_ENCODER,
-                push2_python.constants.ENCODER_TRACK3_ENCODER,
-                push2_python.constants.ENCODER_TRACK4_ENCODER,
-                push2_python.constants.ENCODER_TRACK5_ENCODER,
-                push2_python.constants.ENCODER_TRACK6_ENCODER,
-                push2_python.constants.ENCODER_TRACK7_ENCODER,
-                push2_python.constants.ENCODER_TRACK8_ENCODER,
-            ].index(encoder_name)
-
-            current_dict = self.patches
-            for level in range(encoder_idx):
-                for idx, entry in enumerate(current_dict.values()):
-                    if int(self.state[level]) == idx:
-                        if isinstance(entry, dict):
-                            current_dict = entry
-
-            if (
-                0
-                <= self.state[encoder_idx] + increment * 0.1
-                < len(current_dict.keys())
-            ):
-                if int(self.state[encoder_idx] + increment * 0.1) != int(
-                    self.state[encoder_idx]
-                ):
-                    for idx in range(encoder_idx + 1, 8 - encoder_idx):
-                        self.state[idx] = 0
-
-                self.state[encoder_idx] += increment * 0.1
-
-        except ValueError:
-            pass  # Encoder not in list
 
     def send_osc(self, *args, instrument_shortname=None):
         instrument = self.app.instruments.get(

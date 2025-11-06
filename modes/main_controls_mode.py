@@ -15,7 +15,7 @@ CONVERT_BUTTON = push2_python.constants.BUTTON_CONVERT
 DOUBLE_LOOP_BUTTON = push2_python.constants.BUTTON_DOUBLE_LOOP
 QUANTIZE_BUTTON = push2_python.constants.BUTTON_QUANTIZE
 MUTE_BUTTON = push2_python.constants.BUTTON_MUTE
-
+SESSION_BUTTON = push2_python.constants.BUTTON_SESSION
 
 class MainControlsMode(definitions.PyshaMode):
     preset_selection_button_pressing_time = None
@@ -66,6 +66,18 @@ class MainControlsMode(definitions.PyshaMode):
             )
         else:
             self.push.buttons.set_button_color(BROWSE_BUTTON, definitions.OFF_BTN_COLOR)
+            
+        # Clip selection mode
+        if self.app.is_mode_active(self.app.clip_selection_mode):
+            self.push.buttons.set_button_color(SESSION_BUTTON, definitions.BLACK)
+            self.push.buttons.set_button_color(
+                SESSION_BUTTON,
+                definitions.WHITE,
+                animation=definitions.DEFAULT_ANIMATION,
+            )
+        else:
+            self.push.buttons.set_button_color(SESSION_BUTTON, definitions.OFF_BTN_COLOR)
+
 
         # Mute mode
         if self.app.is_mode_active(self.app.mute_mode):
@@ -112,6 +124,18 @@ class MainControlsMode(definitions.PyshaMode):
             self.app.pads_need_update = True
             self.app.buttons_need_update = True
             return True
+        
+        elif button_name == SESSION_BUTTON:
+            if self.app.is_mode_active(self.app.clip_selection_mode) != True:
+                self.app.set_clip_selection_mode()
+                self.app.pads_need_update = True
+                self.app.buttons_need_update = True
+            else:
+                self.app.set_metro_sequencer_mode()
+            self.app.pads_need_update = True
+            self.app.buttons_need_update = True
+            return True
+        
         elif button_name == SETUP_BUTTON:
             self.app.toggle_and_rotate_settings_mode()
             self.app.buttons_need_update = True
@@ -141,6 +165,10 @@ class MainControlsMode(definitions.PyshaMode):
                 # TODO: commented out beause it's broken with the current seq model
                 # self.app.toggle_trig_edit_mode()
                 self.app.buttons_need_update = True
+            return True
+    
+        elif button_name == SESSION_BUTTON:
+            print("Farts")
             return True
 
     def on_button_released(self, button_name):

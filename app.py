@@ -27,6 +27,7 @@ from modes.slice_notes_mode import SliceNotesMode
 from modes.sequencer_mode import SequencerMode
 from modes.metro_sequencer_mode import MetroSequencerMode
 from modes.settings_mode import SettingsMode
+from modes.clip_selection_mode import ClipSelectionMode
 from modes.main_controls_mode import MainControlsMode
 from modes.midi_cc_mode import MIDICCMode
 from modes.osc_mode import OSCMode
@@ -178,6 +179,7 @@ class PyshaApp(object):
         )
         self.rhythmic_mode = RhythmicMode(self, settings=settings)
         self.slice_notes_mode = SliceNotesMode(self, settings=settings)
+        self.clip_selection_mode = ClipSelectionMode(self, settings=settings)
         self.set_melodic_mode()
 
         self.preset_selection_mode = PresetSelectionMode(self, settings=settings)
@@ -300,8 +302,42 @@ class PyshaApp(object):
             self.osc_mode.deactivate()
             self.trig_edit_mode.deactivate()
             self.metro_sequencer_mode.deactivate()
+            self.clip_selection_mode.deactivate()
             self.preset_selection_mode.activate()
             # print(self.active_modes, "active modes")
+            
+    def toggle_clip_selection_mode(self):
+        
+        previous_mode = self.previously_active_mode_for_xor_group
+        if self.is_mode_active(self.clip_selection_mode):
+            # Deactivate (replace ddrm tone selector mode by midi cc and instrument selection mode)
+            new_active_modes = []
+            for mode in self.active_modes:
+                if mode != self.clip_selection_mode:
+                    new_active_modes.append(mode)
+            new_active_modes.append(self.osc_mode)
+            # new_active_modes.append(previous_mode)
+            self.active_modes = new_active_modes
+            self.clip_selection_mode.deactivate()
+            self.metro_sequencer_mode.activate()
+            self.osc_mode.activate()
+        else:
+            # Activate (replace midi cc and instrument selection mode by ddrm tone selector mode)
+            # self.previously_active_mode_for_xor_group = self.active_modes[-1]
+            new_active_modes = []
+            for mode in self.active_modes:
+                if mode != self.menu_mode and mode != self.osc_mode and mode != self.trig_edit_mode:
+                    new_active_modes.append(mode)
+            new_active_modes.append(self.clip_selection_mode)
+            self.active_modes = new_active_modes
+            self.menu_mode.deactivate()
+            self.osc_mode.deactivate()
+            self.trig_edit_mode.deactivate()
+            self.preset_selection_mode.deactivate()
+            self.metro_sequencer_mode.deactivate()
+            self.clip_selection_mode.activate()
+            # print(self.active_modes, "active modes")
+
 
 
     def toggle_trig_edit_mode(self):
@@ -331,6 +367,7 @@ class PyshaApp(object):
             self.menu_mode.deactivate()
             self.osc_mode.deactivate()
             self.trig_edit_mode.activate()
+            self.clip_selection_mode.deactivate()
             self.metro_sequencer_mode.deactivate()
             self.preset_selection_mode.deactivate()
             # print(self.active_modes, "active modes")
@@ -437,6 +474,10 @@ class PyshaApp(object):
     def set_slice_notes_mode(self):
         self.set_mode_for_xor_group(self.slice_notes_mode)
 
+    def set_clip_selection_mode(self):
+        self.set_mode_for_xor_group(self.clip_selection_mode)
+
+
     def set_sequencer_mode(self):
         # pass
         self.set_mode_for_xor_group(self.sequencer_mode)
@@ -448,6 +489,8 @@ class PyshaApp(object):
     def set_mute_mode(self):
         if self.is_mode_active(self.preset_selection_mode):
             self.toggle_preset_selection_mode()
+        elif self.is_mode_active(self.clip_selection_mode):
+            self.toggle_clip_selection_mode()
         try:
             self.set_mode_for_xor_group(self.mute_mode)
         except Exception as e:
@@ -1360,9 +1403,15 @@ if __name__ == "__main__":
         try:
             app.push.f_stop.set()
             app.osc_mode.close_transports()
+    
+            # cancel all tasks in the event loop    
+            tasks = asyncio.all_tasks()
+            for task in tasks:
+                try:
+                    task.cancel()
+                except:
+                    pass
         except:
             pass
-        # # cancel all tasks in the event loop
-        # tasks = asyncio.all_tasks()
-        # for task in tasks:
-        #     task.cancel()
+        
+        
