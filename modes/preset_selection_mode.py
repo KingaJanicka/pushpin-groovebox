@@ -20,7 +20,6 @@ class PresetSelectionMode(definitions.PyshaMode):
 
     presets = {}
     presets_filename = "presets.json"
-    pad_pressing_states = {}
     last_pad_in_column_pressed = {}
     pad_quick_press_time = 0.400
     current_page = 0

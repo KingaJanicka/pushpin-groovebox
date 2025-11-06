@@ -20,7 +20,6 @@ class ClipSelectionMode(definitions.PyshaMode):
 
     presets = {}
     presets_filename = "presets.json"
-    pad_pressing_states = {}
     last_pad_in_column_pressed = {}
     pad_quick_press_time = 0.400
     current_page = 0
@@ -329,25 +328,25 @@ class ClipSelectionMode(definitions.PyshaMode):
         self.push.pads.set_pads_color(color_matrix)
 
     def on_pad_pressed(self, pad_n, pad_ij, velocity):
-        if pad_ij[1] != self.app.instrument_selection_mode.selected_instrument:
-            self.app.instrument_selection_mode.select_instrument(pad_ij[1])
-
         instrument_short_name = (
             self.app.instrument_selection_mode.get_current_instrument_short_name()
         )
+        
+        sequencer = self.app.metro_sequencer_mode.instrument_sequencers[instrument_short_name]
+        last_pad_pressed = self.last_pad_in_column_pressed[instrument_short_name]
+        sequencer.save_state(clip=last_pad_pressed[0])
+        
+        if pad_ij[1] != self.app.instrument_selection_mode.selected_instrument:
+            self.app.instrument_selection_mode.select_instrument(pad_ij[1])
+
         self.last_pad_in_column_pressed[instrument_short_name] = pad_ij
-        self.set_knob_postions()
-        log.debug(f"Loading {self.presets[instrument_short_name][pad_ij[0]]}")
-        self.send_osc("/patch/load", self.presets[instrument_short_name][pad_ij[0]])
         self.update_pads()
 
-        # Resets the last knob position on the mod matrix
-        # to avoid indexing OOB when switching presets
-        instrument = self.app.osc_mode.get_current_instrument()
-        devices = self.app.osc_mode.get_current_instrument_devices()
-        for device in devices:
-            if device.label == "Mod Matrix":
-                device.controls[7] = 0
+        try:
+            print(sequencer.name)
+            sequencer.load_state(clip=pad_ij[0])
+        except Exception as e:
+            print(e)
 
         return True  # Prevent other modes to get this event
 

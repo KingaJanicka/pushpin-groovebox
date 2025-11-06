@@ -36,7 +36,6 @@ class SequencerMetro(object):
         self, instrument, tick_callback, playhead, send_osc_func, global_timeline, app
     ):
         self.locks = []
-        self.seq_filename = f"seq_metro_{instrument.name}.json"
 
         # stores values per step
         for step_idx in range(default_number_of_steps):
@@ -122,27 +121,32 @@ class SequencerMetro(object):
         elif name == TRACK_NAMES_METRO[7]:
             return self.aux_3
         
-    def load_state(self):
+    def load_state(self, clip=0):
+        print("Load State", clip)
+        seq_filename = f"seq_metro_{self.name}_{clip}.json"
         try:
-            if os.path.exists(self.seq_filename):
-                dump = json.load(open(self.seq_filename))
-                self.locks = dump["locks"]
-                self.note = dump["note"]
-                self.pitch = dump[TRACK_NAMES_METRO[0]]
-                self.octave = dump[TRACK_NAMES_METRO[1]]
-                self.aux_4 = dump[TRACK_NAMES_METRO[2]]
-                self.gate = dump[TRACK_NAMES_METRO[3]]
-                self.mutes_skips = dump[TRACK_NAMES_METRO[4]]
-                self.lock_scale = dump[TRACK_NAMES_METRO[5]]
-                self.aux_2 = dump[TRACK_NAMES_METRO[6]]
-                self.aux_3 = dump[TRACK_NAMES_METRO[7]]
-                
-                self.app.metro_sequencer_mode.update_pads_to_seq_state()
+            if os.path.exists(seq_filename):
+                dump = json.load(open(seq_filename))
+            elif os.path.exists(f"init_state.json"):
+                dump = json.load(open("init_state.json"))
+            self.locks = dump["locks"]
+            self.note = dump["note"]
+            self.pitch = dump[TRACK_NAMES_METRO[0]]
+            self.octave = dump[TRACK_NAMES_METRO[1]]
+            self.aux_4 = dump[TRACK_NAMES_METRO[2]]
+            self.gate = dump[TRACK_NAMES_METRO[3]]
+            self.mutes_skips = dump[TRACK_NAMES_METRO[4]]
+            self.lock_scale = dump[TRACK_NAMES_METRO[5]]
+            self.aux_2 = dump[TRACK_NAMES_METRO[6]]
+            self.aux_3 = dump[TRACK_NAMES_METRO[7]]
+            
+            self.app.metro_sequencer_mode.update_pads_to_seq_state()
         except Exception as e:
             print("Exception in seq load_state")
             traceback.print_exc()
 
-    def save_state(self):
+    def save_state(self, clip=0):
+        seq_filename = f"seq_metro_{self.name}_{clip}.json"
         try:
             # pass
             sequencer_state = {
@@ -158,7 +162,7 @@ class SequencerMetro(object):
                 TRACK_NAMES_METRO[7]: self.aux_3,
             }
             json.dump(
-                sequencer_state, open(self.seq_filename, "w")
+                sequencer_state, open(seq_filename, "w")
             )  # Save to file
         except Exception as e:
             print("Exception in seq save_state")
