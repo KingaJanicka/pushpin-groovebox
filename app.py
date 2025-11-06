@@ -1403,9 +1403,15 @@ if __name__ == "__main__":
         try:
             app.push.f_stop.set()
             app.osc_mode.close_transports()
+    
+            # cancel all tasks in the event loop    
+            tasks = asyncio.all_tasks()
+            for task in tasks:
+                try:
+                    task.cancel()
+                except:
+                    pass
         except:
             pass
-        # # cancel all tasks in the event loop
-        # tasks = asyncio.all_tasks()
-        # for task in tasks:
-        #     task.cancel()
+        
+        

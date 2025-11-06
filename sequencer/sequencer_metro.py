@@ -122,7 +122,6 @@ class SequencerMetro(object):
             return self.aux_3
         
     def load_state(self, clip=0):
-        print("Load State", clip)
         seq_filename = f"seq_metro_{self.name}_{clip}.json"
         try:
             if os.path.exists(seq_filename):

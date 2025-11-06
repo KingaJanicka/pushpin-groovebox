@@ -342,21 +342,12 @@ class ClipSelectionMode(definitions.PyshaMode):
         self.last_pad_in_column_pressed[instrument_short_name] = pad_ij
         self.update_pads()
 
-        try:
-            print(sequencer.name)
-            sequencer.load_state(clip=pad_ij[0])
-        except Exception as e:
-            print(e)
+        sequencer.load_state(clip=pad_ij[0])
+        
 
         return True  # Prevent other modes to get this event
 
     def on_pad_released(self, pad_n, pad_ij, velocity):
-        instrument = self.app.osc_mode.get_current_instrument()
-        instrument.query_slots()
-        instrument.query_all_controls()
-        instrument.update_current_devices()
-        instrument.init_devices_sync()
-        self.update_pads()
         return True  # Prevent other modes to get this event
 
     def get_preset_path(self, preset):
