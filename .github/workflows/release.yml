@@ -35,3 +35,4 @@ jobs:
           port: 22
           source: "./scripts/image/${{ steps.get_buildname.outputs.IMAGE }}"
           target: images
+          strip_components: true

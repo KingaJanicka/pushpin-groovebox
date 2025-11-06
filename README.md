@@ -4,6 +4,6 @@
 
 Coming Soon
 
-Please see temporary site at https://pushpin.kinga.dev
+Please see docs site at https://pushpin.kinga.dev
 
 $ pw-dump | jq -r '.[] | select(.info.props["application.process.binary"] == "surge-xt-cli")'
