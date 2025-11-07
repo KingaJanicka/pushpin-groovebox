@@ -16,6 +16,7 @@ DOUBLE_LOOP_BUTTON = push2_python.constants.BUTTON_DOUBLE_LOOP
 QUANTIZE_BUTTON = push2_python.constants.BUTTON_QUANTIZE
 MUTE_BUTTON = push2_python.constants.BUTTON_MUTE
 SESSION_BUTTON = push2_python.constants.BUTTON_SESSION
+DELETE_BUTTON = push2_python.constants.BUTTON_DELETE
 
 class MainControlsMode(definitions.PyshaMode):
     preset_selection_button_pressing_time = None
@@ -35,7 +36,15 @@ class MainControlsMode(definitions.PyshaMode):
 
     def update_buttons(self):
         # Note button, to toggle melodic/rhythmic mode
-        self.push.buttons.set_button_color(NOTE_BUTTON, definitions.WHITE)
+        if self.app.is_mode_active(self.app.melodic_mode) or self.app.is_mode_active(self.app.metro_sequencer_mode):
+            self.push.buttons.set_button_color(NOTE_BUTTON, definitions.BLACK)
+            self.push.buttons.set_button_color(
+                NOTE_BUTTON,
+                definitions.WHITE
+            )
+        else:
+            self.push.buttons.set_button_color(NOTE_BUTTON, definitions.GRAY_DARK)
+            
 
         # Mute button, to toggle display on/off
         if self.app.use_push2_display:
@@ -72,8 +81,7 @@ class MainControlsMode(definitions.PyshaMode):
             self.push.buttons.set_button_color(SESSION_BUTTON, definitions.BLACK)
             self.push.buttons.set_button_color(
                 SESSION_BUTTON,
-                definitions.WHITE,
-                animation=definitions.DEFAULT_ANIMATION,
+                definitions.WHITE
             )
         else:
             self.push.buttons.set_button_color(SESSION_BUTTON, definitions.OFF_BTN_COLOR)
@@ -168,7 +176,6 @@ class MainControlsMode(definitions.PyshaMode):
             return True
     
         elif button_name == SESSION_BUTTON:
-            print("Farts")
             return True
 
     def on_button_released(self, button_name):

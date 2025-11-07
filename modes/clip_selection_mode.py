@@ -10,7 +10,7 @@ import logging
 import time
 import asyncio
 log = logging.getLogger("clip_selection_mode")
-
+from controllers import push2_constants
 # log.setLevel(level=logging.DEBUG)
 
 
@@ -263,11 +263,13 @@ class ClipSelectionMode(definitions.PyshaMode):
     def activate(self):
         self.update_pads()
         self.notify_status_in_display()
+        self.push.buttons.set_button_color(push2_constants.BUTTON_DELETE, definitions.GRAY_DARK)
         
 
 
     def deactivate(self):
         self.app.push.pads.set_all_pads_to_color(color=definitions.BLACK)
+        self.push.buttons.set_button_color(push2_constants.BUTTON_DELETE, definitions.BLACK)
         self.push.buttons.set_button_color(
             push2_python.constants.BUTTON_LEFT, definitions.BLACK
         )
@@ -392,6 +394,15 @@ class ClipSelectionMode(definitions.PyshaMode):
             elif metro.sequencer_is_playing == True:
                 metro.stop_timeline()
                 metro.sequencer_is_playing = False
+
+        elif button_name == push2_python.constants.BUTTON_DELETE:
+            print("Delete button pressed")
+            instrument_short_name = (
+                self.app.instrument_selection_mode.get_current_instrument_short_name()
+            )
+            sequencer = self.app.metro_sequencer_mode.instrument_sequencers[instrument_short_name]
+            last_pad_pressed = self.last_pad_in_column_pressed[instrument_short_name]
+            sequencer.delete_state(clip=last_pad_pressed[0])
 
     def send_osc(self, *args, instrument_shortname=None):
         instrument = self.app.instruments.get(
