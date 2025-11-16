@@ -1,6 +1,6 @@
 import push2_python
 import colorsys
-from os import path
+from os import path, mkdir
 
 VERSION = "0.25"
 
@@ -118,6 +118,11 @@ SURGE_XT_ROOT = (
 FACTORY_PATCHES_FOLDER = f"{SURGE_XT_ROOT}/patches_factory"
 THIRD_PARTY_PATCHES_FOLDER = f"{SURGE_XT_ROOT}/patches_3rdparty"
 USER_PATCHES_FOLDER = f"{path.expanduser('~')}/Documents/Surge XT/Patches"
+USER_CONFIG_FOLDER = f"{path.expanduser('~')}/.local/share/pushpin"
+    
+if not path.isdir(USER_CONFIG_FOLDER):
+    mkdir(USER_CONFIG_FOLDER)
+
 SURGE_STATE_FOLDER = "/home/ladmin/s/music_devices/pushpin-groovebox/surge_state" # Root is ~/Documents/Surge XT/Patches
 TRACK_NAMES = [
     "gate_1",

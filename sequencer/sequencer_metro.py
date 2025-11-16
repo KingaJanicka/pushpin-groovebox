@@ -121,8 +121,12 @@ class SequencerMetro(object):
         elif name == TRACK_NAMES_METRO[7]:
             return self.aux_3
         
+    def get_state_filename(self, clip=0):
+        return f"seq_metro_{self.name}_{clip}.json"
+        
+        
     def load_state(self, clip=0):
-        seq_filename = f"seq_metro_{self.name}_{clip}.json"
+        seq_filename = self.get_state_filename(clip=clip)
         try:
             if os.path.exists(seq_filename):
                 dump = json.load(open(seq_filename))
@@ -145,7 +149,7 @@ class SequencerMetro(object):
             traceback.print_exc()
 
     def save_state(self, clip=0):
-        seq_filename = f"seq_metro_{self.name}_{clip}.json"
+        seq_filename = self.get_state_filename(clip=clip)
         try:
             # pass
             sequencer_state = {
@@ -167,6 +171,10 @@ class SequencerMetro(object):
             print("Exception in seq save_state")
             traceback.print_exc()
 
+    def delete_state(self, clip):
+        seq_filename = self.get_state_filename(clip=clip)
+        os.remove(seq_filename)
+        
     def seq_playhead_update(self):
         if self.app.metro_sequencer_mode.sequencer_is_playing == True:
             # TODO: replace the values hwre when changing the control type
