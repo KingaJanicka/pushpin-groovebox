@@ -8,7 +8,7 @@ LOG_FILE_PATH="/var/log/sdm_image_setup.log"
 
 # Installation paths
 
-USER_NAME="ladmin"
+USER_NAME="pushpin"
 USER_HOME_PATH="/home/${USER_NAME}"
 INSTALL_PATH="${USER_HOME_PATH}/s/music_devices"
 PUSHPIN_SOURCE_PATH="${INSTALL_PATH}"
@@ -86,7 +86,7 @@ cd $OVERWITCH_SOURCE_PATH/$OVERWITCH_FOLDER_NAME/udev
 make install
 EOF
 
-# Change ownership of Overwitch installed files to ladmin
+# Change ownership of Overwitch installed files to pushpin
 OVERWITCH_INSTALL_PATHS=(
     "/usr/local/share/overwitch"
     "/usr/local/bin/overwitch-record"
@@ -129,7 +129,12 @@ EOF
 
 echo "Installing Pushpin"
 cd $PUSHPIN_SOURCE_PATH
-git clone https://github.com/kingajanicka/pushpin-groovebox $PUSHPIN_SOURCE_PATH/pushpin-groovebox
+git clone https://github.com/kingajanicka/pushpin-groovebox/ $PUSHPIN_SOURCE_PATH/pushpin-groovebox
+
+if [ -z "${USE_DEV_BRANCH}" ]; then
+    git checkout dev
+fi
+
 ln -s $PUSHPIN_SOURCE_PATH/pushpin-groovebox/pushpin_groovebox.conf $PIPEWIRE_CONFIGURATION_PATH/pushpin_groovebox.conf
 
 echo "Installing Pushpin deps"
@@ -207,7 +212,7 @@ EOF
 chown $USER_NAME:audio $USER_HOME_PATH/start_pushpin.sh
 chmod +x $USER_HOME_PATH/start_pushpin.sh
 
-echo "\n./start_pushpin.sh\n\n" >> .profile
+echo "\n./start_pushpin.sh\n\n" >> $USER_HOME_PATH/.profile
 
 echo "---------------------------------------------"
 echo "Script completed at: $(date)"

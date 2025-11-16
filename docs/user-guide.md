@@ -37,7 +37,7 @@ To hack on top of Pushpin, it helps to understand what it's doing upon boot beca
 
 The Pushpin Linux distribution spawns 8 duplex Pipewire interfaces, each with 16 inputs and outputs. These are loaded on boot using the Pipewire config located in `/home/pushpin/.config/pipewire/pipewire.conf.d/pushpin_groovebox.conf` (which is also a good place to put any bespoke Pipewire changes). Another duplex for controlling instrument volumes is also initialised as `pushpin-volumes`. The `pushpin-n` duplex devices are dynamically connected to using the `audio-in` device in Pushpin and are used to manage track audio inputs, enabling complex routing.
 
-Once the system has booted, it logs into the user `ladmin` (default password: `numark234`) and runs `/home/ladmin/start_pushpin.sh`, which is ultimately an alias for `/home/ladmin/s/music_devices/pushpin_groovebox/run.sh`. This starts Python running `/home/ladmin/s/music_devices/pushpin_groovebox/app.py`, the main entry point for the codebase.
+Once the system has booted, it logs into the user `pushpin` (default password: `pushpin`) and runs `/home/pushpin/start_pushpin.sh`, which is ultimately an alias for `/home/pushpin/s/music_devices/pushpin_groovebox/run.sh`. This starts Python running `/home/pushpin/s/music_devices/pushpin_groovebox/app.py`, the main entry point for the codebase.
 
 Pushpin starts by instantiating eight instances of `surge-xt-cli`, the command-line version of the Surge XT softsynth. It waits for these to load and then spawns `overwitch`, an open source Overbridge client, and waits for it to load.
 

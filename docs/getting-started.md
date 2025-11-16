@@ -29,7 +29,7 @@ need to do if you don't have a keyboard and mouse plugged into the Pi.
 Connect everything together; how you do this depends on what sequencer and soundcard you're using.
 
 Insert the SD card into your Raspberry Pi 5 device and hit power; the Linux distribution will boot and
-you will automatically be logged in as the user `ladmin` (default password: `numark234`).
+you will automatically be logged in as the user `pushpin` (default password: `pushpin`).
 
 Power on the Ableton Push 2 device if you have not yet done so.
 

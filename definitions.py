@@ -123,7 +123,7 @@ USER_CONFIG_FOLDER = f"{path.expanduser('~')}/.local/share/pushpin"
 if not path.isdir(USER_CONFIG_FOLDER):
     mkdir(USER_CONFIG_FOLDER)
 
-SURGE_STATE_FOLDER = "/home/ladmin/s/music_devices/pushpin-groovebox/surge_state" # Root is ~/Documents/Surge XT/Patches
+SURGE_STATE_FOLDER = "/home/pushpin/s/music_devices/pushpin-groovebox/surge_state" # Root is ~/Documents/Surge XT/Patches
 TRACK_NAMES = [
     "gate_1",
     "pitch_1",

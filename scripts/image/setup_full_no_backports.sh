@@ -5,7 +5,7 @@ LOG_FILE_PATH="/var/log/sdm_image_setup.log"
 
 # Installation paths
 
-USER_NAME="ladmin"
+USER_NAME="pushpin"
 USER_HOME_PATH="/home/${USER_NAME}"
 INSTALL_PATH="${USER_HOME_PATH}/s/music_devices"
 PUSHPIN_SOURCE_PATH="${INSTALL_PATH}"
@@ -68,7 +68,7 @@ cd $OVERWITCH_SOURCE_PATH/$OVERWITCH_FOLDER_NAME/udev
 make install
 EOF
 
-# Change ownership of Overwitch installed files to ladmin
+# Change ownership of Overwitch installed files to pushpin
 OVERWITCH_INSTALL_PATHS=(
     "/usr/local/share/overwitch"
     "/usr/local/bin/overwitch-record"

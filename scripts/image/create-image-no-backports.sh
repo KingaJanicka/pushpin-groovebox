@@ -38,7 +38,7 @@ user:deluser=pi
 
 # Add a new user
 # https://github.com/gitbls/sdm/blob/master/Docs/Plugins.md#user
-user:adduser=ladmin|password=Numark234|addgroup=audio
+user:adduser=pushpin|password=pushpin|addgroup=audio
 
 # Install btwifiset (Control Pi's WiFi from your phone)
 # https://github.com/gitbls/sdm/blob/master/Docs/Plugins.md#btwifiset
