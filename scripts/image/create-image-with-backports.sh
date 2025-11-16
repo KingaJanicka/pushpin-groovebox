@@ -14,6 +14,7 @@ function errexit() {
 
 [ $EUID -eq 0 ] && sudo="" || sudo="sudo"
 
+IMAGE="${BASE_IMAGE:-pushpin_dev.img}"
 # service dbus start
 
 if ! test -f $IMAGE; then

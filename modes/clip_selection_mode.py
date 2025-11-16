@@ -117,21 +117,6 @@ class ClipSelectionMode(definitions.PyshaMode):
             "/patch/save", preset_path, instrument_shortname=instrument_shortname
         )
 
-    def save_all_presets_to_state(self):
-        # print("saving presets")
-        for idx, instrument_shortname in enumerate(self.app.instruments):
-            preset_index = self.last_pad_in_column_pressed[instrument_shortname][0]
-            preset_name = f"{instrument_shortname}_{preset_index}"
-            preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
-            # print(preset_path)
-            self.send_osc(
-                "/patch/save", preset_path, instrument_shortname=instrument_shortname
-            )
-            # time.sleep(1)
-
-        # self.app.osc_mode.save_state()
-        # print("saved presets to state")
-
     async def load_init_state(self, instrument_shortname):
 
         # Check if there is a preset in the state dir
@@ -446,8 +431,7 @@ class ClipSelectionMode(definitions.PyshaMode):
             elif button_name == push2_python.constants.BUTTON_RIGHT and show_next:
                 self.next_page()
             return True
-        elif button_name in push2_python.constants.BUTTON_UPPER_ROW_6:
-            self.save_all_presets_to_state()
+
 
         elif button_name in push2_python.constants.BUTTON_UPPER_ROW_7:
             instrument_short_name = (

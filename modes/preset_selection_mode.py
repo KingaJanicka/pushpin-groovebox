@@ -322,7 +322,7 @@ class PresetSelectionMode(definitions.PyshaMode):
         )
         self.app.buttons_need_update = True
         self.app.pads_need_update = True
-        # self.save_all_presets_to_state()
+        self.save_all_presets_to_state()
         try:
             for idx, instrument_shortname in enumerate(self.app.instruments):
                 instrument = self.app.instruments[instrument_shortname]
@@ -542,8 +542,8 @@ class PresetSelectionMode(definitions.PyshaMode):
             elif button_name == push2_python.constants.BUTTON_RIGHT and show_next:
                 self.next_page()
             return True
-        elif button_name in push2_python.constants.BUTTON_UPPER_ROW_6:
-            self.save_all_presets_to_state()
+        # elif button_name in push2_python.constants.BUTTON_UPPER_ROW_6:
+        #     self.save_all_presets_to_state()
         
         elif button_name in push2_python.constants.BUTTON_UPPER_ROW_7:
             instrument_short_name = (
