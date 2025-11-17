@@ -14,7 +14,7 @@ function errexit() {
 
 [ $EUID -eq 0 ] && sudo="" || sudo="sudo"
 
-IMAGE="${BASE_IMAGE:-pushpin_dev.img}"
+IMAGE="${IMAGE:-pushpin_dev.img}"
 # service dbus start
 
 if ! test -f $IMAGE; then
@@ -27,6 +27,12 @@ fi
 assets="."
 
 [ -f $assets/my.plugins ] &&  mv $assets/my.plugins $assets/my.plugins.1
+
+if [ $IMAGE = "pushpin_dev.img" ]; then
+  script_path="${PWD}/setup_full_with_backports_dev.sh"
+else
+  script_path="${PWD}/setup_full_with_backports.sh"
+fi
 
 (cat <<EOF
 # Plugin List generated $(date +"%Y-%m-%d %H:%M:%S")
@@ -66,7 +72,7 @@ raspiconfig:boot_behavior=B2
 L10n:host
 
 # Run config script
-runscript:script=$PWD/setup_full_with_backports.sh
+runscript:script=$script_path
 
 EOF
     ) | bash -c "cat >|$assets/my.plugins"

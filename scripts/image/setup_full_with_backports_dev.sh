@@ -25,7 +25,7 @@ echo PIPEWIRE_CONFIGURATION_PATH=$PIPEWIRE_CONFIGURATION_PATH
 OVERWITCH_FOLDER_NAME="overwitch"
 echo OVERWITCH_FOLDER_NAME=$OVERWITCH_FOLDER_NAME
 
-echo USE_DEV_BRANCH=${USE_DEV_BRANCH:-(unset)}
+USE_DEV_BRANCH=true
 
 
 # Start logging
@@ -141,6 +141,9 @@ EOF
 echo "Installing Pushpin"
 cd $PUSHPIN_SOURCE_PATH
 git clone https://github.com/kingajanicka/pushpin-groovebox/ $PUSHPIN_SOURCE_PATH/pushpin-groovebox
+
+git checkout dev
+
 
 ln -s $PUSHPIN_SOURCE_PATH/pushpin-groovebox/pushpin_groovebox.conf $PIPEWIRE_CONFIGURATION_PATH/pushpin_groovebox.conf
 
