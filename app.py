@@ -119,7 +119,7 @@ class PyshaApp(object):
     log_in = None
     
     def __init__(self):
-        if os.path.exists("settings.json"):
+        if os.path.exists(f"{USER_CONFIG_FOLDER}/settings.json"):
             settings = json.load(open(f"{USER_CONFIG_FOLDER}/settings.json"))
         else:
             settings = {}
