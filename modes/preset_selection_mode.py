@@ -19,7 +19,7 @@ class PresetSelectionMode(definitions.PyshaMode):
     xor_group = "pads"
 
     presets = {}
-    presets_filename = "presets.json"
+    presets_filename = f"{definitions.USER_CONFIG_FOLDER}/presets.json"
     last_pad_in_column_pressed = {}
     pad_quick_press_time = 0.400
     current_page = 0

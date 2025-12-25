@@ -6,6 +6,8 @@ import os
 import traceback
 from pythonosc.udp_client import SimpleUDPClient
 
+from definitions import USER_CONFIG_FOLDER
+
 default_number_of_steps = 64
 
 TRACK_NAMES = [
@@ -45,7 +47,7 @@ class Sequencer(object):
         self, instrument_name, timeline, tick_callback, playhead, send_osc_func, app
     ):
         self.locks = {}
-        self.seq_filename = f"seq_{instrument_name}.json"
+        self.seq_filename = f"{USER_CONFIG_FOLDER}/seq_{instrument_name}.json"
         for key in TRACK_NAMES:
             self.locks[key] = []
             for x in range(default_number_of_steps):

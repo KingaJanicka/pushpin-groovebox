@@ -16,7 +16,7 @@ from osc_controls import (
     OSCControlSwitch,
     OSCGroup,
 )
-from definitions import TRACK_NAMES
+from definitions import TRACK_NAMES, USER_CONFIG_FOLDER
 
 EMPTY_PATTERN = []
 
@@ -64,7 +64,7 @@ class SequencerMode(MelodicMode):
     show_scale_menu = False
     timeline = iso.Timeline(tempo, output_device=iso.DummyOutputDevice())
     selected_track = "gate_1"
-    scale_menu_filename = "scale_menu.json"
+    scale_menu_filename = f"{USER_CONFIG_FOLDER}/scale_menu.json"
     pads_press_time = [False] * 64
     pad_quick_press_time = 0.400
     disable_controls = False

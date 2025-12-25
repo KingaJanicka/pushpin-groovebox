@@ -6,7 +6,7 @@ import os
 import traceback
 import random
 from pythonosc.udp_client import SimpleUDPClient
-from definitions import TRACK_NAMES_METRO
+from definitions import TRACK_NAMES_METRO, USER_CONFIG_FOLDER
 
 
 default_number_of_steps = 64
@@ -122,7 +122,7 @@ class SequencerMetro(object):
             return self.aux_3
         
     def get_state_filename(self, clip=0):
-        return f"seq_metro_{self.name}_{clip}.json"
+        return f"{USER_CONFIG_FOLDER}/seq_metro_{self.name}_{clip}.json"
         
         
     def load_state(self, clip=0):

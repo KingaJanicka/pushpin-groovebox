@@ -15,7 +15,7 @@ from user_interface.display_utils import show_text
 from pathlib import Path
 import traceback
 import logging
-from definitions import TRACK_NAMES
+from definitions import TRACK_NAMES, USER_CONFIG_FOLDER
 
 log = logging.getLogger("preset_selection_mode")
 
@@ -29,7 +29,7 @@ class TrigEditMode(definitions.PyshaMode):
     controls = []
     state = {}
     current_address = None
-    trig_edit_filename = "trig_edit.json"
+    trig_edit_filename = f"{USER_CONFIG_FOLDER}/trig_edit.json"
     is_active = False
     slot = 16 # Might need to change this back to None
 

@@ -38,11 +38,13 @@ from modes.menu_mode import MenuMode
 from modes.mute_mode import MuteMode
 from user_interface.display_utils import show_notification
 from modes.external_instrument import ExternalInstrument
-from definitions import DEFAULT_GLOBAL_TEMPO
+from definitions import DEFAULT_GLOBAL_TEMPO, USER_CONFIG_FOLDER
 
-logger = logging.getLogger("app.py")
-# logging.basicConfig(level=logging.DEBUG)
-# logging.getLogger().setLevel(level=logging.DEBUG)
+logger = logging.getLogger()
+if os.environ.get('PUSHPIN_DEBUG'):
+    print('logging on')
+    logging.basicConfig(level=logging.INFO)
+    logging.getLogger().setLevel(level=logging.INFO)
 
 
 class PyshaApp(object):
@@ -118,7 +120,7 @@ class PyshaApp(object):
     
     def __init__(self):
         if os.path.exists("settings.json"):
-            settings = json.load(open("settings.json"))
+            settings = json.load(open(f"{USER_CONFIG_FOLDER}/settings.json"))
         else:
             settings = {}
 
@@ -524,7 +526,7 @@ class PyshaApp(object):
             mode_settings = mode.get_settings_to_save()
             if mode_settings:
                 settings.update(mode_settings)
-        json.dump(settings, open("settings.json", "w"))
+        json.dump(settings, open(f"{USER_CONFIG_FOLDER}/settings.json", "w"))
 
     def init_midi_in(self, device_name=None):
         print("Configuring MIDI in to {}...".format(device_name))

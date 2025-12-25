@@ -17,7 +17,7 @@ from osc_controls import (
     OSCGroup,
     OSCControlMenu,
 )
-from definitions import TRACK_NAMES_METRO
+from definitions import TRACK_NAMES_METRO, USER_CONFIG_FOLDER
 
 EMPTY_PATTERN = []
 
@@ -67,7 +67,7 @@ class MetroSequencerMode(MelodicMode):
     show_scale_menu = False
     global_timeline = None
     selected_track = TRACK_NAMES_METRO[0]
-    scale_menu_filename = "scale_menu_metro.json"
+    scale_menu_filename = f"{USER_CONFIG_FOLDER}/scale_menu_metro.json"
     pads_press_time = [False] * 64
     pad_quick_press_time = 0.400
     disable_controls = False

@@ -21,7 +21,7 @@ class ClipSelectionMode(definitions.PyshaMode):
     xor_group = "pads"
 
     presets = {}
-    presets_filename = "presets.json"
+    presets_filename = f"{definitions.USER_CONFIG_FOLDER}/presets.json"
     clips = []
     last_pad_in_column_pressed = {}
     pad_quick_press_time = 0.400

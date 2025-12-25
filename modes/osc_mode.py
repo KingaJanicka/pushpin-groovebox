@@ -3,7 +3,7 @@ import push2_python
 import json
 import os
 import logging
-from definitions import PyshaMode
+from definitions import USER_CONFIG_FOLDER, PyshaMode
 from user_interface.display_utils import show_text
 from glob import glob
 from pathlib import Path
@@ -59,7 +59,7 @@ class OSCMode(PyshaMode):
     state = {}
     transports = []
     cli_needs_update = False
-    osc_mode_filename = "osc_mode.json"
+    osc_mode_filename = f"{USER_CONFIG_FOLDER}/osc_mode.json"
     def initialize(self, settings=None):
         device_names = [
             Path(device_file).stem
@@ -153,19 +153,19 @@ class OSCMode(PyshaMode):
                 ) in self.get_all_distinct_instrument_short_names_helper():
                     devices = self.get_instrument_devices(instrument_short_name)
                     
-                    # Unpacking patch
-                    path = self.app.preset_selection_mode.get_preset_path_for_instrument(instrument_short_name)
-                    patch = path + ".fxp"
-                    with open(patch, mode='rb') as patchFile:
-                        patchContent = patchFile.read()
+                    # # Unpacking patch
+                    # path = self.app.preset_selection_mode.get_preset_path_for_instrument(instrument_short_name)
+                    # patch = path + ".fxp"
+                    # with open(patch, mode='rb') as patchFile:
+                    #     patchContent = patchFile.read()
 
-                    patchHeader = struct.unpack("<4siiiiiii", patchContent[60:92])
-                    xmlsize = patchHeader[1]
-                    # print("Patch Header Values: {0}".format(patchHeader))
-                    xmlct = patchContent[92:(92 + xmlsize)].decode('utf-8')
+                    # patchHeader = struct.unpack("<4siiiiiii", patchContent[60:92])
+                    # xmlsize = patchHeader[1]
+                    # # print("Patch Header Values: {0}".format(patchHeader))
+                    # xmlct = patchContent[92:(92 + xmlsize)].decode('utf-8')
 
-                    dom = xml.dom.minidom.parseString(xmlct)
-                    pretty_xml_as_string = dom.toprettyxml()
+                    # dom = xml.dom.minidom.parseString(xmlct)
+                    # pretty_xml_as_string = dom.toprettyxml()
                     # print(pretty_xml_as_string)
 
                     # Getting the right device for slot
