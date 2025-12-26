@@ -69,14 +69,13 @@ class PresetSelectionMode(definitions.PyshaMode):
 
 
     def init_surge_preset_state(self):
-        print("Init surge preset state")
         for idx, instrument in enumerate(self.app.instruments):
             for index in range(8):
                 preset_name = f"{instrument}_{index}"            
                 preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
                 does_file_exist = os.path.isfile(f"{preset_path}.fxp") 
+                print(preset_path)
                 if does_file_exist == False:
-                    print('regen')
                     self.send_osc("/patch/load", self.presets[instrument][idx], instrument_shortname=instrument)
                     time.sleep(0.1)
                     self.send_osc("/patch/save", preset_path, instrument_shortname=instrument)

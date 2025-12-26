@@ -16,9 +16,6 @@ we need to save state better, main scale/steps in seq should be saved globally s
 
 midi still has weird skips and shit, the way it catches up with jitter or skipped steps is just unaceptable
 
-hold pad to lock seems bit jank,
-I think in general all the logic vis what pads are being held neds to centralized and improved
-
 preset sel needs to be able to save a patch we've changed to a selected pad
 
 being able to select main output would be nice, maybe in options just like midi input
