@@ -1,4 +1,4 @@
-# Plugin List generated 2025-11-16 15:49:02
+# Plugin List generated 2025-11-17 21:00:38
 
 # Delete user pi if it exists
 # https://github.com/gitbls/sdm/blob/master/Docs/Plugins.md#user
@@ -35,5 +35,5 @@ raspiconfig:boot_behavior=B2
 L10n:host
 
 # Run config script
-runscript:script=/home/ladmin/s/music_devices/pushpin-groovebox/scripts/image/setup_full_with_backports_dev.sh
+runscript:script=/home/ladmin/s/music_devices/pushpin-groovebox/scripts/image/setup_full_with_backports.sh
 

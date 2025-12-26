@@ -9,16 +9,19 @@ pw-metadata -n settings 0 clock.quantum <VALUE>
 
 
 TODO: 
-For whatever reason not all synth params will update on state load
-I think this might have to do with some error regarding the visible/all in osc_device
-
-Locks broke again? IDK why, maybe pad was stuck?
 
 vocoder borken, clouds too
 
+we need to save state better, main scale/steps in seq should be saved globally somehow?
 
-watchdog: signaling pd... puredata dies???
-github.com/pure-data/pure-data/issues/2446
+midi still has weird skips and shit, the way it catches up with jitter or skipped steps is just unaceptable
+
+hold pad to lock seems bit jank,
+I think in general all the logic vis what pads are being held neds to centralized and improved
+
+preset sel needs to be able to save a patch we've changed to a selected pad
+
+being able to select main output would be nice, maybe in options just like midi input
 
 Theres latency but we can work to reduce it later
 

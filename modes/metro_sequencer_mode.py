@@ -2285,6 +2285,8 @@ class MetroSequencerMode(MelodicMode):
             dump = None
             if os.path.exists(self.scale_menu_filename):
                 dump = json.load(open(self.scale_menu_filename))
+            else:
+                dump = json.load(open(f"{USER_CONFIG_FOLDER}/scale_menu_metro.json"))
             for (
                 instrument_short_name
             ) in self.get_all_distinct_instrument_short_names_helper():
@@ -2325,7 +2327,8 @@ class MetroSequencerMode(MelodicMode):
                 for index, control in enumerate(
                     self.instrument_scale_edit_controls[instrument_short_name]
                 ):
-                    scale_edit_state[instrument_short_name][index] = control.value
+                    if control.value:
+                        scale_edit_state[instrument_short_name][index] = control.value
         except Exception as e:
             print("Error in saving scale_edit state")
             traceback.print_exc()
@@ -2553,10 +2556,6 @@ class MetroSequencerMode(MelodicMode):
                 )
 
     def on_pad_pressed(self, pad_n, pad_ij, velocity):
-        # TODO: VERY RUDE but IG it works???
-        self.app.queue.append(self.async_pad_pressed(pad_n=pad_n))
-    
-    async def async_pad_pressed(self, pad_n):
         try:
             pad_state = self.metro_seq_pad_state[
                 self.get_current_instrument_short_name_helper()
