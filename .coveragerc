@@ -1,0 +1,21 @@
+[run]
+branch = True
+source =
+    .
+omit =
+    tests/*
+    venv_pushpin_groovebox/*
+    archive/*
+    patch_tool/*
+    */__init__.py
+    setup.py
+
+[report]
+show_missing = True
+skip_covered = False
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise NotImplementedError
+    if __name__ == .__main__.:
+    if TYPE_CHECKING:
