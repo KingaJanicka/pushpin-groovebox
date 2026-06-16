@@ -1,12 +1,14 @@
+from __future__ import annotations
+
 import asyncio
 import isobar as iso
 import random
 import json
 import os
 import traceback
-import random
 from pythonosc.udp_client import SimpleUDPClient
 from definitions import TRACK_NAMES_METRO
+from sequencer.sequencer_params import SequencerParams
 
 
 default_number_of_steps = 64
@@ -46,6 +48,9 @@ class SequencerMetro(object):
                 )
         
         self.app = app
+        # Immutable param snapshot refreshed each frame by the asyncio thread.
+        # The MIDI clock thread reads this atomically — see SequencerParams.
+        self.params: SequencerParams = SequencerParams()
         self.step_index = 0
         self.step_count = 0
         self.prev_step_index = 0
@@ -176,66 +181,49 @@ class SequencerMetro(object):
         os.remove(seq_filename)
         
     def seq_playhead_update(self):
-        if self.app.metro_sequencer_mode.sequencer_is_playing == True:
-            # TODO: replace the values hwre when changing the control type
-            self.playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01))
-            controls = self.app.metro_sequencer_mode.instrument_scale_edit_controls[self.name]
-            
-            seq_time_scale_control = controls[4].get_active_menu_item()
-            seq_time_scale = seq_time_scale_control.value
-            
-            pattern_len_control = controls[5].get_active_menu_item()
-            pattern_len = pattern_len_control.value
-            
-            main_seq_time_scale_control = controls[6].get_active_menu_item()
-            main_seq_time_scale = main_seq_time_scale_control.value
-            
-            main_pattern_control = controls[7].get_active_menu_item()
-            main_pattern_len = main_pattern_control.value
-            # print(f'Seq time scale: {seq_time_scale}, Pat Len: {pattern_len}, main eq time scale: {main_seq_time_scale}, main pat len: {main_pattern_len}')
-            
-            main_step_count = round((self.app.global_timeline.current_time + 0.1)* int(main_seq_time_scale)/2, 1)
-            # print(main_step_count)
-            # Same as below but for master counter
-            
-            # print(master_timeline.current_time * 4)
-            # print(main_step_count, int(main_pattern_len), int(main_seq_time_scale)/2)
-            if main_step_count >= int(main_pattern_len) * int(main_seq_time_scale)/2 :
+        # Take a single atomic reference to the param snapshot for this tick.
+        # All UI-owned values are read from here, not from app/mode objects.
+        params = self.params
 
-                self.reset_index()
-                self.scale_count = 0
-                self.next_step_index = 0
-                # Signal the asyncio thread to reset the timeline rather than
-                # calling it here — resetting the timeline from within its own
-                # tick callback corrupts internal iteration state.
-                self.app.timeline_needs_reset = True
-                    
-            
-            if self.scale_count == 0:
-                # Play the note, reset the counter for the time scale
-                self.step_count += 1
-                self.evaluate_and_play_notes()
-                self.scale_count = int(seq_time_scale) + 1
-            
-            elif self.scale_count != 0:
-                # This has to do with the time scale setting
-                # This block makes sure we only fire every X 1/32nd notes
-                self.scale_count -= 1
-        
-            
-            if self.scale_count == 1:
-                # Increment right before the note is played, so the visual feedback lines up
-                # The if clause is to make sure we don't go over the bounds with next step
-                # And to prevent visual glitches with the playhead
-                
-                if self.step_count == int(pattern_len):
-                    self.reset_index()
-                    self.next_step_index = 0
-                else:
-                    self.increment_index()
-                    self.increment_next_step_index(index=self.step_index)
-        else: 
+        if not params.sequencer_is_playing:
             return
+
+        self.playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01))
+
+        main_step_count = round(
+            (self.app.global_timeline.current_time + 0.1) * params.main_seq_time_scale / 2, 1
+        )
+
+        if main_step_count >= params.main_pattern_len * params.main_seq_time_scale / 2:
+            self.reset_index()
+            self.scale_count = 0
+            self.next_step_index = 0
+            # Signal the asyncio thread to reset the timeline rather than
+            # calling it here — resetting the timeline from within its own
+            # tick callback corrupts internal iteration state.
+            self.app.timeline_needs_reset = True
+
+        if self.scale_count == 0:
+            # Play the note, reset the counter for the time scale
+            self.step_count += 1
+            self.evaluate_and_play_notes()
+            self.scale_count = params.seq_time_scale + 1
+
+        elif self.scale_count != 0:
+            # This has to do with the time scale setting
+            # This block makes sure we only fire every X 1/32nd notes
+            self.scale_count -= 1
+
+        if self.scale_count == 1:
+            # Increment right before the note is played, so the visual feedback
+            # lines up. The if clause prevents going over the bounds with next step
+            # and avoids visual glitches with the playhead.
+            if self.step_count == params.pattern_len:
+                self.reset_index()
+                self.next_step_index = 0
+            else:
+                self.increment_index()
+                self.increment_next_step_index(index=self.step_index)
                 
     
 
@@ -294,26 +282,23 @@ class SequencerMetro(object):
         
     def evaluate_and_play_notes(self):
         try:
-            gate_track_active = self.app.mute_mode.tracks_active[self.name][
-                "gate_1"
-            ]
-            
-            
+            # Read all UI-owned values from the immutable snapshot — not from
+            # app/mode objects directly, which are owned by the asyncio thread.
+            params = self.params
+            gate_track_active = params.gate_track_active
+
             instrument = self.app.instruments[self.name]
-            
-            if self.gate[self.step_index] != "Off" and gate_track_active == True:
-                
+
+            if self.gate[self.step_index] != "Off" and gate_track_active:
                 gate = 1
-                pitch = self.pitch[self.step_index] if self.pitch[self.step_index] != None else 0 
-                octave = self.octave[self.step_index] * 12 if self.octave[self.step_index] != None else 0 
-            
+                pitch = self.pitch[self.step_index] if self.pitch[self.step_index] is not None else 0
+                octave = self.octave[self.step_index] * 12 if self.octave[self.step_index] is not None else 0
+
                 pitch_and_octave = pitch + octave
-                velocity = ((self.velocity[self.step_index] + 1) * 16 - 1) if self.velocity[self.step_index] != None else 1 
+                velocity = ((self.velocity[self.step_index] + 1) * 16 - 1) if self.velocity[self.step_index] is not None else 1
                 gate = None
-                
-                # Gate Len needs to scale with speed
-                controls = self.app.metro_sequencer_mode.instrument_scale_edit_controls[self.name]
-                gate_len = controls[0].value
+
+                gate_len = params.gate_len
                 
                 column = int(self.step_index / 8)
                 mutes_idx = column*8+1
