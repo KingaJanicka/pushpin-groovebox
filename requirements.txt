@@ -32,3 +32,8 @@ simple-websocket==1.0.0
 six==1.17.0
 Werkzeug==3.0.3
 wsproto==1.2.0
+
+# --- Test / development dependencies ---
+pytest==8.3.2
+pytest-mock==3.14.0
+pytest-cov==5.0.0

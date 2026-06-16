@@ -83,8 +83,11 @@ def test_OSCMacroControl(mocker):
 
     control.update_value(1)
 
-    mock_send_osc_func.assert_any_call("/param/a/...", scale_knob_value([65, 0.0, 1.0]))
-    mock_send_osc_func.assert_any_call("/param/b/...", scale_knob_value([65, -99, 2.5]))
+    # OSCControlMacro.update_value() sends the macro's own value to every linked
+    # param (it does not scale per-param), so both addresses receive control.value.
+    # (Previously this referenced an undefined `scale_knob_value`, raising NameError.)
+    mock_send_osc_func.assert_any_call("/param/a/...", float(control.value))
+    mock_send_osc_func.assert_any_call("/param/b/...", float(control.value))
 
 
 def test_OSCControlMenuItem(mocker):
