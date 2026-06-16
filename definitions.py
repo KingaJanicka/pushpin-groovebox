@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import push2_python
 import colorsys
 from os import path, mkdir
+from typing import Any
 
 VERSION = "0.25"
 
@@ -62,11 +65,11 @@ COLORS_NAMES = [
 ]
 
 
-def get_color_rgb(color_name):
+def get_color_rgb(color_name: str) -> list[int]:
     return globals().get("{0}_RGB".format(color_name.upper()), [0, 0, 0])
 
 
-def get_color_rgb_float(color_name):
+def get_color_rgb_float(color_name: str) -> list[float]:
     return [x / 255 for x in get_color_rgb(color_name)]
 
 
@@ -152,76 +155,68 @@ DEFAULT_GLOBAL_TEMPO = 120
 class PyshaMode(object):
     """ """
 
-    name = ""
-    xor_group = None
+    name: str = ""
+    xor_group: str | None = None
 
-    def __init__(self, app, settings=None):
+    def __init__(self, app: Any, settings: dict[str, Any] | None = None) -> None:
         self.app = app
         self.initialize(settings=settings)
 
     @property
-    def push(self):
+    def push(self) -> Any:
         return self.app.push
 
-    # Method run only once when the mode object is created, may receive settings dictionary from main app
-    def initialize(self, settings=None):
+    def initialize(self, settings: dict[str, Any] | None = None) -> None:
         pass
 
-    # Method to return a dictionary of properties to store in a settings file, and that will be passed to
-    # initialize method when object created
-    def get_settings_to_save(self):
+    def get_settings_to_save(self) -> dict[str, Any]:
         return {}
 
-    # Methods that are run before the mode is activated and when it is deactivated
-    def activate(self):
+    def activate(self) -> None:
         pass
 
-    def deactivate(self):
+    def deactivate(self) -> None:
         pass
 
-    # Method called at every iteration in the main loop to see if any actions need to be performed at the end of the iteration
-    # This is used to avoid some actions unncessesarily being repeated many times
-    def check_for_delayed_actions(self):
+    def check_for_delayed_actions(self) -> None:
         pass
 
-    # Method called when MIDI messages arrive from Pysha MIDI input
-    def on_midi_in(self, msg, source=None):
+    def on_midi_in(self, msg: Any, source: Any = None) -> None:
         pass
 
-    # Push2 update methods
-    def update_pads(self):
+    def update_pads(self) -> None:
         pass
 
-    def update_buttons(self):
+    def update_buttons(self) -> None:
         pass
 
-    def update_display(self, ctx, w, h):
+    def update_display(self, ctx: Any, w: int, h: int) -> None:
         pass
 
     # Push2 action callbacks (these methods should return True if some action was carried out, otherwise return None)
-    def on_encoder_rotated(self, encoder_name, increment):
+    def on_encoder_rotated(self, encoder_name: str, increment: int) -> None:
         pass
 
-    def on_encoder_touched(self, encoder_name):
+    def on_encoder_touched(self, encoder_name: str) -> None:
         pass
 
-    def on_button_pressed(self, button_name):
+    def on_button_pressed(self, button_name: str) -> None:
         pass
 
-    def on_button_released(self, button_name):
+    def on_button_released(self, button_name: str) -> None:
         pass
 
-    def on_pad_pressed(self, pad_n, pad_ij, velocity):
+    def on_pad_pressed(self, pad_n: int, pad_ij: tuple[int, int], velocity: int) -> None:
         pass
 
-    def on_pad_released(self, pad_n, pad_ij, velocity):
+    def on_pad_released(self, pad_n: int, pad_ij: tuple[int, int], velocity: int) -> None:
         pass
 
-    def on_pad_aftertouch(self, pad_n, pad_ij, velocity):
+    def on_pad_aftertouch(self, pad_n: int, pad_ij: tuple[int, int], velocity: int) -> None:
         pass
 
-    def on_touchstrip(self, value):
+    def on_touchstrip(self, value: int) -> None:
         pass
 
-    def on_sustain_pedal(self, sustain_on):
+    def on_sustain_pedal(self, sustain_on: bool) -> None:
         pass
