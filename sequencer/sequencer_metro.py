@@ -205,10 +205,10 @@ class SequencerMetro(object):
                 self.reset_index()
                 self.scale_count = 0
                 self.next_step_index = 0
-                try:
-                    self.app.global_timeline.reset()
-                except Exception as e:
-                    print(e)
+                # Signal the asyncio thread to reset the timeline rather than
+                # calling it here — resetting the timeline from within its own
+                # tick callback corrupts internal iteration state.
+                self.app.timeline_needs_reset = True
                     
             
             if self.scale_count == 0:
@@ -251,9 +251,11 @@ class SequencerMetro(object):
         
         if self.gate[next_step_index] != False and self.mutes_skips[skips_idx] != True:
             self.step_index = next_step_index
-            if self.app.is_mode_active(self.app.metro_sequencer_mode):
-                self.app.metro_sequencer_mode.update_pads()
-                return
+            # Signal the asyncio thread to update pads — calling update_pads()
+            # directly here runs push2_python USB code from the MIDI clock thread,
+            # which races with the asyncio event loop doing the same.
+            self.app.pads_need_update = True
+            return
         else:
             self.increment_index(index=next_step_index)
             

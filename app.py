@@ -84,6 +84,7 @@ class PyshaApp(object):
     previously_active_mode_for_xor_group = {}
     pads_need_update = True
     buttons_need_update = True
+    timeline_needs_reset = False
     steps_held=[]
 
     # notifications
@@ -1016,6 +1017,13 @@ class PyshaApp(object):
         if self.buttons_need_update:
             self.update_push2_buttons()
             self.buttons_need_update = False
+
+        if self.timeline_needs_reset:
+            self.timeline_needs_reset = False
+            try:
+                self.global_timeline.reset()
+            except Exception as e:
+                logger.warning("timeline reset failed: %s", e)
     
     async def queue_tasks(self):
         for task in self.queue:
