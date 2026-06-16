@@ -974,6 +974,10 @@ class PyshaApp(object):
                 self.global_timeline.reset()
             except Exception as e:
                 logger.warning("timeline reset failed: %s", e)
+
+        # Refresh sequencer param snapshots so the MIDI clock thread can read
+        # up-to-date UI state without touching mode objects directly.
+        self.metro_sequencer_mode.refresh_sequencer_params()
     
     async def queue_tasks(self):
         for task in self.queue:

@@ -224,6 +224,40 @@ class MetroSequencerMode(MelodicMode):
                 main_pattern_len=_menu_int(7, 64),
             )
 
+    def refresh_sequencer_params(self) -> None:
+        """Push a fresh SequencerParams snapshot to every active sequencer.
+
+        Called from the asyncio thread (app.check_for_delayed_actions) so that
+        the MIDI clock thread can read UI-owned values without touching mode
+        objects directly.
+        """
+        from sequencer.sequencer_params import SequencerParams
+
+        for name, seq in self.instrument_sequencers.items():
+            controls = self.instrument_scale_edit_controls.get(name)
+            if not controls:
+                continue
+
+            def _menu_int(idx: int, default: int) -> int:
+                item = controls[idx].get_active_menu_item()
+                if item is not None and item.value is not None:
+                    return int(item.value)
+                return default
+
+            gate_active = (
+                self.app.mute_mode.tracks_active.get(name, {}).get("gate_1", True)
+            )
+
+            seq.params = SequencerParams(
+                sequencer_is_playing=self.sequencer_is_playing,
+                gate_track_active=bool(gate_active),
+                gate_len=float(controls[0].value),
+                seq_time_scale=_menu_int(4, 1),
+                pattern_len=_menu_int(5, 16),
+                main_seq_time_scale=_menu_int(6, 1),
+                main_pattern_len=_menu_int(7, 64),
+            )
+
     def reschedule_playhead_tracks(self):
         # unschedule
         # TODO: finish this func

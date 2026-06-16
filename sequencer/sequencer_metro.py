@@ -201,7 +201,7 @@ class SequencerMetro(object):
                 self._pending_reset = True
                 self.reset_index()
                 self.scale_count = 0
-                
+
                 # Signal the asyncio thread to reset the timeline rather than
                 # calling it here — resetting the timeline from within its own
                 # tick callback corrupts internal iteration state.
