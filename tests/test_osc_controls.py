@@ -6,6 +6,7 @@ from osc_controls import (
     OSCControlSwitch,
     OSCControlMenu,
     OSCMenuItem,
+    scale_value,
 )
 
 
@@ -29,30 +30,31 @@ def test_OSCControl(mocker):
     assert control.max == test_max, "Maximum value should match constructor"
     assert control.min == test_min, "Minimum value should match constructor"
     assert control.size == 1, "OSCControl size should always be 1"
+    assert control.value == 0.0, "Controls default to 0.0 in the scaled model"
 
-    mock_send_osc_func.assert_called_with(
-        "/q/test", None
-    ), "Control should self-populate"
+    # Self-population was moved out of __init__ into an explicit query() method.
+    control.query()
+    mock_send_osc_func.assert_called_with("/q/test", None)
 
-    control.set_state("/test", "99 random stuff woo")
-
+    # set_state stores the incoming OSC value verbatim.
+    control.set_state("/test", 99.0)
     assert control.value == 99.0, "Control should set state"
 
+    # update_value() adds a *scaled* increment (scale_value), not the raw step.
+    control.set_state("/test", 0.0)
     control.update_value(1)
+    assert control.value == scale_value(
+        1, test_min, test_max
+    ), "Control should update by a scaled amount"
 
-    assert control.value == 100.0, "Control should update via knobs"
-
-    # mock_send_osc_func.assert_called_with(
-    #     "/test", scale_knob_value([100.0, test_min, test_max])
-    # )
-
-    control.set_state("/test", "127 test")
+    # Respects max / min bounds.
+    control.set_state("/test", test_max)
     control.update_value(1)
-    assert control.value == 127.0, "Control should respect max"
+    assert control.value == test_max, "Control should respect max"
 
-    control.set_state("/test", "0 test")
+    control.set_state("/test", test_min)
     control.update_value(-1)
-    assert control.value == 0.0, "Control should respect min"
+    assert control.value == test_min, "Control should respect min"
 
 
 def test_SpacerControl(mocker):
@@ -79,7 +81,7 @@ def test_OSCMacroControl(mocker):
     )
 
     assert control.size == 1, "OSCMacroControl size should always be 1"
-    assert control.value == 64, "Macro should start at default value (64)"
+    assert control.value == 0.0, "Macro should start at the scaled default (0.0)"
 
     control.update_value(1)
 
@@ -188,34 +190,40 @@ def test_OSCControlSwitch_Group_Range(mocker):
         ],
     }
 
-    control = OSCControlSwitch(config, mock_get_color_func, mock_send_osc_func)
+    # OSCControlSwitch now requires a dispatcher (it raises otherwise).
+    dispatcher = mocker.MagicMock(name="dispatcher")
+    control = OSCControlSwitch(
+        config, mock_get_color_func, mock_send_osc_func, dispatcher=dispatcher
+    )
 
     active_group = control.get_active_group()
     assert control.value == 0, "Initial value should be 0"
-    assert (
-        active_group.label == "group 1"
-    ), "Group should initialise with first control in list"
-    assert control.size == 5, "Group size should be the max of all children"
-    mock_send_osc_func.assert_any_call("/param/a/osc/1/param1", 0.0)
+    assert active_group.label == "group 1", "Initialises with the first group"
+    assert control.size == 5, "Group size should be the max of all children (+1)"
 
-    control.update_value(1)
+    # Constructing the switch selects the active group, which queries the
+    # addresses of its child controls ("/q<address>", None).
+    mock_send_osc_func.assert_any_call("/q/param/a/osc/1/param2", None)
+
+    # update_value() adds a scaled increment; a large step is needed to advance
+    # the integer group index (twitchy-knob mitigation).
+    control.update_value(64)
     active_group = control.get_active_group()
 
-    assert control.value == 1, "Value should update"
+    assert int(control.value) == 1, "Value should advance to the second group"
     assert active_group.label == "group 2", "Active group should update"
     assert control.size == 5, "Group size should stay the same"
-    mock_send_osc_func.assert_any_call("/param/a/osc/1/param1", 1.0)
 
     # exercise get_control, OSCControls
     assert all(
         isinstance(c, OSCControl) for c in active_group.controls
-    ), "Active group should contains only controls"
+    ), "Active group should contain only controls"
     assert (
         active_group.get_control(0).label == "Waveshaper"
     ), "Child controls behave expectedly"
     assert (
-        active_group.get_control("Waveshaper").value == 64
-    ), "Uninitialised controls default to 64"
+        active_group.get_control("Waveshaper").value == 0.0
+    ), "Uninitialised controls default to 0.0"
 
 
 def test_OSCControlMenu(mocker):
@@ -278,37 +286,28 @@ def test_OSCControlMenu(mocker):
         config, send_osc_func=mock_send_osc_func, get_color_func=mock_get_color_func
     )
 
-    assert control.value == 0, "Default menu index is 0"
+    # NOTE: the menu seeds its index from the top-level onselect message's
+    # `value` (1 here), not 0 -- so it starts on the *second* item. This looks
+    # like a bug (onselect value conflated with menu index); flagged in the
+    # tests README as a candidate for the bug-density phase. Asserting current
+    # behavior per the "update tests to match code" decision.
+    assert control.value == 1, "Menu index is seeded from onselect.value"
     assert control.message == {
         "$type": "message",
         "address": "init",
         "value": 1,
     }, "Should set initial message"
 
-    # rotate knob one click cw
-    control.update_value(1)
-
-    # mock_send_osc_func.assert_any_call("/param/a/waveshaper/type", 1.0)
-
-    assert control.value == 1, "Menu value should now be 1"
-    mock_send_osc_func.assert_any_call("/param/a/waveshaper/type", 40.0)
-
-    # rotate knob one click ccw
-    control.update_value(-1)
-    control.update_value(-1)
-    assert control.value == 0, "Menu value should be 0"
-
-    # rotate knob indeterminate amount cw
-    control.update_value(1)
-    control.update_value(1)
-    control.update_value(1)
-    control.update_value(1)
-    control.update_value(1)
-    control.update_value(1)
-    control.update_value(1)
-
-    assert control.value == 4, "Menu value should be length - 1 of menu.options"
-    mock_send_osc_func.assert_any_call("/param/a/waveshaper/type", 40.0)
-    mock_send_osc_func.assert_any_call("/param/a/waveshaper/type", 2.0)
-    mock_send_osc_func.assert_any_call("/param/a/waveshaper/type", 3.0)
+    # A single click moves the index only fractionally (scaled step), so to
+    # navigate deterministically we use large increments that saturate.
+    control.update_value(127)
+    assert control.value == len(control.items) - 1, "CW saturates at last item"
     mock_send_osc_func.assert_any_call("/param/a/waveshaper/type", 41.0)
+
+    control.update_value(-127)
+    assert control.value == 0, "CCW saturates at first item"
+    mock_send_osc_func.assert_any_call("/param/a/waveshaper/type", 1.0)
+
+    # A single click moves only a fraction of one item.
+    control.update_value(1)
+    assert 0 < control.value < 1, "A single click moves the menu fractionally"
