@@ -51,6 +51,9 @@ class SequencerMetro(object):
         # Immutable param snapshot refreshed each frame by the asyncio thread.
         # The MIDI clock thread reads this atomically — see SequencerParams.
         self.params: SequencerParams = SequencerParams()
+        # True while waiting for the asyncio thread to call global_timeline.reset().
+        # Prevents reset_index() from firing on every tick during the ~33ms gap.
+        self._pending_reset: bool = False
         self.step_index = 0
         self.step_count = 0
         self.prev_step_index = 0
@@ -195,13 +198,19 @@ class SequencerMetro(object):
         )
 
         if main_step_count >= params.main_pattern_len * params.main_seq_time_scale / 2:
-            self.reset_index()
-            self.scale_count = 0
-            self.next_step_index = 0
-            # Signal the asyncio thread to reset the timeline rather than
-            # calling it here — resetting the timeline from within its own
-            # tick callback corrupts internal iteration state.
-            self.app.timeline_needs_reset = True
+            if not self._pending_reset:
+                self._pending_reset = True
+                self.reset_index()
+                self.scale_count = 0
+                self.next_step_index = 0
+                # Signal the asyncio thread to reset the timeline rather than
+                # calling it here — resetting the timeline from within its own
+                # tick callback corrupts internal iteration state.
+                self.app.timeline_needs_reset = True
+            # Don't advance steps while waiting for the timeline to reset.
+            return
+        else:
+            self._pending_reset = False
 
         if self.scale_count == 0:
             # Play the note, reset the counter for the time scale
