@@ -13,26 +13,28 @@ from sequencer.sequencer_params import SequencerParams
 
 default_number_of_steps = 64
 
+from typing import Any
+
 class SequencerMetro(object):
-    pitch = 64
-    tick_callback = None
-    send_osc_func = None
+    tick_callback: Any = None
+    send_osc_func: Any = None
     playhead = 0
-    pitch = list()  # boolean
-    octave = list()  # int (midi note)
-    gate = list()
-    mutes_skips = list()
-    lock_scale = list()  # boolean
-    aux_2 = list()  # int
-    aux_3 = list()  # int
-    aux_4 = list()  # boolean
-    locks = list()  # for locks of trig menu
-    playhead_track = None
-    note_track = None
-    midi_out_device = None
-    midi_in_name = None
-    midi_in_device = None
-    index = None
+    pitch: list[Any] = []
+    octave: list[Any] = []
+    gate: list[Any] = []
+    mutes_skips: list[Any] = []
+    lock_scale: list[Any] = []
+    aux_2: list[Any] = []
+    aux_3: list[Any] = []
+    aux_4: list[Any] = []
+    locks: list[Any] = []
+    note: list[int | None] = []
+    playhead_track: Any = None
+    note_track: Any = None
+    midi_out_device: Any = None
+    midi_in_name: str | None = None
+    midi_in_device: Any = None
+    index: Any = None
 
     def __init__(
         self, instrument, tick_callback, playhead, send_osc_func, global_timeline, app
@@ -191,7 +193,7 @@ class SequencerMetro(object):
         if not params.sequencer_is_playing:
             return
 
-        self.playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01))
+        self.playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01))  # type: ignore[arg-type]
 
         main_step_count = round(
             (self.app.global_timeline.current_time + 0.1) * params.main_seq_time_scale / 2, 1
@@ -282,7 +284,7 @@ class SequencerMetro(object):
             return 
         
         else:
-            self.get_previous_active_step(index=prev_step_index)
+            self.increment_previous_step_index(index=prev_step_index)
         
     def reset_index(self):
         self.step_count = 0

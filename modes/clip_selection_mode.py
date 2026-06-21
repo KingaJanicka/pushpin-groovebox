@@ -418,7 +418,7 @@ class ClipSelectionMode(definitions.PyshaMode):
             chosen_folder = definitions.THIRD_PARTY_PATCHES_FOLDER
         elif 2 <= self.state[0] < 3:
             chosen_folder = definitions.USER_PATCHES_FOLDER
-        return chosen_folder + "/" + preset
+        return (chosen_folder or "") + "/" + preset
 
     def on_button_pressed(self, button_name):
         if button_name in [

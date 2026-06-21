@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 import definitions
 import push2_python
 import json
 import os
 import logging
+from typing import Any
 from definitions import PyshaMode
 from user_interface.display_utils import show_text
 from glob import glob
@@ -55,7 +58,7 @@ class OSCMode(PyshaMode):
     ]
 
     current_device_index_and_page = [0, 0]
-    instrument_page = 0
+    instrument_page: int = 0
     state = {}
     transports = []
     cli_needs_update = False
@@ -190,12 +193,14 @@ class OSCMode(PyshaMode):
                                 pass
                             elif isinstance(control, OSCControlSwitch):
                                 # Nested items need more care with saving their state
-                                control.value = state_value[0]
+                                sv: Any = state_value
+                                control.value = sv[0]
                                 active_group = control.get_active_group()
-                                for idx, active_group_control in enumerate(active_group.controls):
-                                    active_group_control.value = state_value[idx + 1]
-                                    self.app.send_osc(active_group_control.address, int(state_value[idx + 1]), instrument_short_name)
-                                active_group.select()
+                                if active_group is not None:
+                                    for idx, active_group_control in enumerate(active_group.controls):
+                                        active_group_control.value = sv[idx + 1]
+                                        self.app.send_osc(active_group_control.address, int(sv[idx + 1]), instrument_short_name)
+                                    active_group.select()
                                     
             else:
                 # if file does not exist, create one
@@ -224,7 +229,7 @@ class OSCMode(PyshaMode):
                             nested_values = []
                             nested_values.append(control.value)
                             active_group = control.get_active_group()
-                            for nested_control in active_group.controls:
+                            for nested_control in (active_group.controls if active_group is not None else []):
                                 nested_values.append(nested_control.value)
                             # print(control.label, nested_values)
                             values.append(nested_values)
@@ -290,10 +295,10 @@ class OSCMode(PyshaMode):
         device, __ = self.get_current_instrument_device_and_page()
         return device
 
-    def get_current_instrument_device_and_page(self):
+    def get_current_instrument_device_and_page(self) -> tuple[Any, Any]:
         device_idx, page = self.current_device_index_and_page
         devices = self.get_current_instrument_page_devices()
-        current_device = devices[device_idx]
+        current_device = devices[device_idx] if devices is not None else None
         return (current_device, page)
 
     def get_current_slot_devices(self):
@@ -341,13 +346,13 @@ class OSCMode(PyshaMode):
         
         # Only pages when you're not trying to pick a new device
         if self.app.is_mode_active(self.app.menu_mode) == False:
-            self.instrument_page = new_instrument_page
+            self.instrument_page = new_instrument_page or 0
             self.app.buttons_need_update = True
             self.query_all_instrument_page_params()
 
-    def query_all_instrument_page_params(self):
+    def query_all_instrument_page_params(self) -> None:
         current_instrument_devices = self.get_current_instrument_page_devices()
-        for device in current_instrument_devices:
+        for device in (current_instrument_devices or []):
             device.query_all_controls()
 
     def new_instrument_selected(self):
@@ -382,8 +387,8 @@ class OSCMode(PyshaMode):
             pass
         for count, name in enumerate(self.upper_row_button_names):
             if count < current_device.size:
-                if index != None:
-                    for value in seq.locks[index*8][count+self.instrument_page]:
+                if index is not None:
+                    for value in seq.locks[index * 8][count + self.instrument_page]:
                         if value != None:
                             self.push.buttons.set_button_color(name, definitions.WHITE)
                 else:
@@ -480,7 +485,7 @@ class OSCMode(PyshaMode):
                     _, current_page = self.get_current_instrument_device_and_page()
 
                     idx = self.upper_row_button_names.index(button_name)
-                    if idx < len(current_instrument_devices):
+                    if current_instrument_devices is not None and idx < len(current_instrument_devices):
                         new_device = current_instrument_devices[idx]
                         # Stay on the same device page if new instrument, otherwise go to next page
 

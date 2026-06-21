@@ -6,6 +6,9 @@ slot navigation logic. Several methods reach back through ``self.app.osc_mode``,
 so the fixture points that at the mode under test.
 """
 
+from __future__ import annotations
+
+from typing import Any
 import pytest
 
 from modes.osc_mode import OSCMode
@@ -26,7 +29,7 @@ def fake_instrument():
     osc = FakeDevice("Osc", slot=0)
     filt = FakeDevice("Filter", slot=0)
     amp = FakeDevice("Amp", slot=1)
-    inst = type("Inst", (), {})()
+    inst: Any = type("Inst", (), {})()
     inst.current_devices = [osc, filt, amp]
     inst.devices = [[osc, filt], [amp]]
     inst.devices_modulation = [amp]

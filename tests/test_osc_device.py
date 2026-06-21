@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+from typing import Any
 from unittest.mock import MagicMock
 
 from modes.osc_device import OSCDevice
@@ -138,7 +141,7 @@ def test_OSCDevice(mocker):
     mocker.patch("pythonosc.udp_client.SimpleUDPClient.send_message")
     mocker.patch("pythonosc.dispatcher.Dispatcher.map")
 
-    client = SimpleUDPClient("127.0.0.1", "9999")
+    client: Any = SimpleUDPClient("127.0.0.1", 9999)
     dispatcher = Dispatcher()
     osc = {"client": client, "server": None, "dispatcher": dispatcher}
 
@@ -474,7 +477,7 @@ def test_that_bit_of_logic_in_oscdevice(mocker):
     mocker.patch("pythonosc.udp_client.SimpleUDPClient.send_message")
     mocker.patch("pythonosc.dispatcher.Dispatcher.map")
 
-    client = SimpleUDPClient("127.0.0.1", "9999")
+    client: Any = SimpleUDPClient("127.0.0.1", 9999)
     dispatcher = Dispatcher()
     osc = {"client": client, "server": None, "dispatcher": dispatcher}
 

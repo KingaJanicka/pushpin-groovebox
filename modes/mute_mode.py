@@ -118,11 +118,11 @@ class MuteMode(MelodicMode):
         except Exception as exception:
             exception_message = str(exception)
             exception_type, exception_object, exception_traceback = sys.exc_info()
-            filename = os.path.split(exception_traceback.tb_frame.f_code.co_filename)[1]
-
-            print(
-                f"{exception_message} {exception_type} {filename}, Line {exception_traceback.tb_lineno}"
-            )
+            if exception_traceback is not None:
+                filename = os.path.split(exception_traceback.tb_frame.f_code.co_filename)[1]
+                print(
+                    f"{exception_message} {exception_type} {filename}, Line {exception_traceback.tb_lineno}"
+                )
 
     def on_pad_pressed(self, pad_n, pad_ij, velocity):
 

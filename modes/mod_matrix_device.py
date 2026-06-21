@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from user_interface.display_utils import show_text
 
 import push2_python
@@ -34,7 +36,7 @@ class ModMatrixDevice(definitions.PyshaMode):
         self.definition = {}
         self.engine = engine
         self.modmatrix = False
-        self.controls = [0] * 8
+        self.controls: list[float] = [0.0] * 8
         self.src_cat_column = 0
         self.src_type_column = 1
         self.device_column = 2
@@ -919,10 +921,11 @@ class ModMatrixDevice(definitions.PyshaMode):
 
         # Send delete mapping message to Surge
         selected_control = self.controls[self.control_column]
-        self.send_message(
-            f'{mod_mapping["address"]}',
-            [str(control[int(selected_control)].address), float(0)],
-        )
+        if control is not None:
+            self.send_message(
+                f'{mod_mapping["address"]}',
+                [str(control[int(selected_control)].address), float(0)],
+            )
 
         visible_controls = self.get_visible_controls()
         if (
@@ -1064,13 +1067,14 @@ class ModMatrixDevice(definitions.PyshaMode):
 
                     depth_scaled = (visible_controls[self.depth_control_column] - 0.5) * 2
 
-                    self.send_message(
-                        f'{mod_mapping["address"]}',
-                        [
-                            str(device_controls[int(selected_control)].address),
-                            float(depth_scaled),
-                        ],
-                    )
+                    if device_controls is not None:
+                        self.send_message(
+                            f'{mod_mapping["address"]}',
+                            [
+                                str(device_controls[int(selected_control)].address),
+                                float(depth_scaled),
+                            ],
+                        )
                     self.controls[7] = len(self.mod_matrix_mappings) - 1
                     
                 # Seventh encoder

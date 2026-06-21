@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from abc import ABC
 import asyncio
 import traceback
@@ -6,6 +8,7 @@ import json
 import logging
 import time
 from signal import SIGINT
+from typing import Any
 from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.osc_server import AsyncIOOSCUDPServer
 from pythonosc.dispatcher import Dispatcher
@@ -15,29 +18,29 @@ logger = logging.getLogger("engine.py")
 # logging.getLogger().setLevel(level=logging.DEBUG)
 
 class Engine(ABC):
-    app = None
-    type = None
-    PID = None
-    PD_PID = None
-    pipewireID = None
-    pipewire = None
-    process = None
-    pd_process = None
-    instrument_nodes = None
-    connections = None
-    pw_ports = None
-    sample_rate = 96000
-    buffer_size = 16
-    midi_in_port = None
-    midi_out_port = None
-    midi_port = None
-    midi_device_idx = None
-    osc_in_port = None
-    osc_out_port = None
-    jack_client = None
-    instrument = None
-    duplex_node = None
-    duplex_ports = None
+    app: Any
+    type: str | None = None
+    PID: int | None = None
+    PD_PID: int | None = None
+    pipewireID: Any = None
+    pipewire: dict[str, Any] | None = None
+    process: asyncio.subprocess.Process | None = None
+    pd_process: asyncio.subprocess.Process | None = None
+    instrument_nodes: list[Any] | None = None
+    connections: list[dict[str, Any]]
+    pw_ports: dict[str, list[Any]]
+    sample_rate: int = 96000
+    buffer_size: int = 16
+    midi_in_port: Any = None
+    midi_out_port: Any = None
+    midi_port: Any = None
+    midi_device_idx: Any = None
+    osc_in_port: Any = None
+    osc_out_port: Any = None
+    jack_client: Any = None
+    instrument: dict[str, Any] | None = None
+    duplex_node: dict[str, Any] | None = None
+    duplex_ports: dict[str, dict[str, dict[str, Any]]]
 
     def __init__(
         self,
@@ -102,14 +105,14 @@ class Engine(ABC):
         
 
 
-    async def configure_pipewire(self):
+    async def configure_pipewire(self) -> None:
 
-        instrument_nodes = await self.get_instrument_nodes()
+        instrument_nodes = await self.get_instrument_nodes() or []
         self.instrument_nodes = instrument_nodes
         all_ports = filter(
             lambda x: x["type"] == "PipeWire:Interface:Port", self.app.pipewire
         )
-        if self.instrument["instrument_name"] == "Overwitch":
+        if self.instrument and self.instrument["instrument_name"] == "Overwitch":
             self.pw_ports["output"].clear()
             self.pw_ports["input"].clear()
         for port in all_ports:
@@ -125,7 +128,7 @@ class Engine(ABC):
                         # So we don't have sperate cases for surge and OW
                         # Need to make sure monitor outs won't end up in "outputs"
                         
-                        if self.instrument["instrument_name"] == "Overwitch":
+                        if self.instrument and self.instrument["instrument_name"] == "Overwitch":
                             if (
                                 port.get("info", [])
                                 .get("props", [])
@@ -160,50 +163,51 @@ class Engine(ABC):
                         #     self.pw_ports["input"].append(port)
 
 
-    def stop(self):
-        self.process.kill()
+    def stop(self) -> None:
+        if self.process is not None:
+            self.process.kill()
 
-    def setVolume(self, volume):
-        setVolumeByPipewireID(pipewire_id=self.pipewireID, volume=volume)
+    def setVolume(self, volume: Any) -> None:
+        setVolumeByPipewireID(pipewire_id=self.pipewireID, volume=volume)  # type: ignore[unused-coroutine]
 
-    def connectNodes(self, source_node_id, dest_node_id):
-        connectPipewireSourceToPipewireDest(
+    def connectNodes(self, source_node_id: Any, dest_node_id: Any) -> None:
+        connectPipewireSourceToPipewireDest(  # type: ignore[unused-coroutine]
             source_id=source_node_id, dest_id=dest_node_id
         )
 
-    def connectEngineToNode(self, dest_node_id):
+    def connectEngineToNode(self, dest_node_id: Any) -> None:
         if not self.pipewireID:
             raise Exception("Pipewire not instantiated")
 
         source_node_id = self.pipewireID  # TODO does this actually take a PWID?
-        connectPipewireSourceToPipewireDest(
+        connectPipewireSourceToPipewireDest(  # type: ignore[unused-coroutine]
             source_id=source_node_id, dest_id=dest_node_id
         )
 
-    def connectNodeToEngine(self, source_node_id):
+    def connectNodeToEngine(self, source_node_id: Any) -> None:
         if not self.pipewireID:
             raise Exception("Pipewire not instantiated")
 
         dest_node_id = self.pipewireID  # TODO does this actually take a PWID?
-        connectPipewireSourceToPipewireDest(
+        connectPipewireSourceToPipewireDest(  # type: ignore[unused-coroutine]
             source_id=source_node_id, dest_id=dest_node_id
         )
 
-    def disconnectEngineToNode(self, dest_node_id):
+    def disconnectEngineToNode(self, dest_node_id: Any) -> None:
         if not self.pipewireID:
             raise Exception("Pipewire not instantiated")
 
         source_node_id = self.pipewireID  # TODO does this actually take a PWID?
-        disconnectPipewireSourceFromPipewireDest(
+        disconnectPipewireSourceFromPipewireDest(  # type: ignore[unused-coroutine]
             source_id=source_node_id, dest_id=dest_node_id
         )
 
-    def disconnectNodeToEngine(self, source_node_id):
+    def disconnectNodeToEngine(self, source_node_id: Any) -> None:
         if not self.pipewireID:
             raise Exception("Pipewire not instantiated")
 
         dest_node_id = self.pipewireID  # TODO does this actually take a PWID?
-        disconnectPipewireSourceFromPipewireDest(
+        disconnectPipewireSourceFromPipewireDest(  # type: ignore[unused-coroutine]
             source_id=source_node_id, dest_id=dest_node_id
         )
 
@@ -355,18 +359,17 @@ class Engine(ABC):
 
 
 class SurgeXTEngine(Engine):
-        
-    puredata_process_id = None
-    puredata_client_id = None
+
+    puredata_process_id: int | None = None
+    puredata_client_id: Any = None
     # Magic number is defined in the puradata patch
-    duplex_node_osc_address = None
-    duplex_node_osc_client = None
-    duplex_node_osc_server = None
-    duplex_node_osc = None
-    duplex_client = None
-    duplex_node = None
-    log_in = None
-    instrument_index = None
+    duplex_node_osc_address: Any = None
+    duplex_node_osc_client: SimpleUDPClient | None = None
+    duplex_node_osc_server: Any = None
+    duplex_node_osc: dict[str, Any] | None = None
+    duplex_client: Any = None
+    log_in: logging.Logger | None = None
+    instrument_index: int | None = None
     def __init__(
         self,
         app,
@@ -383,22 +386,25 @@ class SurgeXTEngine(Engine):
             midi_device_idx=midi_device_idx,
             instrument_definition=instrument_definition,
         )
+        assert self.instrument is not None, "SurgeXTEngine requires an instrument definition"
         self.duplex_node_osc_address = self.instrument["duplex_osc_port"]
         self.instrument_index = self.instrument["instrument_index"]
         # Setup stuff for the volume node osc client
         dispatcher = Dispatcher()
-        self.log_in = logger.getChild(f"in-{self.duplex_node_osc_address}")
-        dispatcher.set_default_handler(lambda *message: self.log_in.debug(message))
+        log_in = logger.getChild(f"in-{self.duplex_node_osc_address}")
+        self.log_in = log_in
+        dispatcher.set_default_handler(lambda *message: log_in.debug(message))
         self.duplex_node_osc_client = SimpleUDPClient("127.0.0.1", int(self.duplex_node_osc_address))
         self.duplex_node_osc = {"client": self.duplex_node_osc_client, "server": self.duplex_node_osc_server, "dispatcher": dispatcher}
         
-    async def configure_pipewire(self):
+    async def configure_pipewire(self) -> None:
         await super().configure_pipewire()
         # d/c from default sinks
         # get instrument links
         # print([instrument['info']['props']['media.class'] for instrument in self.instrument_nodes if instrument['info']['props']['media.class']])
 
-        surge_node = self.instrument_nodes[0] # With JACK there is only one node
+        assert self.instrument_nodes, "No instrument nodes found after configure_pipewire"
+        surge_node = self.instrument_nodes[0]  # With JACK there is only one node
         # print(surge_node['id'])
         surge_output_ports = []
         for port in self.app.pipewire:
@@ -420,6 +426,7 @@ class SurgeXTEngine(Engine):
         
         volume_ports = [port for port in self.app.pipewire if port['type'] == 'PipeWire:Interface:Port' and port['info']['props']['node.id'] == volume_node['id']]
         
+        assert self.instrument is not None
         midi_channel = self.instrument['instrument_index']
         volume_input_port_index_L = midi_channel * 2
         volume_input_port_index_R = (midi_channel * 2) + 1
@@ -457,12 +464,13 @@ class SurgeXTEngine(Engine):
         await self.disconnect_links_from_duplex_node()
         await self.connect_links_to_duplex_node()
   
-    async def start(self):
+    async def start(self) -> None:
         await super().start()
+        assert self.instrument is not None
         self.osc_in_port = self.instrument["osc_in_port"]
         self.osc_out_port = self.instrument["osc_out_port"]
         
-        self.process = await asyncio.create_subprocess_exec(
+        proc = await asyncio.create_subprocess_exec(
             f"pw-jack",
             f"-p",
             f"{self.buffer_size}",
@@ -477,7 +485,8 @@ class SurgeXTEngine(Engine):
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
-        self.PID = self.process.pid
+        self.process = proc
+        self.PID = proc.pid
 
         # Sleep 2s to allow Surge boot up
         await asyncio.sleep(2)
@@ -485,7 +494,7 @@ class SurgeXTEngine(Engine):
     async def start_pd_node(self):
         # print("engine start PD node")
         # await asyncio.sleep(1)
-        self.pd_process = await asyncio.create_subprocess_exec(
+        pd_proc = await asyncio.create_subprocess_exec(
             "pw-jack",
             "-p",
             f"{self.buffer_size}",
@@ -500,9 +509,9 @@ class SurgeXTEngine(Engine):
             stdin=asyncio.subprocess.PIPE,
             stdout=asyncio.subprocess.PIPE,
             # stderr=asyncio.subprocess.PIPE,
-            
         )
-        self.puredata_process_id = self.pd_process.pid
+        self.pd_process = pd_proc
+        self.puredata_process_id = pd_proc.pid
         try:
             # 
             await asyncio.sleep(1)
@@ -514,8 +523,9 @@ class SurgeXTEngine(Engine):
     
         
     
-    async def kill_pd_node(self):
-        self.pd_process.kill()
+    async def kill_pd_node(self) -> None:
+        if self.pd_process is not None:
+            self.pd_process.kill()
         self.puredata_process_id = None
     
     def get_duplex_client(self):
@@ -647,21 +657,23 @@ class SurgeXTEngine(Engine):
                     pass
 
 
-    async def disconnect_links_from_duplex_node(self):
+    async def disconnect_links_from_duplex_node(self) -> None:
         # init_links = [link for link in self.pipewire if link['type'] == 'PipeWire:Interface:Link' and link['info']['output-node-id'] == self.volume_node['id']]
+        assert self.duplex_node is not None
+        duplex_node = self.duplex_node
         link_list = []
-        for link in self.app.pipewire: 
+        for link in self.app.pipewire:
             if link['type'] == 'PipeWire:Interface:Link':
-                # print(link['info']['output-node-id'], "  ", link['info']['input-node-id'], "  ", self.volume_node['id'], )
-                if link['info']['output-node-id'] == self.duplex_node['id'] or link['info']['input-node-id'] == self.duplex_node['id']:
+                if link['info']['output-node-id'] == duplex_node['id'] or link['info']['input-node-id'] == duplex_node['id']:
                     link_list.append(link)
         for link in link_list:
             await disconnectPipewireLink(link['id'])
-    
-    async def connect_links_to_duplex_node(self):
+
+    async def connect_links_to_duplex_node(self) -> None:
         # Get the node
         # Connect node outputs to surge_xt inputs
         # No need to connect the inputs, that will be handled
+        assert self.instrument_nodes, "No instrument nodes available"
         surge_node = self.instrument_nodes[0]
         # print("but not here")
         surge_input_ports = []
@@ -689,14 +701,16 @@ class SurgeXTEngine(Engine):
     def getPID(self):
         return self.PID
 
-    def getInstrumentPipewireID(self):
+    def getInstrumentPipewireID(self) -> Any:
+        assert self.pipewire is not None
         return self.pipewire["id"]
 
-    def getObjectSerial(self):
+    def getObjectSerial(self) -> Any:
+        assert self.pipewire is not None
         return self.pipewire["info"]["props"]["object.serial"]
 
-    async def updateConfigPureData(self,):
-
+    async def updateConfigPureData(self) -> None:
+        assert self.process is not None
         self.PID = self.process.pid
 
         pwConfig = await getPipewireConfigForPID(self.PID)
@@ -705,9 +719,10 @@ class SurgeXTEngine(Engine):
             self.pipewireID = pwConfig["id"]
 
 
-async def setVolumeByPipewireID(pipewire_id, volume):
+async def setVolumeByPipewireID(pipewire_id: Any, volume: Any) -> None:
+    cmd = f"pw-cli s {pipewire_id} \"Props '{{mute: false, volume:{volume}}}'\""
     proc = await asyncio.create_subprocess_shell(
-        ["pw-cli", "s", pipewire_id, f"Props '{{mute: false, volume:{volume}}}'"],
+        cmd,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
@@ -799,13 +814,15 @@ async def getPipewireConfigForPID(pid):
             if stdout:
                 data = json.loads(stdout.decode().strip())
                 # nodes = filter(lambda x: x["info"]["n-input-ports"] == 0, data)
-                input_node, output_node = list(
+                input_node, output_node = sorted(
                     filter(
                         lambda x: x["info"]["props"].get("application.process.id")
                         == int(pid),
-                        # nodes,
-                    )
-                ).sort(key=lambda x: x["info"]["n-input-ports"], reverse=True)
+                        data,
+                    ),
+                    key=lambda x: x["info"]["n-input-ports"],
+                    reverse=True,
+                )
                 return {"input": input_node, "output": output_node}
         except:
             i += 1
@@ -835,10 +852,12 @@ class ExternalEngine(Engine):
     def getPID(self):
         return self.PID
 
-    def getInstrumentPipewireID(self):
+    def getInstrumentPipewireID(self) -> Any:
+        assert self.pipewire is not None
         return self.pipewire["id"]
 
-    def getObjectSerial(self):
+    def getObjectSerial(self) -> Any:
+        assert self.pipewire is not None
         return self.pipewire["info"]["props"]["object.serial"]
 
     async def start(self):
@@ -865,7 +884,8 @@ class ExternalEngine(Engine):
 
         # await asyncio.sleep(2)
 
-    async def updateConfig(self):
+    async def updateConfig(self) -> None:
+        assert self.process is not None
         self.PID = self.process.pid
         pwConfig = await getPipewireConfigForPID(self.PID)
         if pwConfig:

@@ -477,7 +477,7 @@ class TrigEditMode(definitions.PyshaMode):
                     step_idx = self.app.steps_held[0] if draw_lock == True else None
                     lock_value = (
                         seq.get_lock_state(step_idx, offset)
-                        if step_idx != None
+                        if step_idx is not None and seq is not None
                         else None
                     )
                     # print("Draw lock:", draw_lock, " Lock Value:", lock_value)

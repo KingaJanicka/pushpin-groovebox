@@ -35,7 +35,7 @@ def process(frames):
     assert len(client.inports) == len(client.outports)
     assert frames == client.blocksize
     for i, o in zip(client.inports, client.outports):
-        o.get_buffer()[:] = i.get_buffer()
+        o.get_buffer()[:] = i.get_buffer()  # type: ignore[attr-defined]
 
 
 @client.set_shutdown_callback

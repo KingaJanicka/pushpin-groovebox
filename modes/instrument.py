@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import logging
+from typing import Any
 import engine
 import mido
 import time
@@ -16,7 +19,7 @@ logger = logging.getLogger("osc_instrument")
 from time import sleep
 
 class Instrument(PyshaMode):
-    engine = None
+    engine: Any = None
     timeline = None
 
     def __init__(
@@ -83,7 +86,7 @@ class Instrument(PyshaMode):
             output_device=self.midi_out_device
         )
         
-        print("MIDI", midi_out_idx, mido.get_input_names()[midi_out_idx])
+        print("MIDI", midi_out_idx, mido.get_input_names()[midi_out_idx])  # type: ignore[attr-defined]
         if kwargs.get("engine", "surge-xt-cli") == "surge-xt-cli":
             self.engine = engine.SurgeXTEngine(app, midi_device_idx=midi_out_idx, instrument_definition=instrument_definition)
                    

@@ -46,9 +46,10 @@ class OSCDevice(PyshaMode):
 
             current_page.append(control)
             if isinstance(control, OSCControlSwitch):
-                active_group: OSCGroup = control.get_active_group()
-                for c in active_group.controls:
-                    current_page.append(c)
+                active_group = control.get_active_group()
+                if active_group is not None:
+                    for c in active_group.controls:
+                        current_page.append(c)
         return pages
 
     def __init__(
