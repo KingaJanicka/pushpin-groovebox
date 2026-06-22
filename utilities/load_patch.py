@@ -24,17 +24,17 @@ def load_patch_xml(patch):
     
     state = {}
     
-    for k, v in enumerate(config['patch']):
+    for k, v in enumerate(config['patch']):  # type: ignore[misc]
         if (k == 'meta'):
-            state[k] = dom.getElementsByTagName('meta')[0].attributes.items()
-        
+            state[k] = dom.getElementsByTagName('meta')[0].attributes.items()  # type: ignore[misc]
+
         else:
             state[k] = []
-            parent = dom.getElementsByTagName(k)[0]
+            parent = dom.getElementsByTagName(k)[0]  # type: ignore[arg-type]
             for node in parent.childNodes:
-                item = node.attributes.items()
+                item = node.attributes.items()  # type: ignore[union-attr]
                 try:
-                    item['address'] = v[node.nodeName]['osc']
+                    item['address'] = v[node.nodeName]['osc']  # type: ignore[index]
                 except:
                     pass
                 state[k].append(item)

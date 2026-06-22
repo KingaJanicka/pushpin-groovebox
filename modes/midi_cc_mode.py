@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 import definitions
 import mido
 import push2_python
 import math
 import json
 import os
+from typing import Any, Callable
 
 from definitions import PyshaMode
 from user_interface.display_utils import show_text
@@ -19,8 +22,8 @@ class MIDICCControl(object):
     value = 64
     vmin = 0
     vmax = 127
-    get_color_func = None
-    send_midi_func = None
+    get_color_func: Callable[[], str] | None = None
+    send_midi_func: Callable[[Any], None] | None = None
     value_labels_map = {}
 
     def __init__(self, cc_number, name, section_name, get_color_func, send_midi_func):
@@ -46,7 +49,7 @@ class MIDICCControl(object):
 
         # Param value
         val_height = 30
-        color = self.get_color_func()
+        color = self.get_color_func() if self.get_color_func else definitions.GRAY_LIGHT
         show_text(
             ctx,
             x_part,
@@ -107,7 +110,8 @@ class MIDICCControl(object):
 
         # Send cc message, subtract 1 to number because MIDO works from 0 - 127
         msg = mido.Message("control_change", control=self.cc_number, value=self.value)
-        self.send_midi_func(msg)
+        if self.send_midi_func:
+            self.send_midi_func(msg)
 
 
 class MIDICCMode(PyshaMode):

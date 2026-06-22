@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 import json
 import os
 import sys
 import platform
 import time
 import traceback
+from typing import Any
 import cairo
 import definitions
 import mido
@@ -24,7 +27,6 @@ from modes.melodic_mode import MelodicMode
 from modes.instrument_selection_mode import InstrumentSelectionMode
 from modes.rhythmic_mode import RhythmicMode
 from modes.slice_notes_mode import SliceNotesMode
-from modes.sequencer_mode import SequencerMode
 from modes.metro_sequencer_mode import MetroSequencerMode
 from modes.settings_mode import SettingsMode
 from modes.clip_selection_mode import ClipSelectionMode
@@ -32,7 +34,6 @@ from modes.main_controls_mode import MainControlsMode
 from modes.midi_cc_mode import MIDICCMode
 from modes.osc_mode import OSCMode
 from modes.preset_selection_mode import PresetSelectionMode
-from modes.trig_edit_mode import TrigEditMode
 from modes.ddrm_tone_selector_mode import DDRMToneSelectorMode
 from modes.menu_mode import MenuMode
 from modes.mute_mode import MuteMode
@@ -47,32 +48,26 @@ logger = logging.getLogger("app.py")
 
 class PyshaApp(object):
     # global state
-    instruments = {}
+    instruments: dict[str, Any] = {}
     tempo = DEFAULT_GLOBAL_TEMPO
     # midi
-    midi_out = None
-    available_midi_out_device_names = []
+    midi_out: Any = None
+    available_midi_out_device_names: list[Any] = []
     midi_out_channel = 0  # 0-15
-    midi_out_tmp_device_idx = (
-        None  # This is to store device names while rotating encoders
-    )
+    midi_out_tmp_device_idx: Any = None  # store device names while rotating encoders
 
-    midi_in = None
-    available_midi_in_device_names = []
+    midi_in: Any = None
+    available_midi_in_device_names: list[Any] = []
     midi_in_channel = 0  # 0-15
-    midi_in_tmp_device_idx = (
-        None  # This is to store device names while rotating encoders
-    )
+    midi_in_tmp_device_idx: Any = None  # store device names while rotating encoders
 
-    notes_midi_in = None  # MIDI input device only used to receive note messages and illuminate pads/keys
-    notes_midi_in_tmp_device_idx = (
-        None  # This is to store device names while rotating encoders
-    )
+    notes_midi_in: Any = None  # MIDI input device only used to receive note messages and illuminate pads/keys
+    notes_midi_in_tmp_device_idx: Any = None  # store device names while rotating encoders
 
     # push
-    push = None
-    use_push2_display = None
-    target_frame_rate = None
+    push: Any = None
+    use_push2_display: bool | None = None
+    target_frame_rate: int | None = None
 
     # frame rate measurements
     actual_frame_rate = 0
@@ -80,14 +75,15 @@ class PyshaApp(object):
     current_frame_rate_measurement_second = 0
 
     # other state vars
-    active_modes = []
-    previously_active_mode_for_xor_group = {}
+    active_modes: list[Any] = []
+    previously_active_mode_for_xor_group: dict[str, Any] = {}
     pads_need_update = True
     buttons_need_update = True
-    steps_held=[]
+    timeline_needs_reset = False
+    steps_held: list[Any] = []
 
     # notifications
-    notification_text = None
+    notification_text: str | None = None
     notification_time = 0
 
     # fixing issue with 2 lumis and alternating channel pressure values
@@ -95,26 +91,26 @@ class PyshaApp(object):
     last_cp_value_recevied_time = 0
 
     # client = SimpleUDPClient("127.0.0.1", 1032)
-    tasks = set()
-    queue = []
+    tasks: set[Any] = set()
+    queue: list[Any] = []
 
     # Pipewire-related
-    external_instruments = []
-    pipewire = None
-    volumes = [ 0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6]
-    volume_client = None
-    volume_node = None
-    iso_midi_in = None
-    global_timeline = None
-    pwcli = None
-    puredata_process_id = None
-    puredata_client_id = None
+    external_instruments: list[Any] = []
+    pipewire: list[Any] | None = None
+    volumes: list[float] = [0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6]
+    volume_client: Any = None
+    volume_node: Any = None
+    iso_midi_in: Any = None
+    global_timeline: Any = None
+    pwcli: Any = None
+    puredata_process_id: int | None = None
+    puredata_client_id: Any = None
     # Magic number is defined in the puradata patch
     volume_node_osc_address = 1058
-    volume_node_osc_client = None
-    volume_node_osc_server = None
-    volume_node_osc = None
-    log_in = None
+    volume_node_osc_client: Any = None
+    volume_node_osc_server: Any = None
+    volume_node_osc: Any = None
+    log_in: logging.Logger | None = None
     
     def __init__(self):
         if os.path.exists("settings.json"):
@@ -124,8 +120,9 @@ class PyshaApp(object):
 
         # Setup stuff for the volume node osc client
         dispatcher = Dispatcher()
-        self.log_in = logger.getChild(f"in-{self.volume_node_osc_address}")
-        dispatcher.set_default_handler(lambda *message: self.log_in.debug(message))
+        log_in = logger.getChild(f"in-{self.volume_node_osc_address}")
+        self.log_in = log_in
+        dispatcher.set_default_handler(lambda *message: log_in.debug(message))
         self.volume_node_osc_client = SimpleUDPClient("127.0.0.1", int(self.volume_node_osc_address))
         self.volume_node_osc = {"client": self.volume_node_osc_client, "server": self.volume_node_osc_server, "dispatcher": dispatcher}
         
@@ -183,7 +180,6 @@ class PyshaApp(object):
         self.set_melodic_mode()
 
         self.preset_selection_mode = PresetSelectionMode(self, settings=settings)
-        self.trig_edit_mode = TrigEditMode(self, settings=settings)
         
         # Must be initialized after instrument selection mode so it gets info about loaded instruments
         self.midi_cc_mode = MIDICCMode(
@@ -195,9 +191,6 @@ class PyshaApp(object):
             self, settings=settings
         )
         
-        self.sequencer_mode = SequencerMode(
-            self, settings=settings, send_osc_func=self.send_osc
-        )
         self.metro_sequencer_mode = MetroSequencerMode(
             self, settings=settings, send_osc_func=self.send_osc
         ) 
@@ -268,7 +261,6 @@ class PyshaApp(object):
             new_active_modes.append(self.menu_mode)
             self.active_modes = new_active_modes
             self.preset_selection_mode.deactivate()
-            self.trig_edit_mode.deactivate()
             self.menu_mode.activate()
 
     # TODO: preset sel/trig edit get wonky when switching from one to another
@@ -294,13 +286,12 @@ class PyshaApp(object):
             # self.previously_active_mode_for_xor_group = self.active_modes[-1]
             new_active_modes = []
             for mode in self.active_modes:
-                if mode != self.menu_mode and mode != self.osc_mode and mode != self.trig_edit_mode:
+                if mode != self.menu_mode and mode != self.osc_mode:
                     new_active_modes.append(mode)
             new_active_modes.append(self.preset_selection_mode)
             self.active_modes = new_active_modes
             self.menu_mode.deactivate()
             self.osc_mode.deactivate()
-            self.trig_edit_mode.deactivate()
             self.metro_sequencer_mode.deactivate()
             self.clip_selection_mode.deactivate()
             self.preset_selection_mode.activate()
@@ -326,51 +317,17 @@ class PyshaApp(object):
             # self.previously_active_mode_for_xor_group = self.active_modes[-1]
             new_active_modes = []
             for mode in self.active_modes:
-                if mode != self.menu_mode and mode != self.osc_mode and mode != self.trig_edit_mode:
+                if mode != self.menu_mode and mode != self.osc_mode:
                     new_active_modes.append(mode)
             new_active_modes.append(self.clip_selection_mode)
             self.active_modes = new_active_modes
             self.menu_mode.deactivate()
             self.osc_mode.deactivate()
-            self.trig_edit_mode.deactivate()
             self.preset_selection_mode.deactivate()
             self.metro_sequencer_mode.deactivate()
             self.clip_selection_mode.activate()
             # print(self.active_modes, "active modes")
 
-
-
-    def toggle_trig_edit_mode(self):
-        previous_mode = self.previously_active_mode_for_xor_group
-        if self.is_mode_active(self.trig_edit_mode):
-            # Deactivate (replace ddrm tone selector mode by midi cc and instrument selection mode)
-            new_active_modes = []
-            for mode in self.active_modes:
-                if mode != self.trig_edit_mode:
-                    new_active_modes.append(mode)
-
-            new_active_modes.append(self.osc_mode)
-            new_active_modes.append(previous_mode)
-            self.active_modes = new_active_modes
-            self.osc_mode.activate()
-            self.trig_edit_mode.deactivate()
-        else:
-            # Activate (replace midi cc and instrument selection mode by ddrm tone selector mode)
-            self.previously_active_mode_for_xor_group = self.active_modes[-1]
-            new_active_modes = []
-            for mode in self.active_modes:
-                if mode != self.menu_mode and mode != self.osc_mode and mode != self.preset_selection_mode:
-                    new_active_modes.append(mode)
-
-            new_active_modes.append(self.trig_edit_mode)
-            self.active_modes = new_active_modes
-            self.menu_mode.deactivate()
-            self.osc_mode.deactivate()
-            self.trig_edit_mode.activate()
-            self.clip_selection_mode.deactivate()
-            self.metro_sequencer_mode.deactivate()
-            self.preset_selection_mode.deactivate()
-            # print(self.active_modes, "active modes")
 
     def toggle_ddrm_tone_selector_mode(self):
         previous_mode = self.previously_active_mode_for_xor_group
@@ -477,11 +434,6 @@ class PyshaApp(object):
     def set_clip_selection_mode(self):
         self.set_mode_for_xor_group(self.clip_selection_mode)
 
-
-    def set_sequencer_mode(self):
-        # pass
-        self.set_mode_for_xor_group(self.sequencer_mode)
-
     def set_metro_sequencer_mode(self):
         # pass
         self.set_mode_for_xor_group(self.metro_sequencer_mode)
@@ -530,7 +482,7 @@ class PyshaApp(object):
         print("Configuring MIDI in to {}...".format(device_name))
         self.available_midi_in_device_names = [
             name
-            for name in mido.get_input_names()
+            for name in mido.get_input_names()  # type: ignore[attr-defined]
             if "Ableton Push" not in name
             and "RtMidi" not in name
             and "Through" not in name
@@ -548,7 +500,7 @@ class PyshaApp(object):
                 if self.midi_in is not None:
                     self.midi_in.callback = None  # Disable current callback (if any)
                 try:
-                    self.midi_in = mido.open_input(full_name)
+                    self.midi_in = mido.open_input(full_name)  # type: ignore[attr-defined]
                     self.midi_in.callback = self.midi_in_handler
                     print('Receiving MIDI in from "{0}"'.format(full_name))
                 except IOError:
@@ -638,7 +590,7 @@ class PyshaApp(object):
         print("Configuring notes MIDI in to {}...".format(device_name))
         self.available_midi_in_device_names = [
             name
-            for name in mido.get_input_names()
+            for name in mido.get_input_names()  # type: ignore[attr-defined]
             if "Ableton Push" not in name
             and "RtMidi" not in name
             and "Through" not in name
@@ -659,7 +611,7 @@ class PyshaApp(object):
                         None  # Disable current callback (if any)
                     )
                 try:
-                    self.notes_midi_in = mido.open_input(full_name)
+                    self.notes_midi_in = mido.open_input(full_name)  # type: ignore[attr-defined]
                     self.notes_midi_in.callback = self.notes_midi_in_handler
                     print('Receiving notes MIDI in from "{0}"'.format(full_name))
                 except IOError:
@@ -823,7 +775,7 @@ class PyshaApp(object):
             )
             if instrument:
                 instance = self.instruments.get(instrument["instrument_short_name"], None)
-                if instance.midi_in_device:
+                if instance is not None and instance.midi_in_device:
                     instance.midi_in_device.send(msg)
             # This will rule out sysex and other "strange" messages that don't have channel info
             # if (
@@ -854,7 +806,7 @@ class PyshaApp(object):
         # Then, send message to the melodic/rhythmic active modes so the notes are shown in pads/keys
         if msg.type == "note_on" or msg.type == "note_off":
             instrument_midi_channel = (
-                self.instrument_selection_mode.get_current_instrumentument_info()[
+                self.instrument_selection_mode.get_current_instrument_info()[
                     "midi_channel"
                 ]
             )
@@ -888,7 +840,7 @@ class PyshaApp(object):
             assert len(client.inports) == len(client.outports)
             assert frames == client.blocksize
             for i, o in zip(client.inports, client.outports):
-                o.get_buffer()[:] = i.get_buffer()
+                o.get_buffer()[:] = i.get_buffer()  # type: ignore[attr-defined]
 
         @client.set_shutdown_callback
         def shutdown(status, reason):
@@ -974,7 +926,6 @@ class PyshaApp(object):
             for mode in self.active_modes:
                     mode.update_display(ctx, w, h)
             # Makes seq submenus always draw on top of other modes
-            self.sequencer_mode.update_display(ctx, w, h)
             self.metro_sequencer_mode.update_display(ctx, w, h)
 
             # Show any notifications that should be shown
@@ -1016,6 +967,17 @@ class PyshaApp(object):
         if self.buttons_need_update:
             self.update_push2_buttons()
             self.buttons_need_update = False
+
+        if self.timeline_needs_reset:
+            self.timeline_needs_reset = False
+            try:
+                self.global_timeline.reset()
+            except Exception as e:
+                logger.warning("timeline reset failed: %s", e)
+
+        # Refresh sequencer param snapshots so the MIDI clock thread can read
+        # up-to-date UI state without touching mode objects directly.
+        self.metro_sequencer_mode.refresh_sequencer_params()
     
     async def queue_tasks(self):
         for task in self.queue:
@@ -1029,7 +991,6 @@ class PyshaApp(object):
 
     async def run_loop(self):
         print("Loading State ...")
-        # self.sequencer_mode.load_state()
         self.metro_sequencer_mode.load_state()
         self.preset_selection_mode.init_surge_preset_state()
         
@@ -1068,7 +1029,7 @@ class PyshaApp(object):
             after_draw_time = time.time()
 
             # Calculate sleep time to aproximate the target frame rate
-            sleep_time = (1.0 / self.target_frame_rate) - (
+            sleep_time = (1.0 / (self.target_frame_rate or 30)) - (
                 after_draw_time - before_draw_time
             )
 
@@ -1151,7 +1112,9 @@ class PyshaApp(object):
         
         self.puredata_process_id = self.pd_process.pid
         
-    def get_volume_client(self):
+    def get_volume_client(self) -> Any:
+        if self.pipewire is None:
+            return None
         for item in self.pipewire:
             if item["type"] == "PipeWire:Interface:Client":
                 # print(item.get("info", {}).get("props", {}).get("application.process.id",None), self.puredata_process_id)
@@ -1166,7 +1129,9 @@ class PyshaApp(object):
         return self.volume_client
 
 
-    def get_volume_node(self):
+    def get_volume_node(self) -> Any:
+        if self.pipewire is None:
+            return None
         for node in self.pipewire:
             if node["type"] == "PipeWire:Interface:Node":
                 try:
@@ -1178,10 +1143,12 @@ class PyshaApp(object):
         return self.volume_node
         
         
-    async def disconnect_links_from_volume_node(self):
+    async def disconnect_links_from_volume_node(self) -> None:
         # init_links = [link for link in self.pipewire if link['type'] == 'PipeWire:Interface:Link' and link['info']['output-node-id'] == self.volume_node['id']]
+        if self.pipewire is None:
+            return
         link_list = []
-        for link in self.pipewire: 
+        for link in self.pipewire:
             if link['type'] == 'PipeWire:Interface:Link':
                 # print(link['info']['output-node-id'], "  ", link['info']['input-node-id'], "  ", self.volume_node['id'], )
                 if link['info']['output-node-id'] == self.volume_node['id'] or link['info']['input-node-id'] == self.volume_node['id']:

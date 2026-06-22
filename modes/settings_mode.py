@@ -775,7 +775,7 @@ def restart_program():
     """
     try:
         p = psutil.Process(os.getpid())
-        for handler in p.get_open_files() + p.connections():
+        for handler in p.get_open_files() + p.connections():  # type: ignore[attr-defined]
             os.close(handler.fd)
     except Exception as e:
         traceback.print_exc()
