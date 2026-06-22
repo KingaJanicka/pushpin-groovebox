@@ -144,7 +144,6 @@ class MuteMode(MelodicMode):
         if button_name in track_button_names:
             idx = track_button_names.index(button_name)
             self.app.metro_sequencer_mode.selected_track = TRACK_NAMES_METRO[idx]
-            self.app.trig_edit_mode.update_state()
             self.app.buttons_need_update = True
             self.app.pads_need_update = True
             self.app.set_metro_sequencer_mode()

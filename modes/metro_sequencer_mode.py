@@ -351,9 +351,6 @@ class MetroSequencerMode(MelodicMode):
         ) in self.get_all_distinct_instrument_short_names_helper():
             self.instrument_sequencers[instrument_short_name].load_state()
 
-        # Loads Trig edit state
-        self.app.trig_edit_mode.load_state()
-
         # # Loads Osc mode state
         # self.app.osc_mode.load_state()
 
@@ -414,9 +411,6 @@ class MetroSequencerMode(MelodicMode):
         except Exception as e:
             print("Exception in trig_edit save_state")
             traceback.print_exc()
-
-        # Saves Trig edit state
-        # self.app.trig_edit_mode.save_state()
 
         # # Saves Osc mode state
         # self.app.osc_mode.save_state()
@@ -485,7 +479,6 @@ class MetroSequencerMode(MelodicMode):
         
         if self.app.is_mode_active(self.app.metro_sequencer_mode):
             self.update_pads()
-            self.app.trig_edit_mode.update_button_colours()
         if self.get_current_instrument_short_name_helper() == instrument_name:
             self.playhead = self.instrument_sequencers[instrument_name].playhead
 
@@ -997,28 +990,21 @@ class MetroSequencerMode(MelodicMode):
             self.get_current_instrument_short_name_helper()
         ]
         if button_name in track_button_names:
-            # print("Button pressed", button_name)
             idx = track_button_names.index(button_name)
             self.selected_track = TRACK_NAMES_METRO[idx]
-            # print("before update state")
-            self.app.trig_edit_mode.update_state()
-            # print("after update state")
             try:
                 self.all_track_buttons_off()
             except Exception as e:
                 print(e)
-            # print("after try/catch")
             self.active_track_button_on()
             self.app.buttons_need_update = True
             self.app.pads_need_update = True
-            # print("after needs update")
             if button_name == push2_constants.BUTTON_1_16:
                 self.push.buttons.set_button_color(push2_constants.BUTTON_SHIFT, definitions.WHITE)
                 self.push.buttons.set_button_color(push2_constants.BUTTON_SELECT, definitions.WHITE)
             else:
                 self.push.buttons.set_button_color(push2_constants.BUTTON_SHIFT, definitions.BLACK)
                 self.push.buttons.set_button_color(push2_constants.BUTTON_SELECT, definitions.BLACK)
-            print("end of button pressed")
 
         elif button_name == push2_constants.BUTTON_1_8:
             self.button_1_8_pressed = True
@@ -1111,10 +1097,7 @@ class MetroSequencerMode(MelodicMode):
                     for mode in self.app.active_modes:
                         # TODO: We will need to modify this code to make locks work with other devices
                         # TODO: make active page offset the encoder by 8
-                        if mode == self.app.trig_edit_mode:
-                            device = self.app.trig_edit_mode
-                        else:
-                            device = self.app.osc_mode.get_current_instrument_device()
+                        device = self.app.osc_mode.get_current_instrument_device()
 
                     idx = int(self.steps_held[0]%8)
                     value = None
@@ -1192,7 +1175,6 @@ class MetroSequencerMode(MelodicMode):
                 # elif len(self.app.steps_held) == 0 and self.show_scale_menu == False:
                 #     current_device = self.app.instrument_selection_mode.get_current_instrument_device()
                 #     current_device.on_encoder_rotated(encoder_name, increment)
-                self.app.trig_edit_mode.update_button_colours()
             except Exception as e:
                 print(e)
                 traceback.print_exc()
@@ -1242,3 +1224,4 @@ class MetroSequencerMode(MelodicMode):
             self.encoder_incr_since_held[encoder_idx] = False
         except ValueError:
             pass
+

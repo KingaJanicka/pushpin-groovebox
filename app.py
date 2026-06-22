@@ -34,7 +34,6 @@ from modes.main_controls_mode import MainControlsMode
 from modes.midi_cc_mode import MIDICCMode
 from modes.osc_mode import OSCMode
 from modes.preset_selection_mode import PresetSelectionMode
-from modes.trig_edit_mode import TrigEditMode
 from modes.ddrm_tone_selector_mode import DDRMToneSelectorMode
 from modes.menu_mode import MenuMode
 from modes.mute_mode import MuteMode
@@ -181,7 +180,6 @@ class PyshaApp(object):
         self.set_melodic_mode()
 
         self.preset_selection_mode = PresetSelectionMode(self, settings=settings)
-        self.trig_edit_mode = TrigEditMode(self, settings=settings)
         
         # Must be initialized after instrument selection mode so it gets info about loaded instruments
         self.midi_cc_mode = MIDICCMode(
@@ -263,7 +261,6 @@ class PyshaApp(object):
             new_active_modes.append(self.menu_mode)
             self.active_modes = new_active_modes
             self.preset_selection_mode.deactivate()
-            self.trig_edit_mode.deactivate()
             self.menu_mode.activate()
 
     # TODO: preset sel/trig edit get wonky when switching from one to another
@@ -289,13 +286,12 @@ class PyshaApp(object):
             # self.previously_active_mode_for_xor_group = self.active_modes[-1]
             new_active_modes = []
             for mode in self.active_modes:
-                if mode != self.menu_mode and mode != self.osc_mode and mode != self.trig_edit_mode:
+                if mode != self.menu_mode and mode != self.osc_mode:
                     new_active_modes.append(mode)
             new_active_modes.append(self.preset_selection_mode)
             self.active_modes = new_active_modes
             self.menu_mode.deactivate()
             self.osc_mode.deactivate()
-            self.trig_edit_mode.deactivate()
             self.metro_sequencer_mode.deactivate()
             self.clip_selection_mode.deactivate()
             self.preset_selection_mode.activate()
@@ -321,51 +317,17 @@ class PyshaApp(object):
             # self.previously_active_mode_for_xor_group = self.active_modes[-1]
             new_active_modes = []
             for mode in self.active_modes:
-                if mode != self.menu_mode and mode != self.osc_mode and mode != self.trig_edit_mode:
+                if mode != self.menu_mode and mode != self.osc_mode:
                     new_active_modes.append(mode)
             new_active_modes.append(self.clip_selection_mode)
             self.active_modes = new_active_modes
             self.menu_mode.deactivate()
             self.osc_mode.deactivate()
-            self.trig_edit_mode.deactivate()
             self.preset_selection_mode.deactivate()
             self.metro_sequencer_mode.deactivate()
             self.clip_selection_mode.activate()
             # print(self.active_modes, "active modes")
 
-
-
-    def toggle_trig_edit_mode(self):
-        previous_mode = self.previously_active_mode_for_xor_group
-        if self.is_mode_active(self.trig_edit_mode):
-            # Deactivate (replace ddrm tone selector mode by midi cc and instrument selection mode)
-            new_active_modes = []
-            for mode in self.active_modes:
-                if mode != self.trig_edit_mode:
-                    new_active_modes.append(mode)
-
-            new_active_modes.append(self.osc_mode)
-            new_active_modes.append(previous_mode)
-            self.active_modes = new_active_modes
-            self.osc_mode.activate()
-            self.trig_edit_mode.deactivate()
-        else:
-            # Activate (replace midi cc and instrument selection mode by ddrm tone selector mode)
-            self.previously_active_mode_for_xor_group = self.active_modes[-1]
-            new_active_modes = []
-            for mode in self.active_modes:
-                if mode != self.menu_mode and mode != self.osc_mode and mode != self.preset_selection_mode:
-                    new_active_modes.append(mode)
-
-            new_active_modes.append(self.trig_edit_mode)
-            self.active_modes = new_active_modes
-            self.menu_mode.deactivate()
-            self.osc_mode.deactivate()
-            self.trig_edit_mode.activate()
-            self.clip_selection_mode.deactivate()
-            self.metro_sequencer_mode.deactivate()
-            self.preset_selection_mode.deactivate()
-            # print(self.active_modes, "active modes")
 
     def toggle_ddrm_tone_selector_mode(self):
         previous_mode = self.previously_active_mode_for_xor_group
