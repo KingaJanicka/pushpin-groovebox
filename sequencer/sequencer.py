@@ -147,7 +147,7 @@ class Sequencer(object):
             instrument_name = self.name
             instrument_state = self.app.trig_edit_mode.state[instrument_name]
             instrument_scale_edit_controls = (
-                self.app.sequencer_mode.instrument_scale_edit_controls[instrument_name]
+                self.app.metro_sequencer_mode.instrument_scale_edit_controls[instrument_name]
             )
             note = None
             gate = None
@@ -439,10 +439,10 @@ class Sequencer(object):
 
     def set_lock_state(self, index, parameter_idx, value):
         # print(f"Set_lock_state: index {index}, param_idx {parameter_idx}, value {value}")
-        selected_track = self.app.sequencer_mode.selected_track
+        selected_track = self.app.metro_sequencer_mode.selected_track
         self.locks[selected_track][index][parameter_idx] = value
 
     def get_lock_state(self, index, parameter_idx):
         # print(f"Set_lock_state: index {index}, param_idx {parameter_idx}, value {value}")
-        selected_track = self.app.sequencer_mode.selected_track
+        selected_track = self.app.metro_sequencer_mode.selected_track
         return self.locks[selected_track][index][parameter_idx]

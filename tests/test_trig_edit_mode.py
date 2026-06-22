@@ -14,7 +14,7 @@ from modes.trig_edit_mode import TrigEditMode
 def trig(app):
     TrigEditMode.controls = []
     TrigEditMode.state = {}
-    app.sequencer_mode.selected_track = TRACK_NAMES[0]
+    app.metro_sequencer_mode.selected_track = TRACK_NAMES[0]
     mode = TrigEditMode(app, settings=None)
     return mode
 

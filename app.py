@@ -27,7 +27,6 @@ from modes.melodic_mode import MelodicMode
 from modes.instrument_selection_mode import InstrumentSelectionMode
 from modes.rhythmic_mode import RhythmicMode
 from modes.slice_notes_mode import SliceNotesMode
-from modes.sequencer_mode import SequencerMode
 from modes.metro_sequencer_mode import MetroSequencerMode
 from modes.settings_mode import SettingsMode
 from modes.clip_selection_mode import ClipSelectionMode
@@ -194,9 +193,6 @@ class PyshaApp(object):
             self, settings=settings
         )
         
-        self.sequencer_mode = SequencerMode(
-            self, settings=settings, send_osc_func=self.send_osc
-        )
         self.metro_sequencer_mode = MetroSequencerMode(
             self, settings=settings, send_osc_func=self.send_osc
         ) 
@@ -475,11 +471,6 @@ class PyshaApp(object):
 
     def set_clip_selection_mode(self):
         self.set_mode_for_xor_group(self.clip_selection_mode)
-
-
-    def set_sequencer_mode(self):
-        # pass
-        self.set_mode_for_xor_group(self.sequencer_mode)
 
     def set_metro_sequencer_mode(self):
         # pass
@@ -973,7 +964,6 @@ class PyshaApp(object):
             for mode in self.active_modes:
                     mode.update_display(ctx, w, h)
             # Makes seq submenus always draw on top of other modes
-            self.sequencer_mode.update_display(ctx, w, h)
             self.metro_sequencer_mode.update_display(ctx, w, h)
 
             # Show any notifications that should be shown
@@ -1039,7 +1029,6 @@ class PyshaApp(object):
 
     async def run_loop(self):
         print("Loading State ...")
-        # self.sequencer_mode.load_state()
         self.metro_sequencer_mode.load_state()
         self.preset_selection_mode.init_surge_preset_state()
         

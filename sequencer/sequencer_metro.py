@@ -462,7 +462,7 @@ class SequencerMetro(object):
             device_idx = device.slot
             
         # print(f"Set_lock_state: index {index}, device_idx {device_idx}, param_idx {parameter_idx}, value {value}")
-        selected_track = self.app.sequencer_mode.selected_track
+        selected_track = self.app.metro_sequencer_mode.selected_track
         for x in range(8):
             self.locks[index * 8 + x][device_idx][parameter_idx] = value
 
@@ -479,7 +479,7 @@ class SequencerMetro(object):
         else:
             device_idx = device.slot
             
-        selected_track = self.app.sequencer_mode.selected_track
+        selected_track = self.app.metro_sequencer_mode.selected_track
         return self.locks[index * 8][device_idx][parameter_idx]
 
     def clear_all_locks_for_step(self, index):

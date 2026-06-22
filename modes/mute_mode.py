@@ -13,7 +13,7 @@ from osc_controls import (
     OSCControlSwitch,
     OSCGroup,
 )
-from modes.sequencer_mode import TRACK_COLORS
+from modes.metro_sequencer_mode import TRACK_COLORS
 from definitions import TRACK_NAMES
 from definitions import TRACK_NAMES_METRO
 
