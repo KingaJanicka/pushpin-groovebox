@@ -14,7 +14,6 @@ from osc_controls import (
     OSCGroup,
 )
 from modes.metro_sequencer_mode import TRACK_COLORS
-from definitions import TRACK_NAMES
 from definitions import TRACK_NAMES_METRO
 
 track_button_names = [
@@ -54,7 +53,7 @@ class MuteMode(MelodicMode):
             instrument_short_name
         ) in self.get_all_distinct_instrument_short_names_helper():
             self.tracks_active[instrument_short_name] = {}
-            for track_name in TRACK_NAMES:
+            for track_name in TRACK_NAMES_METRO:
                 self.tracks_active[instrument_short_name][track_name] = True
 
     def get_settings_to_save(self):
@@ -98,7 +97,7 @@ class MuteMode(MelodicMode):
             for (inst_index, 
                 instrument_short_name
                 ) in enumerate(self.get_all_distinct_instrument_short_names_helper()):
-                for track_index, track_name in enumerate(TRACK_NAMES):
+                for track_index, track_name in enumerate(TRACK_NAMES_METRO):
                     pad_idx = inst_index + 8 * track_index
 
                     if self.tracks_active[instrument_short_name][track_name] == True:
@@ -129,7 +128,7 @@ class MuteMode(MelodicMode):
         for (inst_index, 
                 instrument_short_name
                 ) in enumerate(self.get_all_distinct_instrument_short_names_helper()):
-                for track_index, track_name in enumerate(TRACK_NAMES):
+                for track_index, track_name in enumerate(TRACK_NAMES_METRO):
                     # print(pad_ij[1], inst_index, "ssss",pad_ij[0], track_index)
                     if pad_ij[1] == inst_index and pad_ij[0] == track_index:
                         # If a pad is off, turn it on

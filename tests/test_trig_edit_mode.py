@@ -6,7 +6,7 @@ them, so both are reset before each construction to keep tests independent.
 
 import pytest
 
-from definitions import TRACK_NAMES
+from definitions import TRACK_NAMES_METRO
 from modes.trig_edit_mode import TrigEditMode
 
 
@@ -14,7 +14,7 @@ from modes.trig_edit_mode import TrigEditMode
 def trig(app):
     TrigEditMode.controls = []
     TrigEditMode.state = {}
-    app.metro_sequencer_mode.selected_track = TRACK_NAMES[0]
+    app.metro_sequencer_mode.selected_track = TRACK_NAMES_METRO[0]
     mode = TrigEditMode(app, settings=None)
     return mode
 
@@ -26,7 +26,7 @@ def test_initialize_builds_eight_controls(trig):
 def test_initialize_seeds_state_per_instrument_and_track(trig):
     assert set(trig.state.keys()) == {"INST1", "INST2"}
     for instrument in ("INST1", "INST2"):
-        for track in TRACK_NAMES:
+        for track in TRACK_NAMES_METRO:
             # 8 control values + a trailing recurrence byte (255).
             assert len(trig.state[instrument][track]) == 9
 

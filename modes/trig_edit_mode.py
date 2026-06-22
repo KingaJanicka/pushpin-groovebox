@@ -15,7 +15,7 @@ from user_interface.display_utils import show_text
 from pathlib import Path
 import traceback
 import logging
-from definitions import TRACK_NAMES
+from definitions import TRACK_NAMES_METRO
 
 log = logging.getLogger("preset_selection_mode")
 
@@ -380,7 +380,7 @@ class TrigEditMode(definitions.PyshaMode):
 
         for instrument in self.get_all_distinct_instrument_short_names_helper():
             self.state[instrument] = {}
-            for track in TRACK_NAMES:
+            for track in TRACK_NAMES_METRO:
                 self.state[instrument][track] = []
                 for control in self.controls:
                     self.state[instrument][track].append(control.value)
@@ -391,6 +391,8 @@ class TrigEditMode(definitions.PyshaMode):
             if os.path.exists(self.trig_edit_filename):
                 dump = json.load(open(self.trig_edit_filename))
                 self.state = dump
+            else:
+                self.save_state()
         except Exception as e:
             print("Exception in trig_edit load_state")
             traceback.print_exc()
@@ -423,9 +425,14 @@ class TrigEditMode(definitions.PyshaMode):
     def update_state(self):
         current_state = self.state[self.get_current_instrument_short_name_helper()]
         track_name = self.app.metro_sequencer_mode.selected_track
-        for idx, control in enumerate(self.controls):
-            control.value = current_state[track_name][idx]
-
+        print("inside update state", track_name)
+        print("state", current_state)
+        try:
+            for idx, control in enumerate(self.controls):
+                control.value = current_state[track_name][idx]
+        except Exception as e:
+            print("Exception in trig_edit_mode, update state", e)
+        
     def should_be_enabled(self):
         return True
 
