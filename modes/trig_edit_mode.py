@@ -15,7 +15,7 @@ from user_interface.display_utils import show_text
 from pathlib import Path
 import traceback
 import logging
-from definitions import TRACK_NAMES
+from definitions import TRACK_NAMES_METRO
 
 log = logging.getLogger("preset_selection_mode")
 
@@ -380,7 +380,7 @@ class TrigEditMode(definitions.PyshaMode):
 
         for instrument in self.get_all_distinct_instrument_short_names_helper():
             self.state[instrument] = {}
-            for track in TRACK_NAMES:
+            for track in TRACK_NAMES_METRO:
                 self.state[instrument][track] = []
                 for control in self.controls:
                     self.state[instrument][track].append(control.value)
@@ -391,6 +391,8 @@ class TrigEditMode(definitions.PyshaMode):
             if os.path.exists(self.trig_edit_filename):
                 dump = json.load(open(self.trig_edit_filename))
                 self.state = dump
+            else:
+                self.save_state()
         except Exception as e:
             print("Exception in trig_edit load_state")
             traceback.print_exc()
@@ -422,10 +424,15 @@ class TrigEditMode(definitions.PyshaMode):
 
     def update_state(self):
         current_state = self.state[self.get_current_instrument_short_name_helper()]
-        track_name = self.app.sequencer_mode.selected_track
-        for idx, control in enumerate(self.controls):
-            control.value = current_state[track_name][idx]
-
+        track_name = self.app.metro_sequencer_mode.selected_track
+        print("inside update state", track_name)
+        print("state", current_state)
+        try:
+            for idx, control in enumerate(self.controls):
+                control.value = current_state[track_name][idx]
+        except Exception as e:
+            print("Exception in trig_edit_mode, update state", e)
+        
     def should_be_enabled(self):
         return True
 
@@ -462,11 +469,8 @@ class TrigEditMode(definitions.PyshaMode):
         visible_controls = self.controls
         offset = 0
         seq = None
-        if self.app.is_mode_active(self.app.sequencer_mode) == True:
-            seq = self.app.sequencer_mode.instrument_sequencers[
-                self.get_current_instrument_short_name_helper()
-            ]
-        elif self.app.is_mode_active(self.app.metro_sequencer_mode) == True:
+        
+        if self.app.is_mode_active(self.app.metro_sequencer_mode) == True:
             seq = self.app.metro_sequencer_mode.instrument_sequencers[
                 self.get_current_instrument_short_name_helper()
             ]
@@ -507,9 +511,9 @@ class TrigEditMode(definitions.PyshaMode):
         ):
             try:
                 instrument = self.get_current_instrument_short_name_helper()
-                seq = self.app.sequencer_mode.instrument_sequencers[instrument]
+                seq = self.app.metro_sequencer_mode.instrument_sequencers[instrument]
                 idx = self.app.steps_held[0] if len(self.app.steps_held) != 0 else 0
-                selected_track = self.app.sequencer_mode.selected_track
+                selected_track = self.app.metro_sequencer_mode.selected_track
                 lock = seq.get_lock_state(idx, 8)
                 current_state = self.state[instrument][selected_track][8]
                 value = int(current_state) if lock == None else int(lock)
@@ -548,10 +552,10 @@ class TrigEditMode(definitions.PyshaMode):
         if self.is_active == True:
             instrument = self.get_current_instrument_short_name_helper()
             instrument_scale_edit_controls = (
-                self.app.sequencer_mode.instrument_scale_edit_controls[instrument]
+                self.app.metro_sequencer_mode.instrument_scale_edit_controls[instrument]
             )
-            selected_track = self.app.sequencer_mode.selected_track
-            seq = self.app.sequencer_mode.instrument_sequencers[instrument]
+            selected_track = self.app.metro_sequencer_mode.selected_track
+            seq = self.app.metro_sequencer_mode.instrument_sequencers[instrument]
             sel_track_len = instrument_scale_edit_controls[selected_track][0].value
 
             idx = self.app.steps_held[0] if len(self.app.steps_held) != 0 else 0
@@ -587,11 +591,11 @@ class TrigEditMode(definitions.PyshaMode):
                 push2_python.constants.ENCODER_TRACK7_ENCODER,
                 push2_python.constants.ENCODER_TRACK8_ENCODER,
             ].index(encoder_name)
-            seq = self.app.sequencer_mode.instrument_sequencers[
+            seq = self.app.metro_sequencer_mode.instrument_sequencers[
                 self.get_current_instrument_short_name_helper()
             ]
             if len(self.app.steps_held) != 0:
-                if self.app.sequencer_mode.disable_controls == False and self.app.metro_sequencer_mode.disable_controls == False:
+                if self.app.metro_sequencer_mode.disable_controls == False:
                     pass
             else:
                 control = self.controls[encoder_idx]
@@ -609,7 +613,7 @@ class TrigEditMode(definitions.PyshaMode):
                         control.value = max - incr
 
                     # control.update_value(increment)
-                    track_name = self.app.sequencer_mode.selected_track
+                    track_name = self.app.metro_sequencer_mode.selected_track
                     self.state[self.get_current_instrument_short_name_helper()][track_name][
                         encoder_idx
                     ] = control.value

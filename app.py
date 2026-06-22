@@ -27,7 +27,6 @@ from modes.melodic_mode import MelodicMode
 from modes.instrument_selection_mode import InstrumentSelectionMode
 from modes.rhythmic_mode import RhythmicMode
 from modes.slice_notes_mode import SliceNotesMode
-from modes.sequencer_mode import SequencerMode
 from modes.metro_sequencer_mode import MetroSequencerMode
 from modes.settings_mode import SettingsMode
 from modes.clip_selection_mode import ClipSelectionMode
@@ -35,7 +34,6 @@ from modes.main_controls_mode import MainControlsMode
 from modes.midi_cc_mode import MIDICCMode
 from modes.osc_mode import OSCMode
 from modes.preset_selection_mode import PresetSelectionMode
-from modes.trig_edit_mode import TrigEditMode
 from modes.ddrm_tone_selector_mode import DDRMToneSelectorMode
 from modes.menu_mode import MenuMode
 from modes.mute_mode import MuteMode
@@ -182,7 +180,6 @@ class PyshaApp(object):
         self.set_melodic_mode()
 
         self.preset_selection_mode = PresetSelectionMode(self, settings=settings)
-        self.trig_edit_mode = TrigEditMode(self, settings=settings)
         
         # Must be initialized after instrument selection mode so it gets info about loaded instruments
         self.midi_cc_mode = MIDICCMode(
@@ -194,9 +191,6 @@ class PyshaApp(object):
             self, settings=settings
         )
         
-        self.sequencer_mode = SequencerMode(
-            self, settings=settings, send_osc_func=self.send_osc
-        )
         self.metro_sequencer_mode = MetroSequencerMode(
             self, settings=settings, send_osc_func=self.send_osc
         ) 
@@ -267,7 +261,6 @@ class PyshaApp(object):
             new_active_modes.append(self.menu_mode)
             self.active_modes = new_active_modes
             self.preset_selection_mode.deactivate()
-            self.trig_edit_mode.deactivate()
             self.menu_mode.activate()
 
     # TODO: preset sel/trig edit get wonky when switching from one to another
@@ -293,13 +286,12 @@ class PyshaApp(object):
             # self.previously_active_mode_for_xor_group = self.active_modes[-1]
             new_active_modes = []
             for mode in self.active_modes:
-                if mode != self.menu_mode and mode != self.osc_mode and mode != self.trig_edit_mode:
+                if mode != self.menu_mode and mode != self.osc_mode:
                     new_active_modes.append(mode)
             new_active_modes.append(self.preset_selection_mode)
             self.active_modes = new_active_modes
             self.menu_mode.deactivate()
             self.osc_mode.deactivate()
-            self.trig_edit_mode.deactivate()
             self.metro_sequencer_mode.deactivate()
             self.clip_selection_mode.deactivate()
             self.preset_selection_mode.activate()
@@ -325,51 +317,17 @@ class PyshaApp(object):
             # self.previously_active_mode_for_xor_group = self.active_modes[-1]
             new_active_modes = []
             for mode in self.active_modes:
-                if mode != self.menu_mode and mode != self.osc_mode and mode != self.trig_edit_mode:
+                if mode != self.menu_mode and mode != self.osc_mode:
                     new_active_modes.append(mode)
             new_active_modes.append(self.clip_selection_mode)
             self.active_modes = new_active_modes
             self.menu_mode.deactivate()
             self.osc_mode.deactivate()
-            self.trig_edit_mode.deactivate()
             self.preset_selection_mode.deactivate()
             self.metro_sequencer_mode.deactivate()
             self.clip_selection_mode.activate()
             # print(self.active_modes, "active modes")
 
-
-
-    def toggle_trig_edit_mode(self):
-        previous_mode = self.previously_active_mode_for_xor_group
-        if self.is_mode_active(self.trig_edit_mode):
-            # Deactivate (replace ddrm tone selector mode by midi cc and instrument selection mode)
-            new_active_modes = []
-            for mode in self.active_modes:
-                if mode != self.trig_edit_mode:
-                    new_active_modes.append(mode)
-
-            new_active_modes.append(self.osc_mode)
-            new_active_modes.append(previous_mode)
-            self.active_modes = new_active_modes
-            self.osc_mode.activate()
-            self.trig_edit_mode.deactivate()
-        else:
-            # Activate (replace midi cc and instrument selection mode by ddrm tone selector mode)
-            self.previously_active_mode_for_xor_group = self.active_modes[-1]
-            new_active_modes = []
-            for mode in self.active_modes:
-                if mode != self.menu_mode and mode != self.osc_mode and mode != self.preset_selection_mode:
-                    new_active_modes.append(mode)
-
-            new_active_modes.append(self.trig_edit_mode)
-            self.active_modes = new_active_modes
-            self.menu_mode.deactivate()
-            self.osc_mode.deactivate()
-            self.trig_edit_mode.activate()
-            self.clip_selection_mode.deactivate()
-            self.metro_sequencer_mode.deactivate()
-            self.preset_selection_mode.deactivate()
-            # print(self.active_modes, "active modes")
 
     def toggle_ddrm_tone_selector_mode(self):
         previous_mode = self.previously_active_mode_for_xor_group
@@ -475,11 +433,6 @@ class PyshaApp(object):
 
     def set_clip_selection_mode(self):
         self.set_mode_for_xor_group(self.clip_selection_mode)
-
-
-    def set_sequencer_mode(self):
-        # pass
-        self.set_mode_for_xor_group(self.sequencer_mode)
 
     def set_metro_sequencer_mode(self):
         # pass
@@ -973,7 +926,6 @@ class PyshaApp(object):
             for mode in self.active_modes:
                     mode.update_display(ctx, w, h)
             # Makes seq submenus always draw on top of other modes
-            self.sequencer_mode.update_display(ctx, w, h)
             self.metro_sequencer_mode.update_display(ctx, w, h)
 
             # Show any notifications that should be shown
@@ -1039,7 +991,6 @@ class PyshaApp(object):
 
     async def run_loop(self):
         print("Loading State ...")
-        # self.sequencer_mode.load_state()
         self.metro_sequencer_mode.load_state()
         self.preset_selection_mode.init_surge_preset_state()
         

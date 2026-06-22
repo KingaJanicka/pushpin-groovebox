@@ -3,7 +3,7 @@
 import pytest
 import push2_python.constants
 
-from definitions import TRACK_NAMES, TRACK_NAMES_METRO
+from definitions import TRACK_NAMES_METRO
 from modes.mute_mode import MuteMode, track_button_names
 
 
@@ -19,7 +19,7 @@ def test_initialize_marks_all_tracks_active(mute):
     # Two instruments come from the fixture's get_all_distinct... mock.
     assert set(mute.tracks_active.keys()) == {"INST1", "INST2"}
     for instrument in ("INST1", "INST2"):
-        for track in TRACK_NAMES:
+        for track in TRACK_NAMES_METRO:
             assert mute.tracks_active[instrument][track] is True
 
 
@@ -31,13 +31,13 @@ def test_pad_layout_maps_to_sequencer_matrix(mute):
 
 def test_on_pad_pressed_toggles_track_mute(mute, app):
     # pad_ij is (track_index, instrument_index); (0, 0) -> INST1 / first track.
-    assert mute.tracks_active["INST1"][TRACK_NAMES[0]] is True
+    assert mute.tracks_active["INST1"][TRACK_NAMES_METRO[0]] is True
     mute.on_pad_pressed(0, (0, 0), 100)
-    assert mute.tracks_active["INST1"][TRACK_NAMES[0]] is False
+    assert mute.tracks_active["INST1"][TRACK_NAMES_METRO[0]] is False
     assert app.pads_need_update is True
 
     mute.on_pad_pressed(0, (0, 0), 100)
-    assert mute.tracks_active["INST1"][TRACK_NAMES[0]] is True
+    assert mute.tracks_active["INST1"][TRACK_NAMES_METRO[0]] is True
 
 
 def test_track_button_selects_metro_track(mute, app):

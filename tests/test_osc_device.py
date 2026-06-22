@@ -149,7 +149,6 @@ def test_OSCDevice(mocker):
     # in/out OSC ports as keyword args. Encoder handling is also gated on the
     # sequencer modes' `disable_controls` flags, so those must be False.
     app = MagicMock(name="app")
-    app.sequencer_mode.disable_controls = False
     app.metro_sequencer_mode.disable_controls = False
 
     # test

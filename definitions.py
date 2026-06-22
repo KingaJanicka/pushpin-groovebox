@@ -127,16 +127,6 @@ if not path.isdir(USER_CONFIG_FOLDER):
     mkdir(USER_CONFIG_FOLDER)
 
 SURGE_STATE_FOLDER = "/home/pushpin/s/music_devices/pushpin-groovebox/surge_state" # Root is ~/Documents/Surge XT/Patches
-TRACK_NAMES = [
-    "gate_1",
-    "pitch_1",
-    "trig_mute_1",
-    "accent_1",
-    "aux_1",
-    "aux_2",
-    "aux_3",
-    "aux_4",
-]
 
 TRACK_NAMES_METRO = [
     "pitch",
