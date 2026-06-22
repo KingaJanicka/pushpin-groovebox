@@ -1,0 +1,6 @@
+{
+  "pythonVersion": "3.11",
+  "typeCheckingMode": "basic",
+  "reportMissingModuleSource": "none",
+  "ignore": ["patch_tool/**"]
+}

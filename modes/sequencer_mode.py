@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import definitions
 from controllers import push2_constants
 import push2_python
@@ -65,7 +67,7 @@ class SequencerMode(MelodicMode):
     timeline = iso.Timeline(tempo, output_device=iso.DummyOutputDevice())
     selected_track = "gate_1"
     scale_menu_filename = "scale_menu.json"
-    pads_press_time = [False] * 64
+    pads_press_time: list[float | bool] = [False] * 64
     pad_quick_press_time = 0.400
     disable_controls = False
     instrument_scale_edit_controls = {}
@@ -344,11 +346,11 @@ class SequencerMode(MelodicMode):
         except Exception as exception:
             exception_message = str(exception)
             exception_type, exception_object, exception_traceback = sys.exc_info()
-            filename = os.path.split(exception_traceback.tb_frame.f_code.co_filename)[1]
-
-            print(
-                f"{exception_message} {exception_type} {filename}, Line {exception_traceback.tb_lineno}"
-            )
+            if exception_traceback is not None:
+                filename = os.path.split(exception_traceback.tb_frame.f_code.co_filename)[1]
+                print(
+                    f"{exception_message} {exception_type} {filename}, Line {exception_traceback.tb_lineno}"
+                )
 
     def on_pad_pressed(self, pad_n, pad_ij, velocity):
         seq = self.instrument_sequencers[

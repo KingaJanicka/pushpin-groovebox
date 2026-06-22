@@ -149,9 +149,6 @@ class InstrumentSelectionMode(definitions.PyshaMode):
             self.app.melodic_mode.remove_all_notes_being_played()
         elif self.app.is_mode_active(self.app.rhythmic_mode):
             self.app.rhythmic_mode.remove_all_notes_being_played()
-        # elif self.app.is_mode_active(self.app.sequencer_mode):
-        #     self.app.sequencer_mode.update_pads()
-
     def select_instrument(self, instrument_idx):
         # Selects a instrument and activates its melodic/rhythmic layout
         # Note that if this is called from a mode form the same xor group with melodic/rhythmic modes,
@@ -166,7 +163,7 @@ class InstrumentSelectionMode(definitions.PyshaMode):
             # self.app.midi_cc_mode.new_instrument_selected()
             self.app.osc_mode.new_instrument_selected()
             self.app.preset_selection_mode.new_instrument_selected()
-            self.app.sequencer_mode.new_instrument_selected()
+            self.app.metro_sequencer_mode.new_instrument_selected()
         except AttributeError as e:
             print("ATTRIBUTE ERROR", e)
             # Might fail if MIDICCMode/PresetSelectionMode/PyramidTrackTriggeringMode not initialized

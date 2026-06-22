@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 import asyncio
 import isobar as iso
 import random
 import json
 import os
 import traceback
+from typing import Any
 from pythonosc.udp_client import SimpleUDPClient
 
 default_number_of_steps = 64
@@ -23,23 +26,24 @@ TRACK_NAMES = [
 class Sequencer(object):
     pitch = 64
     is_running = False
-    tick_callback = None
-    send_osc_func = None
+    tick_callback: Any = None
+    send_osc_func: Any = None
     playhead = 0
-    gate_1 = list()  # boolean
-    pitch_1 = list()  # int (midi note)
-    trig_mute_1 = list()
-    accent_1 = list()
-    aux_1 = list()  # boolean
-    aux_2 = list()  # int
-    aux_3 = list()  # int
-    aux_4 = list()  # boolean
-    locks = list()  # for locks of trig menu
-    playhead_track = None
-    note_track = None
-    midi_out_device = None
-    midi_in_name = None
-    midi_in_device = None
+    gate_1: list[Any] = []
+    pitch_1: list[Any] = []
+    trig_mute_1: list[Any] = []
+    accent_1: list[Any] = []
+    aux_1: list[Any] = []
+    aux_2: list[Any] = []
+    aux_3: list[Any] = []
+    aux_4: list[Any] = []
+    locks: dict[str, Any] = {}
+    note: list[int | None] = []
+    playhead_track: Any = None
+    note_track: Any = None
+    midi_out_device: Any = None
+    midi_in_name: str | None = None
+    midi_in_device: Any = None
 
     def __init__(
         self, instrument_name, timeline, tick_callback, playhead, send_osc_func, app
@@ -74,7 +78,7 @@ class Sequencer(object):
                 self.midi_in_name = item
 
         self.note_pattern = iso.PSeq(self.note)
-        self.midi_in_device = iso.MidiInputDevice(device_name=self.midi_in_name)
+        self.midi_in_device = iso.MidiInputDevice(device_name=self.midi_in_name or "")  # type: ignore[arg-type]
         self.midi_out_device = iso.MidiOutputDevice(
             device_name=f"{self.name} sequencer", send_clock=True, virtual=True
         )
@@ -133,7 +137,7 @@ class Sequencer(object):
             traceback.print_exc()
 
     def seq_playhead_update(self):
-        self.playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01))
+        self.playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01))  # type: ignore[arg-type]
         # self.update_notes()
         # self.evaluate_and_play_notes()
 
@@ -143,7 +147,7 @@ class Sequencer(object):
             instrument_name = self.name
             instrument_state = self.app.trig_edit_mode.state[instrument_name]
             instrument_scale_edit_controls = (
-                self.app.sequencer_mode.instrument_scale_edit_controls[instrument_name]
+                self.app.metro_sequencer_mode.instrument_scale_edit_controls[instrument_name]
             )
             note = None
             gate = None
@@ -435,10 +439,10 @@ class Sequencer(object):
 
     def set_lock_state(self, index, parameter_idx, value):
         # print(f"Set_lock_state: index {index}, param_idx {parameter_idx}, value {value}")
-        selected_track = self.app.sequencer_mode.selected_track
+        selected_track = self.app.metro_sequencer_mode.selected_track
         self.locks[selected_track][index][parameter_idx] = value
 
     def get_lock_state(self, index, parameter_idx):
         # print(f"Set_lock_state: index {index}, param_idx {parameter_idx}, value {value}")
-        selected_track = self.app.sequencer_mode.selected_track
+        selected_track = self.app.metro_sequencer_mode.selected_track
         return self.locks[selected_track][index][parameter_idx]

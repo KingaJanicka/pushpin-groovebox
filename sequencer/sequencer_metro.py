@@ -1,36 +1,40 @@
+from __future__ import annotations
+
 import asyncio
 import isobar as iso
 import random
 import json
 import os
 import traceback
-import random
 from pythonosc.udp_client import SimpleUDPClient
 from definitions import TRACK_NAMES_METRO
+from sequencer.sequencer_params import SequencerParams
 
 
 default_number_of_steps = 64
 
+from typing import Any
+
 class SequencerMetro(object):
-    pitch = 64
-    tick_callback = None
-    send_osc_func = None
+    tick_callback: Any = None
+    send_osc_func: Any = None
     playhead = 0
-    pitch = list()  # boolean
-    octave = list()  # int (midi note)
-    gate = list()
-    mutes_skips = list()
-    lock_scale = list()  # boolean
-    aux_2 = list()  # int
-    aux_3 = list()  # int
-    aux_4 = list()  # boolean
-    locks = list()  # for locks of trig menu
-    playhead_track = None
-    note_track = None
-    midi_out_device = None
-    midi_in_name = None
-    midi_in_device = None
-    index = None
+    pitch: list[Any] = []
+    octave: list[Any] = []
+    gate: list[Any] = []
+    mutes_skips: list[Any] = []
+    lock_scale: list[Any] = []
+    aux_2: list[Any] = []
+    aux_3: list[Any] = []
+    aux_4: list[Any] = []
+    locks: list[Any] = []
+    note: list[int | None] = []
+    playhead_track: Any = None
+    note_track: Any = None
+    midi_out_device: Any = None
+    midi_in_name: str | None = None
+    midi_in_device: Any = None
+    index: Any = None
 
     def __init__(
         self, instrument, tick_callback, playhead, send_osc_func, global_timeline, app
@@ -46,6 +50,12 @@ class SequencerMetro(object):
                 )
         
         self.app = app
+        # Immutable param snapshot refreshed each frame by the asyncio thread.
+        # The MIDI clock thread reads this atomically — see SequencerParams.
+        self.params: SequencerParams = SequencerParams()
+        # True while waiting for the asyncio thread to call global_timeline.reset().
+        # Prevents reset_index() from firing on every tick during the ~33ms gap.
+        self._pending_reset: bool = False
         self.step_index = 0
         self.step_count = 0
         self.prev_step_index = 0
@@ -176,66 +186,55 @@ class SequencerMetro(object):
         os.remove(seq_filename)
         
     def seq_playhead_update(self):
-        if self.app.metro_sequencer_mode.sequencer_is_playing == True:
-            # TODO: replace the values hwre when changing the control type
-            self.playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01))
-            controls = self.app.metro_sequencer_mode.instrument_scale_edit_controls[self.name]
-            
-            seq_time_scale_control = controls[4].get_active_menu_item()
-            seq_time_scale = seq_time_scale_control.value
-            
-            pattern_len_control = controls[5].get_active_menu_item()
-            pattern_len = pattern_len_control.value
-            
-            main_seq_time_scale_control = controls[6].get_active_menu_item()
-            main_seq_time_scale = main_seq_time_scale_control.value
-            
-            main_pattern_control = controls[7].get_active_menu_item()
-            main_pattern_len = main_pattern_control.value
-            # print(f'Seq time scale: {seq_time_scale}, Pat Len: {pattern_len}, main eq time scale: {main_seq_time_scale}, main pat len: {main_pattern_len}')
-            
-            main_step_count = round((self.app.global_timeline.current_time + 0.1)* int(main_seq_time_scale)/2, 1)
-            # print(main_step_count)
-            # Same as below but for master counter
-            
-            # print(master_timeline.current_time * 4)
-            # print(main_step_count, int(main_pattern_len), int(main_seq_time_scale)/2)
-            if main_step_count >= int(main_pattern_len) * int(main_seq_time_scale)/2 :
+        # Take a single atomic reference to the param snapshot for this tick.
+        # All UI-owned values are read from here, not from app/mode objects.
+        params = self.params
 
+        if not params.sequencer_is_playing:
+            return
+
+        self.playhead = int((iso.PCurrentTime.get_beats(self) * 4 + 0.01))  # type: ignore[arg-type]
+
+        main_step_count = round(
+            (self.app.global_timeline.current_time + 0.1) * params.main_seq_time_scale / 2, 1
+        )
+
+        if main_step_count >= params.main_pattern_len * params.main_seq_time_scale / 2:
+            if not self._pending_reset:
+                self._pending_reset = True
                 self.reset_index()
                 self.scale_count = 0
                 self.next_step_index = 0
-                try:
-                    self.app.global_timeline.reset()
-                except Exception as e:
-                    print(e)
-                    
-            
-            if self.scale_count == 0:
-                # Play the note, reset the counter for the time scale
-                self.step_count += 1
-                self.evaluate_and_play_notes()
-                self.scale_count = int(seq_time_scale) + 1
-            
-            elif self.scale_count != 0:
-                # This has to do with the time scale setting
-                # This block makes sure we only fire every X 1/32nd notes
-                self.scale_count -= 1
-        
-            
-            if self.scale_count == 1:
-                # Increment right before the note is played, so the visual feedback lines up
-                # The if clause is to make sure we don't go over the bounds with next step
-                # And to prevent visual glitches with the playhead
-                
-                if self.step_count == int(pattern_len):
-                    self.reset_index()
-                    self.next_step_index = 0
-                else:
-                    self.increment_index()
-                    self.increment_next_step_index(index=self.step_index)
-        else: 
+                # Signal the asyncio thread to reset the timeline rather than
+                # calling it here — resetting the timeline from within its own
+                # tick callback corrupts internal iteration state.
+                self.app.timeline_needs_reset = True
+            # Don't advance steps while waiting for the timeline to reset.
             return
+        else:
+            self._pending_reset = False
+
+        if self.scale_count == 0:
+            # Play the note, reset the counter for the time scale
+            self.step_count += 1
+            self.evaluate_and_play_notes()
+            self.scale_count = params.seq_time_scale + 1
+
+        elif self.scale_count != 0:
+            # This has to do with the time scale setting
+            # This block makes sure we only fire every X 1/32nd notes
+            self.scale_count -= 1
+
+        if self.scale_count == 1:
+            # Increment right before the note is played, so the visual feedback
+            # lines up. The if clause prevents going over the bounds with next step
+            # and avoids visual glitches with the playhead.
+            if self.step_count == params.pattern_len:
+                self.reset_index()
+                self.next_step_index = 0
+            else:
+                self.increment_index()
+                self.increment_next_step_index(index=self.step_index)
                 
     
 
@@ -251,9 +250,11 @@ class SequencerMetro(object):
         
         if self.gate[next_step_index] != False and self.mutes_skips[skips_idx] != True:
             self.step_index = next_step_index
-            if self.app.is_mode_active(self.app.metro_sequencer_mode):
-                self.app.metro_sequencer_mode.update_pads()
-                return
+            # Signal the asyncio thread to update pads — calling update_pads()
+            # directly here runs push2_python USB code from the MIDI clock thread,
+            # which races with the asyncio event loop doing the same.
+            self.app.pads_need_update = True
+            return
         else:
             self.increment_index(index=next_step_index)
             
@@ -283,7 +284,7 @@ class SequencerMetro(object):
             return 
         
         else:
-            self.get_previous_active_step(index=prev_step_index)
+            self.increment_previous_step_index(index=prev_step_index)
         
     def reset_index(self):
         self.step_count = 0
@@ -292,26 +293,23 @@ class SequencerMetro(object):
         
     def evaluate_and_play_notes(self):
         try:
-            gate_track_active = self.app.mute_mode.tracks_active[self.name][
-                "gate_1"
-            ]
-            
-            
+            # Read all UI-owned values from the immutable snapshot — not from
+            # app/mode objects directly, which are owned by the asyncio thread.
+            params = self.params
+            gate_track_active = params.gate_track_active
+
             instrument = self.app.instruments[self.name]
-            
-            if self.gate[self.step_index] != "Off" and gate_track_active == True:
-                
+
+            if self.gate[self.step_index] != "Off" and gate_track_active:
                 gate = 1
-                pitch = self.pitch[self.step_index] if self.pitch[self.step_index] != None else 0 
-                octave = self.octave[self.step_index] * 12 if self.octave[self.step_index] != None else 0 
-            
+                pitch = self.pitch[self.step_index] if self.pitch[self.step_index] is not None else 0
+                octave = self.octave[self.step_index] * 12 if self.octave[self.step_index] is not None else 0
+
                 pitch_and_octave = pitch + octave
-                velocity = ((self.velocity[self.step_index] + 1) * 16 - 1) if self.velocity[self.step_index] != None else 1 
+                velocity = ((self.velocity[self.step_index] + 1) * 16 - 1) if self.velocity[self.step_index] is not None else 1
                 gate = None
-                
-                # Gate Len needs to scale with speed
-                controls = self.app.metro_sequencer_mode.instrument_scale_edit_controls[self.name]
-                gate_len = controls[0].value
+
+                gate_len = params.gate_len
                 
                 column = int(self.step_index / 8)
                 mutes_idx = column*8+1
@@ -454,17 +452,11 @@ class SequencerMetro(object):
             self.aux_3[index] = value
 
     def set_lock_state(self, index, parameter_idx, value):
-        trig_edit_active = self.app.is_mode_active(self.app.trig_edit_mode)
         device = self.app.osc_mode.get_current_instrument_device()
-        device_idx = None
-        
-        if trig_edit_active == True:
-            device_idx = self.app.trig_edit_mode.slot
-        else:
-            device_idx = device.slot
+        device_idx = device.slot
             
         # print(f"Set_lock_state: index {index}, device_idx {device_idx}, param_idx {parameter_idx}, value {value}")
-        selected_track = self.app.sequencer_mode.selected_track
+        selected_track = self.app.metro_sequencer_mode.selected_track
         for x in range(8):
             self.locks[index * 8 + x][device_idx][parameter_idx] = value
 
@@ -472,16 +464,10 @@ class SequencerMetro(object):
 
     def get_lock_state(self, index, parameter_idx):
         # print(f"Get_lock_state: index {index}, param_idx {parameter_idx}")
-        trig_edit_active = self.app.is_mode_active(self.app.trig_edit_mode)
         device = self.app.osc_mode.get_current_instrument_device()
-        device_idx = None
-        
-        if trig_edit_active == True:
-            device_idx = self.app.trig_edit_mode.slot
-        else:
-            device_idx = device.slot
+        device_idx = device.slot
             
-        selected_track = self.app.sequencer_mode.selected_track
+        selected_track = self.app.metro_sequencer_mode.selected_track
         return self.locks[index * 8][device_idx][parameter_idx]
 
     def clear_all_locks_for_step(self, index):
@@ -491,3 +477,5 @@ class SequencerMetro(object):
                 for parameter_idx in range(16):
                     self.locks[index * 8 + x][device_idx][parameter_idx] = None
             
+
+    

@@ -1,11 +1,18 @@
+from __future__ import annotations
+
 import definitions
 import math
 import push2_python
 from user_interface.display_utils import show_text
 import logging
+from typing import Any, Callable
 
 logger = logging.getLogger("osc_controls")
 # logger.setLevel(level=logging.DEBUG)
+
+OscSendFunc = Callable[[str, float | None], None]
+ColorFunc = Callable[[], str]
+ConfigDict = dict[str, Any]
 
 
 SCALING_FACTOR = 127  # MIDI-style responsiveness for knobs
@@ -20,11 +27,11 @@ scale_value() -> float()
 """
 
 
-def scale_value(value, min_val, max_val, decimals=DECIMAL_PLACES):
+def scale_value(value: float, min_val: float, max_val: float, decimals: int = DECIMAL_PLACES) -> float:
     return round(float(value / SCALING_FACTOR * (max_val - min_val)), decimals)
 
 
-def closest(lst, K):
+def closest(lst: list[float], K: float) -> float:
     return lst[min(range(len(lst)), key=lambda i: abs(lst[i] - K))]
 
 
@@ -32,42 +39,32 @@ class OSCControl(object):
     name = "Range"
     size = 1
 
-    def __init__(self, config, get_color_func=None, send_osc_func=None):
+    def __init__(
+        self,
+        config: ConfigDict,
+        get_color_func: ColorFunc | None = None,
+        send_osc_func: OscSendFunc | None = None,
+    ) -> None:
         if config["$type"] != "control-range":
             raise Exception("Invalid config passed to new OSCControl")
-        self.color = definitions.GRAY_LIGHT
-        self.color_rgb = None
-        self.label = "Unknown"
-        self.address = None
-        self.min = 0.0
-        self.max = 1.0
-        self.value = 0.0
-        self.modmatrix = config.get("modmatrix", True)
-        self.string = ""
-        self.get_color_func = None
-        self.label = config["label"]
-        self.address = config["address"]
-        self.get_color_func = get_color_func
-        self.min = config["min"]
-        self.max = config["max"]
+        self.color: str = definitions.GRAY_LIGHT
+        self.color_rgb: list[int] | None = None
+        self.label: str = config["label"]
+        self.address: str = config["address"]
+        self.min: float = config["min"]
+        self.max: float = config["max"]
+        self.value: float = 0.0
+        self.modmatrix: bool = config.get("modmatrix", True)
+        self.string: str = ""
+        self.get_color_func: ColorFunc = get_color_func or (lambda: definitions.GRAY_LIGHT)
+        self.send_osc_func: OscSendFunc = send_osc_func or (lambda addr, val: None)
         self.log = logger.getChild(f"{self.label}:Range")
-        self.bipolar = None
-        if "bipolar" in config:
-            self.bipolar = config["bipolar"]
-        else:
-            self.bipolar = False
+        self.bipolar: bool = config.get("bipolar", False)
 
-        if send_osc_func:
-            self.send_osc_func = send_osc_func
-            # self.send_osc_func(f"/q{self.address}", None)
-
-    def query(self):
+    def query(self) -> None:
         self.send_osc_func("/q" + self.address, None)
 
-    def send_osc_func(self, address, payload):
-        pass
-
-    def draw(self, ctx, x_part, draw_lock=False, lock_value=None):
+    def draw(self, ctx: Any, x_part: int, draw_lock: bool = False, lock_value: float | None = None) -> None:
         font_color = definitions.WHITE        
         value = self.value
         
@@ -260,7 +257,7 @@ class OSCControl(object):
             ctx.restore()
 
 
-    def draw_submenu(self, ctx, x_part, draw_lock=False, lock_value=None):
+    def draw_submenu(self, ctx: Any, x_part: int, draw_lock: bool = False, lock_value: float | None = None) -> None:
         font_color = definitions.WHITE        
         value = self.value
         if draw_lock is not False:
@@ -340,14 +337,14 @@ class OSCControl(object):
         # Knob
         ctx.save()
 
-    def set_state(self, address, *args):
+    def set_state(self, address: str, *args: Any) -> None:
         value, *rest = args
         self.log.debug((address, value))
         self.value = value
         # this human readable string doesn't change with knob movements, querry fixes it but makes it glitchy
         # self.string = string
 
-    def update_value(self, increment, **kwargs):
+    def update_value(self, increment: float, **kwargs: Any) -> None:
         scaled = scale_value(increment, self.min, self.max)
         if self.value + scaled > self.max:
             self.value = self.max
@@ -366,37 +363,33 @@ class OSCSpacerAddress(object):
     name = "SpacerAddress"
     size = 1
 
-    def __init__(self, config, send_osc_func=None):
+    def __init__(self, config: ConfigDict, send_osc_func: OscSendFunc | None = None) -> None:
         if config["$type"] != "control-spacer-address":
             raise Exception("Invalid config passed to new OSCControl")
-        self.label = ""
-        self.address = config["address"]
+        self.label: str = ""
+        self.address: str = config["address"]
         self.log = logger.getChild(f"{self.label}:Range")
-        self.modmatrix = False
-        self.items = []
-        if send_osc_func:
-            self.send_osc_func = send_osc_func
-            # self.send_osc_func(f"/q{self.address}", None)
+        self.modmatrix: bool = False
+        self.items: list[Any] = []
+        self.value: float = 0.0
+        self.send_osc_func: OscSendFunc = send_osc_func or (lambda addr, val: None)
 
-    def draw(self, *args, **kwargs):
+    def draw(self, *args: Any, **kwargs: Any) -> None:
         pass
 
-    def draw_submenu(self, *args, **kwargs):
+    def draw_submenu(self, *args: Any, **kwargs: Any) -> None:
         pass
 
-    def update_value(self, *args, **kwargs):
+    def update_value(self, *args: Any, **kwargs: Any) -> None:
         pass
 
-    def query(self):
+    def query(self) -> None:
         self.send_osc_func("/q" + self.address, None)
 
-    def set_state(self, address, *args):
+    def set_state(self, address: str, *args: Any) -> None:
         value, *rest = args
         self.log.debug((address, value))
         self.value = value
-
-    def query(self, *args, **kwargs):
-        pass
 class ControlSpacer(object):
     name = "Spacer"
 
@@ -409,46 +402,48 @@ class ControlSpacer(object):
     get_color_func = None
     modmatrix = False
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
-    def draw(self, *args, **kwargs):
+    def draw(self, *args: Any, **kwargs: Any) -> None:
         pass
 
-    def draw_submenu(self, *args, **kwargs):
+    def draw_submenu(self, *args: Any, **kwargs: Any) -> None:
         pass
 
-    def update_value(self, *args, **kwargs):
+    def update_value(self, *args: Any, **kwargs: Any) -> None:
         pass
 
-    def query(self, *args, **kwargs):
+    def query(self, *args: Any, **kwargs: Any) -> None:
         pass
-    
+
 class OSCControlMacro(object):
     name = "Macro"
     size = 1
 
-    def __init__(self, config, get_color_func=None, send_osc_func=None):
+    def __init__(
+        self,
+        config: ConfigDict,
+        get_color_func: ColorFunc | None = None,
+        send_osc_func: OscSendFunc | None = None,
+    ) -> None:
         if config["$type"] != "control-macro":
             raise Exception("Invalid config passed to new OSCControlMacro")
 
-        self.color = definitions.GRAY_LIGHT
-        self.color_rgb = None
-        self.label = "Unknown"
-        self.address = None
-        self.min = 0.0
-        self.max = 1.0
-        self.value = 0.0
-        self.modmatrix = config.get("modmatrix", True)
-        self.get_color_func = None
-        self.label = config["label"]
-        self.get_color_func = get_color_func
-        self.params = config["params"]
-        self.get_color_func = get_color_func
-        self.send_osc_func = send_osc_func
+        self.color: str = definitions.GRAY_LIGHT
+        self.color_rgb: list[int] | None = None
+        self.label: str = config["label"]
+        self.address: str | None = None
+        self.min: float = 0.0
+        self.max: float = 1.0
+        self.value: float = 0.0
+        self.modmatrix: bool = config.get("modmatrix", True)
+        self.get_color_func: ColorFunc = get_color_func or (lambda: definitions.GRAY_LIGHT)
+        self.params: list[ConfigDict] = config["params"]
+        self.send_osc_func: OscSendFunc = send_osc_func or (lambda addr, val: None)
         self.log = logger.getChild("Macro")
 
-    def update_value(self, increment, **kwargs):
+    def update_value(self, increment: float, **kwargs: Any) -> None:
         scaled = scale_value(increment, self.min, self.max)
         if self.value + scaled > self.max:
             self.value = self.max
@@ -464,14 +459,14 @@ class OSCControlMacro(object):
         for param in self.params:
             self.send_osc_func(param["address"], float(self.value))
 
-    def query(self):
-        self.send_osc_func("/q" + self.address, None)
+    def query(self) -> None:
+        if self.address:
+            self.send_osc_func("/q" + self.address, None)
 
-    def set_state(self, address, *args):
+    def set_state(self, address: str, *args: Any) -> None:
         value, *rest = args
         self.log.debug((address, value))
-
-        self.value = scale_value(value)
+        self.value = scale_value(value, self.min, self.max)
         # Find by index
 
 
@@ -480,35 +475,38 @@ class OSCControlSwitch(object):
     address = None
 
     @property
-    def visible(self):
-        return self.groups[self.value]
+    def visible(self) -> OSCGroup:
+        return self.groups[int(self.value)]
 
     @property
-    def size(self):
+    def size(self) -> int:
         return max(group.size for group in self.groups) + 1
 
     @property
-    def label(self):
+    def label(self) -> str | None:
         active = self.get_active_group()
         if active:
             return active.label
-
         return None
 
     def __init__(
-        self, config, get_color_func=None, send_osc_func=None, dispatcher=None
-    ):
+        self,
+        config: ConfigDict,
+        get_color_func: ColorFunc | None = None,
+        send_osc_func: OscSendFunc | None = None,
+        dispatcher: Any = None,
+    ) -> None:
         if config["$type"] != "control-switch":
             raise Exception("Invalid config passed to new OSCControlSwitch")
 
         if dispatcher == None:
             raise Exception("Switch not given dispatcher")
 
-        self.groups = []
-        self.value = 0.0
-        self.get_color_func = get_color_func
-        self.send_osc_func = send_osc_func
-        self.modmatrix = config.get("modmatrix", True)
+        self.groups: list[OSCGroup] = []
+        self.value: float = 0.0
+        self.get_color_func: ColorFunc = get_color_func or (lambda: definitions.GRAY_LIGHT)
+        self.send_osc_func: OscSendFunc = send_osc_func or (lambda addr, val: None)
+        self.modmatrix: bool = config.get("modmatrix", True)
         self.log = logger.getChild(f"{self.label}:Switch")
         groups = config.get("groups", [])
 
@@ -531,34 +529,24 @@ class OSCControlSwitch(object):
             self.groups[int(self.value)].select()
             
 
-    def query(self):
+    def query(self) -> None:
         if self.address:
             self.send_osc_func("/q" + self.address, None)
-
         active_group = self.get_active_group()
-        active_group.query()
+        if active_group:
+            active_group.query()
 
-    def update_value(self, increment, **kwargs):
-        if not self.value:
-            pass
-
+    def update_value(self, increment: float, **kwargs: Any) -> None:
         scaled = scale_value(increment, 0, len(self.groups))
-
         if 0 <= (self.value + scaled) <= len(self.groups):
             self.value += scaled
 
-            active_group = self.get_active_group()
-            # if hasattr(active_group, "select"):
-            #     active_group.select()
-
-    def get_active_group(self):
+    def get_active_group(self) -> OSCGroup | None:
         if int(self.value) <= len(self.groups) - 1:
-            return self.groups[
-                int(self.value)
-            ]  
-            # TODO: nasty but enables less-twitchy knobs, prob needs fixing
+            return self.groups[int(self.value)]
+        return None
 
-    def set_state(self, address, *args):
+    def set_state(self, address: str, *args: Any) -> None:
         # print("Control switch args", args)
         value, label = args
         # print("switch val = ", value)
@@ -587,7 +575,7 @@ class OSCControlSwitch(object):
                         print("Exception in ControlSwitch set state", e)
                     # control.set_state(address, value)
 
-    def draw(self, ctx, offset):
+    def draw(self, ctx: Any, offset: int) -> None:
         margin_top = 30
         next_prev_height = 15
         val_height = 25
@@ -632,7 +620,7 @@ class OSCControlSwitch(object):
             font_color=definitions.WHITE,
         )
 
-    def draw_submenu(self, ctx, offset, draw_lock=False, lock_value=None):
+    def draw_submenu(self, ctx: Any, offset: int, draw_lock: bool = False, lock_value: float | None = None) -> None:
         margin_top = 110
         val_height = 15
 
@@ -653,12 +641,17 @@ class OSCGroup(object):
     address = None
 
     @property
-    def size(self):
+    def size(self) -> int:
         return sum([control.size for control in self.controls])
 
     def __init__(
-        self, config, get_color_func=None, send_osc_func=None, dispatcher=None, set_parent_state=None
-    ):
+        self,
+        config: ConfigDict,
+        get_color_func: ColorFunc | None = None,
+        send_osc_func: OscSendFunc | None = None,
+        dispatcher: Any = None,
+        set_parent_state: Callable[..., Any] | None = None,
+    ) -> None:
         if config["$type"] != "group":
             raise Exception("Invalid type passed to new OSCGroup")
 
@@ -666,14 +659,12 @@ class OSCGroup(object):
             raise Exception("No dispatcher provided to OSCGroup")
 
         self.dispatcher = dispatcher
-        self.message = None
-        self.label = ""
-        self.controls = []
-        self.message = config.get("onselect", None)
-        self.label = config.get("label", "Group")
-        self.send_osc_func = send_osc_func
-        self.get_color_func = get_color_func
-        self.modmatrix = config.get("modmatrix", True)
+        self.message: ConfigDict | None = config.get("onselect", None)
+        self.label: str = config.get("label", "Group")
+        self.controls: list[Any] = []
+        self.send_osc_func: OscSendFunc = send_osc_func or (lambda addr, val: None)
+        self.get_color_func: ColorFunc = get_color_func or (lambda: definitions.GRAY_LIGHT)
+        self.modmatrix: bool = config.get("modmatrix", True)
         self.log = logger.getChild(f"{self.label}:Group")
 
         for item in config["controls"]:
@@ -710,9 +701,11 @@ class OSCGroup(object):
                         send_osc_func=send_osc_func,
                     )
                     
-                    def set_state(*args):
-                        control.set_state(*args)
-                        set_parent_state(*args)
+                    _menu: OSCControlMenu = control
+                    def set_state(*args: Any) -> None:
+                        _menu.set_state(*args)
+                        if set_parent_state is not None:
+                            set_parent_state(*args)
 
                     if control.address:
                         self.dispatcher.map(control.address, set_state)
@@ -742,7 +735,7 @@ class OSCGroup(object):
 
                     self.controls.append(control)
 
-    def get_control(self, id):
+    def get_control(self, id: int | str) -> Any:
         if isinstance(id, int) and id < len(self.controls):
             return self.controls[id]
         elif isinstance(id, str):
@@ -750,15 +743,14 @@ class OSCGroup(object):
             if el:
                 return el
 
-    def query(self):
+    def query(self) -> None:
         if self.address:
             self.send_osc_func("/q" + self.address, None)
-
         for control in self.controls:
             if hasattr(control, "query"):
                 control.query()
 
-    def select(self):
+    def select(self) -> None:
         unique_addresses = list(set([control.address for control in self.controls]))
         self.log.debug((unique_addresses, "!!!"))
         for address in unique_addresses:
@@ -775,19 +767,24 @@ class OSCControlMenu(object):
             return active.label
         return ""
 
-    def __init__(self, config, get_color_func=None, send_osc_func=None):
+    def __init__(
+        self,
+        config: ConfigDict,
+        get_color_func: ColorFunc | None = None,
+        send_osc_func: OscSendFunc | None = None,
+    ) -> None:
         if config["$type"] != "control-menu":
             raise Exception("Invalid config passed to new OSCControlMenu")
 
-        self.items = []
-        self.get_color_func = get_color_func
-        self.send_osc_func = send_osc_func
-        self.modmatrix = config.get("modmatrix", True)
-        self.menu_label = config.get("menu_label", None)
-        self.message = config.get("onselect", None)
-        self.address = self.message["address"] if self.message else None
-        self.value = self.message["value"] if self.message else None
-        self.size = 0
+        self.items: list[OSCMenuItem] = []
+        self.get_color_func: ColorFunc = get_color_func or (lambda: definitions.GRAY_LIGHT)
+        self.send_osc_func: OscSendFunc = send_osc_func or (lambda addr, val: None)
+        self.modmatrix: bool = config.get("modmatrix", True)
+        self.menu_label: str | None = config.get("menu_label", None)
+        self.message: ConfigDict | None = config.get("onselect", None)
+        self.address: str | None = self.message["address"] if self.message else None
+        self.value: float | int | None = self.message["value"] if self.message else None
+        self.size: int = 0
         self.log = logger.getChild(f"{self.label}:Menu")
 
         for item in config.get("items", []):
@@ -798,23 +795,18 @@ class OSCControlMenu(object):
         if self.address is None and len(self.items) > 0:
             self.address = self.items[0].address  # assumes all items have same address
         
-    def set_state(self, address, value, *args):
-        # if address == '/param/a/filter/1/type':
-        #     print("EL PROBLEMO")
+    def set_state(self, address: str, value: float, *args: Any) -> None:
         self.log.debug((address, value))
         self.value = self.get_closest_idx(value)
-        
-    def query(self):
-        # print("Control menu querry")
-        self.send_osc_func("/q" + self.address, None)
 
-    def update_value(self, increment, **kwargs):
-        # print("Update val called")
-        if not self.value:
-            pass
+    def query(self) -> None:
+        if self.address:
+            self.send_osc_func("/q" + self.address, None)
 
+    def update_value(self, increment: float, **kwargs: Any) -> None:
         scaled = scale_value(increment, 0, len(self.items))
-        new_value = self.value + scaled
+        current = self.value if self.value is not None else 0.0
+        new_value = current + scaled
 
         # print(self.label, min_item_value, max_item_value, scaled, self.value, new_value)
         if 0 <= new_value < len(self.items):
@@ -825,27 +817,32 @@ class OSCControlMenu(object):
             self.value = len(self.items) - 1
 
         active_item = self.get_active_menu_item()
-        if hasattr(active_item, "select"):
+        if active_item is not None:
             active_item.select()
 
-    def get_active_menu_item(self):
-        if self.value != None and math.floor(self.value) < len(self.items):
+    def get_active_menu_item(self) -> OSCMenuItem | None:
+        if self.value is not None and math.floor(self.value) < len(self.items):
             return self.items[math.floor(self.value)]
+        return None
 
-    def get_closest_idx(self, value):
-        
-        closest_value = closest([item.value for item in self.items], value)
-        for idx, item in enumerate(self.items ) :
+    def get_closest_idx(self, value: float) -> int | None:
+        closest_value = closest([float(item.value) for item in self.items if item.value is not None], value)
+        for idx, item in enumerate(self.items):
             if item.value == closest_value:
                 return idx
+        return None
 
-    def select(self):
+    def select(self) -> None:
         print("Select called")
         active = self.get_active_menu_item()
+        if active is None:
+            return
+        if active.address is None or active.value is None:
+            return
         self.log.debug((self.value, active.address, active.value))
         self.send_osc_func(active.address, float(active.value))
 
-    def draw(self, ctx, offset, draw_lock=False, lock_value=None):
+    def draw(self, ctx: Any, offset: int, draw_lock: bool = False, lock_value: float | None = None) -> None:
         margin_top = 30
         tip_top = 0
         tip_height = 0
@@ -854,9 +851,11 @@ class OSCControlMenu(object):
         next_label = ""
         prev_label = ""
 
+        if self.value is None:
+            return
         idx = int(math.floor(self.value))
 
-        font_color = definitions.WHITE        
+        font_color = definitions.WHITE
         if draw_lock != False:
             # font_color = definitions.RED
             font_color = self.get_color_func()
@@ -936,7 +935,7 @@ class OSCControlMenu(object):
                 background_color=None
             )
 
-    def draw_submenu(self, ctx, offset, draw_lock=False, lock_value=None):
+    def draw_submenu(self, ctx: Any, offset: int, draw_lock: bool = False, lock_value: float | None = None) -> None:
         margin_top = 110
         val_height = 15
         # TODO: need to add the lock drawing stuff here
@@ -974,16 +973,22 @@ class OSCControlMenu(object):
 class OSCMenuItem(object):
     name = "Menu Item"
     #TODO This needs to be updated along with state refresh
-    def __init__(self, config, get_color_func=None, send_osc_func=None):
+    def __init__(
+        self,
+        config: ConfigDict,
+        get_color_func: ColorFunc | None = None,
+        send_osc_func: OscSendFunc | None = None,
+    ) -> None:
         if config.get("$type", None) != "menu-item":
             raise Exception("Invalid config passed to new OSCMenuItem")
 
-        self.label = config.get("label", "")
-        self.message = config.get("onselect", None)
-        self.modmatrix = config.get("modmatrix", True)
-        self.address = self.message["address"] if self.message else None
-        self.value = self.message["value"] if self.message else None
-        self.send_osc_func = send_osc_func
+        self.label: str = config.get("label", "")
+        self.message: ConfigDict | None = config.get("onselect", None)
+        self.modmatrix: bool = config.get("modmatrix", True)
+        self.address: str | None = self.message["address"] if self.message else None
+        self.value: float | int | None = self.message["value"] if self.message else None
+        self.send_osc_func: OscSendFunc = send_osc_func or (lambda addr, val: None)
 
-    def select(self):
-        self.send_osc_func(self.address, float(self.value))
+    def select(self) -> None:
+        if self.address is not None and self.value is not None:
+            self.send_osc_func(self.address, float(self.value))

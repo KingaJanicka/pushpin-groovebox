@@ -168,12 +168,6 @@ class MainControlsMode(definitions.PyshaMode):
                 self.app.toggle_menu_mode()
                 self.app.buttons_need_update = True
             return True
-        elif button_name  == CLIP_BUTTON:
-            if self.app.trig_edit_mode.should_be_enabled():
-                # TODO: commented out beause it's broken with the current seq model
-                # self.app.toggle_trig_edit_mode()
-                self.app.buttons_need_update = True
-            return True
     
         elif button_name == SESSION_BUTTON:
             return True

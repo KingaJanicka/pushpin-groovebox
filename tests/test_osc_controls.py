@@ -197,6 +197,7 @@ def test_OSCControlSwitch_Group_Range(mocker):
     )
 
     active_group = control.get_active_group()
+    assert active_group is not None
     assert control.value == 0, "Initial value should be 0"
     assert active_group.label == "group 1", "Initialises with the first group"
     assert control.size == 5, "Group size should be the max of all children (+1)"
@@ -209,6 +210,7 @@ def test_OSCControlSwitch_Group_Range(mocker):
     # the integer group index (twitchy-knob mitigation).
     control.update_value(64)
     active_group = control.get_active_group()
+    assert active_group is not None
 
     assert int(control.value) == 1, "Value should advance to the second group"
     assert active_group.label == "group 2", "Active group should update"

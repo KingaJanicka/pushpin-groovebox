@@ -60,16 +60,11 @@ minimal state each method needs.
 These look like real discrepancies worth a follow-up (candidates for the
 "code quality / reduce bug density" phase):
 
-1. **`test_osc_controls.py` expected `64` defaults.** Controls now initialise
-   `self.value = 0.0`, but three existing assertions expect `64`. Either the
-   code regressed away from a 64 default, or the tests are stale. Left
-   unchanged pending a decision; the undefined `scale_knob_value` reference was
-   fixed.
-2. **Class-level mutable state.** Several modes declare mutable containers at
+1. **Class-level mutable state.** Several modes declare mutable containers at
    class scope (`MelodicMode.notes_being_played`, `MuteMode.tracks_active`,
    `TrigEditMode.controls/state`, `InstrumentSelectionMode.instruments_info`,
    etc.). These are shared across instances and accumulate on re-init — a latent
    bug the tests work around by resetting them.
-3. **Substring `in` checks on button names**, e.g.
+2. **Substring `in` checks on button names**, e.g.
    `elif button_name in push2_python.constants.BUTTON_UPPER_ROW_7:` in
    preset/clip modes does a string-substring match rather than equality.

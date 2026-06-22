@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import logging
+from typing import Any
 import engine
 import mido
 from definitions import PyshaMode
@@ -8,7 +11,7 @@ logger = logging.getLogger("osc_instrument")
 
 
 class ExternalInstrument(PyshaMode):
-    engine = None
+    engine: Any = None
     
     def __init__(
         self,
@@ -22,11 +25,11 @@ class ExternalInstrument(PyshaMode):
         self.instrument_nodes = []
         self.instrument_ports = []
         self.name = instrument_short_name
-        self.midi_port = mido.open_output(
+        self.midi_port = mido.open_output(  # type: ignore[attr-defined]
             instrument_definition["instrument_short_name"],
             client_name=instrument_definition["instrument_short_name"],
         )
-        midi_device_idx = [els.split(":")[0] for els in mido.get_input_names()].index(
+        midi_device_idx = [els.split(":")[0] for els in mido.get_input_names()].index(  # type: ignore[attr-defined]
             instrument_definition["instrument_short_name"]
         )
       

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import definitions
 import push2_python
 import os
@@ -24,7 +26,7 @@ class PresetSelectionMode(definitions.PyshaMode):
     pad_quick_press_time = 0.400
     current_page = 0
     patches = {}
-    state = [0] * 8
+    state: list[float | int] = [0] * 8
     patches_dicts = []
     current_address = None
 
@@ -471,7 +473,7 @@ class PresetSelectionMode(definitions.PyshaMode):
             chosen_folder = definitions.THIRD_PARTY_PATCHES_FOLDER
         elif 2 <= self.state[0] < 3:
             chosen_folder = definitions.USER_PATCHES_FOLDER
-        return chosen_folder + "/" + preset
+        return (chosen_folder or "") + "/" + preset
 
     def update_display(self, ctx, w, h):
         self.nested_draw(ctx, self.patches, level=0, max_height=h)
@@ -523,6 +525,8 @@ class PresetSelectionMode(definitions.PyshaMode):
                 level = self.patches["User"]
 
             for idx, piece in enumerate(address_array):
+                if level is None:
+                    break
                 self.state[idx + 1] = list(level).index(piece)
                 level = level[piece]  # who knows what this line does? But it works!
         except Exception as e:
