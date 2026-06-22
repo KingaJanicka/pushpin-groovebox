@@ -990,14 +990,12 @@ class MetroSequencerMode(MelodicMode):
             self.get_current_instrument_short_name_helper()
         ]
         if button_name in track_button_names:
-            # print("Button pressed", button_name)
             idx = track_button_names.index(button_name)
             self.selected_track = TRACK_NAMES_METRO[idx]
             try:
                 self.all_track_buttons_off()
             except Exception as e:
                 print(e)
-            # print("after try/catch")
             self.active_track_button_on()
             self.app.buttons_need_update = True
             self.app.pads_need_update = True
@@ -1007,7 +1005,6 @@ class MetroSequencerMode(MelodicMode):
             else:
                 self.push.buttons.set_button_color(push2_constants.BUTTON_SHIFT, definitions.BLACK)
                 self.push.buttons.set_button_color(push2_constants.BUTTON_SELECT, definitions.BLACK)
-            print("end of button pressed")
 
         elif button_name == push2_constants.BUTTON_1_8:
             self.button_1_8_pressed = True
