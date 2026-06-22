@@ -425,14 +425,10 @@ class TrigEditMode(definitions.PyshaMode):
     def update_state(self):
         current_state = self.state[self.get_current_instrument_short_name_helper()]
         track_name = self.app.metro_sequencer_mode.selected_track
-        print("inside update state", track_name)
-        print("state", current_state)
-        try:
-            for idx, control in enumerate(self.controls):
-                control.value = current_state[track_name][idx]
-        except Exception as e:
-            print("Exception in trig_edit_mode, update state", e)
-        
+        for idx, control in enumerate(self.controls):
+            control.value = current_state[track_name][idx]
+
+
     def should_be_enabled(self):
         return True
 
