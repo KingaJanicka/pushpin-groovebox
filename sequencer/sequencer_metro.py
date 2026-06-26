@@ -221,12 +221,13 @@ class SequencerMetro(object):
             
             # Checks if we need to reset the pattern due to
             # synth seq step count
-            if self.step_count == self.params.pattern_len:
+            if self.step_count >= self.params.pattern_len:
                 self.reset_index()
     
             # increments the index to get the next note to play
-            self.increment_index()
-            self.increment_next_step_index(index=self.step_index)
+            else:
+                self.increment_index()
+                self.increment_next_step_index(index=self.step_index)
                 
             # Play the note, reset the scale count counter for the time scale
             self.step_count += 1
