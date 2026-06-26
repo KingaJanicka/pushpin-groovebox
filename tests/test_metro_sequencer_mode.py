@@ -237,3 +237,62 @@ def test_init_instrument_independent_pad_states(metro_for_init):
     grid2 = metro_for_init.metro_seq_pad_state["INST2"][TRACK_NAMES_METRO[0]]
     grid1[0][0] = "modified"
     assert grid2[0][0] is False, "instruments should have independent pad state grids"
+
+
+# ---------------------------------------------------------------------------
+# refresh_sequencer_params() — SequencerParams snapshot from UI state
+# ---------------------------------------------------------------------------
+
+def test_refresh_sequencer_params_propagates_gate_mute(app, mocker):
+    """Muting the gate track must reach SequencerParams.gate_track_active.
+
+    Regression for the "gate_1" vs "gate" key mismatch: refresh_sequencer_params
+    looked up "gate_1" in tracks_active, which is always missing (the actual key
+    is TRACK_NAMES_METRO[3] == "gate"), so every lookup defaulted to True and
+    mutes were silently ignored.
+    """
+    mocker.patch.object(MetroSequencerMode, "initialize")
+    mode = MetroSequencerMode(app, settings=None, send_osc_func=app.send_osc)
+    mode.sequencer_is_playing = False
+
+    # Build real scale-edit controls so _menu_int can read from them.
+    controls = _make_track_controls(lambda: "cyan")
+    mode.instrument_scale_edit_controls = {"INST1": controls}
+
+    seq_mock = MagicMock()
+    mode.instrument_sequencers = {"INST1": seq_mock}
+
+    # Set up mute_mode: gate track is muted for INST1.
+    app.mute_mode.tracks_active = {
+        "INST1": {name: True for name in TRACK_NAMES_METRO}
+    }
+    app.mute_mode.tracks_active["INST1"]["gate"] = False
+
+    mode.refresh_sequencer_params()
+
+    params = seq_mock.params
+    assert params.gate_track_active is False, (
+        "muting the gate track should set gate_track_active=False in SequencerParams"
+    )
+
+
+def test_refresh_sequencer_params_active_when_not_muted(app, mocker):
+    mocker.patch.object(MetroSequencerMode, "initialize")
+    mode = MetroSequencerMode(app, settings=None, send_osc_func=app.send_osc)
+    mode.sequencer_is_playing = True
+
+    controls = _make_track_controls(lambda: "cyan")
+    mode.instrument_scale_edit_controls = {"INST1": controls}
+
+    seq_mock = MagicMock()
+    mode.instrument_sequencers = {"INST1": seq_mock}
+
+    app.mute_mode.tracks_active = {
+        "INST1": {name: True for name in TRACK_NAMES_METRO}
+    }
+
+    mode.refresh_sequencer_params()
+
+    params = seq_mock.params
+    assert params.gate_track_active is True
+    assert params.sequencer_is_playing is True
