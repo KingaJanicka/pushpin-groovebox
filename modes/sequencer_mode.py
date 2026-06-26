@@ -496,7 +496,7 @@ class SequencerMode(MelodicMode):
                         control.value = control.value + incr
                     if min >= (control.value + incr):
                         control.value = min
-                    if max < (control.value + incr):
+                    if max <= (control.value + incr):
                         control.value = max - incr
 
                     self.update_pads()

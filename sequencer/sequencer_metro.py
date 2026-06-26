@@ -205,7 +205,6 @@ class SequencerMetro(object):
         # This needs to be done every tick/update for sure
         # As the main seq can be slower/faster than the pattern seq
         if self.does_main_step_need_reset():
-            print("main needs reset")
             if not self._pending_reset:
                 self._pending_reset = True
                 self.reset_index()
