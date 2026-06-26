@@ -215,6 +215,8 @@ class SequencerMetro(object):
         # This function evaluates if it's time to play the note according to
         # Current time scale settings of the synth seq
         
+        scale_count_after_reset = False
+        
         if self.scale_count == 0:
             
             # Checks if we need to reset the pattern due to
@@ -222,41 +224,27 @@ class SequencerMetro(object):
             if self.step_count == self.params.pattern_len:
                 self.reset_index()
     
-            # if not it increments the index to get the next note to play
-            else:
-                self.increment_index()
-                self.increment_next_step_index(index=self.step_index)
+            # increments the index to get the next note to play
+            self.increment_index()
+            self.increment_next_step_index(index=self.step_index)
                 
             # Play the note, reset the scale count counter for the time scale
             self.step_count += 1
             self.evaluate_and_play_notes()
             self.reset_scale_count()
+            scale_count_after_reset = True
 
         # And statement makes sure we don't decrement freshly reset state
-        if self.scale_count != 0 and self.scale_count != self.get_scale_count():
+        if self.scale_count != 0 and scale_count_after_reset != True:
             # This has to do with the time scale setting
             # This block makes sure we only fire every X 1/32nd notes
             self.scale_count -= 1
-        
-        
-        # # Comenting this out I will check later if the vis feedback lines up
-        # # Now that we've imporved the asyncio loop
-        # if self.scale_count == 1:
-        #     # Increment right before the note is played, so the visual feedback
-        #     # lines up. The if clause prevents going over the bounds with next step
-        #     # and avoids visual glitches with the playhead.
-        #     if self.step_count == self.params.pattern_len:
-        #         self.reset_index()
-        #     else:
-        #         self.increment_index()
-        #         self.increment_next_step_index(index=self.step_index)
                 
 
     def seq_playhead_update(self):
         # Take a single atomic reference to the param snapshot for this tick.
         # All UI-owned values are read from here, not from app/mode objects.
         params = self.params
-
         if not params.sequencer_is_playing:
             return
         
