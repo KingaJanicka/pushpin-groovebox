@@ -190,17 +190,27 @@ class SequencerMetro(object):
         main_step_count = round(
             (self.app.global_timeline.current_time + 0.1) * self.params.main_seq_time_scale / 2, 1
         )
-        return( main_step_count >= self.params.main_pattern_len * self.params.main_seq_time_scale / 2)
+        main_time_in_bars = self.app.global_timeline.current_time
+        main_len_in_bars = self.params.main_seq_time_scale / 32 * self.params.main_pattern_len
+        # print("current time", self.app.global_timeline.current_time)
+        # print("main pattern len", self.params.main_pattern_len)
+        # print("main seq time scale", self.params.main_seq_time_scale)
+        # print(main_step_count, main_step_count >= (self.params.main_pattern_len * self.params.main_seq_time_scale / 2) )
+        
+        
+        return( main_time_in_bars >= main_len_in_bars)
 
     def check_and_reset_main_step(self):
         # Checks if we're due a main pattern length reset
         # This needs to be done every tick/update for sure
         # As the main seq can be slower/faster than the pattern seq
         if self.does_main_step_need_reset():
+            print("main needs reset")
             if not self._pending_reset:
                 self._pending_reset = True
                 self.reset_index()
                 self.scale_count = 0
+                # TODO: reset scale count may need to be called properly here 
                 
                 # Signal the asyncio thread to reset the timeline rather than
                 # calling it here — resetting the timeline from within its own
