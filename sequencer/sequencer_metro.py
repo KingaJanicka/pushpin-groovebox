@@ -265,8 +265,8 @@ class SequencerMetro(object):
 
     def reset_index(self):
         self.step_count = 0
-        self.step_index = 0
-        self.next_step_index = 1
+        self.step_index = 63  # increment_index() will wrap this to 0 before the first note
+        self.next_step_index = 0
         
 
     def increment_index(self, index = None):
@@ -340,21 +340,22 @@ class SequencerMetro(object):
                 mutes_idx = column*8+1
                 
                 
-                prob = 1
-                
+                # No probability pad set = always play (7 always beats max roll of 6).
+                prob = 7
+
                 # checking columns for the True statement
                 for x in range(7):
                     if self.mutes_skips[mutes_idx + x] == True:
                         prob = x
-                        
+
                 next_step_index = self.next_step_index
-                
+
                 if self.gate[next_step_index] == "Tie":
                     gate = 0.3
                 else:
                     gate = 0.25 * gate_len
-            
-                
+
+
                 if prob >= random.randint(1, 6):
                     # We need to reset values that were changed by param locks
                     for control in self.controls_to_reset:
