@@ -187,14 +187,9 @@ class SequencerMetro(object):
         
     def does_main_step_need_reset(self):
         # Checks if the sequencer needs a reset due to main step pattern length
-        main_step_count = round(
-            (self.app.global_timeline.current_time + 0.1) * self.params.main_seq_time_scale / 2, 1
-        )
         main_time_in_bars = self.app.global_timeline.current_time
         main_len_in_bars = self.params.main_seq_time_scale / 32 * self.params.main_pattern_len
         # print("current time", self.app.global_timeline.current_time)
-        # print("main pattern len", self.params.main_pattern_len)
-        # print("main seq time scale", self.params.main_seq_time_scale)
         # print(main_step_count, main_step_count >= (self.params.main_pattern_len * self.params.main_seq_time_scale / 2) )
         
         
@@ -209,6 +204,7 @@ class SequencerMetro(object):
                 self._pending_reset = True
                 self.reset_index()
                 self.scale_count = 0
+                self.step_count =  self.params.pattern_len + 1
                 # TODO: reset scale count may need to be called properly here 
                 
                 # Signal the asyncio thread to reset the timeline rather than
@@ -230,7 +226,13 @@ class SequencerMetro(object):
             
             # Checks if we need to reset the pattern due to
             # synth seq step count
-            if self.step_count >= self.params.pattern_len:
+            step_len = self.params.seq_time_scale /32
+            pattern_len_in_bars = step_len * self.params.pattern_len
+            step_count_in_bars = step_len * self.step_count 
+            # TODO: I think this reset may be fucked and resetting too late?
+            # if self.step_count >= self.params.pattern_len:
+            #     self.reset_index()
+            if step_count_in_bars >= pattern_len_in_bars:
                 self.reset_index()
     
             # increments the index to get the next note to play
