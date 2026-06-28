@@ -187,38 +187,31 @@ class SequencerMetro(object):
         
     def does_main_step_need_reset(self):
         # Checks if the sequencer needs a reset due to main step pattern length
-        main_step_count = round(
-            (self.app.global_timeline.current_time + 0.1) * self.params.main_seq_time_scale / 2, 1
-        )
         main_time_in_bars = self.app.global_timeline.current_time
         main_len_in_bars = self.params.main_seq_time_scale / 32 * self.params.main_pattern_len
         # print("current time", self.app.global_timeline.current_time)
-        # print("main pattern len", self.params.main_pattern_len)
-        # print("main seq time scale", self.params.main_seq_time_scale)
         # print(main_step_count, main_step_count >= (self.params.main_pattern_len * self.params.main_seq_time_scale / 2) )
         
         
         return( main_time_in_bars >= main_len_in_bars)
 
-    def check_and_reset_main_step(self):
-        # Checks if we're due a main pattern length reset
-        # This needs to be done every tick/update for sure
-        # As the main seq can be slower/faster than the pattern seq
+    def check_and_reset_main_step(self) -> bool:
+        # Checks if we're due a main pattern length reset.
+        # Returns True while a reset is pending so seq_playhead_update can skip
+        # advance — this makes the comment below actually true.
         if self.does_main_step_need_reset():
             if not self._pending_reset:
                 self._pending_reset = True
                 self.reset_index()
-                self.scale_count = 0
-                # TODO: reset scale count may need to be called properly here 
-                
                 # Signal the asyncio thread to reset the timeline rather than
                 # calling it here — resetting the timeline from within its own
                 # tick callback corrupts internal iteration state.
                 self.app.timeline_needs_reset = True
             # Don't advance steps while waiting for the timeline to reset.
-            return
+            return True
         else:
             self._pending_reset = False
+            return False
 
     def advance_and_evaluate_sequencer_tick(self):
         # This function evaluates if it's time to play the note according to
@@ -230,7 +223,13 @@ class SequencerMetro(object):
             
             # Checks if we need to reset the pattern due to
             # synth seq step count
-            if self.step_count >= self.params.pattern_len:
+            step_len = self.params.seq_time_scale /32
+            pattern_len_in_bars = step_len * self.params.pattern_len
+            step_count_in_bars = step_len * self.step_count 
+            # TODO: I think this reset may be fucked and resetting too late?
+            # if self.step_count >= self.params.pattern_len:
+            #     self.reset_index()
+            if step_count_in_bars >= pattern_len_in_bars:
                 self.reset_index()
     
             # increments the index to get the next note to play
@@ -260,8 +259,9 @@ class SequencerMetro(object):
         
         self.playhead = self.get_current_playhead_value()
 
-        self.check_and_reset_main_step()
-        
+        if self.check_and_reset_main_step():
+            return
+
         self.advance_and_evaluate_sequencer_tick()
 
     def get_current_playhead_value(self):
@@ -279,38 +279,38 @@ class SequencerMetro(object):
         self.next_step_index = 1
         
 
-    def increment_index(self, index = None):
-        
-        current_index = index if index != None else self.step_index
-        next_step_index = (current_index + 1) % 64
-        
-        
-        column = int(next_step_index / 8)
-        skips_idx = column*8
-        
-        if self.gate[next_step_index] != False and self.mutes_skips[skips_idx] != True:
-            self.step_index = next_step_index
-            # Signal the asyncio thread to update pads — calling update_pads()
-            # directly here runs push2_python USB code from the MIDI clock thread,
-            # which races with the asyncio event loop doing the same.
-            self.app.pads_need_update = True
-            return
-        else:
-            self.increment_index(index=next_step_index)
-            
-    def increment_next_step_index(self, index = None):
-        current_index = index if index != None else self.step_index
-        next_step_index = (current_index + 1) % 64
-        
-        column = int(next_step_index / 8)
-        skips_idx = column*8
-        
-        if self.gate[next_step_index] != False and self.mutes_skips[skips_idx] != True:
-            self.next_step_index = next_step_index
-            return 
-        
-        else:
-            self.increment_next_step_index(index=next_step_index)
+    def increment_index(self, index=None):
+        # Iterative replacement for the previous unbounded-recursive version.
+        # The recursive form would hit Python's recursion limit when few/no gate
+        # steps were active, introducing variable-depth call overhead on every
+        # clock tick and causing timing jitter.
+        current_index = index if index is not None else self.step_index
+        for _ in range(64):
+            next_index = (current_index + 1) % 64
+            column = int(next_index / 8)
+            skips_idx = column * 8
+            if self.gate[next_index] != False and self.mutes_skips[skips_idx] != True:
+                self.step_index = next_index
+                # Signal the asyncio thread to update pads — calling update_pads()
+                # directly here runs push2_python USB code from the MIDI clock thread,
+                # which races with the asyncio event loop doing the same.
+                self.app.pads_need_update = True
+                return
+            current_index = next_index
+        # No active gate step found in the entire pattern — don't advance.
+
+    def increment_next_step_index(self, index=None):
+        # Iterative for the same reason as increment_index.
+        current_index = index if index is not None else self.step_index
+        for _ in range(64):
+            next_index = (current_index + 1) % 64
+            column = int(next_index / 8)
+            skips_idx = column * 8
+            if self.gate[next_index] != False and self.mutes_skips[skips_idx] != True:
+                self.next_step_index = next_index
+                return
+            current_index = next_index
+        # No active gate step found — next_step_index unchanged.
             
     def increment_previous_step_index(self, index = None):
         current_index = index if index != None else self.step_index
