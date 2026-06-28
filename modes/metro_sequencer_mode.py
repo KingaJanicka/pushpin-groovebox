@@ -211,7 +211,7 @@ class MetroSequencerMode(MelodicMode):
                 return default
 
             gate_active = (
-                self.app.mute_mode.tracks_active.get(name, {}).get("gate_1", True)
+                self.app.mute_mode.tracks_active.get(name, {}).get("gate", True)
             )
 
             seq.params = SequencerParams(
