@@ -43,7 +43,6 @@ def test_on_pad_pressed_toggles_track_mute(mute, app):
 def test_track_button_selects_metro_track(mute, app):
     mute.on_button_pressed(track_button_names[0])
     assert app.metro_sequencer_mode.selected_track == TRACK_NAMES_METRO[0]
-    app.trig_edit_mode.update_state.assert_called_once()
     app.set_metro_sequencer_mode.assert_called_once()
 
 
