@@ -627,6 +627,8 @@ class MetroSequencerMode(MelodicMode):
         self.app.queue.append(self.async_pad_pressed(pad_n=pad_n))
     
     async def async_pad_pressed(self, pad_n):
+        if self.show_scale_menu:
+            return
         try:
             pad_state = self.metro_seq_pad_state[
                 self.get_current_instrument_short_name_helper()
@@ -904,6 +906,8 @@ class MetroSequencerMode(MelodicMode):
         self.app.osc_mode.update_buttons()
 
     def on_pad_released(self, pad_n, pad_ij, velocity):
+        if self.show_scale_menu:
+            return
         pad_state = self.metro_seq_pad_state[
             self.get_current_instrument_short_name_helper()
         ]
