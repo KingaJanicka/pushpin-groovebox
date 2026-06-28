@@ -279,38 +279,38 @@ class SequencerMetro(object):
         self.next_step_index = 1
         
 
-    def increment_index(self, index = None):
-        
-        current_index = index if index != None else self.step_index
-        next_step_index = (current_index + 1) % 64
-        
-        
-        column = int(next_step_index / 8)
-        skips_idx = column*8
-        
-        if self.gate[next_step_index] != False and self.mutes_skips[skips_idx] != True:
-            self.step_index = next_step_index
-            # Signal the asyncio thread to update pads — calling update_pads()
-            # directly here runs push2_python USB code from the MIDI clock thread,
-            # which races with the asyncio event loop doing the same.
-            self.app.pads_need_update = True
-            return
-        else:
-            self.increment_index(index=next_step_index)
-            
-    def increment_next_step_index(self, index = None):
-        current_index = index if index != None else self.step_index
-        next_step_index = (current_index + 1) % 64
-        
-        column = int(next_step_index / 8)
-        skips_idx = column*8
-        
-        if self.gate[next_step_index] != False and self.mutes_skips[skips_idx] != True:
-            self.next_step_index = next_step_index
-            return 
-        
-        else:
-            self.increment_next_step_index(index=next_step_index)
+    def increment_index(self, index=None):
+        # Iterative replacement for the previous unbounded-recursive version.
+        # The recursive form would hit Python's recursion limit when few/no gate
+        # steps were active, introducing variable-depth call overhead on every
+        # clock tick and causing timing jitter.
+        current_index = index if index is not None else self.step_index
+        for _ in range(64):
+            next_index = (current_index + 1) % 64
+            column = int(next_index / 8)
+            skips_idx = column * 8
+            if self.gate[next_index] != False and self.mutes_skips[skips_idx] != True:
+                self.step_index = next_index
+                # Signal the asyncio thread to update pads — calling update_pads()
+                # directly here runs push2_python USB code from the MIDI clock thread,
+                # which races with the asyncio event loop doing the same.
+                self.app.pads_need_update = True
+                return
+            current_index = next_index
+        # No active gate step found in the entire pattern — don't advance.
+
+    def increment_next_step_index(self, index=None):
+        # Iterative for the same reason as increment_index.
+        current_index = index if index is not None else self.step_index
+        for _ in range(64):
+            next_index = (current_index + 1) % 64
+            column = int(next_index / 8)
+            skips_idx = column * 8
+            if self.gate[next_index] != False and self.mutes_skips[skips_idx] != True:
+                self.next_step_index = next_index
+                return
+            current_index = next_index
+        # No active gate step found — next_step_index unchanged.
             
     def increment_previous_step_index(self, index = None):
         current_index = index if index != None else self.step_index
