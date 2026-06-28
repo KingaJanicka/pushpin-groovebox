@@ -46,6 +46,21 @@ def test_track_button_selects_metro_track(mute, app):
     app.set_metro_sequencer_mode.assert_called_once()
 
 
+def test_gate_mute_uses_correct_track_name(mute):
+    # tracks_active is keyed by the names from TRACK_NAMES_METRO.
+    # Regression for "gate_1" vs "gate" mismatch: the key for the gate track
+    # must be present so refresh_sequencer_params can actually read it.
+    gate_track_name = TRACK_NAMES_METRO[TRACK_NAMES_METRO.index("gate")]
+    assert gate_track_name in mute.tracks_active["INST1"], (
+        f"tracks_active must use TRACK_NAMES_METRO key '{gate_track_name}', "
+        "not a hardcoded 'gate_1'"
+    )
+    # Toggling the gate pad should flip the value we can look up by the right key.
+    gate_index = TRACK_NAMES_METRO.index("gate")
+    mute.on_pad_pressed(0, (gate_index, 0), 100)
+    assert mute.tracks_active["INST1"]["gate"] is False
+
+
 def test_play_button_toggles_transport(mute, app):
     app.metro_sequencer_mode.sequencer_is_playing = False
     mute.on_button_pressed(push2_python.constants.BUTTON_PLAY)
