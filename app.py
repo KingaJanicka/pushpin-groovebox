@@ -38,6 +38,8 @@ from modes.ddrm_tone_selector_mode import DDRMToneSelectorMode
 from modes.menu_mode import MenuMode
 from modes.mute_mode import MuteMode
 from user_interface.display_utils import show_notification
+from user_interface.recording_context import RecordingContext
+from user_interface.display_process import DisplayProcess
 from modes.external_instrument import ExternalInstrument
 from definitions import DEFAULT_GLOBAL_TEMPO
 
@@ -130,6 +132,9 @@ class PyshaApp(object):
         self.set_midi_out_channel(settings.get("midi_out_default_channel", 0))
         self.target_frame_rate = settings.get("target_frame_rate", 30)
         self.use_push2_display = settings.get("use_push2_display", True)
+        self._display_process = DisplayProcess()
+        if self.use_push2_display:
+            self._display_process.start()
 
         self.init_midi_in(device_name=settings.get("default_midi_in_device_name", None))
         self.init_midi_out(
@@ -913,40 +918,44 @@ class PyshaApp(object):
             mode.update_buttons()
 
     def update_push2_display(self):
-        if self.use_push2_display:
-            # Prepare cairo canvas
-            w, h = (
-                push2_python.constants.DISPLAY_LINE_PIXELS,
-                push2_python.constants.DISPLAY_N_LINES,
-            )
-            surface = cairo.ImageSurface(cairo.FORMAT_RGB16_565, w, h)
-            ctx = cairo.Context(surface)
+        if not self.use_push2_display:
+            return
 
-            # Call all active modes to write to context
-            for mode in self.active_modes:
-                    mode.update_display(ctx, w, h)
-            # Makes seq submenus always draw on top of other modes
-            self.metro_sequencer_mode.update_display(ctx, w, h)
+        w, h = (
+            push2_python.constants.DISPLAY_LINE_PIXELS,
+            push2_python.constants.DISPLAY_N_LINES,
+        )
 
-            # Show any notifications that should be shown
-            if self.notification_text is not None:
-                time_since_notification_started = time.time() - self.notification_time
-                if time_since_notification_started < definitions.NOTIFICATION_TIME:
-                    show_notification(
-                        ctx,
-                        self.notification_text,
-                        opacity=1
-                        - time_since_notification_started
-                        / definitions.NOTIFICATION_TIME,
-                    )
-                else:
-                    self.notification_text = None
+        # Collect draw commands via a RecordingContext — no real Cairo rendering
+        # happens here, only font-metric shadow calls (microseconds of GIL time).
+        recording = RecordingContext()
+        for mode in self.active_modes:
+            mode.update_display(recording, w, h)
+        # Metro sequencer sub-menus always draw on top of other modes.
+        self.metro_sequencer_mode.update_display(recording, w, h)
 
-            # Convert cairo data to numpy array and send to push
-            buf = surface.get_data()
-            frame = numpy.ndarray(
-                shape=(h, w), dtype=numpy.uint16, buffer=buf
-            ).transpose()
+        if self.notification_text is not None:
+            time_since_notification_started = time.time() - self.notification_time
+            if time_since_notification_started < definitions.NOTIFICATION_TIME:
+                show_notification(
+                    recording,
+                    self.notification_text,
+                    opacity=1
+                    - time_since_notification_started
+                    / definitions.NOTIFICATION_TIME,
+                )
+            else:
+                self.notification_text = None
+
+        # Hand the command list to the subprocess for rendering.  Non-blocking:
+        # if the worker is still busy with the previous frame, this is dropped.
+        self._display_process.submit(recording.commands)
+
+        # Pick up the latest rendered frame (may be one iteration behind — fine
+        # for a display).  USB I/O in display_frame() releases the GIL, so this
+        # does not block the isobar clock thread.
+        frame = self._display_process.get_frame()
+        if frame is not None:
             self.push.display.display_frame(
                 frame, input_format=push2_python.constants.FRAME_FORMAT_RGB565
             )
@@ -1368,6 +1377,7 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("Exiting Pysha...")
         try:
+            app._display_process.stop()
             app.push.f_stop.set()
             app.osc_mode.close_transports()
     
