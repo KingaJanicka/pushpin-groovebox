@@ -56,11 +56,11 @@ class SequencerMetro(object):
         # True while waiting for the asyncio thread to call global_timeline.reset().
         # Prevents reset_index() from firing on every tick during the ~33ms gap.
         self._pending_reset: bool = False
-        self.step_index = 0
+        self.step_index = 63  # wraps to 0 on the first increment_index() call
         self.step_count = 0
         self.prev_step_index = 0
         self.show_locks = False
-        self.next_step_index = 1
+        self.next_step_index = 0
         self.steps_held = []
         self.scale_count = 1
         self.controls_to_reset = []
@@ -200,25 +200,22 @@ class SequencerMetro(object):
         
         return( main_time_in_bars >= main_len_in_bars)
 
-    def check_and_reset_main_step(self):
-        # Checks if we're due a main pattern length reset
-        # This needs to be done every tick/update for sure
-        # As the main seq can be slower/faster than the pattern seq
+    def check_and_reset_main_step(self) -> bool:
+        # Checks if we're due a main pattern length reset.
+        # Returns True while a reset is pending so seq_playhead_update can skip advance.
         if self.does_main_step_need_reset():
             if not self._pending_reset:
                 self._pending_reset = True
-                self.reset_index()
-                self.scale_count = 0
-                # TODO: reset scale count may need to be called properly here 
-                
+                self._reset_index_main()
                 # Signal the asyncio thread to reset the timeline rather than
                 # calling it here — resetting the timeline from within its own
                 # tick callback corrupts internal iteration state.
                 self.app.timeline_needs_reset = True
             # Don't advance steps while waiting for the timeline to reset.
-            return
+            return True
         else:
             self._pending_reset = False
+            return False
 
     def advance_and_evaluate_sequencer_tick(self):
         # This function evaluates if it's time to play the note according to
@@ -260,8 +257,9 @@ class SequencerMetro(object):
         
         self.playhead = self.get_current_playhead_value()
 
-        self.check_and_reset_main_step()
-        
+        if self.check_and_reset_main_step():
+            return
+
         self.advance_and_evaluate_sequencer_tick()
 
     def get_current_playhead_value(self):
@@ -274,9 +272,18 @@ class SequencerMetro(object):
         return self.params.seq_time_scale
 
     def reset_index(self):
+        # Inner-loop reset: step_index=0 so evaluate_and_play_notes() fires step 0
+        # directly (Kinga's else branch skips increment_index after this path).
         self.step_count = 0
         self.step_index = 0
         self.next_step_index = 1
+
+    def _reset_index_main(self):
+        # Main-loop reset: step_index=63 so the next increment_index() call in
+        # advance_and_evaluate_sequencer_tick wraps to 0 and plays step 0.
+        self.step_count = 0
+        self.step_index = 63
+        self.next_step_index = 0
         
 
     def increment_index(self, index = None):
@@ -350,21 +357,22 @@ class SequencerMetro(object):
                 mutes_idx = column*8+1
                 
                 
-                prob = 1
-                
+                # No probability pad set = always play (7 always beats max roll of 6).
+                prob = 7
+
                 # checking columns for the True statement
                 for x in range(7):
                     if self.mutes_skips[mutes_idx + x] == True:
                         prob = x
-                        
+
                 next_step_index = self.next_step_index
-                
+
                 if self.gate[next_step_index] == "Tie":
                     gate = 0.3
                 else:
                     gate = 0.25 * gate_len
-            
-                
+
+
                 if prob >= random.randint(1, 6):
                     # We need to reset values that were changed by param locks
                     for control in self.controls_to_reset:
