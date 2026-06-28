@@ -12,21 +12,27 @@ Data flow
   Cairo only) and calls DisplayProcess.submit().
 
   DisplayProcess replays the commands on a real cairo.Context in the worker
-  process, converts the surface to a numpy frame, and puts it in a response
-  queue.
+  process, writes the rendered numpy frame into a shared-memory block, then
+  puts a lightweight True sentinel into frame_ready_queue.
 
-  The main loop calls DisplayProcess.get_frame() each iteration.  If a
-  frame is ready it calls push.display.display_frame() — USB I/O, which
-  already releases the GIL, so this is safe.
+  The main loop calls DisplayProcess.get_frame() each iteration.  If a ready
+  signal is waiting it copies the frame from shared memory (no pickling) and
+  calls push.display.display_frame() — USB I/O, which releases the GIL.
 
-  Queue sizes are capped at 2 so we never buffer more than one pending
-  render; extra submissions or frames are silently dropped (display lag of
-  one frame is imperceptible; MIDI timing is what matters).
+  Shared-memory layout: one slot, 960 × 160 × uint16 = 307 200 bytes.
+  The worker owns the slot while rendering; the main process copies it in
+  microseconds immediately on signal.  At 30 fps with ~10–30 ms render times
+  the race window between successive writes is negligible.  A future
+  double-buffer variant would eliminate it entirely.
+
+  Command and signal queues are capped at 2 so we never buffer more than one
+  pending render; extra submissions or frames are silently dropped.
 """
 
 from __future__ import annotations
 
 import multiprocessing
+import multiprocessing.shared_memory as _shm_mod
 import queue as _queue
 import traceback
 from typing import Optional
@@ -37,6 +43,7 @@ import numpy
 # push2_python.constants avoids triggering USB/MIDI device initialisation.
 _W = 960   # push2_python.constants.DISPLAY_LINE_PIXELS
 _H = 160   # push2_python.constants.DISPLAY_N_LINES
+_FRAME_BYTES = _W * _H * 2  # one uint16 per pixel
 
 
 # ---------------------------------------------------------------------------
@@ -86,19 +93,26 @@ def _replay(ctx: "cairo.Context", commands: list[tuple]) -> None:  # type: ignor
 
 def _worker(
     command_queue: multiprocessing.Queue,
-    frame_queue: multiprocessing.Queue,
+    frame_ready_queue: multiprocessing.Queue,
+    shm_name: str,
 ) -> None:
     """Entry point for the display worker process.
 
-    Loops forever: receives a command list, renders it with Cairo, and
-    puts the resulting numpy frame in frame_queue.  Sends None to
-    frame_queue on shutdown so the main process can detect clean exit.
+    Loops forever: receives a command list, renders it with Cairo, writes the
+    resulting numpy frame into the named shared-memory block, and signals the
+    main process via frame_ready_queue.  Sends None to frame_ready_queue on
+    shutdown so the main process can detect a clean exit.
     """
     import cairo
     import numpy as np
+    from multiprocessing.shared_memory import SharedMemory
 
-    while True:
-        try:
+    shm = SharedMemory(name=shm_name)
+    # View into shared memory — shape matches what get_frame() expects.
+    frame_buf = np.ndarray(shape=(_W, _H), dtype=np.uint16, buffer=shm.buf)
+
+    try:
+        while True:
             item = command_queue.get()
             if item is None:  # shutdown sentinel
                 break
@@ -108,17 +122,20 @@ def _worker(
             _replay(ctx, item)
 
             buf = surface.get_data()
-            # .copy() detaches from the surface buffer so it can be pickled safely.
-            frame = np.ndarray(shape=(_H, _W), dtype=np.uint16, buffer=buf).transpose().copy()
+            # Transpose from (H, W) surface layout to (W, H) Push 2 frame layout
+            # and write directly into shared memory (no extra copy).
+            frame_buf[:] = np.ndarray(shape=(_H, _W), dtype=np.uint16, buffer=buf).transpose()
 
             try:
-                frame_queue.put_nowait(frame)
+                frame_ready_queue.put_nowait(True)
             except _queue.Full:
-                # Main loop is slower than rendering; drop the oldest frame.
+                # Main loop is slower than rendering; drop the signal for this frame.
                 pass
 
-        except Exception:
-            traceback.print_exc()
+    except Exception:
+        traceback.print_exc()
+    finally:
+        shm.close()
 
 
 # ---------------------------------------------------------------------------
@@ -126,17 +143,22 @@ def _worker(
 # ---------------------------------------------------------------------------
 
 class DisplayProcess:
-    """Manages the Cairo rendering subprocess and its I/O queues."""
+    """Manages the Cairo rendering subprocess and its shared-memory I/O."""
 
     def __init__(self) -> None:
         self._command_queue: multiprocessing.Queue = multiprocessing.Queue(maxsize=2)
-        self._frame_queue: multiprocessing.Queue = multiprocessing.Queue(maxsize=2)
+        self._frame_ready: multiprocessing.Queue = multiprocessing.Queue(maxsize=2)
+        # Shared memory block — worker writes frames here; main reads via _frame_view.
+        self._shm = _shm_mod.SharedMemory(create=True, size=_FRAME_BYTES)
+        self._frame_view = numpy.ndarray(
+            shape=(_W, _H), dtype=numpy.uint16, buffer=self._shm.buf
+        )
         self._process: Optional[multiprocessing.Process] = None
 
     def start(self) -> None:
         self._process = multiprocessing.Process(
             target=_worker,
-            args=(self._command_queue, self._frame_queue),
+            args=(self._command_queue, self._frame_ready, self._shm.name),
             daemon=True,
             name="CairoDisplayWorker",
         )
@@ -151,6 +173,10 @@ class DisplayProcess:
             self._process.join(timeout=2)
             if self._process.is_alive():
                 self._process.terminate()
+        # Release the shared-memory segment.  close() detaches; unlink() frees
+        # the POSIX shm object — only the creator (main process) should unlink.
+        self._shm.close()
+        self._shm.unlink()
 
     def submit(self, commands: list[tuple]) -> None:
         """Non-blocking: hand a command list to the worker.  Drops if busy."""
@@ -160,8 +186,10 @@ class DisplayProcess:
             pass
 
     def get_frame(self) -> Optional[numpy.ndarray]:
-        """Non-blocking: return the latest rendered frame, or None if not ready yet."""
+        """Non-blocking: return a copy of the latest rendered frame, or None."""
         try:
-            return self._frame_queue.get_nowait()
+            self._frame_ready.get_nowait()
         except _queue.Empty:
             return None
+        # Copy out of shared memory before the worker can write the next frame.
+        return self._frame_view.copy()
