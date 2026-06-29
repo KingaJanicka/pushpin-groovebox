@@ -56,9 +56,10 @@ class SequencerMetro(object):
         # True while waiting for the asyncio thread to call global_timeline.reset().
         # Prevents reset_index() from firing on every tick during the ~33ms gap.
         self._pending_reset: bool = False
-        self.step_index = 0
-        self.step_count = 0
+        self.main_ticks_to_reset = 0
+        self.seq_ticks_to_reset = 0
         self.prev_step_index = 0
+        self.step_index = 0
         self.show_locks = False
         self.next_step_index = 1
         self.steps_held = []
@@ -185,70 +186,31 @@ class SequencerMetro(object):
         seq_filename = self.get_state_filename(clip=clip)
         os.remove(seq_filename)
         
-    def does_main_step_need_reset(self):
-        # Checks if the sequencer needs a reset due to main step pattern length
-        main_step_count = round(
-            (self.app.global_timeline.current_time + 0.1) * self.params.main_seq_time_scale / 2, 1
-        )
-        main_time_in_bars = self.app.global_timeline.current_time
-        main_len_in_bars = self.params.main_seq_time_scale / 32 * self.params.main_pattern_len
-        # print("current time", self.app.global_timeline.current_time)
-        # print("main pattern len", self.params.main_pattern_len)
-        # print("main seq time scale", self.params.main_seq_time_scale)
-        # print(main_step_count, main_step_count >= (self.params.main_pattern_len * self.params.main_seq_time_scale / 2) )
+    def advance_and_evaluate_main_tick(self):
+        # Counts down ticks down to zero from length of main reset
         
-        
-        return( main_time_in_bars >= main_len_in_bars)
-
-    def check_and_reset_main_step(self):
-        # Checks if we're due a main pattern length reset
-        # This needs to be done every tick/update for sure
-        # As the main seq can be slower/faster than the pattern seq
-        if self.does_main_step_need_reset():
-            if not self._pending_reset:
-                self._pending_reset = True
-                self.reset_index()
-                self.scale_count = 0
-                # TODO: reset scale count may need to be called properly here 
-                
-                # Signal the asyncio thread to reset the timeline rather than
-                # calling it here — resetting the timeline from within its own
-                # tick callback corrupts internal iteration state.
-                self.app.timeline_needs_reset = True
-            # Don't advance steps while waiting for the timeline to reset.
-            return
-        else:
-            self._pending_reset = False
-
-    def advance_and_evaluate_sequencer_tick(self):
-        # This function evaluates if it's time to play the note according to
-        # Current time scale settings of the synth seq
-        
-        scale_count_after_reset = False
-        
-        if self.scale_count == 0:
+        if self.main_ticks_to_reset <= 0:
+            self.main_ticks_to_reset = self.params.main_pattern_len * self.params.main_seq_time_scale
+            # Sets this to zero so it resets in the fuction below
+            self.seq_ticks_to_reset = 0
             
-            # Checks if we need to reset the pattern due to
-            # synth seq step count
-            if self.step_count >= self.params.pattern_len:
-                self.reset_index()
-    
-            # increments the index to get the next note to play
-            else:
-                self.increment_index()
-                self.increment_next_step_index(index=self.step_index)
-                
-            # Play the note, reset the scale count counter for the time scale
-            self.step_count += 1
+        self.main_ticks_to_reset -= 1
+        
+    def advance_and_evaluate_sequencer_tick(self):
+        pattern_was_reset = False
+        
+        # This first branch for when we reset, so we don't skip over the first step
+        if self.seq_ticks_to_reset == 0:
+            self.seq_ticks_to_reset = self.params.seq_time_scale * self.params.pattern_len
+            self.reset_index()
             self.evaluate_and_play_notes()
-            self.reset_scale_count()
-            scale_count_after_reset = True
 
-        # And statement makes sure we don't decrement freshly reset state
-        if self.scale_count != 0 and scale_count_after_reset != True:
-            # This has to do with the time scale setting
-            # This block makes sure we only fire every X 1/32nd notes
-            self.scale_count -= 1
+        elif self.seq_ticks_to_reset % self.params.seq_time_scale <= 0:
+            self.increment_index()
+            self.increment_next_step_index(index=self.step_index)
+            self.evaluate_and_play_notes()
+
+        self.seq_ticks_to_reset -= 1
                 
 
     def seq_playhead_update(self):
@@ -260,23 +222,17 @@ class SequencerMetro(object):
         
         self.playhead = self.get_current_playhead_value()
 
-        self.check_and_reset_main_step()
-        
+        self.advance_and_evaluate_main_tick()
+                
         self.advance_and_evaluate_sequencer_tick()
 
     def get_current_playhead_value(self):
         return int((iso.PCurrentTime.get_beats(self) * 4 + 0.01))  # type: ignore[arg-type]
 
-    def reset_scale_count(self):
-        self.scale_count = self.get_scale_count()
-
-    def get_scale_count(self):
-        return self.params.seq_time_scale
-
     def reset_index(self):
-        self.step_count = 0
         self.step_index = 0
-        self.next_step_index = 1
+        self.next_step_index = 0
+        self.increment_next_step_index(index=self.step_index)
         
 
     def increment_index(self, index = None):
