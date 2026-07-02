@@ -564,16 +564,10 @@ class OSCControlSwitch(object):
                     any([item for item in control.items if item.address == address])
                     or control.address == address
                 ):
-                    # print(address, value)
-                    # TODO: THis is hardcoded needs a fix
-                    try:
-                        item = group.controls[0].items[0]
+                    if control.items:
+                        item = control.items[0]
                         if int(item.message["value"]) == int(value) and item.address == address:
-                            # print(item.label, item.value)
                             self.value = float(idx)
-                    except Exception as e:
-                        print("Exception in ControlSwitch set state", e)
-                    # control.set_state(address, value)
 
     def draw(self, ctx: Any, offset: int) -> None:
         margin_top = 30
