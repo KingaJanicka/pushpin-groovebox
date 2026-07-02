@@ -564,10 +564,14 @@ class OSCControlSwitch(object):
                     any([item for item in control.items if item.address == address])
                     or control.address == address
                 ):
-                    if control.items:
-                        item = control.items[0]
-                        if int(item.message["value"]) == int(value) and item.address == address:
-                            self.value = float(idx)
+                    first = group.controls[0] if group.controls else None
+                    if (
+                        isinstance(first, OSCControlMenu)
+                        and first.items
+                        and int(first.items[0].message["value"]) == int(value)
+                        and first.items[0].address == address
+                    ):
+                        self.value = float(idx)
 
     def draw(self, ctx: Any, offset: int) -> None:
         margin_top = 30
