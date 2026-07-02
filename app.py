@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import sys
@@ -114,7 +115,8 @@ class PyshaApp(object):
     volume_node_osc: Any = None
     log_in: logging.Logger | None = None
     
-    def __init__(self):
+    def __init__(self, regen: bool = False):
+        self.regen = regen
         if os.path.exists("settings.json"):
             settings = json.load(open("settings.json"))
         else:
@@ -1001,7 +1003,8 @@ class PyshaApp(object):
     async def run_loop(self):
         print("Loading State ...")
         self.metro_sequencer_mode.load_state()
-        self.preset_selection_mode.init_surge_preset_state()
+        if self.regen:
+            self.preset_selection_mode.init_surge_preset_state()
         
         for idx, instrument_shortname in enumerate(self.instruments):
             instrument = self.instruments[instrument_shortname]
@@ -1366,8 +1369,16 @@ async def main():
 
 # Run app main loop
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Pushpin Groovebox")
+    parser.add_argument(
+        "--regen",
+        action="store_true",
+        help="Regenerate Surge XT preset state from scratch (normally skipped on boot)",
+    )
+    args = parser.parse_args()
+
     try:
-        app = PyshaApp()
+        app = PyshaApp(regen=args.regen)
         if midi_connected_received_before_app:
             # App received the "on_midi_connected" call before it was initialized. Do it now!
             print("Missed MIDI initialization call, doing it now...")
