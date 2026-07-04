@@ -758,7 +758,7 @@ class OSCGroup(object):
                 control.query()
 
     def select(self) -> None:
-        unique_addresses = list(set([control.address for control in self.controls]))
+        unique_addresses = list(set([control.address for control in self.controls if control.address is not None]))
         self.log.debug((unique_addresses, "!!!"))
         for address in unique_addresses:
             self.send_osc_func("/q" + address, None)

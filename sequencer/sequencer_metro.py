@@ -355,7 +355,7 @@ class SequencerMetro(object):
                                         if hasattr(control, "value"):
                                             lock_offset = lock_value - control.value
                                             value_after_scale = lock_offset * lock_scale_value + control.value
-                                            if lock_value != None:
+                                            if lock_value != None and lock_address != None:
                                                 self.app.send_osc(lock_address, value_after_scale, instrument.name)
                                                 self.controls_to_reset.append(control)
                                     else:
