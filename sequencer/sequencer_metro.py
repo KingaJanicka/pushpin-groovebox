@@ -291,7 +291,7 @@ class SequencerMetro(object):
 
             instrument = self.app.instruments[self.name]
 
-            if self.gate[self.step_index] != "Off" and gate_track_active:
+            if self.gate[self.step_index] == True and gate_track_active:
                 gate = 1
                 pitch = self.pitch[self.step_index] if self.pitch[self.step_index] is not None else 0
                 octave = self.octave[self.step_index] * 12 if self.octave[self.step_index] is not None else 0
@@ -301,22 +301,29 @@ class SequencerMetro(object):
                 gate = None
 
                 gate_len = params.gate_len
-                
+
                 column = int(self.step_index / 8)
                 mutes_idx = column*8+1
-                
-                
+
+
                 prob = 1
-                
+
                 # checking columns for the True statement
                 for x in range(7):
                     if self.mutes_skips[mutes_idx + x] == True:
                         prob = x
-                        
-                next_step_index = self.next_step_index
-                
-                if self.gate[next_step_index] == "Tie":
-                    gate = 0.3
+
+                # Count consecutive ties after this step to determine gate length.
+                # Each tie extends the note by one step; the gate value of 0.3 per
+                # step was chosen to overlap cleanly into the next tick.
+                tie_count = 0
+                check_idx = self.next_step_index
+                while self.gate[check_idx] == "Tie" and tie_count < 64:
+                    tie_count += 1
+                    check_idx = (check_idx + 1) % 64
+
+                if tie_count > 0:
+                    gate = (1 + tie_count) * 0.3
                 else:
                     gate = 0.25 * gate_len
             
