@@ -631,15 +631,15 @@ class MetroSequencerMode(MelodicMode):
         self.steps_held.append(idx_n)
         self.app.steps_held.append(idx_j)
         self.disable_controls = True
-        self.app.queue.append(self.async_pad_pressed(
+        self._handle_pad_pressed(
             pad_n=pad_n,
             idx_n=idx_n,
             idx_i=idx_i,
             idx_j=idx_j,
             steps_held_snapshot=list(self.steps_held),
-        ))
+        )
 
-    async def async_pad_pressed(self, pad_n, idx_n, idx_i, idx_j, steps_held_snapshot):
+    def _handle_pad_pressed(self, pad_n, idx_n, idx_i, idx_j, steps_held_snapshot):
         try:
             pad_state = self.metro_seq_pad_state[
                 self.get_current_instrument_short_name_helper()
