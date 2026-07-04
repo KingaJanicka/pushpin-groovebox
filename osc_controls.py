@@ -537,9 +537,18 @@ class OSCControlSwitch(object):
             active_group.query()
 
     def update_value(self, increment: float, **kwargs: Any) -> None:
+        prev_idx = int(self.value)
         scaled = scale_value(increment, 0, len(self.groups))
         if 0 <= (self.value + scaled) <= len(self.groups):
             self.value += scaled
+        if int(self.value) != prev_idx:
+            active = self.get_active_group()
+            if active:
+                if active.message:
+                    self.send_osc_func(
+                        active.message["address"], float(active.message["value"])
+                    )
+                active.select()
 
     def get_active_group(self) -> OSCGroup | None:
         if int(self.value) <= len(self.groups) - 1:
