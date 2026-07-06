@@ -1,5 +1,4 @@
-twist is broken on osc1
-control-menu does not set properly
+twist is broken
 
 the debug on engine.py for messages sent from submenus looks SUS
 
@@ -9,24 +8,19 @@ pw-metadata -n settings 0 clock.quantum <VALUE>
 
 
 TODO: 
-For whatever reason not all synth params will update on state load
-I think this might have to do with some error regarding the visible/all in osc_device
 
-Locks broke again? IDK why, maybe pad was stuck?
+sometimes the pads that are released will not set properly
+leading to the the synth being stuck in "set lock" mode
+switching pads while going through menus or switching synths generally does weird shit
+
+multi-pad press broken
+
+reduce blocksize etc
+warning: 'delay' setting (2 ms) too small for current blocksize (1024 samples); falling back to minimum value (22 ms)
 
 vocoder borken, clouds too
 
-
-watchdog: signaling pd... puredata dies???
-github.com/pure-data/pure-data/issues/2446
-
-Theres latency but we can work to reduce it later
-
-added label to the menu defs, needs to be documented along with other chagnes like the modmatrix param
-
-the dispatchers in menus should be fixed, there's too many of them ATM
-the set_state for OSCControlSwitch, ControlMenu case has some major kludge in it
-it's hardcoded to look for the first control for the address, so it knows where to switch
-we should add a "address" field somewhere there, that would fix twist/nimbus too I rekon
+clip selection mode for the seq started, what state is it in???
 
 should look into RT kernel etc for rpi5
+yocto project

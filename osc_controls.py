@@ -582,16 +582,40 @@ class OSCControlSwitch(object):
                     ):
                         self.value = float(idx)
 
-    def draw(self, ctx: Any, offset: int) -> None:
+    def draw(self, ctx: Any, offset: int,  draw_lock: bool = False, lock_value: float | None = None) -> None:
         margin_top = 30
         next_prev_height = 15
         val_height = 25
         next_label = ""
+        current_label = ""
         prev_label = ""
+        
         idx = int(self.value)
+        if draw_lock != False:
+            # font_color = definitions.RED
+            font_color = self.get_color_func()
+            if lock_value is not None:
+                idx = int(lock_value)
+            else:
+                idx = int(0.0)
+            background_color = definitions.GRAY_DARK
+            ctx.save()
+            display_w = push2_python.constants.DISPLAY_LINE_PIXELS
+            x = (display_w // 8) * offset
+            y = 21
+            x_witdh = 118
+            y_height = 72
+            ctx.rectangle(x,y,x_witdh,y_height)
+            ctx.set_source_rgb(*definitions.get_color_rgb_float(definitions.GRAY_DARK))
+            ctx.fill()
+            ctx.restore()
+        
+        
         if len(self.groups) > idx + 1:
             next_label = self.groups[idx + 1].label
 
+        current_label = self.groups[idx].label
+        
         if (idx - 1) >= 0:
             prev_label = self.groups[idx - 1].label
 
@@ -611,7 +635,7 @@ class OSCControlSwitch(object):
             ctx,
             offset,
             margin_top + next_prev_height,
-            str(self.label),
+            current_label,
             height=val_height,
             font_color=color,
         )
@@ -965,6 +989,8 @@ class OSCControlMenu(object):
             ctx.set_source_rgb(*definitions.get_color_rgb_float(definitions.GRAY_DARK))
             ctx.fill()
             ctx.restore()
+    
+
         
         color = self.get_color_func()
         show_text(
