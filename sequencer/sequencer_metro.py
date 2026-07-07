@@ -324,7 +324,11 @@ class SequencerMetro(object):
                 if prob >= random.randint(1, 6):
                     # We need to reset values that were changed by param locks
                     for control in self.controls_to_reset:
-                        self.app.send_osc(control.address, float(control.value), instrument.name)
+                        print(control.name, control.label)
+                        if control.name == "Switch":
+                            control.reset_group()
+                        else:
+                            self.app.send_osc(control.address, float(control.value), instrument.name)
                     self.timeline.schedule(
                         {"note": pitch_and_octave, "gate": gate, "amplitude": velocity}, count=1, output_device=self.midi_out_device
                     )
@@ -355,9 +359,14 @@ class SequencerMetro(object):
                                         if hasattr(control, "value"):
                                             lock_offset = lock_value - control.value
                                             value_after_scale = lock_offset * lock_scale_value + control.value
+                                            
                                             if lock_value != None and lock_address != None:
                                                 self.app.send_osc(lock_address, value_after_scale, instrument.name)
-                                                self.controls_to_reset.append(control)
+                                            elif lock_value != None and control.name == "Switch":
+                                                    control.update_value_absolute(value_after_scale)
+                                            
+                                            self.controls_to_reset.append(control)
+                                                
                                     else:
                                         lock_value = 0
                 # This elif branch is for slots that have only one device and therefore
@@ -374,9 +383,13 @@ class SequencerMetro(object):
                                 if hasattr(control, "value"):
                                     lock_offset = lock_value - control.value
                                     value_after_scale = lock_offset * lock_scale_value + control.value
+                                    
                                     if lock_value != None and lock_address != None:
                                         self.app.send_osc(lock_address, value_after_scale, instrument.name)
-                                        self.controls_to_reset.append(control)
+                                    elif lock_value != None and control.name == "Switch":
+                                            control.update_value_absolute(value_after_scale)
+                                    
+                                    self.controls_to_reset.append(control)
                             else:
                                 lock_value = 0
 

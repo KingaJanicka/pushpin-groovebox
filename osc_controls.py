@@ -504,6 +504,8 @@ class OSCControlSwitch(object):
 
         self.groups: list[OSCGroup] = []
         self.value: float = 0.0
+        self.lock_value: float = 0.0
+        self.knob_value: float = 0.0                    
         self.get_color_func: ColorFunc = get_color_func or (lambda: definitions.GRAY_LIGHT)
         self.send_osc_func: OscSendFunc = send_osc_func or (lambda addr, val: None)
         self.modmatrix: bool = config.get("modmatrix", True)
@@ -541,6 +543,7 @@ class OSCControlSwitch(object):
         scaled = scale_value(increment, 0, len(self.groups))
         if 0 <= (self.value + scaled) <= len(self.groups):
             self.value += scaled
+            self.knob_value = self.value
         if int(self.value) != prev_idx:
             active = self.get_active_group()
             if active:
@@ -550,9 +553,36 @@ class OSCControlSwitch(object):
                     )
                 active.select()
 
+    def update_value_absolute(self, value) -> None:
+        print("update absolute called")
+        self.lock_value = value
+        active = self.get_lock_group()
+        if active:
+            if active.message:
+                self.send_osc_func(
+                    active.message["address"], float(active.message["value"])
+                )
+            active.select()
+            
+    def reset_group(self) -> None:
+        print("reset group called")
+        self.value = self.knob_value
+        active = self.get_active_group()
+        if active:
+            if active.message:
+                self.send_osc_func(
+                    active.message["address"], float(active.message["value"])
+                )
+            active.select()
+
     def get_active_group(self) -> OSCGroup | None:
         if int(self.value) <= len(self.groups) - 1:
             return self.groups[int(self.value)]
+        return None
+
+    def get_lock_group(self) -> OSCGroup | None:
+        if int(self.lock_value) <= len(self.groups) - 1:
+            return self.groups[int(self.lock_value)]
         return None
 
     def set_state(self, address: str, *args: Any) -> None:
@@ -590,8 +620,11 @@ class OSCControlSwitch(object):
         current_label = ""
         prev_label = ""
         
-        idx = int(self.value)
+        idx = int(self.knob_value)
+        self.value = self.knob_value
         if draw_lock != False:
+            # Group needs to be set here to 
+            self.value = self.lock_value
             # font_color = definitions.RED
             font_color = self.get_color_func()
             if lock_value is not None:
@@ -609,7 +642,8 @@ class OSCControlSwitch(object):
             ctx.set_source_rgb(*definitions.get_color_rgb_float(definitions.GRAY_DARK))
             ctx.fill()
             ctx.restore()
-        
+    
+                
         
         if len(self.groups) > idx + 1:
             next_label = self.groups[idx + 1].label
