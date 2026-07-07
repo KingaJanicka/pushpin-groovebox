@@ -554,7 +554,6 @@ class OSCControlSwitch(object):
                 active.select()
 
     def update_value_absolute(self, value) -> None:
-        print("update absolute called")
         self.lock_value = value
         active = self.get_lock_group()
         if active:
@@ -565,7 +564,6 @@ class OSCControlSwitch(object):
             active.select()
             
     def reset_group(self) -> None:
-        print("reset group called")
         self.value = self.knob_value
         active = self.get_active_group()
         if active:
@@ -623,11 +621,12 @@ class OSCControlSwitch(object):
         idx = int(self.knob_value)
         self.value = self.knob_value
         if draw_lock != False:
-            # Group needs to be set here to 
-            self.value = self.lock_value
+            # TODO: do we need to set the value somewhere here to update the visual feedback?
             # font_color = definitions.RED
             font_color = self.get_color_func()
             if lock_value is not None:
+                self.lock_value = lock_value
+                self.value = lock_value
                 idx = int(lock_value)
             else:
                 idx = int(0.0)
