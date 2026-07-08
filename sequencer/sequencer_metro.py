@@ -324,7 +324,7 @@ class SequencerMetro(object):
                 if prob >= random.randint(1, 6):
                     # We need to reset values that were changed by param locks
                     for control in self.controls_to_reset:
-                        print(control.name, control.label)
+                        # print(control.name, control.label)
                         if control.name == "Switch":
                             control.reset_group()
                         else:
@@ -351,7 +351,8 @@ class SequencerMetro(object):
                             if command[1]["address"] == slot["address"] and command[1]["value"] == slot["value"]:
                                 # we have the right device
                                 # Now we just need to enum the controls and send the values 
-                                for control_idx, control in enumerate(device.controls):
+                                # This needs to go through VISIBLE controls, so that groups don't get shafted
+                                for control_idx, control in enumerate(device.get_visible_controls()):
                                     lock_address = control.address
                                     lock_value = None
                                     if self.locks[self.step_index][slot_idx][control_idx] != None:
@@ -375,7 +376,8 @@ class SequencerMetro(object):
                     for device_idx, device in enumerate(instrument.devices[slot_idx]):
                         # we have the right device
                         # Now we just need to enum the controls and send the values 
-                        for control_idx, control in enumerate(device.controls):
+                        # Visible controls so we don't ommit groups
+                        for control_idx, control in enumerate(device.get_visible_controls()):
                             lock_address = control.address
                             lock_value = None
                             if self.locks[self.step_index][slot_idx][control_idx] != None:
