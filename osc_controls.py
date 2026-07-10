@@ -553,7 +553,7 @@ class OSCControlSwitch(object):
                     )
                 active.select()
 
-    def update_value_absolute(self, value) -> None:
+    def update_value_lock(self, value) -> None:
         self.lock_value = value
         active = self.get_lock_group()
         if active:
@@ -561,7 +561,7 @@ class OSCControlSwitch(object):
                 self.send_osc_func(
                     active.message["address"], float(active.message["value"])
                 )
-            active.select()
+            active.select_lock()
             
     def reset_group(self) -> None:
         self.value = self.knob_value
@@ -571,7 +571,8 @@ class OSCControlSwitch(object):
                 self.send_osc_func(
                     active.message["address"], float(active.message["value"])
                 )
-            active.select()
+            active.select_lock()
+            
 
     def get_active_group(self) -> OSCGroup | None:
         if int(self.value) <= len(self.groups) - 1:
@@ -819,6 +820,12 @@ class OSCGroup(object):
         self.log.debug((unique_addresses, "!!!"))
         for address in unique_addresses:
             self.send_osc_func("/q" + address, None)
+            
+    def select_lock(self) -> None:
+        unique_addresses = list(set([control.address for control in self.controls if control.address is not None]))
+        self.log.debug((unique_addresses, "!!!"))
+        for address in unique_addresses:
+            self.send_osc_func(address, None)
 
 
 class OSCControlMenu(object):

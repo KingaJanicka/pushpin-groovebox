@@ -364,7 +364,7 @@ class SequencerMetro(object):
                                             if lock_value != None and lock_address != None:
                                                 self.app.send_osc(lock_address, value_after_scale, instrument.name)
                                             elif lock_value != None and control.name == "Switch":
-                                                    control.update_value_absolute(value_after_scale)
+                                                    control.update_value_lock(value_after_scale)
                                             
                                             self.controls_to_reset.append(control)
                                                 
@@ -389,7 +389,7 @@ class SequencerMetro(object):
                                     if lock_value != None and lock_address != None:
                                         self.app.send_osc(lock_address, value_after_scale, instrument.name)
                                     elif lock_value != None and control.name == "Switch":
-                                            control.update_value_absolute(value_after_scale)
+                                            control.update_value_lock(value_after_scale)
                                     
                                     self.controls_to_reset.append(control)
                             else:
