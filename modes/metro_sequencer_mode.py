@@ -1109,14 +1109,17 @@ class MetroSequencerMode(MelodicMode):
                     idx = int(self.steps_held[0]%8)
                     value = None
                     page_offset = int(device.page) * 8
-                    
+                    visible_controls = device.get_visible_controls()
+
+                    if encoder_idx >= len(visible_controls):
+                        return
+
+                    control = visible_controls[encoder_idx]
+
                     if seq.get_lock_state(idx, encoder_idx + page_offset) == None:
-                        value = device.controls[
-                            encoder_idx
-                        ].value
+                        value = control.value
                     else:
-                        # calmping to min/max values, scaling
-                        control = device.controls[encoder_idx + page_offset]
+                        # clamping to min/max values, scaling
                         lock_value = seq.get_lock_state(idx, encoder_idx + page_offset)
 
                         if hasattr(control, "groups"):
