@@ -27,9 +27,6 @@ yocto project
 
 
 Trying to debug the janky visual feedback:
-Things are def not resetting properly though why I am not entirely sure
-It seems that for whatever reason the values for the knobs are being (or reset)
-to the wrong ones
-This is probably a bug somewhere in the loop that sends the values in seq_metro
-
-updated the update_value_lock func to not use querry when sending vals and it didn't help
+Small bug remains - When step is held a small glitch appears
+as the menus are being switched
+It might be as simple as making sure we're not doing a querry where we don't need to
