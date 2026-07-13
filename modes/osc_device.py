@@ -164,7 +164,7 @@ class OSCDevice(PyshaMode):
     def draw(self, ctx):
         visible_controls = self.get_visible_controls()
         instrument_name = self.app.metro_sequencer_mode.get_current_instrument_short_name_helper()
-        
+
         seq = self.app.metro_sequencer_mode.instrument_sequencers[instrument_name]
         draw_lock = False
         step = None
@@ -173,8 +173,29 @@ class OSCDevice(PyshaMode):
             draw_lock = True
             step = self.app.steps_held[0]
 
-        
+        # When a pad is held, temporarily override each OSCControlSwitch's value
+        # to the held pad's lock value so that self.pages shows the locked group's
+        # controls instead of the current (playhead-driven) group.
+        # The override is restored immediately after pages is computed so it never
+        # persists between frames and cannot cause flicker.
+        switch_saved_values = {}
+        if step is not None:
+            pg, pg_offset = 0, 0
+            for ctrl in self.controls:
+                if pg_offset + ctrl.size > 8:
+                    pg += 1
+                    pg_offset = 0
+                if pg == self.page and isinstance(ctrl, OSCControlSwitch):
+                    lv = seq.get_lock_state(step, pg_offset + pg * 8)
+                    if lv is not None:
+                        switch_saved_values[ctrl] = ctrl.value
+                        ctrl.value = lv
+                pg_offset += ctrl.size
+
         all_controls = self.pages
+
+        for ctrl, saved in switch_saved_values.items():
+            ctrl.value = saved
         offset = 0
         
         # TODO: Those are broken, subpage does not draw correctly
