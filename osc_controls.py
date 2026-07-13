@@ -620,14 +620,9 @@ class OSCControlSwitch(object):
         prev_label = ""
         
         idx = int(self.knob_value)
-        self.value = self.knob_value
         if draw_lock != False:
-            # TODO: do we need to set the value somewhere here to update the visual feedback?
-            # font_color = definitions.RED
             font_color = self.get_color_func()
             if lock_value is not None:
-                self.lock_value = lock_value
-                self.value = lock_value
                 idx = int(lock_value)
             else:
                 idx = int(0.0)
