@@ -78,7 +78,6 @@ class PresetSelectionMode(definitions.PyshaMode):
                 preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
                 does_file_exist = os.path.isfile(f"{preset_path}.fxp") 
                 if does_file_exist == False:
-                    print('regen')
                     self.send_osc("/patch/load", self.presets[instrument][idx], instrument_shortname=instrument)
                     time.sleep(0.1)
                     self.send_osc("/patch/save", preset_path, instrument_shortname=instrument)
