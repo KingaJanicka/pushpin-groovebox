@@ -504,6 +504,8 @@ class OSCControlSwitch(object):
 
         self.groups: list[OSCGroup] = []
         self.value: float = 0.0
+        self.lock_value: float = 0.0
+        self.knob_value: float = 0.0                    
         self.get_color_func: ColorFunc = get_color_func or (lambda: definitions.GRAY_LIGHT)
         self.send_osc_func: OscSendFunc = send_osc_func or (lambda addr, val: None)
         self.modmatrix: bool = config.get("modmatrix", True)
@@ -537,13 +539,49 @@ class OSCControlSwitch(object):
             active_group.query()
 
     def update_value(self, increment: float, **kwargs: Any) -> None:
+        prev_idx = int(self.value)
         scaled = scale_value(increment, 0, len(self.groups))
         if 0 <= (self.value + scaled) <= len(self.groups):
             self.value += scaled
+            self.knob_value = self.value
+        if int(self.value) != prev_idx:
+            active = self.get_active_group()
+            if active:
+                if active.message:
+                    self.send_osc_func(
+                        active.message["address"], float(active.message["value"])
+                    )
+                active.select()
+
+    def update_value_lock(self, value) -> None:
+        self.lock_value = value
+        active = self.get_lock_group()
+        if active:
+            if active.message:
+                self.send_osc_func(
+                    active.message["address"], float(active.message["value"])
+                )
+            active.select_lock()
+            
+    def reset_group(self) -> None:
+        self.value = self.knob_value
+        active = self.get_active_group()
+        if active:
+            if active.message:
+                self.send_osc_func(
+                    active.message["address"], float(active.message["value"])
+                )
+            active.select_lock()
+            
 
     def get_active_group(self) -> OSCGroup | None:
         if int(self.value) <= len(self.groups) - 1:
             return self.groups[int(self.value)]
+        return None
+
+    def get_lock_group(self) -> OSCGroup | None:
+        if int(self.lock_value) <= len(self.groups) - 1:
+            return self.groups[int(self.lock_value)]
         return None
 
     def set_state(self, address: str, *args: Any) -> None:
@@ -573,16 +611,40 @@ class OSCControlSwitch(object):
                     ):
                         self.value = float(idx)
 
-    def draw(self, ctx: Any, offset: int) -> None:
+    def draw(self, ctx: Any, offset: int,  draw_lock: bool = False, lock_value: float | None = None) -> None:
         margin_top = 30
         next_prev_height = 15
         val_height = 25
         next_label = ""
+        current_label = ""
         prev_label = ""
-        idx = int(self.value)
+        
+        idx = int(self.knob_value)
+        if draw_lock != False:
+            font_color = self.get_color_func()
+            if lock_value is not None:
+                idx = int(lock_value)
+            else:
+                idx = int(0.0)
+            background_color = definitions.GRAY_DARK
+            ctx.save()
+            display_w = push2_python.constants.DISPLAY_LINE_PIXELS
+            x = (display_w // 8) * offset
+            y = 21
+            x_witdh = 118
+            y_height = 72
+            ctx.rectangle(x,y,x_witdh,y_height)
+            ctx.set_source_rgb(*definitions.get_color_rgb_float(definitions.GRAY_DARK))
+            ctx.fill()
+            ctx.restore()
+    
+                
+        
         if len(self.groups) > idx + 1:
             next_label = self.groups[idx + 1].label
 
+        current_label = self.groups[idx].label
+        
         if (idx - 1) >= 0:
             prev_label = self.groups[idx - 1].label
 
@@ -602,7 +664,7 @@ class OSCControlSwitch(object):
             ctx,
             offset,
             margin_top + next_prev_height,
-            str(self.label),
+            current_label,
             height=val_height,
             font_color=color,
         )
@@ -749,10 +811,16 @@ class OSCGroup(object):
                 control.query()
 
     def select(self) -> None:
-        unique_addresses = list(set([control.address for control in self.controls]))
+        unique_addresses = list(set([control.address for control in self.controls if control.address is not None]))
         self.log.debug((unique_addresses, "!!!"))
         for address in unique_addresses:
             self.send_osc_func("/q" + address, None)
+            
+    def select_lock(self) -> None:
+        unique_addresses = list(set([control.address for control in self.controls if control.address is not None]))
+        self.log.debug((unique_addresses, "!!!"))
+        for address in unique_addresses:
+            self.send_osc_func(address, None)
 
 
 class OSCControlMenu(object):
@@ -956,6 +1024,8 @@ class OSCControlMenu(object):
             ctx.set_source_rgb(*definitions.get_color_rgb_float(definitions.GRAY_DARK))
             ctx.fill()
             ctx.restore()
+    
+
         
         color = self.get_color_func()
         show_text(

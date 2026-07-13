@@ -1119,12 +1119,15 @@ class MetroSequencerMode(MelodicMode):
                         control = device.controls[encoder_idx + page_offset]
                         lock_value = seq.get_lock_state(idx, encoder_idx + page_offset)
 
-                        min = 0 if hasattr(control, "items") else control.min
-                        max = (
-                            len(control.items)
-                            if hasattr(control, "items")
-                            else control.max
-                        )
+                        if hasattr(control, "groups"):
+                            min = 0
+                            max = len(control.groups) - 1
+                        elif hasattr(control, "items"):
+                            min = 0
+                            max = len(control.items)
+                        else:
+                            min = control.min
+                            max = control.max
                         range = max - min
                         incr = increment * range / 100
                         if lock_value == None:
