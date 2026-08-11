@@ -29,6 +29,7 @@ class PresetSelectionMode(definitions.PyshaMode):
     state: list[float | int] = [0] * 8
     patches_dicts = []
     current_address = None
+    pads_press_time = False
 
     def initialize(self, settings=None):
         for idx, instrument_short_name in enumerate(
@@ -387,7 +388,12 @@ class PresetSelectionMode(definitions.PyshaMode):
         log.debug(f"Loading {self.presets[instrument_short_name][pad_ij[0]]}")
         self.send_osc("/patch/load", self.presets[instrument_short_name][pad_ij[0]])
         self.update_pads()
-
+        idx_j = pad_ij[1]
+        self.app.steps_held.append(idx_j)
+        
+        if self.pads_press_time == False:
+            self.pads_press_time = time.time()
+        
         # Resets the last knob position on the mod matrix
         # to avoid indexing OOB when switching presets
         instrument = self.app.osc_mode.get_current_instrument()
@@ -405,6 +411,9 @@ class PresetSelectionMode(definitions.PyshaMode):
         instrument.update_current_devices()
         instrument.init_devices_sync()
         self.update_pads()
+        idx_j = pad_ij[1]
+        self.app.steps_held.remove(idx_j)
+        
         return True  # Prevent other modes to get this event
 
     def nested_draw(
@@ -417,6 +426,7 @@ class PresetSelectionMode(definitions.PyshaMode):
         padding_top=5,
         instrument_selector_height=20,
     ):
+        
         for idx, entry in enumerate(current.items()):
             key, val = entry
             bg_color = (
@@ -476,24 +486,39 @@ class PresetSelectionMode(definitions.PyshaMode):
         return (chosen_folder or "") + "/" + preset
 
     def update_display(self, ctx, w, h):
-        self.nested_draw(ctx, self.patches, level=0, max_height=h)
-        show_text(
-            ctx,
-            6,
-            15,
-            "Set Preset",
-            height=15,
-            font_color=definitions.WHITE,
-        )
-        show_text(
-            ctx,
-            5,
-            15,
-            "Save Current State",
-            height=15,
-            font_color=definitions.WHITE,
-        )
-
+        if len(self.app.steps_held) != 0:
+            self.nested_draw(ctx, self.patches, level=0, max_height=h)
+            show_text(
+                ctx,
+                6,
+                15,
+                "Set Preset",
+                height=15,
+                font_color=definitions.WHITE,
+            )
+            show_text(
+                ctx,
+                5,
+                15,
+                "Save Current State",
+                height=15,
+                font_color=definitions.WHITE,
+            )
+        else:
+            for instrument_idx, instrument in enumerate(self.app.instruments):
+                for index in range(8):
+                    preset_path = self.presets[instrument][index]
+                    preset_name = preset_path.split("/")
+                    show_text(
+                        ctx,
+                        instrument_idx,
+                        15 + 15*index,
+                        f"{preset_name[-1]}",
+                        height=15,
+                        font_color=definitions.WHITE,
+                    )
+                    
+            
     def set_knob_postions(self):
         # TODO: This funciton is not working corretly really
         # Presets won't draw correctly when switching instrumnents, some won't draw at all
