@@ -509,13 +509,23 @@ class PresetSelectionMode(definitions.PyshaMode):
                 for index in range(8):
                     preset_path = self.presets[instrument][index]
                     preset_name = preset_path.split("/")
+                    
+                    instrument_info = self.app.instrument_selection_mode.instruments_info[instrument_idx]
+                    instrument_short_name = instrument_info["instrument_short_name"]
+                    font_color = instrument_info["color"]
+                    
+                    if (
+                        index == self.last_pad_in_column_pressed[instrument_short_name][0]
+                        and instrument_idx == self.last_pad_in_column_pressed[instrument_short_name][1]
+                    ):
+                        font_color = definitions.WHITE
                     show_text(
                         ctx,
                         instrument_idx,
                         15 + 15*index,
                         f"{preset_name[-1]}",
                         height=15,
-                        font_color=definitions.WHITE,
+                        font_color=font_color,
                     )
                     
             
@@ -637,3 +647,6 @@ class PresetSelectionMode(definitions.PyshaMode):
         # print(instrument_shortname, instrument)
         if instrument:
             return instrument.send_message(*args)
+
+    def get_instrument_color_helper(self, i):
+        return self.app.instrument_selection_mode.get_instrument_color(i)
