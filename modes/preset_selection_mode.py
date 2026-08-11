@@ -23,7 +23,7 @@ class PresetSelectionMode(definitions.PyshaMode):
     presets = {}
     presets_filename = "presets.json"
     last_pad_in_column_pressed = {}
-    pad_quick_press_time = 0.400
+    pad_quick_press_time = 0.200
     current_page = 0
     patches = {}
     state: list[float | int] = [0] * 8
@@ -414,6 +414,8 @@ class PresetSelectionMode(definitions.PyshaMode):
         idx_j = pad_ij[1]
         self.app.steps_held.remove(idx_j)
         
+        self.pads_press_time = False
+        
         return True  # Prevent other modes to get this event
 
     def nested_draw(
@@ -485,8 +487,10 @@ class PresetSelectionMode(definitions.PyshaMode):
             chosen_folder = definitions.USER_PATCHES_FOLDER
         return (chosen_folder or "") + "/" + preset
 
-    def update_display(self, ctx, w, h):
-        if len(self.app.steps_held) != 0:
+    def update_display(self, ctx, w, h):     
+        epoch_time = time.time()
+        press_time = epoch_time - self.pads_press_time
+        if press_time >= self.pad_quick_press_time and len(self.app.steps_held) != 0:
             self.nested_draw(ctx, self.patches, level=0, max_height=h)
             show_text(
                 ctx,
