@@ -442,7 +442,7 @@ class PresetSelectionMode(definitions.PyshaMode):
                 else definitions.WHITE
             )
 
-            if isinstance(val, str) and idx - 2 <= self.state[level] <= idx + 3:
+            if isinstance(val, str) and idx - 2 <= self.state[level] <= idx + 2:
                 if idx == int(self.state[level]):
                     self.current_address = os.path.splitext(self.get_preset_path(val))[
                         0
@@ -450,7 +450,7 @@ class PresetSelectionMode(definitions.PyshaMode):
                 show_text(
                     ctx,
                     level,
-                    item_height * (idx - int(self.state[level])) + padding_top + 60,
+                    item_height * (idx - int(self.state[level])) + padding_top + 70,
                     Path(val).stem,
                     height=item_height,
                     font_color=text_color,
@@ -460,11 +460,11 @@ class PresetSelectionMode(definitions.PyshaMode):
                     center_horizontally=True,
                     rectangle_padding=1,
                 )
-            elif isinstance(val, dict) and idx - 2 <= self.state[level] <= idx + 3:
+            elif isinstance(val, dict) and idx - 2 <= self.state[level] <= idx + 2:
                 show_text(
                     ctx,
                     level,
-                    item_height * (idx - int(self.state[level])) + padding_top + 60,
+                    item_height * (idx - int(self.state[level])) + padding_top + 70,
                     key,
                     height=item_height,
                     font_color=text_color,
@@ -494,17 +494,49 @@ class PresetSelectionMode(definitions.PyshaMode):
             self.nested_draw(ctx, self.patches, level=0, max_height=h)
             show_text(
                 ctx,
-                6,
+                0,
                 15,
-                "Set Preset",
+                "Save to Current",
                 height=15,
                 font_color=definitions.WHITE,
             )
             show_text(
                 ctx,
-                5,
+                1,
                 15,
-                "Save Current State",
+                "Save to New",
+                height=15,
+                font_color=definitions.WHITE,
+            )
+            show_text(
+                ctx,
+                3,
+                15,
+                "Save Sel. to Current",
+                height=15,
+                font_color=definitions.WHITE,
+            )
+            show_text(
+                ctx,
+                4,
+                15,
+                "Save Sel. to New",
+                height=15,
+                font_color=definitions.WHITE,
+            )
+            show_text(
+                ctx,
+                6,
+                15,
+                "Set All to Current",
+                height=15,
+                font_color=definitions.WHITE,
+            )
+            show_text(
+                ctx,
+                7,
+                15,
+                "Save All to New",
                 height=15,
                 font_color=definitions.WHITE,
             )
