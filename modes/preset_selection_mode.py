@@ -165,6 +165,14 @@ class PresetSelectionMode(definitions.PyshaMode):
     def save_presets(self):
         json.dump(self.presets, open(self.presets_filename, "w"))  # Save to file
 
+    def overwrite_preset(self):
+        self.send_osc('/patch/save')
+    
+    def overwrite_selected(self):
+        for idx, instrument_shortname in enumerate(self.app.instruments):
+            self.app.send_osc('/patch/save', instrument_short_name=instrument_shortname)
+
+    
     def new_instrument_selected(self):
         self.current_page = 0
         # self.save_all_presets_to_state()
@@ -508,22 +516,22 @@ class PresetSelectionMode(definitions.PyshaMode):
                 height=15,
                 font_color=definitions.WHITE,
             )
-            show_text(
-                ctx,
-                3,
-                15,
-                "Save Sel. to Current",
-                height=15,
-                font_color=definitions.WHITE,
-            )
-            show_text(
-                ctx,
-                4,
-                15,
-                "Save Sel. to New",
-                height=15,
-                font_color=definitions.WHITE,
-            )
+            # show_text(
+            #     ctx,
+            #     3,
+            #     15,
+            #     "Save Active to Current",
+            #     height=15,
+            #     font_color=definitions.WHITE,
+            # )
+            # show_text(
+            #     ctx,
+            #     4,
+            #     15,
+            #     "Save Active to New",
+            #     height=15,
+            #     font_color=definitions.WHITE,
+            # )
             show_text(
                 ctx,
                 6,
@@ -620,6 +628,17 @@ class PresetSelectionMode(definitions.PyshaMode):
         # elif button_name in push2_python.constants.BUTTON_UPPER_ROW_6:
         #     self.save_all_presets_to_state()
         
+        elif button_name in push2_python.constants.BUTTON_UPPER_ROW_1:
+            instrument_short_name = (
+                self.app.instrument_selection_mode.get_current_instrument_short_name()
+            )
+            preset_number = self.last_pad_in_column_pressed[instrument_short_name][0]
+            self.presets[instrument_short_name][preset_number] = self.current_address
+            if len(self.app.steps_held) != 0:
+                self.overwrite_preset()
+            # self.app.metro_sequencer_mode.save_state()
+            
+            
         elif button_name in push2_python.constants.BUTTON_UPPER_ROW_7:
             instrument_short_name = (
                 self.app.instrument_selection_mode.get_current_instrument_short_name()
@@ -627,7 +646,7 @@ class PresetSelectionMode(definitions.PyshaMode):
             preset_number = self.last_pad_in_column_pressed[instrument_short_name][0]
             self.presets[instrument_short_name][preset_number] = self.current_address
             self.save_presets()
-            self.app.metro_sequencer_mode.save_state()
+            # self.app.metro_sequencer_mode.save_state()
         
         elif button_name == push2_python.constants.BUTTON_PLAY:
             metro = self.app.metro_sequencer_mode
