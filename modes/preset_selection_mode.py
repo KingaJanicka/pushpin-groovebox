@@ -72,11 +72,13 @@ class PresetSelectionMode(definitions.PyshaMode):
 
 
     def init_surge_preset_state(self):
+        # TODO: Why does this regen every time?
         print("Init surge preset state")
         for idx, instrument in enumerate(self.app.instruments):
             for index in range(8):
-                preset_name = f"{instrument}_{index}"            
+                preset_name = f"{instrument}_{index}"           
                 preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
+                print("preset_path", preset_path)
                 does_file_exist = os.path.isfile(f"{preset_path}.fxp") 
                 if does_file_exist == False:
                     print('regen')
@@ -87,6 +89,9 @@ class PresetSelectionMode(definitions.PyshaMode):
             
 
     def save_pad_to_state(self):
+        # This saves to the surge_state folder
+        # Making sure we don't overwrite the actual synth patches
+        # TODO: there should be another function that overwrites the surge patch
         instrument_shortname = (
             self.app.instrument_selection_mode.get_current_instrument_short_name()
         )
@@ -120,6 +125,7 @@ class PresetSelectionMode(definitions.PyshaMode):
         preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
         instrument = self.app.instruments[instrument_shortname]
         self.send_osc("/patch/load", preset_path, instrument_shortname=instrument_shortname)
+        print("loading preset", preset_path)
         await asyncio.sleep(0.5)
         instrument.query_slots()
         await asyncio.sleep(0.5)
@@ -164,14 +170,6 @@ class PresetSelectionMode(definitions.PyshaMode):
 
     def save_presets(self):
         json.dump(self.presets, open(self.presets_filename, "w"))  # Save to file
-
-    def overwrite_preset(self):
-        self.send_osc('/patch/save')
-    
-    def overwrite_selected(self):
-        for idx, instrument_shortname in enumerate(self.app.instruments):
-            self.app.send_osc('/patch/save', instrument_short_name=instrument_shortname)
-
     
     def new_instrument_selected(self):
         self.current_page = 0
@@ -391,12 +389,13 @@ class PresetSelectionMode(definitions.PyshaMode):
         instrument_short_name = (
             self.app.instrument_selection_mode.get_current_instrument_short_name()
         )
-        self.last_pad_in_column_pressed[instrument_short_name] = pad_ij
-        self.set_knob_postions()
-        log.debug(f"Loading {self.presets[instrument_short_name][pad_ij[0]]}")
-        self.send_osc("/patch/load", self.presets[instrument_short_name][pad_ij[0]])
-        self.update_pads()
+        if self.last_pad_in_column_pressed[instrument_short_name] != pad_ij:
+            self.last_pad_in_column_pressed[instrument_short_name] = pad_ij
+            self.set_knob_postions()
+            log.debug(f"Loading {self.presets[instrument_short_name][pad_ij[0]]}")
+            self.send_osc("/patch/load", self.presets[instrument_short_name][pad_ij[0]])
         idx_j = pad_ij[1]
+        self.update_pads()
         self.app.steps_held.append(idx_j)
         
         if self.pads_press_time == False:
@@ -635,7 +634,7 @@ class PresetSelectionMode(definitions.PyshaMode):
             preset_number = self.last_pad_in_column_pressed[instrument_short_name][0]
             self.presets[instrument_short_name][preset_number] = self.current_address
             if len(self.app.steps_held) != 0:
-                self.overwrite_preset()
+                self.save_pad_to_state()
             # self.app.metro_sequencer_mode.save_state()
             
             
