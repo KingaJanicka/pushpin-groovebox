@@ -5,6 +5,7 @@ node_modules
 surge
 overwitch
 out 
+surge_state/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -137,3 +138,4 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+

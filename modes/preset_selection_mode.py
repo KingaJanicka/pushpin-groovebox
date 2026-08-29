@@ -73,7 +73,10 @@ class PresetSelectionMode(definitions.PyshaMode):
 
     def init_surge_preset_state(self):
         print("Init surge preset state")
+        # TODO: this regen routine is fucked
+        # As checked with the GUI
         for idx, instrument in enumerate(self.app.instruments):
+            # print(self.presets[instrument])
             for index in range(8):
                 preset_name = f"{instrument}_{index}"           
                 preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
@@ -81,7 +84,8 @@ class PresetSelectionMode(definitions.PyshaMode):
                 does_file_exist = os.path.isfile(f"{preset_path}.fxp")
                 if does_file_exist == False:
                     # print('regen')
-                    self.send_osc("/patch/load", self.presets[instrument][idx], instrument_shortname=instrument)
+                    # print(self.presets[instrument][index], preset_path)
+                    self.send_osc("/patch/load", self.presets[instrument][index], instrument_shortname=instrument)
                     time.sleep(0.1)
                     self.send_osc("/patch/save", preset_path, instrument_shortname=instrument)
                     time.sleep(0.1)
@@ -99,14 +103,12 @@ class PresetSelectionMode(definitions.PyshaMode):
         instrument_index = self.app.instrument_selection_mode.get_current_instrument_info()["instrument_index"]
         preset_index = self.last_pad_in_column_pressed[instrument_shortname][0]
         preset_name = f"{instrument_shortname}_{preset_index}"            
-        preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}.fxp"
+        preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
         # print(preset_path)
-        print(instrument_shortname)
         try:
             self.send_osc("/patch/save", None, instrument_shortname=instrument_shortname)
         except Exception as e:
             print("error in save_pad_to_state", e)
-        print("past save")
 
     def save_all_presets_to_state(self):
         # print("saving presets")
@@ -122,11 +124,11 @@ class PresetSelectionMode(definitions.PyshaMode):
         # print("saved presets to state")
 
     async def load_init_state(self, instrument_shortname):
-       
         # Check if there is a preset in the state dir
         # If yes load that
         # If not then load the normal patch and save to the state
-    
+        # TODO: Neither this nor the pad func seem to work
+        # TODO: State is still being loaded, but where?
         preset_name = f"{instrument_shortname}_{0}"            
         preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
         instrument = self.app.instruments[instrument_shortname]
@@ -168,7 +170,7 @@ class PresetSelectionMode(definitions.PyshaMode):
                         parent[filename] = dict()
                 parent = parent[filename]
 
-        return d
+        return
 
     def load_presets(self):
         if os.path.exists(self.presets_filename):
@@ -400,10 +402,14 @@ class PresetSelectionMode(definitions.PyshaMode):
             self.set_knob_postions()
             # log.debug(f"Loading {self.presets[instrument_short_name][pad_ij[0]]}")
             # self.send_osc("/patch/load", self.presets[instrument_short_name][pad_ij[0]])
+            
+            
             preset_name = f"{instrument_short_name}_{pad_ij[0]}"            
             preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
+            # print(preset_name, preset_path, pad_ij)
             log.debug(f"Loading {preset_path}")
-            self.send_osc("/patch/load", preset_path)
+            self.send_osc("/patch/load", preset_path, instrument_shortname=instrument_short_name)
+            # print("past load")
             
         idx_j = pad_ij[1]
         self.update_pads()
