@@ -8,6 +8,7 @@ UGH now the preset selection stuff is borked
 
 looks like the clip mode is mostly functional, the UI works
 The initial state is recaled as it should but any clips after won't be (getting recalled/saved in weird glitchy ways)
+Seems the first clip is getting overwritten constantly
 
 The saving functions for the presets need to be renamed to make sense and tested
 After that we can copy the mode and move on to making the slection for sequencer

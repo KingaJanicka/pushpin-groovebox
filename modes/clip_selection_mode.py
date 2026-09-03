@@ -194,6 +194,17 @@ class ClipSelectionMode(definitions.PyshaMode):
         self.list_clips()
         self.update_pads()
         self.notify_status_in_display()
+        
+        
+        instrument_short_name = (
+            self.app.instrument_selection_mode.get_current_instrument_short_name()
+        )
+        sequencer = self.app.metro_sequencer_mode.instrument_sequencers[
+            instrument_short_name
+        ]
+        sequencer.save_state(clip=self.last_pad_in_column_pressed[instrument_short_name][0])
+    
+        
         self.push.buttons.set_button_color(
             push2_constants.BUTTON_DELETE, definitions.GRAY_DARK
         )

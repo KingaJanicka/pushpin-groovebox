@@ -974,7 +974,6 @@ class MetroSequencerMode(MelodicMode):
                 pass
                 # seq.set_state(self.selected_track, idx, False
         self.steps_held.remove(idx_n)
-        self.save_state()
         self.app.osc_mode.update_buttons()
         self.app.pads_need_update = True
     def update_modulation_wheel_mode_button(self):
