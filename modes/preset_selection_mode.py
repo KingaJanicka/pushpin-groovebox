@@ -430,9 +430,36 @@ class PresetSelectionMode(definitions.PyshaMode):
 
         return True  # Prevent other modes to get this event
 
+    def set_pad_preset_slot(self, pad_ij):
+        # return
+        for idx, instrument_shortname in enumerate(self.app.instruments):
+            if idx == pad_ij[1]:
+                preset_number = self.last_pad_in_column_pressed[instrument_shortname][0]
+                self.presets[instrument_shortname][preset_number] = self.current_address
+                self.save_presets()
+                
+                # TODO:
+                # Get name of new patch
+                # load it in surge using osc
+                # overwrite it to the surge_state_folder and load that
+                
+                
+                # preset_name = f"{instrument_shortname}_{pad_ij[0]}"            
+                # preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
+                # # print(preset_name, preset_path, pad_ij)
+                # log.debug(f"Loading {preset_path}")
+                # self.send_osc("/patch/load", preset_path, instrument_shortname=instrument_shortname)
+        
+
     def on_pad_released(self, pad_n, pad_ij, velocity):
         instrument = self.app.osc_mode.get_current_instrument()
-        self.save_presets()
+        
+        # TODO: think this lags one pad behind?
+        # TODO: needs to check and load the preset patch but only if it was changed
+        try:
+            self.set_pad_preset_slot(pad_ij)
+        except Exception as e:
+            print("exception in set_pad_preset",e)
         instrument.query_slots()
         instrument.query_all_controls()
         instrument.update_current_devices()
@@ -662,7 +689,6 @@ class PresetSelectionMode(definitions.PyshaMode):
             preset_number = self.last_pad_in_column_pressed[instrument_short_name][0]
             self.presets[instrument_short_name][preset_number] = self.current_address
             self.save_presets()
-            # self.app.metro_sequencer_mode.save_state()
         
         elif button_name == push2_python.constants.BUTTON_PLAY:
             metro = self.app.metro_sequencer_mode
