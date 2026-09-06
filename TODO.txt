@@ -6,7 +6,7 @@ pw-metadata -n settings 0 clock.quantum <VALUE>
 TODO:
 UGH now the preset selection stuff is borked 
 
-Use save_presets to save presets on pad released
+preset selection can't select new presets
 
 The saving functions for the presets need to be renamed to make sense and tested
 After that we can copy the mode and move on to making the slection for sequencer
