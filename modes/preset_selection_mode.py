@@ -40,30 +40,32 @@ class PresetSelectionMode(definitions.PyshaMode):
             ] * 8
             self.last_pad_in_column_pressed[instrument_short_name] = (0, idx)
 
-        self.patches["Factory"] = self.create_dict_from_paths(
-            glob(
-                f"**/*.fxp",
-                recursive=True,
-                root_dir=definitions.FACTORY_PATCHES_FOLDER,
+        try:
+            self.patches["Factory"] = self.create_dict_from_paths(
+                glob(
+                    f"**/*.fxp",
+                    recursive=True,
+                    root_dir=definitions.FACTORY_PATCHES_FOLDER,
+                )
             )
-        )
-
-        self.patches["Third Party"] = self.create_dict_from_paths(
-            glob(
-                f"**/*.fxp",
-                recursive=True,
-                root_dir=definitions.THIRD_PARTY_PATCHES_FOLDER,
+            print(definitions.FACTORY_PATCHES_FOLDER)
+            self.patches["Third Party"] = self.create_dict_from_paths(
+                glob(
+                    f"**/*.fxp",
+                    recursive=True,
+                    root_dir=definitions.THIRD_PARTY_PATCHES_FOLDER,
+                )
             )
-        )
 
-        self.patches["User"] = self.create_dict_from_paths(
-            glob(
-                f"**/*.fxp",
-                recursive=True,
-                root_dir=definitions.USER_PATCHES_FOLDER,
+            self.patches["User"] = self.create_dict_from_paths(
+                glob(
+                    f"**/*.fxp",
+                    recursive=True,
+                    root_dir=definitions.USER_PATCHES_FOLDER,
+                )
             )
-        )
-
+        except Exception as e:
+            print("Exception in preset mode init ",e)
         try:
             
             self.load_presets()
@@ -170,7 +172,7 @@ class PresetSelectionMode(definitions.PyshaMode):
                         parent[filename] = dict()
                 parent = parent[filename]
 
-        return
+        return d
 
     def load_presets(self):
         if os.path.exists(self.presets_filename):
@@ -409,7 +411,7 @@ class PresetSelectionMode(definitions.PyshaMode):
             # print(preset_name, preset_path, pad_ij)
             log.debug(f"Loading {preset_path}")
             self.send_osc("/patch/load", preset_path, instrument_shortname=instrument_short_name)
-            # print("past load")
+            print("past load")
             
         idx_j = pad_ij[1]
         self.update_pads()
@@ -430,6 +432,7 @@ class PresetSelectionMode(definitions.PyshaMode):
 
     def on_pad_released(self, pad_n, pad_ij, velocity):
         instrument = self.app.osc_mode.get_current_instrument()
+        self.save_presets()
         instrument.query_slots()
         instrument.query_all_controls()
         instrument.update_current_devices()

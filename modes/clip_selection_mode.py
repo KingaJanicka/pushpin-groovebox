@@ -193,9 +193,6 @@ class ClipSelectionMode(definitions.PyshaMode):
     def activate(self):
         self.list_clips()
         self.update_pads()
-        self.notify_status_in_display()
-        
-        
         instrument_short_name = (
             self.app.instrument_selection_mode.get_current_instrument_short_name()
         )
