@@ -23,13 +23,12 @@ class PresetSelectionMode(definitions.PyshaMode):
     presets = {}
     presets_filename = "presets.json"
     last_pad_in_column_pressed = {}
-    pad_quick_press_time = 0.200
     current_page = 0
     patches = {}
     state: list[float | int] = [0] * 8
     patches_dicts = []
     current_address = None
-    pads_press_time = False
+    select_button_held = False
 
     def initialize(self, settings=None):
         for idx, instrument_short_name in enumerate(
@@ -417,9 +416,6 @@ class PresetSelectionMode(definitions.PyshaMode):
         self.update_pads()
         self.app.steps_held.append(idx_j)
         
-        if self.pads_press_time == False:
-            self.pads_press_time = time.time()
-        
         # Resets the last knob position on the mod matrix
         # to avoid indexing OOB when switching presets
         instrument = self.app.osc_mode.get_current_instrument()
@@ -439,12 +435,7 @@ class PresetSelectionMode(definitions.PyshaMode):
             if idx == pad_ij[1]:
                 preset_number = self.last_pad_in_column_pressed[instrument_shortname][0]
 
-                was_long_press = (
-                    self.pads_press_time is not False
-                    and time.time() - self.pads_press_time >= self.pad_quick_press_time
-                )
-
-                if was_long_press and self.current_address:
+                if self.select_button_held and self.current_address:
                     # Load the chosen preset into Surge XT
                     self.send_osc("/patch/load", self.current_address, instrument_shortname=instrument_shortname)
                     time.sleep(0.5)
@@ -502,8 +493,6 @@ class PresetSelectionMode(definitions.PyshaMode):
         self.update_pads()
         idx_j = pad_ij[1]
         self.app.steps_held.remove(idx_j)
-
-        self.pads_press_time = False
 
         return True  # Prevent other modes to get this event
 
@@ -576,10 +565,8 @@ class PresetSelectionMode(definitions.PyshaMode):
             chosen_folder = definitions.USER_PATCHES_FOLDER
         return (chosen_folder or "") + "/" + preset
 
-    def update_display(self, ctx, w, h):     
-        epoch_time = time.time()
-        press_time = epoch_time - self.pads_press_time
-        if press_time >= self.pad_quick_press_time and len(self.app.steps_held) != 0:
+    def update_display(self, ctx, w, h):
+        if self.select_button_held and len(self.app.steps_held) != 0:
             self.nested_draw(ctx, self.patches, level=0, max_height=h)
             show_text(
                 ctx,
@@ -693,7 +680,11 @@ class PresetSelectionMode(definitions.PyshaMode):
             traceback.print_exc()
 
     def on_button_pressed(self, button_name):
-        if button_name in [
+        if button_name == push2_python.constants.BUTTON_SELECT:
+            self.select_button_held = True
+            return True
+
+        elif button_name in [
             push2_python.constants.BUTTON_LEFT,
             push2_python.constants.BUTTON_RIGHT,
         ]:
@@ -735,6 +726,10 @@ class PresetSelectionMode(definitions.PyshaMode):
                 metro.stop_timeline()
                 metro.sequencer_is_playing = False
 
+    def on_button_released(self, button_name):
+        if button_name == push2_python.constants.BUTTON_SELECT:
+            self.select_button_held = False
+            return True
 
     def on_encoder_rotated(self, encoder_name, increment):
         try:
