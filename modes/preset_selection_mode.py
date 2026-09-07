@@ -73,6 +73,12 @@ class PresetSelectionMode(definitions.PyshaMode):
             self.save_presets()
 
 
+    DEFAULT_PRESET = f"{definitions.FACTORY_PATCHES_FOLDER}/Templates/Init Saw"
+
+    def _resolve_preset(self, path):
+        """Return path if non-empty, otherwise the Init Saw fallback."""
+        return path if path else self.DEFAULT_PRESET
+
     def init_surge_preset_state(self):
         print("Init surge preset state")
         # TODO: this regen routine is fucked
@@ -87,7 +93,7 @@ class PresetSelectionMode(definitions.PyshaMode):
                 if does_file_exist == False:
                     # print('regen')
                     # print(self.presets[instrument][index], preset_path)
-                    self.send_osc("/patch/load", self.presets[instrument][index], instrument_shortname=instrument)
+                    self.send_osc("/patch/load", self._resolve_preset(self.presets[instrument][index]), instrument_shortname=instrument)
                     time.sleep(0.1)
                     self.send_osc("/patch/save", preset_path, instrument_shortname=instrument)
                     time.sleep(0.1)
@@ -603,7 +609,7 @@ class PresetSelectionMode(definitions.PyshaMode):
         else:
             for instrument_idx, instrument in enumerate(self.app.instruments):
                 for index in range(8):
-                    preset_path = self.presets[instrument][index]
+                    preset_path = self._resolve_preset(self.presets[instrument][index])
                     preset_name = preset_path.split("/")
                     
                     instrument_info = self.app.instrument_selection_mode.instruments_info[instrument_idx]
@@ -630,7 +636,7 @@ class PresetSelectionMode(definitions.PyshaMode):
             self.app.instrument_selection_mode.get_current_instrument_short_name()
         )
         preset_number = self.last_pad_in_column_pressed[instrument_short_name][0]
-        preset_address = self.presets[instrument_short_name][preset_number]
+        preset_address = self._resolve_preset(self.presets[instrument_short_name][preset_number])
 
         address_array = (
             preset_address.replace(definitions.FACTORY_PATCHES_FOLDER, "")
