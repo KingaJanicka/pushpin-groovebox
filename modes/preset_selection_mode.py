@@ -399,19 +399,16 @@ class PresetSelectionMode(definitions.PyshaMode):
         instrument_short_name = (
             self.app.instrument_selection_mode.get_current_instrument_short_name()
         )
+        # This branch loads a preset when you pressed a pad that wasn't selected
+        # To avoid accidentally losing state and unnececary disk access
         if self.last_pad_in_column_pressed[instrument_short_name] != pad_ij:
             self.last_pad_in_column_pressed[instrument_short_name] = pad_ij
             self.set_knob_postions()
-            # log.debug(f"Loading {self.presets[instrument_short_name][pad_ij[0]]}")
-            # self.send_osc("/patch/load", self.presets[instrument_short_name][pad_ij[0]])
-            
-            
             preset_name = f"{instrument_short_name}_{pad_ij[0]}"            
             preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
             # print(preset_name, preset_path, pad_ij)
             log.debug(f"Loading {preset_path}")
             self.send_osc("/patch/load", preset_path, instrument_shortname=instrument_short_name)
-            print("past load")
             
         idx_j = pad_ij[1]
         self.update_pads()
