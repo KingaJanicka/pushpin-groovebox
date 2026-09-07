@@ -345,6 +345,9 @@ class PresetSelectionMode(definitions.PyshaMode):
         self.push.buttons.set_button_color(
             push2_python.constants.BUTTON_RIGHT, definitions.BLACK
         )
+        self.push.buttons.set_button_color(
+            push2_python.constants.BUTTON_SELECT, definitions.BLACK
+        )
         self.app.buttons_need_update = True
         self.app.pads_need_update = True
         self.save_all_presets_to_state()
