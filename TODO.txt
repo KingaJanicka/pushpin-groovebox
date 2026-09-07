@@ -1,32 +1,15 @@
-twist is broken
-
-the debug on engine.py for messages sent from submenus looks SUS
-
 This is the config line needed to set smaller blocksize with pw-jack
 to be used only once, val=32 in samples
 pw-metadata -n settings 0 clock.quantum <VALUE> 
 
 
-TODO: 
+TODO:
+UGH now the preset selection stuff is borked 
 
-sometimes the pads that are released will not set properly
-leading to the the synth being stuck in "set lock" mode
-switching pads while going through menus or switching synths generally does weird shit
+preset selection can't select new presets
 
-multi-pad press broken
+The saving functions for the presets need to be renamed to make sense and tested
+After that we can copy the mode and move on to making the slection for sequencer
 
-reduce blocksize etc
-warning: 'delay' setting (2 ms) too small for current blocksize (1024 samples); falling back to minimum value (22 ms)
+added label to the menu defs, needs to be documented along with other chagnes like the modmatrix param
 
-vocoder borken, clouds too
-
-clip selection mode for the seq started, what state is it in???
-
-should look into RT kernel etc for rpi5
-yocto project
-
-
-Trying to debug the janky visual feedback:
-Small bug remains - When step is held a small glitch appears
-as the menus are being switched
-It might be as simple as making sure we're not doing a querry where we don't need to
