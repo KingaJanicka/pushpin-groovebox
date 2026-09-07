@@ -29,6 +29,7 @@ class PresetSelectionMode(definitions.PyshaMode):
     patches_dicts = []
     current_address = None
     select_button_held = False
+    browser_active = False
 
     def initialize(self, settings=None):
         for idx, instrument_short_name in enumerate(
@@ -415,7 +416,10 @@ class PresetSelectionMode(definitions.PyshaMode):
         idx_j = pad_ij[1]
         self.update_pads()
         self.app.steps_held.append(idx_j)
-        
+
+        if self.select_button_held:
+            self.browser_active = True
+
         # Resets the last knob position on the mod matrix
         # to avoid indexing OOB when switching presets
         instrument = self.app.osc_mode.get_current_instrument()
@@ -435,7 +439,7 @@ class PresetSelectionMode(definitions.PyshaMode):
             if idx == pad_ij[1]:
                 preset_number = self.last_pad_in_column_pressed[instrument_shortname][0]
 
-                if self.select_button_held and self.current_address:
+                if self.browser_active and self.current_address:
                     # Load the chosen preset into Surge XT
                     self.send_osc("/patch/load", self.current_address, instrument_shortname=instrument_shortname)
                     time.sleep(0.5)
@@ -493,6 +497,7 @@ class PresetSelectionMode(definitions.PyshaMode):
         self.update_pads()
         idx_j = pad_ij[1]
         self.app.steps_held.remove(idx_j)
+        self.browser_active = False
 
         return True  # Prevent other modes to get this event
 
@@ -566,7 +571,7 @@ class PresetSelectionMode(definitions.PyshaMode):
         return (chosen_folder or "") + "/" + preset
 
     def update_display(self, ctx, w, h):
-        if self.select_button_held and len(self.app.steps_held) != 0:
+        if self.browser_active and len(self.app.steps_held) != 0:
             self.nested_draw(ctx, self.patches, level=0, max_height=h)
             show_text(
                 ctx,
