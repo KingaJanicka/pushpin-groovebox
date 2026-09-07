@@ -405,16 +405,16 @@ class PresetSelectionMode(definitions.PyshaMode):
         instrument_short_name = (
             self.app.instrument_selection_mode.get_current_instrument_short_name()
         )
-        # This branch loads a preset when you pressed a pad that wasn't selected
-        # To avoid accidentally losing state and unnececary disk access
         if self.last_pad_in_column_pressed[instrument_short_name] != pad_ij:
             self.last_pad_in_column_pressed[instrument_short_name] = pad_ij
             self.set_knob_postions()
-            preset_name = f"{instrument_short_name}_{pad_ij[0]}"            
-            preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
-            # print(preset_name, preset_path, pad_ij)
-            log.debug(f"Loading {preset_path}")
-            self.send_osc("/patch/load", preset_path, instrument_shortname=instrument_short_name)
+
+        # Always load from surge_state on any press so short-pressing a pad
+        # always recalls its saved preset (including the already-selected pad).
+        preset_name = f"{instrument_short_name}_{pad_ij[0]}"
+        preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
+        log.debug(f"Loading {preset_path}")
+        self.send_osc("/patch/load", preset_path, instrument_shortname=instrument_short_name)
             
         idx_j = pad_ij[1]
         self.update_pads()
@@ -446,9 +446,7 @@ class PresetSelectionMode(definitions.PyshaMode):
                     and time.time() - self.pads_press_time >= self.pad_quick_press_time
                 )
 
-                print(f"[PRESET] was_long_press={was_long_press} current_address={self.current_address!r} stored={current_stored_preset!r}")
-                if was_long_press and self.current_address and self.current_address != current_stored_preset:
-                    print(f"[PRESET] Loading {self.current_address!r} into instrument {instrument_shortname!r}")
+                if was_long_press and self.current_address:
                     # Load the chosen preset into Surge XT
                     self.send_osc("/patch/load", self.current_address, instrument_shortname=instrument_shortname)
                     time.sleep(0.5)
@@ -456,14 +454,13 @@ class PresetSelectionMode(definitions.PyshaMode):
                     # Overwrite the surge_state slot for this pad with the new preset
                     preset_name = f"{instrument_shortname}_{preset_number}"
                     preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
-                    print(f"[PRESET] Saving to surge_state: {preset_path!r}")
+                    log.debug(f"Saving new preset to state: {preset_path}")
                     self.send_osc("/patch/save", preset_path, instrument_shortname=instrument_shortname)
                     time.sleep(0.5)
 
                     # Record the new source path in presets.json so the display name updates
                     self.presets[instrument_shortname][preset_number] = self.current_address
                     self.save_presets()
-                    print(f"[PRESET] Done.")
         
 
     def on_pad_released(self, pad_n, pad_ij, velocity):
