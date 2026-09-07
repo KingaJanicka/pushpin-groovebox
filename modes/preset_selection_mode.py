@@ -375,8 +375,7 @@ class PresetSelectionMode(definitions.PyshaMode):
                 push2_python.constants.BUTTON_RIGHT, definitions.BLACK
             )
         self.push.buttons.set_button_color(
-            push2_python.constants.BUTTON_SELECT,
-            definitions.WHITE if self.browser_active or self.select_button_held else definitions.BLACK,
+            push2_python.constants.BUTTON_SELECT, definitions.WHITE
         )
         self.push.buttons.set_button_color(
             push2_python.constants.BUTTON_SHIFT, definitions.BLACK
