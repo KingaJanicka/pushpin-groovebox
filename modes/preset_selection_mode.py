@@ -428,24 +428,33 @@ class PresetSelectionMode(definitions.PyshaMode):
         return True  # Prevent other modes to get this event
 
     def set_pad_preset_slot(self, pad_ij):
-        # return
         for idx, instrument_shortname in enumerate(self.app.instruments):
             if idx == pad_ij[1]:
                 preset_number = self.last_pad_in_column_pressed[instrument_shortname][0]
-                self.presets[instrument_shortname][preset_number] = self.current_address
-                self.save_presets()
-                
-                # TODO:
-                # Get name of new patch
-                # load it in surge using osc
-                # overwrite it to the surge_state_folder and load that
-                
-                
-                # preset_name = f"{instrument_shortname}_{pad_ij[0]}"            
-                # preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
-                # # print(preset_name, preset_path, pad_ij)
-                # log.debug(f"Loading {preset_path}")
-                # self.send_osc("/patch/load", preset_path, instrument_shortname=instrument_shortname)
+                current_stored_preset = self.presets[instrument_shortname][preset_number]
+
+                # Only select a new preset if the pad was held long enough to show
+                # the picker and the user navigated to a different preset.
+                was_long_press = (
+                    self.pads_press_time is not False
+                    and time.time() - self.pads_press_time >= self.pad_quick_press_time
+                )
+
+                if was_long_press and self.current_address and self.current_address != current_stored_preset:
+                    # Load the chosen preset into Surge XT
+                    self.send_osc("/patch/load", self.current_address, instrument_shortname=instrument_shortname)
+                    time.sleep(0.1)
+
+                    # Overwrite the surge_state slot for this pad with the new preset
+                    preset_name = f"{instrument_shortname}_{preset_number}"
+                    preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
+                    log.debug(f"Saving new preset to state: {preset_path}")
+                    self.send_osc("/patch/save", preset_path, instrument_shortname=instrument_shortname)
+                    time.sleep(0.1)
+
+                    # Record the new source path in presets.json so the display name updates
+                    self.presets[instrument_shortname][preset_number] = self.current_address
+                    self.save_presets()
         
 
     def on_pad_released(self, pad_n, pad_ij, velocity):
