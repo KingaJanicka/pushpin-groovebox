@@ -408,13 +408,10 @@ class PresetSelectionMode(definitions.PyshaMode):
         if self.last_pad_in_column_pressed[instrument_short_name] != pad_ij:
             self.last_pad_in_column_pressed[instrument_short_name] = pad_ij
             self.set_knob_postions()
-
-        # Always load from surge_state on any press so short-pressing a pad
-        # always recalls its saved preset (including the already-selected pad).
-        preset_name = f"{instrument_short_name}_{pad_ij[0]}"
-        preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
-        log.debug(f"Loading {preset_path}")
-        self.send_osc("/patch/load", preset_path, instrument_shortname=instrument_short_name)
+            preset_name = f"{instrument_short_name}_{pad_ij[0]}"
+            preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
+            log.debug(f"Loading {preset_path}")
+            self.send_osc("/patch/load", preset_path, instrument_shortname=instrument_short_name)
             
         idx_j = pad_ij[1]
         self.update_pads()
