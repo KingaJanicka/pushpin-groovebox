@@ -431,13 +431,14 @@ class PresetSelectionMode(definitions.PyshaMode):
         return True  # Prevent other modes to get this event
 
     def set_pad_preset_slot(self, pad_ij):
+        """Load the browsed preset into the selected slot on long press.
+
+        Returns True when a new preset was actually loaded, False otherwise.
+        """
         for idx, instrument_shortname in enumerate(self.app.instruments):
             if idx == pad_ij[1]:
                 preset_number = self.last_pad_in_column_pressed[instrument_shortname][0]
-                current_stored_preset = self.presets[instrument_shortname][preset_number]
 
-                # Only select a new preset if the pad was held long enough to show
-                # the picker and the user navigated to a different preset.
                 was_long_press = (
                     self.pads_press_time is not False
                     and time.time() - self.pads_press_time >= self.pad_quick_press_time
@@ -458,27 +459,52 @@ class PresetSelectionMode(definitions.PyshaMode):
                     # Record the new source path in presets.json so the display name updates
                     self.presets[instrument_shortname][preset_number] = self.current_address
                     self.save_presets()
-        
+                    return True
+        return False
+
+    async def _refresh_devices_after_preset_load(self, instrument_shortname):
+        """Re-query slot types and re-select devices after a new preset is loaded.
+
+        Surge replies to /q messages asynchronously, so we must sleep between
+        query_slots() and update_current_devices() to let the OSC replies arrive.
+        """
+        instrument = self.app.instruments[instrument_shortname]
+        instrument.query_slots()
+        await asyncio.sleep(0.5)
+        instrument.update_current_devices()
+        await asyncio.sleep(0.5)
+        for device in instrument.current_devices:
+            await device.select()
+            device.query_all()
 
     def on_pad_released(self, pad_n, pad_ij, velocity):
         instrument = self.app.osc_mode.get_current_instrument()
-        
-        # TODO: think this lags one pad behind?
-        # TODO: needs to check and load the preset patch but only if it was changed
+
+        preset_loaded = False
         try:
-            self.set_pad_preset_slot(pad_ij)
+            preset_loaded = self.set_pad_preset_slot(pad_ij)
         except Exception as e:
-            print("exception in set_pad_preset",e)
-        instrument.query_slots()
-        instrument.query_all_controls()
-        instrument.update_current_devices()
-        instrument.init_devices_sync()
+            print("exception in set_pad_preset", e)
+
+        if preset_loaded:
+            # Slot types may have changed — refresh with proper async delays so
+            # Surge's OSC replies arrive before we call update_current_devices.
+            instrument_shortname = instrument.name
+            self.app.queue.append(
+                self._refresh_devices_after_preset_load(instrument_shortname)
+            )
+        else:
+            instrument.query_slots()
+            instrument.query_all_controls()
+            instrument.update_current_devices()
+            instrument.init_devices_sync()
+
         self.update_pads()
         idx_j = pad_ij[1]
         self.app.steps_held.remove(idx_j)
-        
+
         self.pads_press_time = False
-        
+
         return True  # Prevent other modes to get this event
 
     def nested_draw(
