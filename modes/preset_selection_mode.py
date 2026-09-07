@@ -23,12 +23,13 @@ class PresetSelectionMode(definitions.PyshaMode):
     presets = {}
     presets_filename = "presets.json"
     last_pad_in_column_pressed = {}
-    pad_quick_press_time = 0.400
+    pad_quick_press_time = 0.200
     current_page = 0
     patches = {}
     state: list[float | int] = [0] * 8
     patches_dicts = []
     current_address = None
+    pads_press_time = False
 
     def initialize(self, settings=None):
         for idx, instrument_short_name in enumerate(
@@ -39,30 +40,32 @@ class PresetSelectionMode(definitions.PyshaMode):
             ] * 8
             self.last_pad_in_column_pressed[instrument_short_name] = (0, idx)
 
-        self.patches["Factory"] = self.create_dict_from_paths(
-            glob(
-                f"**/*.fxp",
-                recursive=True,
-                root_dir=definitions.FACTORY_PATCHES_FOLDER,
+        try:
+            self.patches["Factory"] = self.create_dict_from_paths(
+                glob(
+                    f"**/*.fxp",
+                    recursive=True,
+                    root_dir=definitions.FACTORY_PATCHES_FOLDER,
+                )
             )
-        )
-
-        self.patches["Third Party"] = self.create_dict_from_paths(
-            glob(
-                f"**/*.fxp",
-                recursive=True,
-                root_dir=definitions.THIRD_PARTY_PATCHES_FOLDER,
+            print(definitions.FACTORY_PATCHES_FOLDER)
+            self.patches["Third Party"] = self.create_dict_from_paths(
+                glob(
+                    f"**/*.fxp",
+                    recursive=True,
+                    root_dir=definitions.THIRD_PARTY_PATCHES_FOLDER,
+                )
             )
-        )
 
-        self.patches["User"] = self.create_dict_from_paths(
-            glob(
-                f"**/*.fxp",
-                recursive=True,
-                root_dir=definitions.USER_PATCHES_FOLDER,
+            self.patches["User"] = self.create_dict_from_paths(
+                glob(
+                    f"**/*.fxp",
+                    recursive=True,
+                    root_dir=definitions.USER_PATCHES_FOLDER,
+                )
             )
-        )
-
+        except Exception as e:
+            print("Exception in preset mode init ",e)
         try:
             
             self.load_presets()
@@ -70,21 +73,38 @@ class PresetSelectionMode(definitions.PyshaMode):
             self.save_presets()
 
 
+    DEFAULT_PRESET = f"{definitions.FACTORY_PATCHES_FOLDER}/Templates/Init Saw"
+
+    def _resolve_preset(self, path):
+        """Return path if non-empty, otherwise the Init Saw fallback."""
+        return path if path else self.DEFAULT_PRESET
+
     def init_surge_preset_state(self):
         print("Init surge preset state")
+        # TODO: this regen routine is fucked
+        # As checked with the GUI
         for idx, instrument in enumerate(self.app.instruments):
+            # print(self.presets[instrument])
             for index in range(8):
-                preset_name = f"{instrument}_{index}"            
+                preset_name = f"{instrument}_{index}"           
                 preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
-                does_file_exist = os.path.isfile(f"{preset_path}.fxp") 
+                # print("preset_path", preset_path)
+                does_file_exist = os.path.isfile(f"{preset_path}.fxp")
                 if does_file_exist == False:
-                    self.send_osc("/patch/load", self.presets[instrument][idx], instrument_shortname=instrument)
+                    # print('regen')
+                    # print(self.presets[instrument][index], preset_path)
+                    self.send_osc("/patch/load", self._resolve_preset(self.presets[instrument][index]), instrument_shortname=instrument)
                     time.sleep(0.1)
                     self.send_osc("/patch/save", preset_path, instrument_shortname=instrument)
                     time.sleep(0.1)
             
 
     def save_pad_to_state(self):
+        
+        # This saves to the surge_state folder
+        # Making sure we don't overwrite the actual synth patches
+        
+        # TODO: I think this should be saving corectly now
         instrument_shortname = (
             self.app.instrument_selection_mode.get_current_instrument_short_name()
         )
@@ -92,8 +112,11 @@ class PresetSelectionMode(definitions.PyshaMode):
         preset_index = self.last_pad_in_column_pressed[instrument_shortname][0]
         preset_name = f"{instrument_shortname}_{preset_index}"            
         preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
-        print(preset_path)
-        self.send_osc("/patch/save", preset_path, instrument_shortname=instrument_shortname)
+        # print(preset_path)
+        try:
+            self.send_osc("/patch/save", None, instrument_shortname=instrument_shortname)
+        except Exception as e:
+            print("error in save_pad_to_state", e)
 
     def save_all_presets_to_state(self):
         # print("saving presets")
@@ -109,15 +132,16 @@ class PresetSelectionMode(definitions.PyshaMode):
         # print("saved presets to state")
 
     async def load_init_state(self, instrument_shortname):
-       
         # Check if there is a preset in the state dir
         # If yes load that
         # If not then load the normal patch and save to the state
-    
+        # TODO: Neither this nor the pad func seem to work
+        # TODO: State is still being loaded, but where?
         preset_name = f"{instrument_shortname}_{0}"            
         preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
         instrument = self.app.instruments[instrument_shortname]
         self.send_osc("/patch/load", preset_path, instrument_shortname=instrument_shortname)
+        # print("loading preset", preset_path)
         await asyncio.sleep(0.5)
         instrument.query_slots()
         await asyncio.sleep(0.5)
@@ -162,7 +186,7 @@ class PresetSelectionMode(definitions.PyshaMode):
 
     def save_presets(self):
         json.dump(self.presets, open(self.presets_filename, "w"))  # Save to file
-
+    
     def new_instrument_selected(self):
         self.current_page = 0
         # self.save_all_presets_to_state()
@@ -381,12 +405,24 @@ class PresetSelectionMode(definitions.PyshaMode):
         instrument_short_name = (
             self.app.instrument_selection_mode.get_current_instrument_short_name()
         )
-        self.last_pad_in_column_pressed[instrument_short_name] = pad_ij
-        self.set_knob_postions()
-        log.debug(f"Loading {self.presets[instrument_short_name][pad_ij[0]]}")
-        self.send_osc("/patch/load", self.presets[instrument_short_name][pad_ij[0]])
+        # This branch loads a preset when you pressed a pad that wasn't selected
+        # To avoid accidentally losing state and unnececary disk access
+        if self.last_pad_in_column_pressed[instrument_short_name] != pad_ij:
+            self.last_pad_in_column_pressed[instrument_short_name] = pad_ij
+            self.set_knob_postions()
+            preset_name = f"{instrument_short_name}_{pad_ij[0]}"            
+            preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
+            # print(preset_name, preset_path, pad_ij)
+            log.debug(f"Loading {preset_path}")
+            self.send_osc("/patch/load", preset_path, instrument_shortname=instrument_short_name)
+            
+        idx_j = pad_ij[1]
         self.update_pads()
-
+        self.app.steps_held.append(idx_j)
+        
+        if self.pads_press_time == False:
+            self.pads_press_time = time.time()
+        
         # Resets the last knob position on the mod matrix
         # to avoid indexing OOB when switching presets
         instrument = self.app.osc_mode.get_current_instrument()
@@ -397,13 +433,55 @@ class PresetSelectionMode(definitions.PyshaMode):
 
         return True  # Prevent other modes to get this event
 
+    def set_pad_preset_slot(self, pad_ij):
+        for idx, instrument_shortname in enumerate(self.app.instruments):
+            if idx == pad_ij[1]:
+                preset_number = self.last_pad_in_column_pressed[instrument_shortname][0]
+                current_stored_preset = self.presets[instrument_shortname][preset_number]
+
+                # Only select a new preset if the pad was held long enough to show
+                # the picker and the user navigated to a different preset.
+                was_long_press = (
+                    self.pads_press_time is not False
+                    and time.time() - self.pads_press_time >= self.pad_quick_press_time
+                )
+
+                if was_long_press and self.current_address and self.current_address != current_stored_preset:
+                    # Load the chosen preset into Surge XT
+                    self.send_osc("/patch/load", self.current_address, instrument_shortname=instrument_shortname)
+                    time.sleep(0.1)
+
+                    # Overwrite the surge_state slot for this pad with the new preset
+                    preset_name = f"{instrument_shortname}_{preset_number}"
+                    preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
+                    log.debug(f"Saving new preset to state: {preset_path}")
+                    self.send_osc("/patch/save", preset_path, instrument_shortname=instrument_shortname)
+                    time.sleep(0.1)
+
+                    # Record the new source path in presets.json so the display name updates
+                    self.presets[instrument_shortname][preset_number] = self.current_address
+                    self.save_presets()
+        
+
     def on_pad_released(self, pad_n, pad_ij, velocity):
         instrument = self.app.osc_mode.get_current_instrument()
+        
+        # TODO: think this lags one pad behind?
+        # TODO: needs to check and load the preset patch but only if it was changed
+        try:
+            self.set_pad_preset_slot(pad_ij)
+        except Exception as e:
+            print("exception in set_pad_preset",e)
         instrument.query_slots()
         instrument.query_all_controls()
         instrument.update_current_devices()
         instrument.init_devices_sync()
         self.update_pads()
+        idx_j = pad_ij[1]
+        self.app.steps_held.remove(idx_j)
+        
+        self.pads_press_time = False
+        
         return True  # Prevent other modes to get this event
 
     def nested_draw(
@@ -416,6 +494,7 @@ class PresetSelectionMode(definitions.PyshaMode):
         padding_top=5,
         instrument_selector_height=20,
     ):
+        
         for idx, entry in enumerate(current.items()):
             key, val = entry
             bg_color = (
@@ -429,7 +508,7 @@ class PresetSelectionMode(definitions.PyshaMode):
                 else definitions.WHITE
             )
 
-            if isinstance(val, str) and idx - 2 <= self.state[level] <= idx + 3:
+            if isinstance(val, str) and idx - 2 <= self.state[level] <= idx + 2:
                 if idx == int(self.state[level]):
                     self.current_address = os.path.splitext(self.get_preset_path(val))[
                         0
@@ -437,7 +516,7 @@ class PresetSelectionMode(definitions.PyshaMode):
                 show_text(
                     ctx,
                     level,
-                    item_height * (idx - int(self.state[level])) + padding_top + 60,
+                    item_height * (idx - int(self.state[level])) + padding_top + 70,
                     Path(val).stem,
                     height=item_height,
                     font_color=text_color,
@@ -447,11 +526,11 @@ class PresetSelectionMode(definitions.PyshaMode):
                     center_horizontally=True,
                     rectangle_padding=1,
                 )
-            elif isinstance(val, dict) and idx - 2 <= self.state[level] <= idx + 3:
+            elif isinstance(val, dict) and idx - 2 <= self.state[level] <= idx + 2:
                 show_text(
                     ctx,
                     level,
-                    item_height * (idx - int(self.state[level])) + padding_top + 60,
+                    item_height * (idx - int(self.state[level])) + padding_top + 70,
                     key,
                     height=item_height,
                     font_color=text_color,
@@ -474,34 +553,90 @@ class PresetSelectionMode(definitions.PyshaMode):
             chosen_folder = definitions.USER_PATCHES_FOLDER
         return (chosen_folder or "") + "/" + preset
 
-    def update_display(self, ctx, w, h):
-        self.nested_draw(ctx, self.patches, level=0, max_height=h)
-        show_text(
-            ctx,
-            6,
-            15,
-            "Set Preset",
-            height=15,
-            font_color=definitions.WHITE,
-        )
-        show_text(
-            ctx,
-            5,
-            15,
-            "Save Current State",
-            height=15,
-            font_color=definitions.WHITE,
-        )
-
+    def update_display(self, ctx, w, h):     
+        epoch_time = time.time()
+        press_time = epoch_time - self.pads_press_time
+        if press_time >= self.pad_quick_press_time and len(self.app.steps_held) != 0:
+            self.nested_draw(ctx, self.patches, level=0, max_height=h)
+            show_text(
+                ctx,
+                0,
+                15,
+                "Save to Current",
+                height=15,
+                font_color=definitions.WHITE,
+            )
+            show_text(
+                ctx,
+                1,
+                15,
+                "Save to New",
+                height=15,
+                font_color=definitions.WHITE,
+            )
+            # show_text(
+            #     ctx,
+            #     3,
+            #     15,
+            #     "Save Active to Current",
+            #     height=15,
+            #     font_color=definitions.WHITE,
+            # )
+            # show_text(
+            #     ctx,
+            #     4,
+            #     15,
+            #     "Save Active to New",
+            #     height=15,
+            #     font_color=definitions.WHITE,
+            # )
+            show_text(
+                ctx,
+                6,
+                15,
+                "Set All to Current",
+                height=15,
+                font_color=definitions.WHITE,
+            )
+            show_text(
+                ctx,
+                7,
+                15,
+                "Save All to New",
+                height=15,
+                font_color=definitions.WHITE,
+            )
+        else:
+            for instrument_idx, instrument in enumerate(self.app.instruments):
+                for index in range(8):
+                    preset_path = self._resolve_preset(self.presets[instrument][index])
+                    preset_name = preset_path.split("/")
+                    
+                    instrument_info = self.app.instrument_selection_mode.instruments_info[instrument_idx]
+                    instrument_short_name = instrument_info["instrument_short_name"]
+                    font_color = instrument_info["color"]
+                    
+                    if (
+                        index == self.last_pad_in_column_pressed[instrument_short_name][0]
+                        and instrument_idx == self.last_pad_in_column_pressed[instrument_short_name][1]
+                    ):
+                        font_color = definitions.WHITE
+                    show_text(
+                        ctx,
+                        instrument_idx,
+                        15 + 15*index,
+                        f"{preset_name[-1]}",
+                        height=15,
+                        font_color=font_color,
+                    )
+                    
+            
     def set_knob_postions(self):
-        # TODO: This funciton is not working corretly really
-        # Presets won't draw correctly when switching instrumnents, some won't draw at all
-        # Needs to set all knobs not just one
         instrument_short_name = (
             self.app.instrument_selection_mode.get_current_instrument_short_name()
         )
         preset_number = self.last_pad_in_column_pressed[instrument_short_name][0]
-        preset_address = self.presets[instrument_short_name][preset_number]
+        preset_address = self._resolve_preset(self.presets[instrument_short_name][preset_number])
 
         address_array = (
             preset_address.replace(definitions.FACTORY_PATCHES_FOLDER, "")
@@ -548,6 +683,17 @@ class PresetSelectionMode(definitions.PyshaMode):
         # elif button_name in push2_python.constants.BUTTON_UPPER_ROW_6:
         #     self.save_all_presets_to_state()
         
+        elif button_name in push2_python.constants.BUTTON_UPPER_ROW_1:
+            instrument_short_name = (
+                self.app.instrument_selection_mode.get_current_instrument_short_name()
+            )
+            preset_number = self.last_pad_in_column_pressed[instrument_short_name][0]
+            self.presets[instrument_short_name][preset_number] = self.current_address
+            if len(self.app.steps_held) != 0:
+                self.save_pad_to_state()
+            # self.app.metro_sequencer_mode.save_state()
+            
+            
         elif button_name in push2_python.constants.BUTTON_UPPER_ROW_7:
             instrument_short_name = (
                 self.app.instrument_selection_mode.get_current_instrument_short_name()
@@ -555,7 +701,6 @@ class PresetSelectionMode(definitions.PyshaMode):
             preset_number = self.last_pad_in_column_pressed[instrument_short_name][0]
             self.presets[instrument_short_name][preset_number] = self.current_address
             self.save_presets()
-            self.app.metro_sequencer_mode.save_state()
         
         elif button_name == push2_python.constants.BUTTON_PLAY:
             metro = self.app.metro_sequencer_mode
@@ -611,3 +756,6 @@ class PresetSelectionMode(definitions.PyshaMode):
         # print(instrument_shortname, instrument)
         if instrument:
             return instrument.send_message(*args)
+
+    def get_instrument_color_helper(self, i):
+        return self.app.instrument_selection_mode.get_instrument_color(i)

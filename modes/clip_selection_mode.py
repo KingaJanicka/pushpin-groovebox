@@ -45,61 +45,10 @@ class ClipSelectionMode(definitions.PyshaMode):
         for idx, instrument_short_name in enumerate(
             self.get_all_distinct_instrument_short_names_helper()
         ):
-            self.presets[instrument_short_name] = [
-                f"{definitions.FACTORY_PATCHES_FOLDER}/Templates/Init Saw"
-            ] * 8
             self.last_pad_in_column_pressed[instrument_short_name] = (0, idx)
 
-        self.patches["Factory"] = self.create_dict_from_paths(
-            glob(
-                f"**/*.fxp",
-                recursive=True,
-                root_dir=definitions.FACTORY_PATCHES_FOLDER,
-            )
-        )
-
-        self.patches["Third Party"] = self.create_dict_from_paths(
-            glob(
-                f"**/*.fxp",
-                recursive=True,
-                root_dir=definitions.THIRD_PARTY_PATCHES_FOLDER,
-            )
-        )
-
-        self.patches["User"] = self.create_dict_from_paths(
-            glob(
-                f"**/*.fxp",
-                recursive=True,
-                root_dir=definitions.USER_PATCHES_FOLDER,
-            )
-        )
-
-        try:
-
-            self.load_presets()
-        except:
-            self.save_presets()
-
-    def init_surge_preset_state(self):
-        print("Init surge preset state")
-        for idx, instrument in enumerate(self.app.instruments):
-            for index in range(8):
-                preset_name = f"{instrument}_{index}"
-                preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
-                does_file_exist = os.path.isfile(f"{preset_path}.fxp")
-                if does_file_exist == False:
-                    self.send_osc(
-                        "/patch/load",
-                        self.presets[instrument][idx],
-                        instrument_shortname=instrument,
-                    )
-                    time.sleep(0.1)
-                    self.send_osc(
-                        "/patch/save", preset_path, instrument_shortname=instrument
-                    )
-                    time.sleep(0.1)
-
     def save_pad_to_state(self):
+        return
         instrument_shortname = (
             self.app.instrument_selection_mode.get_current_instrument_short_name()
         )
@@ -116,27 +65,6 @@ class ClipSelectionMode(definitions.PyshaMode):
             "/patch/save", preset_path, instrument_shortname=instrument_shortname
         )
 
-    async def load_init_state(self, instrument_shortname):
-
-        # Check if there is a preset in the state dir
-        # If yes load that
-        # If not then load the normal patch and save to the state
-
-        preset_name = f"{instrument_shortname}_{0}"
-        preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
-        instrument = self.app.instruments[instrument_shortname]
-        self.send_osc(
-            "/patch/load", preset_path, instrument_shortname=instrument_shortname
-        )
-        await asyncio.sleep(0.5)
-        instrument.query_slots()
-        await asyncio.sleep(0.5)
-        instrument.update_current_devices()
-        await asyncio.sleep(0.5)
-        # instrument.query_all_controls()
-        for device in instrument.current_devices:
-            await device.select()
-            device.query_all()
 
     def create_dict_from_paths(self, arr):
         d = dict()
@@ -154,13 +82,6 @@ class ClipSelectionMode(definitions.PyshaMode):
 
         return d
 
-    def load_presets(self):
-        if os.path.exists(self.presets_filename):
-            self.presets = json.load(open(self.presets_filename))
-
-    def save_presets(self):
-        json.dump(self.presets, open(self.presets_filename, "w"))  # Save to file
-
     def new_instrument_selected(self):
         self.current_page = 0
         # self.save_all_presets_to_state()
@@ -169,15 +90,6 @@ class ClipSelectionMode(definitions.PyshaMode):
 
     def should_be_enabled(self):
         return True
-
-    def add_preset(self, preset_number, bank_number):
-        instrument_short_name = (
-            self.app.instrument_selection_mode.get_current_instrument_short_name()
-        )
-        if instrument_short_name not in self.presets:
-            self.presets[instrument_short_name] = []
-        self.presets[instrument_short_name].append((preset_number, bank_number))
-        self.save_presets()
 
     def get_all_distinct_instrument_short_names_helper(self):
         return (
@@ -205,27 +117,6 @@ class ClipSelectionMode(definitions.PyshaMode):
 
     def get_current_instrument_short_name_helper(self):
         return self.app.instrument_selection_mode.get_current_instrument_short_name()
-
-    def get_preset_path_for_instrument(self, instrument_shortname):
-        preset_tuple = self.last_pad_in_column_pressed[instrument_shortname]
-        preset_index = preset_tuple[0]
-        preset = self.presets[instrument_shortname][preset_index]
-        path = self.get_preset_path(preset)
-        return preset
-
-    def remove_preset(self, preset_number, bank_number):
-        instrument_short_name = (
-            self.app.instrument_selection_mode.get_current_instrument_short_name()
-        )
-        if instrument_short_name in self.presets:
-            self.presets[instrument_short_name] = [
-                (fp_preset_number, fp_bank_number)
-                for fp_preset_number, fp_bank_number in self.presets[
-                    instrument_short_name
-                ]
-                if preset_number != fp_preset_number or bank_number != fp_bank_number
-            ]
-            self.save_presets()
 
     def next_page(self):
         if self.current_page < self.get_num_pages() - 1:
@@ -294,7 +185,7 @@ class ClipSelectionMode(definitions.PyshaMode):
                     .split("_")
                 )
                 inst_number = inst[-1]
-                print(inst, inst_number, clip)
+                # print(inst, inst_number, clip)
                 self.clips[int(clip)][int(inst_number)] = True
         except Exception as e:
             print(e)
@@ -302,7 +193,15 @@ class ClipSelectionMode(definitions.PyshaMode):
     def activate(self):
         self.list_clips()
         self.update_pads()
-        self.notify_status_in_display()
+        instrument_short_name = (
+            self.app.instrument_selection_mode.get_current_instrument_short_name()
+        )
+        sequencer = self.app.metro_sequencer_mode.instrument_sequencers[
+            instrument_short_name
+        ]
+        sequencer.save_state(clip=self.last_pad_in_column_pressed[instrument_short_name][0])
+    
+        
         self.push.buttons.set_button_color(
             push2_constants.BUTTON_DELETE, definitions.GRAY_DARK
         )
@@ -363,7 +262,7 @@ class ClipSelectionMode(definitions.PyshaMode):
                     cell_color = f"{base_color}_darker1"
                 elif self.clips[i][j] == False:
                     cell_color = definitions.BLACK
-                    
+                
                 if (
                     i == self.last_pad_in_column_pressed[instrument_short_name][0]
                     and j == self.last_pad_in_column_pressed[instrument_short_name][1]
@@ -385,21 +284,22 @@ class ClipSelectionMode(definitions.PyshaMode):
         self.push.pads.set_pads_color(color_matrix)
 
     def on_pad_pressed(self, pad_n, pad_ij, velocity):
-        instrument_short_name = (
-            self.app.instrument_selection_mode.get_current_instrument_short_name()
-        )
+        selected_pad_instrument_shortname = None
+        for idx, instrument_short_name in enumerate(
+            self.get_all_distinct_instrument_short_names_helper()
+        ):
+            if idx == pad_ij[1]:
+                selected_pad_instrument_shortname = instrument_short_name
 
         sequencer = self.app.metro_sequencer_mode.instrument_sequencers[
-            instrument_short_name
+            selected_pad_instrument_shortname
         ]
-        last_pad_pressed = self.last_pad_in_column_pressed[instrument_short_name]
+        last_pad_pressed = self.last_pad_in_column_pressed[selected_pad_instrument_shortname]
         if last_pad_pressed == pad_ij:
+            # print("save clip", last_pad_pressed[0])
             sequencer.save_state(clip=last_pad_pressed[0])
 
-        if pad_ij[1] != self.app.instrument_selection_mode.selected_instrument:
-            self.app.instrument_selection_mode.select_instrument(pad_ij[1])
-
-        self.last_pad_in_column_pressed[instrument_short_name] = pad_ij
+        self.last_pad_in_column_pressed[selected_pad_instrument_shortname] = pad_ij
         self.update_pads()
 
         sequencer.load_state(clip=pad_ij[0])
@@ -408,16 +308,6 @@ class ClipSelectionMode(definitions.PyshaMode):
 
     def on_pad_released(self, pad_n, pad_ij, velocity):
         return True  # Prevent other modes to get this event
-
-    def get_preset_path(self, preset):
-        chosen_folder = None
-        if 0 <= self.state[0] < 1:
-            chosen_folder = definitions.FACTORY_PATCHES_FOLDER
-        elif 1 <= self.state[0] < 2:
-            chosen_folder = definitions.THIRD_PARTY_PATCHES_FOLDER
-        elif 2 <= self.state[0] < 3:
-            chosen_folder = definitions.USER_PATCHES_FOLDER
-        return (chosen_folder or "") + "/" + preset
 
     def on_button_pressed(self, button_name):
         if button_name in [
@@ -433,6 +323,7 @@ class ClipSelectionMode(definitions.PyshaMode):
 
 
         elif button_name in push2_python.constants.BUTTON_UPPER_ROW_7:
+            return
             instrument_short_name = (
                 self.app.instrument_selection_mode.get_current_instrument_short_name()
             )

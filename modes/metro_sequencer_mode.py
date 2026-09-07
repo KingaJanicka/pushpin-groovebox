@@ -424,13 +424,11 @@ class MetroSequencerMode(MelodicMode):
     def activate(self):
         self.disable_controls = False
         self.draw_pads = True
-        self.steps_held = []
-        self.app.steps_held = []
+        self.app.steps_held = []   
         self.active_track_button_on()
         self.push.buttons.set_button_color(push2_constants.BUTTON_SCALE, definitions.GRAY_DARK)
 
     def deactivate(self):
-        self.steps_held = []
         self.app.steps_held = []
         self.show_scale_menu = False
         self.draw_pads = False
@@ -625,47 +623,44 @@ class MetroSequencerMode(MelodicMode):
                 )
 
     def on_pad_pressed(self, pad_n, pad_ij, velocity):
-        idx_n = pad_n - 36
-        idx_i = pad_ij[0]
-        idx_j = pad_ij[1]
-        self.steps_held.append(idx_n)
-        self.app.steps_held.append(idx_j)
-        self.disable_controls = True
-        self._handle_pad_pressed(
-            pad_n=pad_n,
-            idx_n=idx_n,
-            idx_i=idx_i,
-            idx_j=idx_j,
-            steps_held_snapshot=list(self.steps_held),
-        )
-
-    def _handle_pad_pressed(self, pad_n, idx_n, idx_i, idx_j, steps_held_snapshot):
+        # TODO: VERY RUDE but IG it works???
+        self.app.queue.append(self.async_pad_pressed(pad_n=pad_n))
+    
+    async def async_pad_pressed(self, pad_n):
         try:
             pad_state = self.metro_seq_pad_state[
                 self.get_current_instrument_short_name_helper()
             ]
+            idx_n = pad_n - 36
+            self.steps_held.append(idx_n)
             seq = self.instrument_sequencers[self.get_current_instrument_short_name_helper()]
             seq_pad_state = pad_state[self.selected_track]
+            n = self.steps_held[-1]
+            idx_ij = self.index_to_pad_ij(n)
+            idx_i = idx_ij[0]
+            idx_j = idx_ij[1]
+            self.app.steps_held.append(idx_j)
+            self.disable_controls = True
         except Exception as e:
             print("Exception on_pad_pressed, init", e)
         # Pitch track
         if self.selected_track == TRACK_NAMES_METRO[0]:
             try:
                 pitch_value = None
-                if len(steps_held_snapshot) == 2:
-                    step_0_ij = self.index_to_pad_ij(steps_held_snapshot[-1])
-                    step_1_ij = self.index_to_pad_ij(steps_held_snapshot[-2])
+                if len(self.steps_held) == 2:
+                    step_0_ij = self.index_to_pad_ij(self.steps_held[-1])
+                    step_1_ij = self.index_to_pad_ij(self.steps_held[-2])
                 # Two pads, this is so the if only activates when
                 # the two pads are in the same column
                 # for all other cases see else statement
-                if len(steps_held_snapshot) == 2 and step_0_ij[1] == step_1_ij[1]:
+                if len(self.steps_held) == 2 and step_0_ij[1] == step_1_ij[1]:
                     # print("two pads")
-                    step_a_idx = steps_held_snapshot[-1]
+                    step_a_idx = self.steps_held[-1]
                     step_a_ij = self.index_to_pad_ij(step_a_idx)
                     step_a_i = step_a_ij[0]
                     step_a_j = step_a_ij[1]
 
-                    step_b_idx = steps_held_snapshot[-2]
+                    step_b_idx = self.steps_held[-2]
                     step_b_ij = self.index_to_pad_ij(step_b_idx)
                     step_b_i = step_b_ij[0]
                     step_b_j = step_b_ij[1]
@@ -676,10 +671,10 @@ class MetroSequencerMode(MelodicMode):
                     # check pad_i for both to see if they're adjecent
                     if abs(step_a_i - step_b_i) == 1:
 
-                        # If either pad is off, turn both on
+                        # If either pad if off turn both on
                         if (
-                            seq_pad_state[step_a_i][step_a_j] == False
-                            or seq_pad_state[step_b_i][step_b_j] == False
+                            seq_pad_state[step_a_i][step_a_j] == True
+                            or seq_pad_state[step_b_i][step_b_j] == True
                         ):
 
                             # Turn off all other pads in the column
@@ -919,10 +914,9 @@ class MetroSequencerMode(MelodicMode):
         epoch_time = time.time()
         press_time = epoch_time - self.pads_press_time[idx_n]
         seq = self.instrument_sequencers[self.get_current_instrument_short_name_helper()]
-        if idx_j in self.app.steps_held:
-            self.app.steps_held.remove(idx_j)
+        self.app.steps_held.remove(idx_j)
 
-        self.disable_controls = len(self.steps_held) > 1
+        self.disable_controls = False
         if self.selected_track == TRACK_NAMES_METRO[0] or self.selected_track == TRACK_NAMES_METRO[1] or self.selected_track == TRACK_NAMES_METRO[2] or self.selected_track == TRACK_NAMES_METRO[5]:
             pass
 
@@ -979,9 +973,7 @@ class MetroSequencerMode(MelodicMode):
             elif press_time > self.pad_quick_press_time:
                 pass
                 # seq.set_state(self.selected_track, idx, False
-        if idx_n in self.steps_held:
-            self.steps_held.remove(idx_n)
-        self.save_state()
+        self.steps_held.remove(idx_n)
         self.app.osc_mode.update_buttons()
         self.app.pads_need_update = True
     def update_modulation_wheel_mode_button(self):
@@ -1109,28 +1101,22 @@ class MetroSequencerMode(MelodicMode):
                     idx = int(self.steps_held[0]%8)
                     value = None
                     page_offset = int(device.page) * 8
-                    visible_controls = device.get_visible_controls()
-
-                    if encoder_idx >= len(visible_controls):
-                        return
-
-                    control = visible_controls[encoder_idx]
-
+                    
                     if seq.get_lock_state(idx, encoder_idx + page_offset) == None:
-                        value = control.value
+                        value = device.controls[
+                            encoder_idx
+                        ].value
                     else:
-                        # clamping to min/max values, scaling
+                        # calmping to min/max values, scaling
+                        control = device.controls[encoder_idx + page_offset]
                         lock_value = seq.get_lock_state(idx, encoder_idx + page_offset)
 
-                        if hasattr(control, "groups"):
-                            min = 0
-                            max = len(control.groups) - 1
-                        elif hasattr(control, "items"):
-                            min = 0
-                            max = len(control.items)
-                        else:
-                            min = control.min
-                            max = control.max
+                        min = 0 if hasattr(control, "items") else control.min
+                        max = (
+                            len(control.items)
+                            if hasattr(control, "items")
+                            else control.max
+                        )
                         range = max - min
                         incr = increment * range / 100
                         if lock_value == None:
