@@ -324,7 +324,11 @@ class SequencerMetro(object):
                 if prob >= random.randint(1, 6):
                     # We need to reset values that were changed by param locks
                     for control in self.controls_to_reset:
-                        self.app.send_osc(control.address, float(control.value), instrument.name)
+                        # print(control.name, control.label)
+                        if control.name == "Switch":
+                            control.reset_group()
+                        else:
+                            self.app.send_osc(control.address, float(control.value), instrument.name)
                     self.timeline.schedule(
                         {"note": pitch_and_octave, "gate": gate, "amplitude": velocity}, count=1, output_device=self.midi_out_device
                     )
@@ -347,7 +351,8 @@ class SequencerMetro(object):
                             if command[1]["address"] == slot["address"] and command[1]["value"] == slot["value"]:
                                 # we have the right device
                                 # Now we just need to enum the controls and send the values 
-                                for control_idx, control in enumerate(device.controls):
+                                # This needs to go through VISIBLE controls, so that groups don't get shafted
+                                for control_idx, control in enumerate(device.get_visible_controls()):
                                     lock_address = control.address
                                     lock_value = None
                                     if self.locks[self.step_index][slot_idx][control_idx] != None:
@@ -355,9 +360,14 @@ class SequencerMetro(object):
                                         if hasattr(control, "value"):
                                             lock_offset = lock_value - control.value
                                             value_after_scale = lock_offset * lock_scale_value + control.value
-                                            if lock_value != None:
+                                            
+                                            if lock_value != None and lock_address != None:
                                                 self.app.send_osc(lock_address, value_after_scale, instrument.name)
-                                                self.controls_to_reset.append(control)
+                                            elif lock_value != None and control.name == "Switch":
+                                                    control.update_value_lock(value_after_scale)
+                                            
+                                            self.controls_to_reset.append(control)
+                                                
                                     else:
                                         lock_value = 0
                 # This elif branch is for slots that have only one device and therefore
@@ -366,7 +376,8 @@ class SequencerMetro(object):
                     for device_idx, device in enumerate(instrument.devices[slot_idx]):
                         # we have the right device
                         # Now we just need to enum the controls and send the values 
-                        for control_idx, control in enumerate(device.controls):
+                        # Visible controls so we don't ommit groups
+                        for control_idx, control in enumerate(device.get_visible_controls()):
                             lock_address = control.address
                             lock_value = None
                             if self.locks[self.step_index][slot_idx][control_idx] != None:
@@ -374,9 +385,13 @@ class SequencerMetro(object):
                                 if hasattr(control, "value"):
                                     lock_offset = lock_value - control.value
                                     value_after_scale = lock_offset * lock_scale_value + control.value
+                                    
                                     if lock_value != None and lock_address != None:
                                         self.app.send_osc(lock_address, value_after_scale, instrument.name)
-                                        self.controls_to_reset.append(control)
+                                    elif lock_value != None and control.name == "Switch":
+                                            control.update_value_lock(value_after_scale)
+                                    
+                                    self.controls_to_reset.append(control)
                             else:
                                 lock_value = 0
 
