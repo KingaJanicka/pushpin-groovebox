@@ -14,7 +14,7 @@ jobs:
       - name: Deps
         run: sudo apt install -y binfmt-support systemd-container
       - name: install SDM
-        run: curl -L https://raw.githubusercontent.com/gitbls/sdm/master/install-sdm | bash
+        run: curl -L https://raw.githubusercontent.com/gitbls/sdm/master/EZsdmInstaller | bash
       - name: get hash
         id: get_sha
         run: echo "sha=$(git rev-parse --short HEAD)"  >> "$GITHUB_OUTPUT"
@@ -35,4 +35,4 @@ jobs:
           port: 22
           source: "./scripts/image/${{ steps.get_buildname.outputs.IMAGE }}"
           target: images
-          strip_components: true
+          strip_components: 1
