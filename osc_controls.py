@@ -540,6 +540,10 @@ class OSCControlSwitch(object):
         self.get_color_func: ColorFunc = get_color_func or (lambda: definitions.GRAY_LIGHT)
         self.send_osc_func: OscSendFunc = send_osc_func or (lambda addr, val: None)
         self.modmatrix: bool = config.get("modmatrix", True)
+        # Optional fixed encoder speed: clicks needed to move one group. Without
+        # it, a full 127-click sweep covers all groups, so switches with many
+        # groups (e.g. 13 filter families) change every few clicks.
+        self.clicks_per_group: float | None = config.get("clicks_per_group", None)
         self.log = logger.getChild(f"{self.label}:Switch")
         groups = config.get("groups", [])
 
@@ -577,7 +581,10 @@ class OSCControlSwitch(object):
 
     def update_value(self, increment: float, **kwargs: Any) -> None:
         prev_idx = int(self.value)
-        scaled = scale_value(increment, 0, len(self.groups))
+        if self.clicks_per_group:
+            scaled = increment / self.clicks_per_group
+        else:
+            scaled = scale_value(increment, 0, len(self.groups))
         if 0 <= (self.value + scaled) <= len(self.groups):
             self.value += scaled
             self.knob_value = self.value

@@ -527,3 +527,22 @@ def test_OSCControlSwitch_external_change_still_moves_switch():
     switch = OSCControlSwitch(_family_switch_config(), send_osc_func=surge.send, dispatcher=surge)
     surge.send("/param/a/filter/1/type", 11)  # preset sets OB-Xd 12db LP
     assert switch.get_active_group().label == "OB-Xd"
+
+
+def test_OSCControlSwitch_clicks_per_group_sets_speed():
+    config = _family_switch_config()
+    config["clicks_per_group"] = 25
+    switch = OSCControlSwitch(config, send_osc_func=lambda a, v: None, dispatcher=FakeSurge({}))
+    for _ in range(24):
+        switch.update_value(1)
+    assert switch.get_active_group().label == "Off", "24 clicks: not there yet"
+    switch.update_value(1)
+    assert switch.get_active_group().label == "Classic", "25th click moves one group"
+
+
+def test_filter_switches_are_slowed_down():
+    import json
+    d = json.load(open("definitions/device_definitions/filters.json"))
+    switches = [c for c in d["controls"] if c["$type"] == "control-switch"]
+    assert len(switches) == 2
+    assert all(s.get("clicks_per_group") == 25 for s in switches)
