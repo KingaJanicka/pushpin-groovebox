@@ -146,3 +146,6 @@ scripts/image/my.plugins
 scripts/image/my.plugins.1
 *.img
 *.img.xz
+
+# Pi diagnostics reports (scripts/diagnostics/diagnose.sh)
+diagnostics-output/
