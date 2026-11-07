@@ -25,7 +25,13 @@ echo PIPEWIRE_CONFIGURATION_PATH=$PIPEWIRE_CONFIGURATION_PATH
 OVERWITCH_FOLDER_NAME="overwitch"
 echo OVERWITCH_FOLDER_NAME=$OVERWITCH_FOLDER_NAME
 
-echo USE_DEV_BRANCH=${USE_DEV_BRANCH:-(unset)}
+# Git ref (tag or branch) of pushpin-groovebox to install. create-image-with-backports.sh
+# prepends PUSHPIN_REF/PUSHPIN_REPO to a generated copy of this script, because sdm
+# runs it in a clean environment where the caller's variables are not visible.
+PUSHPIN_REPO="${PUSHPIN_REPO:-https://github.com/kingajanicka/pushpin-groovebox}"
+PUSHPIN_REF="${PUSHPIN_REF:-dev}"
+echo PUSHPIN_REPO=$PUSHPIN_REPO
+echo PUSHPIN_REF=$PUSHPIN_REF
 
 
 # Start logging
@@ -140,7 +146,8 @@ EOF
 
 echo "Installing Pushpin"
 cd $PUSHPIN_SOURCE_PATH
-git clone https://github.com/kingajanicka/pushpin-groovebox/ $PUSHPIN_SOURCE_PATH/pushpin-groovebox
+git clone --branch "$PUSHPIN_REF" "$PUSHPIN_REPO" "$PUSHPIN_SOURCE_PATH/pushpin-groovebox" \
+    || { echo "ERROR: could not clone $PUSHPIN_REPO at $PUSHPIN_REF"; exit 1; }
 
 ln -s $PUSHPIN_SOURCE_PATH/pushpin-groovebox/pushpin_groovebox.conf $PIPEWIRE_CONFIGURATION_PATH/pushpin_groovebox.conf
 

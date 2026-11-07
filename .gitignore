@@ -139,3 +139,10 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+
+# Raspberry Pi image build outputs (scripts/image)
+scripts/image/.build/
+scripts/image/my.plugins
+scripts/image/my.plugins.1
+*.img
+*.img.xz
