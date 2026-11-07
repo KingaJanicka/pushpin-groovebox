@@ -35,6 +35,20 @@ PUSHPIN_REF="${PUSHPIN_REF:-${GITHUB_REF_NAME:-dev}}"
 PUSHPIN_REPO="${PUSHPIN_REPO:-https://github.com/kingajanicka/pushpin-groovebox}"
 echo "Building $IMAGE from $PUSHPIN_REPO @ $PUSHPIN_REF"
 
+# Diagnostics mode (opt-in, never used by the release workflow): set
+# PUSHPIN_DIAG_PUBKEY to an SSH *public* key file and the image will
+# authorize it for the pushpin user, call itself pushpin.local and let pushpin
+# read the system journal. See scripts/diagnostics/README.md.
+PUSHPIN_DIAG_PUBKEY_TEXT=""
+if [ -n "${PUSHPIN_DIAG_PUBKEY:-}" ]; then
+  [ -f "$PUSHPIN_DIAG_PUBKEY" ] || errexit "? PUSHPIN_DIAG_PUBKEY: no such file: $PUSHPIN_DIAG_PUBKEY"
+  grep -q "PRIVATE KEY" "$PUSHPIN_DIAG_PUBKEY" && errexit "? PUSHPIN_DIAG_PUBKEY is a private key; pass the .pub file"
+  PUSHPIN_DIAG_PUBKEY_TEXT="$(head -n 1 "$PUSHPIN_DIAG_PUBKEY")"
+  [[ "$PUSHPIN_DIAG_PUBKEY_TEXT" =~ ^(ssh-ed25519|ssh-rsa|ecdsa-sha2-[a-z0-9]+|sk-[a-z0-9@.-]+)\ [A-Za-z0-9+/=]+ ]] \
+    || errexit "? PUSHPIN_DIAG_PUBKEY doesn't look like an SSH public key"
+  echo "Diagnostics mode: authorizing $(cut -d' ' -f1,3- <<< "$PUSHPIN_DIAG_PUBKEY_TEXT")"
+fi
+
 # sdm runs the setup script in a clean environment, so bake the ref into a
 # generated copy of it instead of relying on exported variables.
 mkdir -p "${PWD}/.build"
@@ -43,6 +57,7 @@ script_path="${PWD}/.build/setup_pushpin_image.sh"
   echo "#!/bin/bash"
   printf 'PUSHPIN_REF=%q\n' "$PUSHPIN_REF"
   printf 'PUSHPIN_REPO=%q\n' "$PUSHPIN_REPO"
+  printf 'PUSHPIN_DIAG_PUBKEY_TEXT=%q\n' "$PUSHPIN_DIAG_PUBKEY_TEXT"
   tail -n +2 "${PWD}/setup_full_with_backports.sh"
 } > "$script_path"
 chmod +x "$script_path"

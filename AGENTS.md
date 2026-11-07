@@ -626,6 +626,29 @@ preset_path = self._resolve_preset(self.presets[instrument_shortname][slot_index
 
 ---
 
+## Diagnosing a Raspberry Pi
+
+A Pi flashed with a **diagnostics-mode** image (see
+`scripts/diagnostics/README.md`) can be inspected from the development machine
+without a password:
+
+```bash
+scripts/diagnostics/diagnose.sh check      # connection test
+scripts/diagnostics/diagnose.sh summary    # OK/WARN/FAIL lines: read these first
+scripts/diagnostics/diagnose.sh report     # full report saved in diagnostics-output/
+scripts/diagnostics/diagnose.sh run <cmd>  # one command on the Pi, as pushpin
+```
+
+- Start with `summary`; follow up on each `FAIL` with `report` or a targeted `run`.
+- Diagnosis is read-only. Don't restart services, edit files, install packages
+  or reboot the Pi unless the user asks for that specific action.
+- Host keys change on every burn. If SSH refuses a changed key after a re-flash,
+  `diagnose.sh forget` is the fix. Don't disable host-key checking.
+- `pushpin` has no sudo rights on these images. Anything that needs root goes
+  to the user.
+
+---
+
 ## Known bugs / open debt
 
 These are real issues. Fix them properly rather than patching over symptoms:
