@@ -22,7 +22,7 @@ from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.osc_server import AsyncIOOSCUDPServer
 from pythonosc.dispatcher import Dispatcher
 
-from engine import disconnectPipewireLink
+from engine import disconnectPipewireLink, spawn_logged
 from modes.melodic_mode import MelodicMode
 from modes.instrument_selection_mode import InstrumentSelectionMode
 from modes.rhythmic_mode import RhythmicMode
@@ -1101,7 +1101,8 @@ class PyshaApp(object):
 
     
     async def start_pd_node(self, file_index = 8):
-        self.pd_process = await asyncio.create_subprocess_exec(
+        self.pd_process = await spawn_logged(
+            f"puredata-{file_index}",
             "pw-jack",
             "-p",
             "128",
@@ -1113,10 +1114,6 @@ class PyshaApp(object):
             "16",
             "-nocallback",
             f"./puredata_nodes/passthrough_{file_index}.pd",
-            stdin=asyncio.subprocess.PIPE,
-            stdout=asyncio.subprocess.PIPE,
-            # stderr=asyncio.subprocess.PIPE,
-            
         )
         
         self.puredata_process_id = self.pd_process.pid
