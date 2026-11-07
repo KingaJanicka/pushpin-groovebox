@@ -305,6 +305,32 @@ ln -sf ../pushpin.service "$SYSTEMD_USER_PATH/default.target.wants/pushpin.servi
 mkdir -p /var/lib/systemd/linger
 touch /var/lib/systemd/linger/$USER_NAME
 
+echo "Preferring the audio HAT over HDMI for the default output"
+# The DAC HAT and HDMI outputs have equal priority, so with a monitor plugged
+# in WirePlumber made HDMI the default sink. Pure Data connects its outputs to
+# the default sink when it starts, so all audio went to the monitor and the
+# HAT stayed silent. Lowering HDMI's priority makes any other ALSA output (the
+# HAT) win; HDMI remains selectable. Syntax is for WirePlumber 0.5 (backports).
+WIREPLUMBER_CONF_PATH="$USER_HOME_PATH/.config/wireplumber/wireplumber.conf.d"
+mkdir -p "$WIREPLUMBER_CONF_PATH"
+cat <<'EOF' > "$WIREPLUMBER_CONF_PATH/51-pushpin-prefer-hat.conf"
+# Pushpin: prefer an audio HAT (or any other ALSA output) over HDMI, so the
+# default sink, and so Pure Data, does not follow the monitor.
+monitor.alsa.rules = [
+  {
+    matches = [
+      { node.name = "~alsa_output.*hdmi.*" }
+    ]
+    actions = {
+      update-props = {
+        priority.session = 100
+        priority.driver = 100
+      }
+    }
+  }
+]
+EOF
+
 # Make sure no older autostart hook is left in .profile.
 [ -f $USER_HOME_PATH/.profile ] && sed -i '/start_pushpin\.sh/d' $USER_HOME_PATH/.profile
 
