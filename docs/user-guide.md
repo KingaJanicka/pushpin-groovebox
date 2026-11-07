@@ -51,4 +51,4 @@ Pushpin starts by instantiating eight instances of `surge-xt-cli`, the command-l
 
 It then disconnects the Surge instances from the default audio device and connects them to `pushpin-volumes`.
 
-Please see app.py for a full sense of what Pushpin initialisation looks like. Also, try running `qpwgraph` in Wayland to see how the connection pathways work (run `wayland-pi` at the command line to load Wayland).
+Please see app.py for a full sense of what Pushpin initialisation looks like. To see how the connection pathways work, run `pw-link -l` over SSH. The image boots to a console and no longer ships a desktop, so to use the graphical `qpwgraph` (still installed), forward it to your own machine with `ssh -X pushpin@<pi>` and run `qpwgraph`.

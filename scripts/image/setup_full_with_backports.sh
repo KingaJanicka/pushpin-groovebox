@@ -53,11 +53,15 @@ echo "Adding Bookworm backports"
 apt install -y pipewire/bookworm-backports pipewire-pulse/bookworm-backports pipewire-alsa/bookworm-backports libpipewire-0.3-modules/bookworm-backports pipewire-bin/bookworm-backports pipewire-jack/bookworm-backports wireplumber/bookworm-backports
 
 echo "Adding initial packages"
-apt install -y python3-brlapi raspberrypi-ui-mods libjson-glib-dev libgtk-4-dev 
+# No desktop on this Lite image: raspberrypi-ui-mods pulled in lightdm and a
+# full desktop, which fights the console auto-login on tty1, and nothing needs
+# libgtk-4-dev (Overwitch is built CLI_ONLY; its GUI would use GTK 3 anyway).
+# libjson-glib-dev stays: Overwitch's JSON device file needs json-glib.
+apt install -y python3-brlapi libjson-glib-dev
 apt install -y libusb-dev libsystemd-dev
 apt install -y autopoint gettext
 apt install -y libasound2-dev libjack-dev libsamplerate0-dev libsndfile1-dev
-apt install -y python3-dev libcairo2-dev
+apt install -y python3-dev python3-venv libcairo2-dev
 apt install -y git automake libtool
 
 # For Overwitch 
@@ -85,11 +89,11 @@ make install
 ldconfig
 cd udev
 make install
-cd $OVERWITCH_SOURCE_PATH/systemd
-make install
-systemctl --user enable overwitch.service
-# We need to run it through pw-jack so update service with correct invocation
-sed -i "s/overwitch-service/pw-jack overwitch-service/" /etc/systemd/user/overwitch.service
+# TODO: the app looks for an "overwitch-service" PipeWire client, but
+# overwitch-service and its systemd unit only exist from Overwitch 2.0, after the
+# commit pinned above. The old block here cd'd to a folder that doesn't exist
+# ($OVERWITCH_SOURCE_PATH/systemd), so it never installed or enabled anything.
+# Bump the pin and install overwitch/systemd once that's been tested on the Pi.
 
 
 
@@ -124,25 +128,10 @@ done
 
 
 
-# Ensure /etc/rc.local exists and is executable
-if [ ! -f /etc/rc.local ]; then
-    echo "#!/bin/sh -e" > /etc/rc.local
-    echo "exit 0" >> /etc/rc.local
-fi
-chmod +x /etc/rc.local
-
-# Remove 'exit 0' from /etc/rc.local if it exists
-sed -i '/^exit 0$/d' /etc/rc.local
-
-# Append the commands
-cat <<EOF >> /etc/rc.local
-
-# Commands to install Overwitch udev rules
-cd $OVERWITCH_SOURCE_PATH/$OVERWITCH_FOLDER_NAME/udev
-make install
-
-exit 0
-EOF
+# The Overwitch udev rules are (re)installed once by the sdm first-boot script
+# above. They used to be reinstalled from /etc/rc.local on EVERY boot, which
+# held up the tty1 getty (it waits for rc-local) and re-triggered every udev
+# device, the Push 2 included.
 
 echo "Installing Pushpin"
 cd $PUSHPIN_SOURCE_PATH
@@ -152,7 +141,7 @@ git clone --branch "$PUSHPIN_REF" "$PUSHPIN_REPO" "$PUSHPIN_SOURCE_PATH/pushpin-
 ln -s $PUSHPIN_SOURCE_PATH/pushpin-groovebox/pushpin_groovebox.conf $PIPEWIRE_CONFIGURATION_PATH/pushpin_groovebox.conf
 
 echo "Installing Pushpin deps"
-python -m venv $PYTHON_ENVIRONMENT_PATH/venv_pushpin_groovebox
+python3 -m venv $PYTHON_ENVIRONMENT_PATH/venv_pushpin_groovebox
 
 . $PYTHON_ENVIRONMENT_PATH/venv_pushpin_groovebox/bin/activate
 cd $PUSHPIN_SOURCE_PATH/pushpin-groovebox
