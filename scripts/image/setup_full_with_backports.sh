@@ -55,10 +55,13 @@ apt install -y pipewire/bookworm-backports pipewire-pulse/bookworm-backports pip
 echo "Adding initial packages"
 # No desktop on this Lite image: raspberrypi-ui-mods pulled in lightdm and a
 # full desktop, which fights the console auto-login on tty1, and nothing needs
-# libgtk-4-dev (Overwitch is built CLI_ONLY; its GUI would use GTK 3 anyway).
-# libjson-glib-dev stays: Overwitch's JSON device file needs json-glib.
-apt install -y python3-brlapi libjson-glib-dev
+# libgtk-4-dev (Overwitch is built CLI_ONLY, so its GTK 4 GUI isn't built).
+# Overwitch needs json-glib (device file), and overwitch-service also needs
+# libsystemd and glib-2.0.
+apt install -y python3-brlapi libjson-glib-dev libglib2.0-dev
 apt install -y libusb-dev libsystemd-dev
+# Session D-Bus for the lingering pushpin user manager (overwitch-service needs it)
+apt install -y dbus-user-session
 apt install -y autopoint gettext
 apt install -y libasound2-dev libjack-dev libsamplerate0-dev libsndfile1-dev
 apt install -y python3-dev python3-venv libcairo2-dev
@@ -79,9 +82,13 @@ apt install surge-xt-nightly -y
 
 echo "Building Overwitch"
 cd $OVERWITCH_SOURCE_PATH
-git clone https://github.com/dagargo/overwitch
+# 2.0+ is needed: the app looks for the "overwitch-service" client, which older
+# releases don't build. The service's systemd user unit is written further down
+# (see "Installing Overwitch systemd user service").
+OVERWITCH_VERSION="2.2"
+git clone --branch "$OVERWITCH_VERSION" https://github.com/dagargo/overwitch \
+    || { echo "ERROR: could not clone Overwitch $OVERWITCH_VERSION"; exit 1; }
 cd $OVERWITCH_FOLDER_NAME
-git checkout 7e4743a
 autoreconf --install
 ./configure  CLI_ONLY=yes
 make
@@ -89,13 +96,6 @@ make install
 ldconfig
 cd udev
 make install
-# TODO: the app looks for an "overwitch-service" PipeWire client, but
-# overwitch-service and its systemd unit only exist from Overwitch 2.0, after the
-# commit pinned above. The old block here cd'd to a folder that doesn't exist
-# ($OVERWITCH_SOURCE_PATH/systemd), so it never installed or enabled anything.
-# Bump the pin and install overwitch/systemd once that's been tested on the Pi.
-
-
 
 echo "Installing PureData"
 apt install puredata -y
@@ -113,6 +113,7 @@ OVERWITCH_INSTALL_PATHS=(
     "/usr/local/bin/overwitch-record"
     "/usr/local/bin/overwitch-play"
     "/usr/local/bin/overwitch-cli"
+    "/usr/local/bin/overwitch-service"
     "/usr/local/include/overwitch.h"
     "/usr/local/lib/liboverwitch.*"
 )
@@ -212,17 +213,45 @@ exec ./run.sh
 EOF
 chmod 755 $USER_HOME_PATH/start_pushpin.sh
 
+echo "Installing Overwitch systemd user service"
+# Written here instead of installing upstream's overwitch/systemd unit:
+# - upstream uses Type=notify-reload, which needs systemd 253+; Bookworm has 252
+#   (plain notify + ExecReload does the same job: SIGHUP reloads the config)
+# - it has to run through pw-jack to reach PipeWire's JACK API
+# The app finds Overwitch through PipeWire at startup, so pushpin.service is
+# ordered after this one. overwitch-service is a D-Bus service, which is why
+# dbus-user-session is installed above.
+SYSTEMD_USER_PATH="$USER_HOME_PATH/.config/systemd/user"
+mkdir -p "$SYSTEMD_USER_PATH/default.target.wants"
+cat <<EOF > "$SYSTEMD_USER_PATH/overwitch.service"
+[Unit]
+Description=Overwitch service (Elektron Overbridge audio)
+Requires=pipewire.service
+After=pipewire.service wireplumber.service
+
+[Service]
+Type=notify
+# "all", in case pw-jack forks instead of exec'ing overwitch-service.
+NotifyAccess=all
+ExecStart=/usr/bin/pw-jack /usr/local/bin/overwitch-service
+ExecReload=/bin/kill -HUP \$MAINPID
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
+EOF
+ln -sf ../overwitch.service "$SYSTEMD_USER_PATH/default.target.wants/overwitch.service"
+
 echo "Installing pushpin systemd user service"
 # Exactly one copy of the app, started at boot by the pushpin user's systemd
 # manager. Previously .profile ran start_pushpin.sh, so every login shell
 # (the tty1 auto-login AND each SSH session) started its own copy.
-SYSTEMD_USER_PATH="$USER_HOME_PATH/.config/systemd/user"
-mkdir -p "$SYSTEMD_USER_PATH/default.target.wants"
 cat <<EOF > "$SYSTEMD_USER_PATH/pushpin.service"
 [Unit]
 Description=Pushpin groovebox
-Wants=pipewire.service wireplumber.service
-After=pipewire.service wireplumber.service
+# Wants, not Requires: the app still runs if Overwitch fails to start.
+Wants=pipewire.service wireplumber.service overwitch.service
+After=pipewire.service wireplumber.service overwitch.service
 
 [Service]
 Type=simple

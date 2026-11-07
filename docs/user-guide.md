@@ -44,6 +44,7 @@ Useful commands (as the `pushpin` user):
 - `systemctl --user status pushpin` / `systemctl --user restart pushpin`
 - `journalctl --user -u pushpin -f` for the app's own output
 - `~/.local/state/pushpin-groovebox/logs/` for each `surge-xt-cli` and `puredata` child's output
+- `systemctl --user status overwitch` / `journalctl --user -u overwitch -f` for Overwitch, which runs as its own service and starts before `pushpin`
 
 Stop the service (`systemctl --user stop pushpin`) before running `./start_pushpin.sh` by hand, otherwise two copies will fight over the Push 2 and the OSC ports.
 
