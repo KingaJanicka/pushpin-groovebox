@@ -53,7 +53,13 @@ run() {
 
 check() { printf '%-4s %s\n' "$1" "$2"; }
 
-count_procs() { pgrep -u "$(id -u)" -c -f "$1" 2>/dev/null || echo 0; }
+# pgrep -c prints "0" itself (and exits 1) when nothing matches, so don't add
+# a fallback "0" on failure: that produced "0<newline>0" and broke the numeric tests.
+count_procs() {
+    local n
+    n=$(pgrep -u "$(id -u)" -c -f "$1" 2>/dev/null)
+    echo "${n:-0}"
+}
 
 summary() {
     section "SUMMARY"
