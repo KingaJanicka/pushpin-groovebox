@@ -100,6 +100,19 @@ summary() {
     if [ -e "/var/lib/systemd/linger/$(id -un)" ]; then check OK "lingering enabled for $(id -un)"
     else check FAIL "lingering not enabled for $(id -un)"; fi
 
+    # PipeWire's data-loop thread drives the audio output. At normal (TS)
+    # priority it misses deadlines and the audio crackles.
+    local pw_pid pw_cls
+    pw_pid=$(systemctl --user show -p MainPID --value pipewire 2>/dev/null)
+    pw_cls=$( [ -n "$pw_pid" ] && [ "$pw_pid" != 0 ] && ps -Lo cls=,comm= -p "$pw_pid" 2>/dev/null | awk '$2 ~ /^data-loop/ {print $1; exit}')
+    case "$pw_cls" in
+        FF|RR) check OK "PipeWire audio thread is realtime ($pw_cls)" ;;
+        "") check WARN "PipeWire audio thread not found" ;;
+        *) check FAIL "PipeWire audio thread is not realtime ($pw_cls); expect crackling" ;;
+    esac
+    if id -nG | tr ' ' '\n' | grep -qx pipewire; then check OK "$(id -un) is in the pipewire group (realtime limits)"
+    else check WARN "$(id -un) is not in the pipewire group; realtime depends on rtkit timing"; fi
+
     if grep -qs 'start_pushpin' "$HOME/.profile"; then check FAIL ".profile still starts the app"
     else check OK ".profile does not start the app"; fi
 
