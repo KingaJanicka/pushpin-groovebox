@@ -450,3 +450,80 @@ def test_OSCControlSwitch_without_family_keeps_query_only():
     switch.update_value(64)
     assert ("/engine", 1.0) in sent
     assert ("/param/a/filter/1/type", 1.0) not in sent
+
+
+class LateSurge(FakeSurge):
+    """FakeSurge whose echoes and query replies arrive `delay` clicks late."""
+
+    def __init__(self, state, delay):
+        super().__init__(state)
+        self.delay = delay
+        self.queue = []  # (deliver_at_click, address)
+        self.click = 0
+
+    def send(self, address, value):
+        if address.startswith("/q"):
+            address = address[2:]
+        elif value is not None:
+            self.state[address] = value
+        if address in self.state:
+            self.queue.append((self.click + self.delay, address, float(self.state[address])))
+
+    def tick(self):
+        self.click += 1
+        due = [q for q in self.queue if q[0] <= self.click]
+        self.queue = [q for q in self.queue if q[0] > self.click]
+        for _, address, value in due:
+            for handler in self.handlers.get(address, []):
+                handler(address, value, "label")
+
+
+def test_OSCControlSwitch_late_echo_does_not_jump_back():
+    """Turning quickly: an echo for an earlier group must not pull the switch back."""
+    surge = LateSurge({"/param/a/filter/1/type": 0}, delay=6)
+    switch = OSCControlSwitch(_family_switch_config(), send_osc_func=surge.send, dispatcher=surge)
+    for _ in range(10):  # the page has loaded: startup query replies have arrived
+        surge.tick()
+    seen = []
+    for _ in range(14):  # ~4 clicks per group at this speed
+        switch.update_value(10)
+        surge.tick()
+        seen.append(int(switch.knob_value))
+    for _ in range(10):  # let the late echoes land
+        surge.tick()
+
+    assert seen == sorted(seen), f"switch jumped back while turning forward: {seen}"
+    assert switch.get_active_group().label == "OB-Xd"
+    assert surge.state["/param/a/filter/1/type"] == 11
+
+
+def test_OSCControlMenu_late_echo_does_not_jump_back():
+    surge = LateSurge({"/param/a/filter/1/type": 1}, delay=6)
+    menu = _filter_type_menu(surge.send)
+    surge.map("/param/a/filter/1/type", menu.set_state)
+    seen = []
+    for _ in range(14):
+        menu.update_value(12)
+        surge.tick()
+        seen.append(int(menu.value))
+    for _ in range(10):
+        surge.tick()
+    assert seen == sorted(seen), f"menu jumped back while turning forward: {seen}"
+    assert menu.get_active_menu_item().label == "24db BP"
+
+
+def test_RecentSends_forgets_after_window():
+    now = [0.0]
+    recent = __import__("osc_controls").RecentSends(window=1.0, clock=lambda: now[0])
+    recent.add(11)
+    assert recent.contains(11.0)
+    now[0] = 1.5
+    assert not recent.contains(11)
+
+
+def test_OSCControlSwitch_external_change_still_moves_switch():
+    """A type Surge reports that we didn't send (e.g. preset load) still applies."""
+    surge = FakeSurge({"/param/a/filter/1/type": 1})
+    switch = OSCControlSwitch(_family_switch_config(), send_osc_func=surge.send, dispatcher=surge)
+    surge.send("/param/a/filter/1/type", 11)  # preset sets OB-Xd 12db LP
+    assert switch.get_active_group().label == "OB-Xd"
