@@ -290,6 +290,8 @@ After=pipewire.service wireplumber.service overwitch.service
 
 [Service]
 Type=simple
+# Without this Python buffers print() output and the journal stays empty.
+Environment=PYTHONUNBUFFERED=1
 ExecStart=$USER_HOME_PATH/start_pushpin.sh
 Restart=on-failure
 RestartSec=5
