@@ -243,7 +243,8 @@ fi
 
 python --version
 cd "\${PUSHPIN_PATH}"
-exec ./run.sh
+# Through bash, so a checkout without the executable bit on run.sh still starts.
+exec /bin/bash ./run.sh
 EOF
 chmod 755 $USER_HOME_PATH/start_pushpin.sh
 
