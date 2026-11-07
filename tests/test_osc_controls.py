@@ -313,3 +313,66 @@ def test_OSCControlMenu(mocker):
     # A single click moves only a fraction of one item.
     control.update_value(1)
     assert 0 < control.value < 1, "A single click moves the menu fractionally"
+
+
+def _filter_type_menu(send):
+    """A filter-type style menu: items share one address, values aren't 0..n."""
+    items = [("12db LP", 1.0), ("24db LP", 2.0), ("12db BP", 6.0), ("24db BP", 23.0)]
+    config = {
+        "$type": "control-menu",
+        "items": [
+            {
+                "$type": "menu-item",
+                "label": label,
+                "onselect": {"$type": "message", "address": "/param/a/filter/1/type", "value": value},
+            }
+            for label, value in items
+        ],
+    }
+    return OSCControlMenu(config, send_osc_func=send)
+
+
+def test_OSCControlMenu_sends_only_when_item_changes():
+    sent = []
+    control = _filter_type_menu(lambda addr, val: sent.append((addr, val)))
+    assert control.value == 0
+
+    control.update_value(1)  # a fraction of one item: still "12db LP"
+    assert sent == [], "No OSC while the selected item is unchanged"
+
+    control.update_value(127)  # saturate to the last item
+    assert sent == [("/param/a/filter/1/type", 23.0)]
+
+
+def test_OSCControlMenu_can_advance_despite_surge_echo():
+    """Regression: Surge echoes each value back; that used to pin the menu.
+
+    Every send is echoed straight back into set_state, as Surge does. Turning
+    the encoder one click at a time must still reach the next item.
+    """
+    control = None
+
+    def send_and_echo(addr, val):
+        control.set_state(addr, val)
+
+    control = _filter_type_menu(send_and_echo)
+    for _ in range(60):  # ~26 single clicks per item with 4 items
+        control.update_value(1)
+    assert control.value >= 1, "Encoder turns past the first item"
+    assert control.get_active_menu_item().label != "12db LP"
+
+
+def test_OSCControlMenu_echo_of_current_item_keeps_fraction():
+    control = _filter_type_menu(lambda addr, val: None)
+    control.update_value(5)
+    fraction = control.value
+    assert 0 < fraction < 1
+    control.set_state("/param/a/filter/1/type", 1.0)  # Surge reports "12db LP"
+    assert control.value == fraction
+
+
+def test_OSCControlMenu_external_change_still_updates():
+    control = _filter_type_menu(lambda addr, val: None)
+    control.set_state("/param/a/filter/1/type", 6.0)  # e.g. a preset load
+    assert control.value == 2
+    assert control.get_active_menu_item().label == "12db BP"

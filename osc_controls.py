@@ -863,7 +863,14 @@ class OSCControlMenu(object):
         
     def set_state(self, address: str, value: float, *args: Any) -> None:
         self.log.debug((address, value))
-        self.value = self.get_closest_idx(value)
+        idx = self.get_closest_idx(value)
+        # Surge echoes back every value we send. If the echo names the item
+        # that's already selected, keep our fractional position: snapping to
+        # the integer index on every echo threw away the encoder's progress
+        # towards the next item, so the menu could never be moved.
+        if idx is not None and self.value is not None and idx == math.floor(self.value):
+            return
+        self.value = idx
 
     def query(self) -> None:
         if self.address:
@@ -872,6 +879,7 @@ class OSCControlMenu(object):
     def update_value(self, increment: float, **kwargs: Any) -> None:
         scaled = scale_value(increment, 0, len(self.items))
         current = self.value if self.value is not None else 0.0
+        prev_item = self.get_active_menu_item()
         new_value = current + scaled
 
         # print(self.label, min_item_value, max_item_value, scaled, self.value, new_value)
@@ -882,8 +890,11 @@ class OSCControlMenu(object):
         elif new_value > len(self.items) - 1:
             self.value = len(self.items) - 1
 
+        # Only tell Surge when the selected item actually changes (as
+        # OSCControlSwitch does). Sending the same item on every encoder click
+        # made Surge echo it straight back, and each echo reset the menu.
         active_item = self.get_active_menu_item()
-        if active_item is not None:
+        if active_item is not None and active_item is not prev_item:
             active_item.select()
 
     def get_active_menu_item(self) -> OSCMenuItem | None:
