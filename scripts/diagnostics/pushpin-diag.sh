@@ -61,11 +61,23 @@ count_procs() {
     echo "${n:-0}"
 }
 
+# app.py starts a child process for the Push display (DisplayProcess), so a
+# healthy app shows two "python app.py" processes. Count only the ones whose
+# parent isn't app.py: that's the number of separate copies of the app.
+count_app_copies() {
+    local n=0 pid ppid
+    for pid in $(pgrep -u "$(id -u)" -f '[p]ython.* app\.py' 2>/dev/null); do
+        ppid=$(ps -o ppid= -p "$pid" 2>/dev/null | tr -d ' ')
+        grep -qs 'app\.py' "/proc/$ppid/cmdline" || n=$((n + 1))
+    done
+    echo "$n"
+}
+
 summary() {
     section "SUMMARY"
 
     local n
-    n=$(count_procs '[p]ython.* app\.py')
+    n=$(count_app_copies)
     if [ "$n" = 1 ]; then check OK "exactly one app.py running"
     elif [ "$n" = 0 ]; then check FAIL "app.py is not running"
     else check FAIL "$n copies of app.py running (expected 1)"; fi
