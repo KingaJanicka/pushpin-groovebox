@@ -14,7 +14,11 @@ jobs:
       - name: Deps
         run: sudo apt install -y binfmt-support systemd-container
       - name: install SDM
-        run: curl -L https://raw.githubusercontent.com/gitbls/sdm/master/EZsdmInstaller | bash
+        # Pinned: both the installer script and the release it installs.
+        # Bump SDM_VERSION deliberately after checking the sdm changelog.
+        env:
+          SDM_VERSION: V16.1
+        run: curl -fsSL "https://raw.githubusercontent.com/gitbls/sdm/${SDM_VERSION}/install-sdm" | bash -s -- "${SDM_VERSION}"
       - name: get hash
         id: get_sha
         run: echo "sha=$(git rev-parse --short HEAD)"  >> "$GITHUB_OUTPUT"
@@ -26,6 +30,8 @@ jobs:
         run: bash create-image-with-backports.sh
         env:
           IMAGE: ${{ steps.get_buildname.outputs.IMAGE }}
+          # Install the tag being released, not GitHub's default branch.
+          PUSHPIN_REF: ${{ github.ref_name }}
       - name: Copy files via SSH
         uses: appleboy/scp-action@v1
         with:
@@ -35,4 +41,4 @@ jobs:
           port: 22
           source: "./scripts/image/${{ steps.get_buildname.outputs.IMAGE }}"
           target: images
-          strip_components: true
+          strip_components: 1
