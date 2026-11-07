@@ -30,12 +30,16 @@ OUT_DIR="$REPO_ROOT/diagnostics-output"
 
 die() { echo "diagnose.sh: $*" >&2; exit 1; }
 
+# IPv4 by default (PUSHPIN_SSH_FAMILY=any to allow IPv6): pushpin.local also
+# resolves to the Pi's IPv6 addresses, which on some home networks give
+# "No route to host" from the Mac even though IPv4 works.
 pi() {
     [ -f "$KEY" ] || die "no key at $KEY (run: $0 keygen, then build the image with PUSHPIN_DIAG_PUBKEY=$KEY.pub)"
     ssh -i "$KEY" \
         -o IdentitiesOnly=yes \
         -o BatchMode=yes \
         -o ConnectTimeout=10 \
+        -o AddressFamily="${PUSHPIN_SSH_FAMILY:-inet}" \
         -o StrictHostKeyChecking=accept-new \
         -o UserKnownHostsFile="$KNOWN_HOSTS" \
         "pushpin@$HOST" "$@"

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import push2_python
 import colorsys
-from os import path, mkdir
+from os import path, makedirs
 from typing import Any
 
 VERSION = "0.25"
@@ -122,9 +122,10 @@ FACTORY_PATCHES_FOLDER = f"{SURGE_XT_ROOT}/patches_factory"
 THIRD_PARTY_PATCHES_FOLDER = f"{SURGE_XT_ROOT}/patches_3rdparty"
 USER_PATCHES_FOLDER = f"{path.expanduser('~')}/Documents/Surge XT/Patches"
 USER_CONFIG_FOLDER = f"{path.expanduser('~')}/.local/share/pushpin"
-    
-if not path.isdir(USER_CONFIG_FOLDER):
-    mkdir(USER_CONFIG_FOLDER)
+
+# makedirs, not mkdir: on a fresh Lite image (no desktop login) ~/.local/share
+# doesn't exist yet, and a plain mkdir crashed the app on import.
+makedirs(USER_CONFIG_FOLDER, exist_ok=True)
 
 SURGE_STATE_FOLDER = f"{path.expanduser('~')}/s/music_devices/pushpin-groovebox/surge_state" # Root is ~/Documents/Surge XT/Patches
 
