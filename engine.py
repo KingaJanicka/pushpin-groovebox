@@ -66,6 +66,71 @@ async def spawn_logged(name: str, *args: str) -> asyncio.subprocess.Process:
         if not isinstance(log, int):
             log.close()
 
+
+# surge-xt-cli's --midi-input takes an index into *Surge's own* device list, which
+# is ordered differently from mido/rtmidi's. On the Pi, rtmidi lists Midi Through
+# and the two Push 2 ports first, so its index for "Pushpin N" was 3 too high:
+# each synth listened to another track, and one listened to the app's own Push 2
+# LED output (rtmidi's "RtMidi output" port) and played every pad colour change
+# as a note. So look the port up by name in Surge's list instead.
+SURGE_MIDI_DEVICE_PREFIX = "MIDI Device: ["
+SURGE_LIST_DEVICES_TIMEOUT = 30
+
+_surge_midi_devices: dict[str, int] | None = None
+_surge_midi_devices_lock: asyncio.Lock | None = None
+
+
+def parse_surge_midi_devices(output: str) -> dict[str, int]:
+    """Map MIDI port name -> index from ``surge-xt-cli --list-devices`` output.
+
+    Lines look like ``20:04:25.663 - MIDI Device: [3] : Pushpin 3``.
+    """
+    devices: dict[str, int] = {}
+    for line in output.splitlines():
+        start = line.find(SURGE_MIDI_DEVICE_PREFIX)
+        if start == -1:
+            continue
+        index_text, sep, name = line[start + len(SURGE_MIDI_DEVICE_PREFIX):].partition("] : ")
+        if sep and index_text.isdigit():
+            devices.setdefault(name.strip(), int(index_text))
+    return devices
+
+
+async def list_surge_midi_devices() -> dict[str, int]:
+    """Run ``surge-xt-cli --list-devices`` and return its MIDI inputs by name."""
+    proc = await asyncio.create_subprocess_exec(
+        "pw-jack",
+        "surge-xt-cli",
+        "--list-devices",
+        stdin=asyncio.subprocess.DEVNULL,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.STDOUT,
+    )
+    try:
+        out, _ = await asyncio.wait_for(proc.communicate(), SURGE_LIST_DEVICES_TIMEOUT)
+    except asyncio.TimeoutError:
+        proc.kill()
+        await proc.wait()
+        logger.warning("surge-xt-cli --list-devices timed out")
+        return {}
+    return parse_surge_midi_devices(out.decode(errors="replace"))
+
+
+async def surge_midi_input_index(port_name: str) -> int | None:
+    """Surge's index for the MIDI port called ``port_name``, or None if absent.
+
+    The listing is shared by all synths (they start concurrently) and re-read
+    once if the port isn't in it yet.
+    """
+    global _surge_midi_devices, _surge_midi_devices_lock
+    if _surge_midi_devices_lock is None:
+        _surge_midi_devices_lock = asyncio.Lock()
+    async with _surge_midi_devices_lock:
+        if _surge_midi_devices is None or port_name not in _surge_midi_devices:
+            _surge_midi_devices = await list_surge_midi_devices()
+        return _surge_midi_devices.get(port_name)
+
+
 class Engine(ABC):
     app: Any
     type: str | None = None
@@ -518,7 +583,21 @@ class SurgeXTEngine(Engine):
         assert self.instrument is not None
         self.osc_in_port = self.instrument["osc_in_port"]
         self.osc_out_port = self.instrument["osc_out_port"]
-        
+
+        # The instrument's virtual MIDI port is named after its short name.
+        midi_port_name = self.instrument.get("instrument_short_name", "")
+        midi_index = await surge_midi_input_index(midi_port_name)
+        if midi_index is None:
+            # No MIDI is better than the wrong track's (or the Push's LED) MIDI.
+            logger.warning(
+                "MIDI port %r not found by surge-xt-cli; starting %s without MIDI input",
+                midi_port_name,
+                self.instrument.get("instrument_name"),
+            )
+            midi_args: list[str] = []
+        else:
+            midi_args = [f"--midi-input={midi_index}"]
+
         proc = await spawn_logged(
             f"surge-xt-{self.instrument_index}",
             f"pw-jack",
@@ -528,7 +607,7 @@ class SurgeXTEngine(Engine):
             f"--audio-interface={'1.0'}",
             f"--audio-input-interface={'1.0'}",
             # f"--audio-output-interface={'0.25'}",
-            f"--midi-input={self.midi_device_idx}",
+            *midi_args,
             f"--osc-in-port={self.osc_in_port}",
             f"--osc-out-port={self.osc_out_port}",
         )
