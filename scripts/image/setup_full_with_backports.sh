@@ -305,6 +305,17 @@ ln -sf ../pushpin.service "$SYSTEMD_USER_PATH/default.target.wants/pushpin.servi
 mkdir -p /var/lib/systemd/linger
 touch /var/lib/systemd/linger/$USER_NAME
 
+# Realtime priority for PipeWire without depending on rtkit. Lingering starts
+# PipeWire at boot, at the same moment as rtkit-daemon, so PipeWire's request to
+# rtkit could go unanswered: its DAC thread then ran at normal priority and the
+# audio crackled (thousands of xruns an hour). PipeWire's
+# /etc/security/limits.d/25-pw-rlimits.conf gives the "pipewire" group rtprio 95,
+# and the systemd user manager applies those limits (pam_limits), so PipeWire
+# gets realtime priority directly. A desktop login starts PipeWire much later,
+# which is why dev machines didn't show this.
+getent group pipewire >/dev/null || groupadd --system pipewire
+usermod -aG pipewire "$USER_NAME"
+
 # Make sure no older autostart hook is left in .profile.
 [ -f $USER_HOME_PATH/.profile ] && sed -i '/start_pushpin\.sh/d' $USER_HOME_PATH/.profile
 
