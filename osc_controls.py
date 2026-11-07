@@ -5,6 +5,7 @@ import math
 import push2_python
 from user_interface.display_utils import show_text
 import logging
+import time
 from typing import Any, Callable
 
 logger = logging.getLogger("osc_controls")
@@ -470,6 +471,36 @@ class OSCControlMacro(object):
         # Find by index
 
 
+# Surge XT echoes every parameter value it receives back to the app. An echo
+# can arrive after the user has already turned further, and applying it then
+# jumps the control back. Controls remember what they sent recently and ignore
+# those echoes; anything else (e.g. a preset load) is still applied.
+ECHO_WINDOW_SECONDS = 1.0
+
+
+class RecentSends(object):
+    def __init__(self, window: float = ECHO_WINDOW_SECONDS, clock: Callable[[], float] = time.monotonic) -> None:
+        self.window = window
+        self.clock = clock
+        self._sent: list[tuple[float, float]] = []  # (time, value)
+
+    def add(self, value: Any) -> None:
+        if value is None:
+            return
+        self._prune()
+        self._sent.append((self.clock(), float(value)))
+
+    def contains(self, value: Any) -> bool:
+        if value is None:
+            return False
+        self._prune()
+        return any(abs(sent - float(value)) < 1e-6 for _, sent in self._sent)
+
+    def _prune(self) -> None:
+        cutoff = self.clock() - self.window
+        self._sent = [entry for entry in self._sent if entry[0] >= cutoff]
+
+
 class OSCControlSwitch(object):
     name = "Switch"
     address = None
@@ -509,6 +540,10 @@ class OSCControlSwitch(object):
         self.get_color_func: ColorFunc = get_color_func or (lambda: definitions.GRAY_LIGHT)
         self.send_osc_func: OscSendFunc = send_osc_func or (lambda addr, val: None)
         self.modmatrix: bool = config.get("modmatrix", True)
+        # Optional fixed encoder speed: clicks needed to move one group. Without
+        # it, a full 127-click sweep covers all groups, so switches with many
+        # groups (e.g. 13 filter families) change every few clicks.
+        self.clicks_per_group: float | None = config.get("clicks_per_group", None)
         self.log = logger.getChild(f"{self.label}:Switch")
         groups = config.get("groups", [])
 
@@ -522,6 +557,12 @@ class OSCControlSwitch(object):
             )
 
             self.groups.append(group_control)
+
+        # A "type family" switch (filter/waveshaper type) has groups with no
+        # onselect message, each starting with a menu on one shared address.
+        # Choosing a group there must set that address in Surge.
+        self.family_address: str | None = self._find_family_address()
+        self.recent_sends = RecentSends()
 
         if (
             len(self.groups) > 0
@@ -540,7 +581,10 @@ class OSCControlSwitch(object):
 
     def update_value(self, increment: float, **kwargs: Any) -> None:
         prev_idx = int(self.value)
-        scaled = scale_value(increment, 0, len(self.groups))
+        if self.clicks_per_group:
+            scaled = increment / self.clicks_per_group
+        else:
+            scaled = scale_value(increment, 0, len(self.groups))
         if 0 <= (self.value + scaled) <= len(self.groups):
             self.value += scaled
             self.knob_value = self.value
@@ -551,7 +595,35 @@ class OSCControlSwitch(object):
                     self.send_osc_func(
                         active.message["address"], float(active.message["value"])
                     )
+                elif self.family_address is not None:
+                    # Without this, select() below only *queried* Surge, which
+                    # answered with the old type, and set_state() moved the
+                    # switch straight back: the filter type couldn't be changed.
+                    item = self._family_menu(active).get_active_menu_item()
+                    if item is not None:
+                        self.recent_sends.add(item.value)
+                        item.select()
                 active.select()
+
+    def _family_menu(self, group: "OSCGroup") -> "OSCControlMenu":
+        return group.controls[0]
+
+    def _find_family_address(self) -> str | None:
+        addresses = set()
+        for group in self.groups:
+            if group.message or not group.controls:
+                return None
+            first = group.controls[0]
+            if not isinstance(first, OSCControlMenu) or not first.items:
+                return None
+            addresses |= {item.address for item in first.items}
+        return addresses.pop() if len(addresses) == 1 else None
+
+    def _move_to_group(self, idx: int) -> None:
+        # Already on this group: keep the fractional position so the encoder's
+        # progress towards the next group isn't thrown away.
+        if int(self.value) != idx:
+            self.value = float(idx)
 
     def update_value_lock(self, value) -> None:
         self.lock_value = value
@@ -589,15 +661,19 @@ class OSCControlSwitch(object):
         value, label = args
         # print("switch val = ", value)
         self.log.debug((address, args))
+        if address == self.family_address and self.recent_sends.contains(value):
+            # Our own type change coming back (possibly late, after the user
+            # has turned on further): applying it would jump the switch back.
+            return
         # TODO do we need the following?
         for idx, group in enumerate(self.groups):
             for control in group.controls:
                 if isinstance(control, OSCControl) and control.address == address:
-                    self.value = float(idx)
+                    self._move_to_group(idx)
                 elif isinstance(control, OSCControlMacro) and any(
                     [param for param in control.params if param["address"] == address]
                 ):
-                    self.value = float(idx)
+                    self._move_to_group(idx)
                 elif isinstance(control, OSCControlMenu) and (
                     any([item for item in control.items if item.address == address])
                     or control.address == address
@@ -609,7 +685,7 @@ class OSCControlSwitch(object):
                         and int(first.items[0].message["value"]) == int(value)
                         and first.items[0].address == address
                     ):
-                        self.value = float(idx)
+                        self._move_to_group(idx)
 
     def draw(self, ctx: Any, offset: int,  draw_lock: bool = False, lock_value: float | None = None) -> None:
         margin_top = 30
@@ -852,6 +928,7 @@ class OSCControlMenu(object):
         self.value: float | int | None = self.message["value"] if self.message else None
         self.size: int = 0
         self.log = logger.getChild(f"{self.label}:Menu")
+        self.recent_sends = RecentSends()
 
         for item in config.get("items", []):
             self.items.append(OSCMenuItem(item, send_osc_func=send_osc_func))
@@ -863,7 +940,16 @@ class OSCControlMenu(object):
         
     def set_state(self, address: str, value: float, *args: Any) -> None:
         self.log.debug((address, value))
-        self.value = self.get_closest_idx(value)
+        if self.recent_sends.contains(value):
+            return  # our own selection coming back, possibly after a newer one
+        idx = self.get_closest_idx(value)
+        # Surge echoes back every value we send. If the echo names the item
+        # that's already selected, keep our fractional position: snapping to
+        # the integer index on every echo threw away the encoder's progress
+        # towards the next item, so the menu could never be moved.
+        if idx is not None and self.value is not None and idx == math.floor(self.value):
+            return
+        self.value = idx
 
     def query(self) -> None:
         if self.address:
@@ -872,6 +958,7 @@ class OSCControlMenu(object):
     def update_value(self, increment: float, **kwargs: Any) -> None:
         scaled = scale_value(increment, 0, len(self.items))
         current = self.value if self.value is not None else 0.0
+        prev_item = self.get_active_menu_item()
         new_value = current + scaled
 
         # print(self.label, min_item_value, max_item_value, scaled, self.value, new_value)
@@ -882,8 +969,12 @@ class OSCControlMenu(object):
         elif new_value > len(self.items) - 1:
             self.value = len(self.items) - 1
 
+        # Only tell Surge when the selected item actually changes (as
+        # OSCControlSwitch does). Sending the same item on every encoder click
+        # made Surge echo it straight back, and each echo reset the menu.
         active_item = self.get_active_menu_item()
-        if active_item is not None:
+        if active_item is not None and active_item is not prev_item:
+            self.recent_sends.add(active_item.value)
             active_item.select()
 
     def get_active_menu_item(self) -> OSCMenuItem | None:
