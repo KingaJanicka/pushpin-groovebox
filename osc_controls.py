@@ -523,6 +523,11 @@ class OSCControlSwitch(object):
 
             self.groups.append(group_control)
 
+        # A "type family" switch (filter/waveshaper type) has groups with no
+        # onselect message, each starting with a menu on one shared address.
+        # Choosing a group there must set that address in Surge.
+        self.family_address: str | None = self._find_family_address()
+
         if (
             len(self.groups) > 0
             and self.groups[int(self.value)]
@@ -551,7 +556,28 @@ class OSCControlSwitch(object):
                     self.send_osc_func(
                         active.message["address"], float(active.message["value"])
                     )
+                elif self.family_address is not None:
+                    # Without this, select() below only *queried* Surge, which
+                    # answered with the old type, and set_state() moved the
+                    # switch straight back: the filter type couldn't be changed.
+                    item = self._family_menu(active).get_active_menu_item()
+                    if item is not None:
+                        item.select()
                 active.select()
+
+    def _family_menu(self, group: "OSCGroup") -> "OSCControlMenu":
+        return group.controls[0]
+
+    def _find_family_address(self) -> str | None:
+        addresses = set()
+        for group in self.groups:
+            if group.message or not group.controls:
+                return None
+            first = group.controls[0]
+            if not isinstance(first, OSCControlMenu) or not first.items:
+                return None
+            addresses |= {item.address for item in first.items}
+        return addresses.pop() if len(addresses) == 1 else None
 
     def update_value_lock(self, value) -> None:
         self.lock_value = value

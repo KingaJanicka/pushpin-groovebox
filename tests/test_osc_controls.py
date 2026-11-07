@@ -376,3 +376,77 @@ def test_OSCControlMenu_external_change_still_updates():
     control.set_state("/param/a/filter/1/type", 6.0)  # e.g. a preset load
     assert control.value == 2
     assert control.get_active_menu_item().label == "12db BP"
+
+
+class FakeSurge:
+    """Stores params, echoes every set and answers /q queries, like Surge XT."""
+
+    def __init__(self, state):
+        self.state = dict(state)
+        self.handlers = {}
+
+    # dispatcher API used by the controls
+    def map(self, address, handler):
+        self.handlers.setdefault(address, []).append(handler)
+
+    # send_osc_func
+    def send(self, address, value):
+        if address.startswith("/q"):
+            address = address[2:]
+        elif value is not None:
+            self.state[address] = value
+        if address in self.state:
+            for handler in self.handlers.get(address, []):
+                handler(address, float(self.state[address]), "label")
+
+
+def _family_switch_config(address="/param/a/filter/1/type"):
+    def group(label, *types):
+        return {
+            "$type": "group",
+            "label": label,
+            "controls": [
+                {
+                    "$type": "control-menu",
+                    "items": [
+                        {"$type": "menu-item", "label": f"{label} {t}",
+                         "onselect": {"$type": "message", "address": address, "value": t}}
+                        for t in types
+                    ],
+                }
+            ],
+        }
+
+    return {"$type": "control-switch",
+            "groups": [group("Off", 0), group("Classic", 1, 2), group("OB-Xd", 11, 12)]}
+
+
+def test_OSCControlSwitch_family_switch_changes_type_despite_echo():
+    """Regression: turning the filter family snapped back to the current type.
+
+    Changing group only queried Surge; Surge answered with the old type and
+    set_state() moved the switch back. Now the new group's type is sent first.
+    """
+    surge = FakeSurge({"/param/a/filter/1/type": 1})  # Classic 12db LP
+    switch = OSCControlSwitch(_family_switch_config(), send_osc_func=surge.send, dispatcher=surge)
+    assert switch.family_address == "/param/a/filter/1/type"
+    switch.value = switch.knob_value = 1.0  # showing "Classic", as Surge says
+
+    for _ in range(80):  # one click at a time, ~43 clicks per group here
+        switch.update_value(1)
+
+    assert switch.get_active_group().label == "OB-Xd"
+    assert surge.state["/param/a/filter/1/type"] == 11, "Surge got the new filter type"
+
+
+def test_OSCControlSwitch_without_family_keeps_query_only():
+    """Switches whose groups have onselect (Twist engine) are unchanged."""
+    sent = []
+    config = _family_switch_config()
+    config["groups"][1]["onselect"] = {"$type": "message", "address": "/engine", "value": 1}
+    switch = OSCControlSwitch(config, send_osc_func=lambda a, v: sent.append((a, v)),
+                              dispatcher=FakeSurge({}))
+    assert switch.family_address is None
+    switch.update_value(64)
+    assert ("/engine", 1.0) in sent
+    assert ("/param/a/filter/1/type", 1.0) not in sent
