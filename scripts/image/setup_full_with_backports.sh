@@ -162,8 +162,6 @@ pip install ratelimit
 pip install pytest
 pip install pytest-asyncio
 
-chown -R $USER_NAME:audio $USER_HOME_PATH 
-chmod -R 755 $USER_HOME_PATH
 
 
 # echo "Configuring /boot/firmware/config.txt for HiFiBerry DAC8x"
@@ -201,9 +199,12 @@ chmod -R 755 $USER_HOME_PATH
 
 
 echo "Creating startup file"
-cat <<EOF >> $USER_HOME_PATH/start_pushpin.sh
+# Overwrite (not append) so re-running this script leaves one valid script.
+cat <<EOF > $USER_HOME_PATH/start_pushpin.sh
 #!/bin/bash
-# Path to your virtual environment
+# Started by the pushpin.service systemd user unit. Run it by hand only after
+# "systemctl --user stop pushpin", or two copies will fight over the Push 2
+# and OSC ports 1030-1047.
 VENV_PATH="$PYTHON_ENVIRONMENT_PATH/venv_pushpin_groovebox"
 PUSHPIN_PATH="$INSTALL_PATH/pushpin-groovebox"
 
@@ -216,17 +217,49 @@ else
     exit 1
 fi
 
-# Run Python commands or scripts within the virtual environment
 python --version
 cd "\${PUSHPIN_PATH}"
-./run.sh
-
+exec ./run.sh
 EOF
+chmod 755 $USER_HOME_PATH/start_pushpin.sh
 
-chown $USER_NAME:audio $USER_HOME_PATH/start_pushpin.sh
-chmod +x $USER_HOME_PATH/start_pushpin.sh
+echo "Installing pushpin systemd user service"
+# Exactly one copy of the app, started at boot by the pushpin user's systemd
+# manager. Previously .profile ran start_pushpin.sh, so every login shell
+# (the tty1 auto-login AND each SSH session) started its own copy.
+SYSTEMD_USER_PATH="$USER_HOME_PATH/.config/systemd/user"
+mkdir -p "$SYSTEMD_USER_PATH/default.target.wants"
+cat <<EOF > "$SYSTEMD_USER_PATH/pushpin.service"
+[Unit]
+Description=Pushpin groovebox
+Wants=pipewire.service wireplumber.service
+After=pipewire.service wireplumber.service
 
-echo "./start_pushpin.sh" >> $USER_HOME_PATH/.profile
+[Service]
+Type=simple
+ExecStart=$USER_HOME_PATH/start_pushpin.sh
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target
+EOF
+# Equivalent of "systemctl --user enable pushpin.service", which can't run as
+# root inside the sdm build container.
+ln -sf ../pushpin.service "$SYSTEMD_USER_PATH/default.target.wants/pushpin.service"
+
+# Equivalent of "loginctl enable-linger pushpin": start the user manager (and so
+# pipewire and pushpin.service) at boot without waiting for a login.
+mkdir -p /var/lib/systemd/linger
+touch /var/lib/systemd/linger/$USER_NAME
+
+# Make sure no older autostart hook is left in .profile.
+[ -f $USER_HOME_PATH/.profile ] && sed -i '/start_pushpin\.sh/d' $USER_HOME_PATH/.profile
+
+# Everything under the home folder was created by root; hand it to the user.
+# Ownership only: a blanket chmod -R 755 made every file executable and
+# opened private files (e.g. ~/.ssh) to other users.
+chown -R $USER_NAME:audio $USER_HOME_PATH
 
 echo "---------------------------------------------"
 echo "Script completed at: $(date)"
