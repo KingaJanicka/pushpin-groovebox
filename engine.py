@@ -6,9 +6,10 @@ import traceback
 import sys
 import json
 import logging
+import os
 import time
 from signal import SIGINT
-from typing import Any
+from typing import IO, Any
 from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.osc_server import AsyncIOOSCUDPServer
 from pythonosc.dispatcher import Dispatcher
@@ -16,6 +17,54 @@ from pythonosc.dispatcher import Dispatcher
 logger = logging.getLogger("engine.py")
 # logging.basicConfig(level=logging.DEBUG)
 # logging.getLogger().setLevel(level=logging.DEBUG)
+
+# Child processes (surge-xt-cli, puredata) are chatty. Their output must never
+# go to an unread PIPE: once the ~64 KB pipe buffer fills the child blocks on
+# write and stalls (audio drops out, OSC stops answering). Instead each child
+# writes to its own log file, truncated on every start.
+LOG_DIR_ENV = "PUSHPIN_LOG_DIR"
+DEFAULT_LOG_DIR = os.path.join("~", ".local", "state", "pushpin-groovebox", "logs")
+
+
+def child_log_dir() -> str:
+    """Directory for child-process logs ($PUSHPIN_LOG_DIR or the XDG state dir)."""
+    return os.path.expanduser(os.environ.get(LOG_DIR_ENV) or DEFAULT_LOG_DIR)
+
+
+def open_child_log(name: str) -> IO[bytes] | int:
+    """Open ``<log dir>/<name>.log`` for a child's stdout/stderr.
+
+    Falls back to ``DEVNULL`` if the log can't be created, so a read-only or
+    missing home directory never stops the synths from starting. The caller
+    should close the returned file once the child has been spawned (the child
+    keeps its own copy of the descriptor).
+    """
+    try:
+        log_dir = child_log_dir()
+        os.makedirs(log_dir, exist_ok=True)
+        return open(os.path.join(log_dir, f"{name}.log"), "wb")
+    except OSError as e:
+        logger.warning("Could not open log for %s (%s); discarding its output", name, e)
+        return asyncio.subprocess.DEVNULL
+
+
+async def spawn_logged(name: str, *args: str) -> asyncio.subprocess.Process:
+    """Start ``args`` with stdout+stderr going to the ``name`` log file.
+
+    stdin stays a pipe: surge-xt-cli reads commands from stdin and would treat
+    an immediate EOF as a request to exit.
+    """
+    log = open_child_log(name)
+    try:
+        return await asyncio.create_subprocess_exec(
+            *args,
+            stdin=asyncio.subprocess.PIPE,
+            stdout=log,
+            stderr=asyncio.subprocess.STDOUT,
+        )
+    finally:
+        if not isinstance(log, int):
+            log.close()
 
 class Engine(ABC):
     app: Any
@@ -470,7 +519,8 @@ class SurgeXTEngine(Engine):
         self.osc_in_port = self.instrument["osc_in_port"]
         self.osc_out_port = self.instrument["osc_out_port"]
         
-        proc = await asyncio.create_subprocess_exec(
+        proc = await spawn_logged(
+            f"surge-xt-{self.instrument_index}",
             f"pw-jack",
             f"-p",
             f"{self.buffer_size}",
@@ -481,9 +531,6 @@ class SurgeXTEngine(Engine):
             f"--midi-input={self.midi_device_idx}",
             f"--osc-in-port={self.osc_in_port}",
             f"--osc-out-port={self.osc_out_port}",
-            stdin=asyncio.subprocess.PIPE,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
         )
         self.process = proc
         self.PID = proc.pid
@@ -494,7 +541,8 @@ class SurgeXTEngine(Engine):
     async def start_pd_node(self):
         # print("engine start PD node")
         # await asyncio.sleep(1)
-        pd_proc = await asyncio.create_subprocess_exec(
+        pd_proc = await spawn_logged(
+            f"puredata-{self.instrument_index}",
             "pw-jack",
             "-p",
             f"{self.buffer_size}",
@@ -506,9 +554,6 @@ class SurgeXTEngine(Engine):
             "16",
             "-nocallback",
             f"./puredata_nodes/passthrough_{self.instrument_index}.pd",
-            stdin=asyncio.subprocess.PIPE,
-            stdout=asyncio.subprocess.PIPE,
-            # stderr=asyncio.subprocess.PIPE,
         )
         self.pd_process = pd_proc
         self.puredata_process_id = pd_proc.pid
