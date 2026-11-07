@@ -60,6 +60,8 @@ echo "Adding initial packages"
 # libsystemd and glib-2.0.
 apt install -y python3-brlapi libjson-glib-dev libglib2.0-dev
 apt install -y libusb-dev libsystemd-dev
+# Session D-Bus for the lingering pushpin user manager (overwitch-service needs it)
+apt install -y dbus-user-session
 apt install -y autopoint gettext
 apt install -y libasound2-dev libjack-dev libsamplerate0-dev libsndfile1-dev
 apt install -y python3-dev python3-venv libcairo2-dev
@@ -211,17 +213,45 @@ exec ./run.sh
 EOF
 chmod 755 $USER_HOME_PATH/start_pushpin.sh
 
+echo "Installing Overwitch systemd user service"
+# Written here instead of installing upstream's overwitch/systemd unit:
+# - upstream uses Type=notify-reload, which needs systemd 253+; Bookworm has 252
+#   (plain notify + ExecReload does the same job: SIGHUP reloads the config)
+# - it has to run through pw-jack to reach PipeWire's JACK API
+# The app finds Overwitch through PipeWire at startup, so pushpin.service is
+# ordered after this one. overwitch-service is a D-Bus service, which is why
+# dbus-user-session is installed above.
+SYSTEMD_USER_PATH="$USER_HOME_PATH/.config/systemd/user"
+mkdir -p "$SYSTEMD_USER_PATH/default.target.wants"
+cat <<EOF > "$SYSTEMD_USER_PATH/overwitch.service"
+[Unit]
+Description=Overwitch service (Elektron Overbridge audio)
+Requires=pipewire.service
+After=pipewire.service wireplumber.service
+
+[Service]
+Type=notify
+# "all", in case pw-jack forks instead of exec'ing overwitch-service.
+NotifyAccess=all
+ExecStart=/usr/bin/pw-jack /usr/local/bin/overwitch-service
+ExecReload=/bin/kill -HUP \$MAINPID
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
+EOF
+ln -sf ../overwitch.service "$SYSTEMD_USER_PATH/default.target.wants/overwitch.service"
+
 echo "Installing pushpin systemd user service"
 # Exactly one copy of the app, started at boot by the pushpin user's systemd
 # manager. Previously .profile ran start_pushpin.sh, so every login shell
 # (the tty1 auto-login AND each SSH session) started its own copy.
-SYSTEMD_USER_PATH="$USER_HOME_PATH/.config/systemd/user"
-mkdir -p "$SYSTEMD_USER_PATH/default.target.wants"
 cat <<EOF > "$SYSTEMD_USER_PATH/pushpin.service"
 [Unit]
 Description=Pushpin groovebox
-Wants=pipewire.service wireplumber.service
-After=pipewire.service wireplumber.service
+# Wants, not Requires: the app still runs if Overwitch fails to start.
+Wants=pipewire.service wireplumber.service overwitch.service
+After=pipewire.service wireplumber.service overwitch.service
 
 [Service]
 Type=simple
