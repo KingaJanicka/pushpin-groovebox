@@ -152,6 +152,40 @@ pip install ratelimit
 pip install pytest
 pip install pytest-asyncio
 
+echo "Installing pushpin-diag"
+# Read-only health report; on every image, diagnostics mode or not.
+DIAG_SCRIPT="$PUSHPIN_SOURCE_PATH/pushpin-groovebox/scripts/diagnostics/pushpin-diag.sh"
+if [ -f "$DIAG_SCRIPT" ]; then
+    install -m 755 "$DIAG_SCRIPT" /usr/local/bin/pushpin-diag
+else
+    echo "Warning: $DIAG_SCRIPT not in $PUSHPIN_REF; pushpin-diag not installed"
+fi
+
+PUSHPIN_DIAG_PUBKEY_TEXT="${PUSHPIN_DIAG_PUBKEY_TEXT:-}"
+if [ -n "$PUSHPIN_DIAG_PUBKEY_TEXT" ]; then
+    echo "Enabling diagnostics mode"
+    # Key-based SSH for the pushpin user, so diagnostics can run unattended.
+    mkdir -p "$USER_HOME_PATH/.ssh"
+    touch "$USER_HOME_PATH/.ssh/authorized_keys"
+    grep -qxF "$PUSHPIN_DIAG_PUBKEY_TEXT" "$USER_HOME_PATH/.ssh/authorized_keys" \
+        || echo "$PUSHPIN_DIAG_PUBKEY_TEXT" >> "$USER_HOME_PATH/.ssh/authorized_keys"
+    chmod 700 "$USER_HOME_PATH/.ssh"
+    chmod 600 "$USER_HOME_PATH/.ssh/authorized_keys"
+    systemctl enable ssh
+
+    # Reachable as pushpin.local (Raspberry Pi Imager's own hostname setting,
+    # if used when flashing, overrides this).
+    apt install -y avahi-daemon
+    echo pushpin > /etc/hostname
+    sed -i 's/^127\.0\.1\.1.*/127.0.1.1\tpushpin/' /etc/hosts
+    grep -q '^127\.0\.1\.1' /etc/hosts || printf '127.0.1.1\tpushpin\n' >> /etc/hosts
+
+    # Read the system journal and kernel log without sudo.
+    usermod -aG adm,systemd-journal "$USER_NAME"
+
+    echo "Diagnostics image, built $(date -Is) from $PUSHPIN_REF" > /etc/pushpin-diagnostics
+fi
+
 
 
 # echo "Configuring /boot/firmware/config.txt for HiFiBerry DAC8x"

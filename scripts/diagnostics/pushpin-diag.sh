@@ -205,6 +205,7 @@ full_report() {
 }
 
 echo "pushpin-diag on $(hostname) as $(id -un)"
+[ -f /etc/pushpin-diagnostics ] && cat /etc/pushpin-diagnostics
 summary
 [ "$SUMMARY_ONLY" = 1 ] || full_report
 exit 0
