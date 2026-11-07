@@ -28,11 +28,24 @@ assets="."
 
 [ -f $assets/my.plugins ] &&  mv $assets/my.plugins $assets/my.plugins.1
 
-if [ $IMAGE = "pushpin_dev.img" ]; then
-  script_path="${PWD}/setup_full_with_backports_dev.sh"
-else
-  script_path="${PWD}/setup_full_with_backports.sh"
-fi
+# Which pushpin-groovebox ref goes into the image:
+#   PUSHPIN_REF if set explicitly, else the tag being released in CI
+#   (GITHUB_REF_NAME), else dev for a local dev image.
+PUSHPIN_REF="${PUSHPIN_REF:-${GITHUB_REF_NAME:-dev}}"
+PUSHPIN_REPO="${PUSHPIN_REPO:-https://github.com/kingajanicka/pushpin-groovebox}"
+echo "Building $IMAGE from $PUSHPIN_REPO @ $PUSHPIN_REF"
+
+# sdm runs the setup script in a clean environment, so bake the ref into a
+# generated copy of it instead of relying on exported variables.
+mkdir -p "${PWD}/.build"
+script_path="${PWD}/.build/setup_pushpin_image.sh"
+{
+  echo "#!/bin/bash"
+  printf 'PUSHPIN_REF=%q\n' "$PUSHPIN_REF"
+  printf 'PUSHPIN_REPO=%q\n' "$PUSHPIN_REPO"
+  tail -n +2 "${PWD}/setup_full_with_backports.sh"
+} > "$script_path"
+chmod +x "$script_path"
 
 (cat <<EOF
 # Plugin List generated $(date +"%Y-%m-%d %H:%M:%S")
