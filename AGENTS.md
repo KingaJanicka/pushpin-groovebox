@@ -76,6 +76,31 @@ tests/                      pytest suite
 - Always open PRs against `dev`. If you accidentally target `main`, close and
   re-open.
 
+### Stacked PRs
+
+A stacked PR is one whose base is another PR's branch instead of `dev`.
+
+- **Don't stack by default.** Branch from `dev` and open the next PR after the
+  previous one merges. Stack only when the user asks, or when the work really
+  can't be reviewed or tested without the PR below it (e.g. one Pi image built
+  from several changes).
+- **Why stacks conflict:** "Rebase and merge" and "Squash and merge" put *new
+  copies* of the parent's commits on `dev`. The child branch still carries the
+  old copies, so GitHub reports conflicts on lines whose content is already
+  identical. Only "Create a merge commit" keeps the original commits.
+- **Merging a stack:** merge every PR except the top one with **"Create a
+  merge commit"**. GitHub retargets the child to `dev` and it stays clean. The
+  top PR can use any method.
+- **If a parent was squash- or rebase-merged anyway**, update the child by
+  merging `dev` into it. Don't rebase and force-push (agents' auto mode blocks
+  force-pushes). First check `git diff <old parent tip> origin/dev` is empty.
+  If it is, every conflict resolves to the child's side
+  (`git checkout --ours <file>`); confirm the merged tree equals the child's
+  old tip (`git diff --cached --stat <old child tip>` shows nothing), then
+  push normally. If the diff isn't empty, the parent changed in review:
+  resolve the conflicts by hand.
+- Say in the PR description that it's stacked and which PR to merge first.
+
 ---
 
 ## Environment
