@@ -65,6 +65,7 @@
 		},
 		{
 			"$type": "control-switch",
+			"clicks_per_group": 25,
 			"groups": [
 				{
 					"$type": "group",
@@ -1271,6 +1272,7 @@
 		},
 		{
 			"$type": "control-switch",
+			"clicks_per_group": 25,
 			"groups": [
 				{
 					"$type": "group",

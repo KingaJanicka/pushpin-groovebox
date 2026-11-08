@@ -53,13 +53,31 @@ run() {
 
 check() { printf '%-4s %s\n' "$1" "$2"; }
 
-count_procs() { pgrep -u "$(id -u)" -c -f "$1" 2>/dev/null || echo 0; }
+# pgrep -c prints "0" itself (and exits 1) when nothing matches, so don't add
+# a fallback "0" on failure: that produced "0<newline>0" and broke the numeric tests.
+count_procs() {
+    local n
+    n=$(pgrep -u "$(id -u)" -c -f "$1" 2>/dev/null)
+    echo "${n:-0}"
+}
+
+# app.py starts a child process for the Push display (DisplayProcess), so a
+# healthy app shows two "python app.py" processes. Count only the ones whose
+# parent isn't app.py: that's the number of separate copies of the app.
+count_app_copies() {
+    local n=0 pid ppid
+    for pid in $(pgrep -u "$(id -u)" -f '[p]ython.* app\.py' 2>/dev/null); do
+        ppid=$(ps -o ppid= -p "$pid" 2>/dev/null | tr -d ' ')
+        grep -qs 'app\.py' "/proc/$ppid/cmdline" || n=$((n + 1))
+    done
+    echo "$n"
+}
 
 summary() {
     section "SUMMARY"
 
     local n
-    n=$(count_procs '[p]ython.* app\.py')
+    n=$(count_app_copies)
     if [ "$n" = 1 ]; then check OK "exactly one app.py running"
     elif [ "$n" = 0 ]; then check FAIL "app.py is not running"
     else check FAIL "$n copies of app.py running (expected 1)"; fi
@@ -81,6 +99,19 @@ summary() {
 
     if [ -e "/var/lib/systemd/linger/$(id -un)" ]; then check OK "lingering enabled for $(id -un)"
     else check FAIL "lingering not enabled for $(id -un)"; fi
+
+    # PipeWire's data-loop thread drives the audio output. At normal (TS)
+    # priority it misses deadlines and the audio crackles.
+    local pw_pid pw_cls
+    pw_pid=$(systemctl --user show -p MainPID --value pipewire 2>/dev/null)
+    pw_cls=$( [ -n "$pw_pid" ] && [ "$pw_pid" != 0 ] && ps -Lo cls=,comm= -p "$pw_pid" 2>/dev/null | awk '$2 ~ /^data-loop/ {print $1; exit}')
+    case "$pw_cls" in
+        FF|RR) check OK "PipeWire audio thread is realtime ($pw_cls)" ;;
+        "") check WARN "PipeWire audio thread not found" ;;
+        *) check FAIL "PipeWire audio thread is not realtime ($pw_cls); expect crackling" ;;
+    esac
+    if id -nG | tr ' ' '\n' | grep -qx pipewire; then check OK "$(id -un) is in the pipewire group (realtime limits)"
+    else check WARN "$(id -un) is not in the pipewire group; realtime depends on rtkit timing"; fi
 
     if grep -qs 'start_pushpin' "$HOME/.profile"; then check FAIL ".profile still starts the app"
     else check OK ".profile does not start the app"; fi

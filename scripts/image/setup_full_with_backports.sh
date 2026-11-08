@@ -222,6 +222,17 @@ fi
 # echo "Configuration of /boot/firmware/config.txt completed."
 
 
+# Realtime priority for PipeWire without depending on rtkit. Lingering starts
+# PipeWire at boot, at the same moment as rtkit-daemon, so PipeWire's request to
+# rtkit could go unanswered: its DAC thread then ran at normal priority and the
+# audio crackled (thousands of xruns an hour). PipeWire's
+# /etc/security/limits.d/25-pw-rlimits.conf gives the "pipewire" group rtprio 95,
+# and the systemd user manager applies those limits (pam_limits), so PipeWire
+# gets realtime priority directly. A desktop login starts PipeWire much later,
+# which is why dev machines didn't show this.
+getent group pipewire >/dev/null || groupadd --system pipewire
+usermod -aG pipewire "$USER_NAME"
+
 echo "Creating startup file"
 # Overwrite (not append) so re-running this script leaves one valid script.
 cat <<EOF > $USER_HOME_PATH/start_pushpin.sh
@@ -243,7 +254,8 @@ fi
 
 python --version
 cd "\${PUSHPIN_PATH}"
-exec ./run.sh
+# Through bash, so a checkout without the executable bit on run.sh still starts.
+exec /bin/bash ./run.sh
 EOF
 chmod 755 $USER_HOME_PATH/start_pushpin.sh
 
@@ -289,6 +301,8 @@ After=pipewire.service wireplumber.service overwitch.service
 
 [Service]
 Type=simple
+# Without this Python buffers print() output and the journal stays empty.
+Environment=PYTHONUNBUFFERED=1
 ExecStart=$USER_HOME_PATH/start_pushpin.sh
 Restart=on-failure
 RestartSec=5
@@ -304,6 +318,32 @@ ln -sf ../pushpin.service "$SYSTEMD_USER_PATH/default.target.wants/pushpin.servi
 # pipewire and pushpin.service) at boot without waiting for a login.
 mkdir -p /var/lib/systemd/linger
 touch /var/lib/systemd/linger/$USER_NAME
+
+echo "Preferring the audio HAT over HDMI for the default output"
+# The DAC HAT and HDMI outputs have equal priority, so with a monitor plugged
+# in WirePlumber made HDMI the default sink. Pure Data connects its outputs to
+# the default sink when it starts, so all audio went to the monitor and the
+# HAT stayed silent. Lowering HDMI's priority makes any other ALSA output (the
+# HAT) win; HDMI remains selectable. Syntax is for WirePlumber 0.5 (backports).
+WIREPLUMBER_CONF_PATH="$USER_HOME_PATH/.config/wireplumber/wireplumber.conf.d"
+mkdir -p "$WIREPLUMBER_CONF_PATH"
+cat <<'EOF' > "$WIREPLUMBER_CONF_PATH/51-pushpin-prefer-hat.conf"
+# Pushpin: prefer an audio HAT (or any other ALSA output) over HDMI, so the
+# default sink, and so Pure Data, does not follow the monitor.
+monitor.alsa.rules = [
+  {
+    matches = [
+      { node.name = "~alsa_output.*hdmi.*" }
+    ]
+    actions = {
+      update-props = {
+        priority.session = 100
+        priority.driver = 100
+      }
+    }
+  }
+]
+EOF
 
 # Make sure no older autostart hook is left in .profile.
 [ -f $USER_HOME_PATH/.profile ] && sed -i '/start_pushpin\.sh/d' $USER_HOME_PATH/.profile

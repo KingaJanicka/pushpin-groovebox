@@ -52,4 +52,6 @@ Pushpin starts by instantiating eight instances of `surge-xt-cli`, the command-l
 
 It then disconnects the Surge instances from the default audio device and connects them to `pushpin-volumes`.
 
+Audio goes out through the default PipeWire output. The image ships a WirePlumber rule, `/home/pushpin/.config/wireplumber/wireplumber.conf.d/51-pushpin-prefer-hat.conf`, that gives HDMI a low priority so an audio HAT is the default even with a monitor plugged in. Check with `wpctl status` (the default sink is marked `*`). To send audio somewhere else, run `wpctl set-default <id>` and then `systemctl --user restart pushpin`, since Pure Data only connects its outputs when it starts.
+
 Please see app.py for a full sense of what Pushpin initialisation looks like. To see how the connection pathways work, run `pw-link -l` over SSH. The image boots to a console and no longer ships a desktop, so to use the graphical `qpwgraph` (still installed), forward it to your own machine with `ssh -X pushpin@<pi>` and run `qpwgraph`.

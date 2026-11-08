@@ -150,6 +150,11 @@
                 "$type": {
                     "const": "control-switch"
                 },
+                "clicks_per_group": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "description": "Encoder clicks needed to move one group. Omit to spread 127 clicks across all groups."
+                },
                 "groups": {
                     "type": "array",
                     "items": {
