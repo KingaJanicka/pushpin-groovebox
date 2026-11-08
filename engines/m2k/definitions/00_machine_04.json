@@ -667,8 +667,7 @@
 			"label": "2ENV",
 			"address": "/cc/53",
 			"min": 0,
-			"max": 127,
-			"bipolar": 1
+			"max": 127
 		},
 		{
 			"$type": "control-range",

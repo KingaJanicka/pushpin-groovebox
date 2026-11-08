@@ -826,3 +826,11 @@ def test_the_clock_goes_to_one_mono2k_port_the_first_tracks(app):
     surge_only = MagicMock(voices={"surge-xt-cli": MagicMock()})
     assert mono2k_clock_port({"Pushpin 1": surge_only, "Pushpin 2": first}) is ports["Pushpin 2 m2k"]
     assert mono2k_clock_port({"Pushpin 1": surge_only}) is None
+
+
+def test_fm_envelope_amounts_are_plain_sliders(app):
+    instrument, _ = make_instrument(app)
+    for machine, labels in (("FM+STAT", ["1ENV"]), ("FM+DYN", ["2ENV"]), ("FM+PAR", ["1ENV", "2ENV", "3ENV"])):
+        controls = {c.label: c for c in machine_page(instrument, machine).controls if hasattr(c, "bipolar")}
+        assert all(not controls[label].bipolar for label in labels), machine
+    assert machine_page(instrument, "FM+STAT").controls[1].bipolar            # 1FIN: a fine tune, still about 0
