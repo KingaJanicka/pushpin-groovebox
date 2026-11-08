@@ -304,6 +304,10 @@ class OSCDevice(PyshaMode):
                 ].index(encoder_name)
                 if self.app.metro_sequencer_mode.disable_controls == False:
                     visible_controls = self.get_visible_controls()
+                    # A page with fewer than 8 controls (a device's last page) leaves
+                    # the encoders past them with nothing to turn
+                    if encoder_idx >= len(visible_controls):
+                        return
                     control = visible_controls[encoder_idx]
                     control.update_value(increment)
                     
