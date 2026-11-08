@@ -174,6 +174,9 @@ engines/m2k/build.sh && python engines/m2k/gen_definitions.py
 - **Machine device** (first upper-row button): one per machine, picked from the
   device menu like Surge's oscillator types. Shows SYN A–H with that machine's
   own labels. Selecting one sends CC 14 and the machine's whole INIT sound.
+- **DSTR**: BITS, FOLD, XOR and the reverb send (VERB), then MONO2K's MOD effect:
+  TYPE (a menu: CHOR, FLNG, PHAS; four clicks an item), RATE, DPTH and MIX. The
+  MOD parameters have no CC; the page sends them as NRPN 1:66–69.
 - **AMP, FILT, FX, DSTR, LFO 1–3**: the other seven upper-row buttons, all on
   the first page. Each device has a device slot of its own (machine 0, AMP 1,
   FILT 2, FX 3, DSTR 4, LFO 1–3 5–7; `M2KEngine.always_shown_slots`), because

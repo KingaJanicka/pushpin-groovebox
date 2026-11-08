@@ -220,15 +220,21 @@ def test_generated_definitions_exist():
     assert {"10_amp.json", "20_filt.json", "30_fx.json", "40_dstr.json"} <= set(names)
 
 
-def test_generated_controls_only_use_cc_addresses():
+def test_generated_controls_only_use_cc_and_param_addresses():
+    def reachable(address):
+        return cc_number(address) is not None or param_number(address) is not None
+
     for path in m2k_files():
         device = json.load(open(path))
         assert len(device["controls"]) <= 8, path
         for control in device["controls"]:
             if control["$type"] == "control-spacer":
                 continue
+            if control["$type"] == "control-menu":
+                assert all(reachable(i["onselect"]["address"]) for i in control["items"]), (path, control)
+                continue
             assert control["$type"] == "control-range", path
-            assert cc_number(control["address"]) is not None, (path, control)
+            assert reachable(control["address"]), (path, control)
         for message in device["init"]:
             assert cc_number(message["address"]) is not None or param_number(message["address"]) is not None, (
                 path, message)

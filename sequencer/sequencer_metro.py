@@ -11,6 +11,20 @@ from definitions import TRACK_NAMES_METRO
 from sequencer.sequencer_params import SequencerParams
 
 
+def lock_message(control, value):
+    """The (address, value) a p-lock of ``value`` on ``control`` plays. A menu's
+    locks are item positions: play the item's own message, not the position
+    (most of Surge's menus send their position, but not all, and mono2k's
+    MOD type sends 21/64/106)."""
+    items = getattr(control, "items", None)
+    if items:
+        idx = min(max(int(round(float(value))), 0), len(items) - 1)
+        item = items[idx]
+        if item.address is not None and item.value is not None:
+            return item.address, float(item.value)
+    return control.address, value
+
+
 default_number_of_steps = 64
 
 from typing import Any
@@ -328,7 +342,7 @@ class SequencerMetro(object):
                         if control.name == "Switch":
                             control.reset_group()
                         else:
-                            self.app.send_osc(control.address, float(control.value), instrument.name)
+                            self.app.send_osc(*lock_message(control, float(control.value)), instrument.name)
                     self.timeline.schedule(
                         {"note": pitch_and_octave, "gate": gate, "amplitude": velocity}, count=1,
                         # the track's active engine's port (Surge's, or its mono2k port), looked up
@@ -365,7 +379,7 @@ class SequencerMetro(object):
                                             value_after_scale = lock_offset * lock_scale_value + control.value
                                             
                                             if lock_value != None and lock_address != None:
-                                                self.app.send_osc(lock_address, value_after_scale, instrument.name)
+                                                self.app.send_osc(*lock_message(control, value_after_scale), instrument.name)
                                             elif lock_value != None and control.name == "Switch":
                                                     control.update_value_lock(value_after_scale)
                                             
@@ -390,7 +404,7 @@ class SequencerMetro(object):
                                     value_after_scale = lock_offset * lock_scale_value + control.value
                                     
                                     if lock_value != None and lock_address != None:
-                                        self.app.send_osc(lock_address, value_after_scale, instrument.name)
+                                        self.app.send_osc(*lock_message(control, value_after_scale), instrument.name)
                                     elif lock_value != None and control.name == "Switch":
                                             control.update_value_lock(value_after_scale)
                                     

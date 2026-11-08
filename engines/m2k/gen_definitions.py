@@ -52,6 +52,17 @@ HIDDEN_LABELS = {"TRCK", "-"}
 FINE_STEP = 0.5
 FINE_STEP_LABELS = {("FILT", "BASE"), ("FILT", "WDTH"), ("FX", "EQF"), ("FX", "DBAS")}
 
+# DSTR's page: BITS FOLD XOR VERB (their CCs), then MONO2K's MOD effect, which
+# no CC reaches (NRPN 1:<param>): its type as a menu, rate, depth and mix
+DSTR_CCS = (16, 17, 18, 19)
+MOD_TYPE, MOD_RATE, MOD_DEPTH, MOD_MIX = 66, 67, 68, 69
+MOD_TYPES = ["CHOR", "FLNG", "PHAS"]          # MONO2K's own names (m2k_ui.c, K_MODT)
+MENU_CLICKS_PER_ITEM = 4
+
+
+def choice_value(i: int, n: int) -> int:
+    """The middle of choice i of n on 0-127, as MONO2K's factory encodes it."""
+    return (i * 128 + 64) // n
 
 def cc_address(cc: int) -> str:
     return f"/cc/{cc}"
@@ -108,20 +119,49 @@ def machine_device(machine: dict, machine_cc: int, ccs: dict[int, int] | None = 
     }
 
 
-def page_devices(params: list[dict]) -> dict[str, dict]:
+def param_control(param: int, label: str, mx: int = 127) -> dict:
+    return {"$type": "control-range", "label": label, "address": param_address(param), "min": 0, "max": mx}
+
+
+def mod_type_menu() -> dict:
+    return {
+        "$type": "control-menu",
+        "menu_label": "TYPE",
+        "step": 1 / MENU_CLICKS_PER_ITEM,
+        "items": [
+            {
+                "$type": "menu-item",
+                "label": name,
+                "onselect": {"$type": "message", "address": param_address(MOD_TYPE),
+                             "value": choice_value(i, len(MOD_TYPES))},
+            }
+            for i, name in enumerate(MOD_TYPES)
+        ],
+    }
+
+
+def dstr_controls(params: list[dict], labels: dict[int, str]) -> list[dict]:
+    by_cc = {p["cc"]: p for p in params}
+    controls = [control(cc, by_cc[cc]["param"], "DSTR") for cc in DSTR_CCS]
+    controls.append(mod_type_menu())
+    controls += [param_control(p, labels.get(p, str(p))) for p in (MOD_RATE, MOD_DEPTH, MOD_MIX)]
+    return controls
+
+
+def page_devices(params: list[dict], labels: dict[int, str] | None = None) -> dict[str, dict]:
     devices = {}
     for page, (stem, name, slot) in PAGES.items():
-        devices[stem] = {
-            "name": name,
-            "slot": slot,
-            "init": [],
-            "controls": [control(p["cc"], p["param"], page) for p in params if p["page"] == page],
-        }
+        if page == "DSTR" and labels is not None:
+            controls = dstr_controls(params, labels)
+        else:
+            controls = [control(p["cc"], p["param"], page) for p in params if p["page"] == page]
+        devices[stem] = {"name": name, "slot": slot, "init": [], "controls": controls}
     return devices
 
 
 def build(describe: dict) -> dict[str, dict]:
-    files = page_devices(describe["params"])
+    labels = {p["param"]: p["label"] for p in describe["params_all"]} if "params_all" in describe else None
+    files = page_devices(describe["params"], labels)
     ccs = cc_by_param(describe) if "kit" in describe["machines"][0] else None
     for m in describe["machines"]:
         files[f"00_machine_{m['index']:02d}"] = machine_device(m, describe["machine_cc"], ccs)

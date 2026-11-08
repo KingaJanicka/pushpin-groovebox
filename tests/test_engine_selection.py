@@ -382,3 +382,61 @@ def test_right_arrow_stays_on_page_1_without_a_modulation_page(app):
     app.is_mode_active.return_value = False
     mode.update_current_instrument_page(new_instrument_page=1)
     assert mode.instrument_page == 0
+
+
+# --------------------------------------------- the DSTR page: MOD effect
+
+
+def test_dstr_page_is_bits_fold_xor_verb_then_the_mod_effect(app):
+    instrument, _ = make_instrument(app)
+    dstr = next(d for d in instrument.current_devices if d.label == "DSTR")
+    labels = [getattr(c, "label", None) if not hasattr(c, "items") else "TYPE" for c in dstr.controls]
+    assert labels == ["BITS", "FOLD", "XOR", "VERB", "TYPE", "RATE", "DPTH", "MIX"]
+    menu = dstr.controls[4]
+    assert [(i.label, i.address, i.value) for i in menu.items] == [
+        ("CHOR", "/m2k/param/66", 21), ("FLNG", "/m2k/param/66", 64), ("PHAS", "/m2k/param/66", 106)]
+    assert [c.address for c in dstr.controls[5:]] == ["/m2k/param/67", "/m2k/param/68", "/m2k/param/69"]
+
+
+def test_mod_type_menu_moves_an_item_every_4_clicks_and_sends_nrpn(app):
+    instrument, ports = make_instrument(app)
+    port = ports["Pushpin 2 m2k"]
+    dstr = next(d for d in instrument.current_devices if d.label == "DSTR")
+    menu = dstr.controls[4]
+    port.control.reset_mock()
+    for _ in range(3):
+        menu.update_value(1)
+    port.control.assert_not_called()                          # still on the same item
+    menu.update_value(1)
+    sent = [c.args for c in port.control.call_args_list]
+    assert sent[:4] == [(99, 1, 2), (98, 66, 2), (6, 64, 2), (38, 0, 2)]   # FLNG, NRPN 1:66
+
+
+def test_machine_init_sets_the_mod_menu_from_its_value(app):
+    instrument, _ = make_instrument(app)
+    dstr = next(d for d in instrument.current_devices if d.label == "DSTR")
+    instrument.osc["client"].send_message("/m2k/param/66", 106.0)   # as a machine's INIT or a loaded sound does
+    assert dstr.controls[4].get_active_menu_item().label == "PHAS"
+
+
+def test_menu_p_locks_play_the_items_message():
+    from types import SimpleNamespace
+    from sequencer.sequencer_metro import lock_message
+    item = lambda v: SimpleNamespace(address="/m2k/param/66", value=v)
+    menu = SimpleNamespace(address="/m2k/param/66", items=[item(21), item(64), item(106)])
+    assert lock_message(menu, 1.2) == ("/m2k/param/66", 64.0)       # a lock is an item position
+    assert lock_message(menu, 9) == ("/m2k/param/66", 106.0)        # clamped
+    rng = SimpleNamespace(address="/cc/72", value=0)
+    assert lock_message(rng, 33.5) == ("/cc/72", 33.5)
+
+
+def test_menu_step_is_optional():
+    from osc_controls import OSCControlMenu
+    items = [{"$type": "menu-item", "label": str(i), "onselect": {"address": "/x", "value": i}} for i in range(3)]
+    slow = OSCControlMenu({"$type": "control-menu", "items": items})
+    slow.update_value(1)
+    assert slow.value < 0.1                                        # 3/127 of an item, as before
+    fast = OSCControlMenu({"$type": "control-menu", "items": items, "step": 0.5})
+    fast.update_value(1)
+    fast.update_value(1)
+    assert fast.get_active_menu_item().label == "1"

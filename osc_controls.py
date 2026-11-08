@@ -941,6 +941,9 @@ class OSCControlMenu(object):
         self.size: int = 0
         self.log = logger.getChild(f"{self.label}:Menu")
         self.recent_sends = RecentSends()
+        # Optional: items moved per encoder click. Without it a full 127-click
+        # sweep covers the whole menu, so a short menu takes ~40 clicks an item.
+        self.step: float | None = config.get("step", None)
 
         for item in config.get("items", []):
             self.items.append(OSCMenuItem(item, send_osc_func=send_osc_func))
@@ -968,7 +971,10 @@ class OSCControlMenu(object):
             self.send_osc_func("/q" + self.address, None)
 
     def update_value(self, increment: float, **kwargs: Any) -> None:
-        scaled = scale_value(increment, 0, len(self.items))
+        if self.step is not None:
+            scaled = increment * self.step
+        else:
+            scaled = scale_value(increment, 0, len(self.items))
         current = self.value if self.value is not None else 0.0
         prev_item = self.get_active_menu_item()
         new_value = current + scaled
