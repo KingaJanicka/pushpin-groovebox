@@ -456,7 +456,8 @@ def test_lfo_page_starts_with_device_and_destination(app):
     assert visible[0].name == "Switch" and visible[1].name == "Menu"
     assert [c.label for c in visible[2:]] == ["WAVE", "TRIG", "MULT", "SPD", "PHAS", "DPTH"]
     assert [g.label for g in visible[0].groups] == [
-        "OFF", "SYN", "AMP", "FILT", "FX", "DSTR", "TRK", "LFO 1", "LFO 2", "LFO 3"]
+        "OFF", "SYN", "AMP", "FILT", "FX", "DSTR", "LFO 1", "LFO 2", "LFO 3"]
+    assert visible[0].menu_label == "DEVICE"
 
 
 def nrpn_values(port, lsb):
@@ -479,7 +480,7 @@ def test_picking_a_device_then_a_parameter_sets_dest(app):
     for _ in range(4):
         page.on_encoder_rotated(B.ENCODER_TRACK2_ENCODER, 1)        # SYN A -> SYN B
     assert nrpn_values(port, 105) == [1, 2]
-    assert page.get_visible_controls()[1].get_active_menu_item().label == "SYN B"
+    assert page.get_visible_controls()[1].get_active_menu_item().label == "SUB"   # GND-SIN's SYN B
 
 
 def test_a_dest_value_coming_back_selects_its_device_and_parameter(app):
@@ -616,3 +617,53 @@ def test_switch_draw_survives_an_out_of_range_lock_value():
         switch.draw(MagicMock(), 0, draw_lock=True, lock_value=7)
         switch.knob_value = 5
         switch.draw(MagicMock(), 0)
+
+
+
+def test_syn_destinations_name_the_current_machines_controls(app):
+    instrument, _ = make_instrument(app)
+    syn = next(g for g in lfo_page(instrument).get_visible_controls()[0].groups if g.label == "SYN")
+    labels = lambda: [i.label for i in syn.controls[0].items]
+    assert labels() == ["FOLD", "SUB", "NOIS", "PDEP", "PDEC", "CLIK", "HARM", "TUNE"]     # GND-SIN
+    kick = next(d for d in instrument.devices[0] if d.label == "DRM-KICK")
+    kick.select_sync()
+    assert labels() == ["WAVE", "PDEP", "PDEC", "PCRV", "FM", "FMFR", "SNAP", "CLIK"]
+    perc = next(d for d in instrument.devices[0] if d.label == "GND-PERC")
+    perc.select_sync()
+    assert labels()[-1] == "-"                                       # its SYN H is unused
+
+
+def test_menu_item_label_falls_back_without_a_source():
+    from osc_controls import OSCMenuItem
+    item = OSCMenuItem({"$type": "menu-item", "label": "SYN A", "onselect": {"address": "/x", "value": 1}})
+    assert item.label == "SYN A"
+    item.label_func = lambda: None
+    assert item.label == "SYN A"
+    item.label_func = lambda: "WAVE"
+    assert item.label == "WAVE"
+
+
+def test_lfo_depth_is_bipolar_and_shown_signed(app):
+    instrument, _ = make_instrument(app)
+    dpth = lfo_page(instrument).get_visible_controls()[-1]
+    assert dpth.label == "DPTH" and dpth.bipolar
+    assert [dpth.display_text(v) for v in (64, 96, 0, 64.5)] == ["0", "+32", "-64", "+0.5"]
+    amp_vol = next(d for d in instrument.current_devices if d.label == "AMP").controls[5]
+    assert amp_vol.display_text(64) == "64"                          # other controls unchanged
+
+
+def test_titled_switch_draws_level_with_menus():
+    from osc_controls import OSCControlSwitch
+    from pythonosc.dispatcher import Dispatcher
+    groups = [{"$type": "group", "label": l, "controls": []} for l in ("a", "b", "c")]
+    plain = OSCControlSwitch({"$type": "control-switch", "groups": groups}, dispatcher=Dispatcher())
+    titled = OSCControlSwitch({"$type": "control-switch", "menu_label": "DEVICE", "groups": groups},
+                              dispatcher=Dispatcher())
+    tops = {}
+    for name, sw in (("plain", plain), ("titled", titled)):
+        sw.knob_value = 1
+        with _patch("osc_controls.show_text") as show:
+            sw.draw(MagicMock(), 0)
+        tops[name] = {c.args[3]: c.args[2] for c in show.call_args_list}
+    assert tops["plain"] == {"a": 30, "b": 45, "c": 70}               # Surge's, as before
+    assert tops["titled"] == {"DEVICE": 25, "a": 55, "b": 70, "c": 95} # a titled menu's rows

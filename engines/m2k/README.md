@@ -182,10 +182,12 @@ engines/m2k/build.sh && python engines/m2k/gen_definitions.py
   FILT 2, FX 3, DSTR 4, LFO 1–3 5–7; `M2KEngine.always_shown_slots`), because
   p-locks are stored by slot: two devices in one slot would share their locks.
   There's no modulation page, so Right stays on the first.
-- **LFO 1–3**: knob 1 picks the device to modulate (OFF, SYN, AMP, FILT, FX,
-  DSTR, TRK, LFO 1–3) and knob 2 the parameter on it, like Surge's filter-type
-  pages (a switch whose groups each hold a menu); four clicks an entry. They set
-  MONO2K's DEST (the parameter's number + 1). Then WAVE TRIG MULT SPD PHAS DPTH.
+- **LFO 1–3**: knob 1 (DEVICE) picks the device to modulate (OFF, SYN, AMP,
+  FILT, FX, DSTR, LFO 1–3) and knob 2 (DEST) the parameter on it, like Surge's
+  filter-type pages (a switch whose groups each hold a menu); four clicks an
+  entry. SYN's entries take the current machine's own names. They set MONO2K's
+  DEST (the parameter's number + 1). Then WAVE TRIG MULT SPD PHAS and DPTH,
+  which is bipolar and shown as -64..+63 (0: no modulation).
   TRCK isn't on the page: in the core a TRCK value reaches only tracks 1–6 from
   a knob, so cross-track LFOs would need more than a CC.
 

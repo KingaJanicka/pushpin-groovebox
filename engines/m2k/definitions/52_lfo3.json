@@ -5,6 +5,7 @@
 	"controls": [
 		{
 			"$type": "control-switch",
+			"menu_label": "DEVICE",
 			"clicks_per_group": 4,
 			"select_by_value": true,
 			"groups": [
@@ -46,6 +47,10 @@
 										"$type": "message",
 										"address": "/cc/113",
 										"value": 1
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 0
 									}
 								},
 								{
@@ -55,6 +60,10 @@
 										"$type": "message",
 										"address": "/cc/113",
 										"value": 2
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 1
 									}
 								},
 								{
@@ -64,6 +73,10 @@
 										"$type": "message",
 										"address": "/cc/113",
 										"value": 3
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 2
 									}
 								},
 								{
@@ -73,6 +86,10 @@
 										"$type": "message",
 										"address": "/cc/113",
 										"value": 4
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 3
 									}
 								},
 								{
@@ -82,6 +99,10 @@
 										"$type": "message",
 										"address": "/cc/113",
 										"value": 5
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 4
 									}
 								},
 								{
@@ -91,6 +112,10 @@
 										"$type": "message",
 										"address": "/cc/113",
 										"value": 6
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 5
 									}
 								},
 								{
@@ -100,6 +125,10 @@
 										"$type": "message",
 										"address": "/cc/113",
 										"value": 7
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 6
 									}
 								},
 								{
@@ -109,6 +138,10 @@
 										"$type": "message",
 										"address": "/cc/113",
 										"value": 8
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 7
 									}
 								}
 							]
@@ -457,73 +490,6 @@
 				},
 				{
 					"$type": "group",
-					"label": "TRK",
-					"controls": [
-						{
-							"$type": "control-menu",
-							"menu_label": "DEST",
-							"step": 0.25,
-							"items": [
-								{
-									"$type": "menu-item",
-									"label": "PTCH",
-									"onselect": {
-										"$type": "message",
-										"address": "/cc/113",
-										"value": 37
-									}
-								},
-								{
-									"$type": "menu-item",
-									"label": "LEVL",
-									"onselect": {
-										"$type": "message",
-										"address": "/cc/113",
-										"value": 38
-									}
-								},
-								{
-									"$type": "menu-item",
-									"label": "MODE",
-									"onselect": {
-										"$type": "message",
-										"address": "/cc/113",
-										"value": 39
-									}
-								},
-								{
-									"$type": "menu-item",
-									"label": "SPD",
-									"onselect": {
-										"$type": "message",
-										"address": "/cc/113",
-										"value": 40
-									}
-								},
-								{
-									"$type": "menu-item",
-									"label": "RNG",
-									"onselect": {
-										"$type": "message",
-										"address": "/cc/113",
-										"value": 41
-									}
-								},
-								{
-									"$type": "menu-item",
-									"label": "GATE",
-									"onselect": {
-										"$type": "message",
-										"address": "/cc/113",
-										"value": 42
-									}
-								}
-							]
-						}
-					]
-				},
-				{
-					"$type": "group",
 					"label": "LFO 1",
 					"controls": [
 						{
@@ -765,7 +731,9 @@
 			"label": "DPTH",
 			"address": "/cc/119",
 			"min": 0,
-			"max": 127
+			"max": 127,
+			"bipolar": 1,
+			"display_center": 64
 		}
 	]
 }

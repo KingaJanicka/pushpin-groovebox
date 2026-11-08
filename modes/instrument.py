@@ -193,12 +193,48 @@ class Instrument(PyshaMode):
             slot_idx = device_definitions[device_name]["slot"]
             voice.devices[slot_idx].append(device)
 
+        self._resolve_dynamic_labels(voice)
+
         # gets all the modulation devices
         for slot_idx, slot_devices in enumerate(voice.devices):
             for device in slot_devices:
                 if 8 <= slot_idx <= 15:
                     voice.devices_modulation.append(device)
         return voice
+
+    def _resolve_dynamic_labels(self, voice: Voice) -> None:
+        """Menu items naming another device's control (label_from) get their
+        label from whatever that slot shows now, as the mod matrix does."""
+        def items_of(control):
+            for item in getattr(control, "items", []) or []:
+                yield item
+            for group in getattr(control, "groups", []) or []:
+                for c in group.controls:
+                    yield from items_of(c)
+
+        for slot_devices in voice.devices:
+            for device in slot_devices:
+                for control in getattr(device, "controls", []):
+                    for item in items_of(control):
+                        source = getattr(item, "label_from", None)
+                        if source:
+                            item.label_func = partial(
+                                self._slot_control_label, voice, int(source["slot"]), int(source["control"]))
+
+    def _slot_control_label(self, voice: Voice, slot_idx: int, control_idx: int) -> str | None:
+        """The label of the control_idx-th control of the device slot_idx shows."""
+        slot = voice.slots[slot_idx] if slot_idx < len(voice.slots) else None
+        for device in voice.devices[slot_idx]:
+            if slot is not None and not any(
+                init["address"] == slot["address"] and int(init["value"]) == float(slot["value"])
+                for init in device.init
+            ):
+                continue
+            controls = getattr(device, "controls", [])
+            if control_idx < len(controls):
+                return getattr(controls[control_idx], "label", None) or "-"
+            return "-"
+        return None
 
     def _build_m2k_voice(self, instrument_definition, midi_out_idx, m2k_device_definitions) -> Voice | None:
         """The track's mono2k voice, or None when m2k-jack isn't built or the

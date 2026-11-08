@@ -64,9 +64,18 @@ class OSCControl(object):
         # Optional: how far one encoder click moves the value, in the control's
         # own units. Without it a click is (max - min) / SCALING_FACTOR.
         self.step: float | None = config.get("step", None)
+        # Optional: show the value as an offset from this centre, signed
+        # (mono2k's LFO depth: 64 is none, below it the other way round)
+        self.display_center: float | None = config.get("display_center", None)
 
     def query(self) -> None:
         self.send_osc_func("/q" + self.address, None)
+
+    def display_text(self, value: float) -> str:
+        if self.display_center is not None:
+            offset = round(float(value) - float(self.display_center), 2)
+            return "0" if offset == 0 else f"{offset:+g}"
+        return str(round(value, 2))
 
     def fraction(self, value: float) -> float:
         """Where ``value`` sits between min and max, 0..1, for drawing. Surge's
@@ -128,7 +137,7 @@ class OSCControl(object):
                 ctx,
                 x_part,
                 margin_top + name_height,
-                str(round(value, 2)),
+                self.display_text(value),
                 # str(self.string),
                 height=val_height,
                 font_color=color,
@@ -208,7 +217,7 @@ class OSCControl(object):
                 ctx,
                 x_part,
                 margin_top + name_height,
-                str(round(value, 2)),
+                self.display_text(value),
                 # str(self.string),
                 height=val_height,
                 font_color=color,
@@ -556,6 +565,9 @@ class OSCControlSwitch(object):
         # it, a full 127-click sweep covers all groups, so switches with many
         # groups (e.g. 13 filter families) change every few clicks.
         self.clicks_per_group: float | None = config.get("clicks_per_group", None)
+        # Optional title above it, as a menu's menu_label (and drawn the same
+        # height, so its selection lines up with menus and range controls)
+        self.menu_label: str | None = config.get("menu_label", None)
         # Optional: a value coming back for the switch's (family) address moves it
         # to the group whose menu holds that value, not only its first item's
         # (mono2k's LFO destination: a device per group, its parameters a menu)
@@ -746,7 +758,20 @@ class OSCControlSwitch(object):
         
         if not self.groups:
             return
-        idx = min(max(idx, 0), len(self.groups) - 1)   # (a stray value or lock must not crash the display)
+        idx = min(max(idx, 0), len(self.groups) - 1)
+        tip_top = 0
+        if self.menu_label:
+            tip_top = 25
+            show_text(
+                ctx,
+                offset,
+                tip_top,
+                self.menu_label,
+                height=20,
+                font_color=definitions.WHITE,
+                center_horizontally=True,
+            )
+        margin_top += tip_top   # (a stray value or lock must not crash the display)
         if len(self.groups) > idx + 1:
             next_label = self.groups[idx + 1].label
 
@@ -1178,12 +1203,33 @@ class OSCMenuItem(object):
         if config.get("$type", None) != "menu-item":
             raise Exception("Invalid config passed to new OSCMenuItem")
 
-        self.label: str = config.get("label", "")
+        self.label = config.get("label", "")
         self.message: ConfigDict | None = config.get("onselect", None)
         self.modmatrix: bool = config.get("modmatrix", True)
         self.address: str | None = self.message["address"] if self.message else None
         self.value: float | int | None = self.message["value"] if self.message else None
         self.send_osc_func: OscSendFunc = send_osc_func or (lambda addr, val: None)
+        # Optional: {"slot": s, "control": k}: the item names the k-th control of
+        # the device slot s shows (mono2k's LFO destinations on the machine page).
+        # Whoever owns the devices sets label_func to resolve it; until then, and
+        # whenever it has nothing, the static label shows.
+        self.label_from: ConfigDict | None = config.get("label_from", None)
+        self.label_func: Callable[[], str | None] | None = None
+
+    @property
+    def label(self) -> str:
+        if self.label_func is not None:
+            try:
+                dynamic = self.label_func()
+            except Exception:
+                dynamic = None
+            if dynamic:
+                return dynamic
+        return self._label
+
+    @label.setter
+    def label(self, value: str) -> None:
+        self._label = value
 
     def select(self) -> None:
         if self.address is not None and self.value is not None:

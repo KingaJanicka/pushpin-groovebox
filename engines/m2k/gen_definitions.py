@@ -63,13 +63,14 @@ MENU_CLICKS_PER_ITEM = 4
 # The LFO pages' destination: a device switch (knob 0) whose groups each hold a
 # menu of that device's parameters (knob 1), as Surge's filter-type pages do.
 # MONO2K's DEST is the target parameter's number + 1 (0: off).
+# SYN's entries name the current machine's own controls (label_from: the
+# machine device in slot 0, its k-th control); "SYN A".."SYN H" until known.
 LFO_TARGETS = [
     ("SYN", [(p, f"SYN {'ABCDEFGH'[p]}") for p in range(8)]),
     ("AMP", list(range(8, 16))),
     ("FILT", list(range(16, 24))),
     ("FX", list(range(24, 32))),
     ("DSTR", [32, 33, 34, 35, 66, 67, 68, 69]),
-    ("TRK", list(range(36, 42))),
     ("LFO 1", list(range(44, 50))),              # (not an LFO's own TRCK and DEST)
     ("LFO 2", list(range(52, 58))),
     ("LFO 3", list(range(60, 66))),
@@ -81,9 +82,12 @@ CLICKS_PER_ITEM = 4
 def lfo_target_switch(dest_cc: int, labels: dict[int, str]) -> dict:
     address = cc_address(dest_cc)
 
-    def item(label: str, value: int) -> dict:
-        return {"$type": "menu-item", "label": label,
-                "onselect": {"$type": "message", "address": address, "value": value}}
+    def item(label: str, value: int, label_from: dict | None = None) -> dict:
+        entry = {"$type": "menu-item", "label": label,
+                 "onselect": {"$type": "message", "address": address, "value": value}}
+        if label_from is not None:
+            entry["label_from"] = label_from
+        return entry
 
     def group(label: str, items: list[dict]) -> dict:
         return {"$type": "group", "label": label, "controls": [
@@ -92,9 +96,10 @@ def lfo_target_switch(dest_cc: int, labels: dict[int, str]) -> dict:
     groups = [group("OFF", [item("OFF", 0)])]
     for device, params in LFO_TARGETS:
         entries = [p if isinstance(p, tuple) else (p, labels.get(p, str(p))) for p in params]
-        groups.append(group(device, [item(label, p + 1) for p, label in entries]))
-    return {"$type": "control-switch", "clicks_per_group": CLICKS_PER_ITEM, "select_by_value": True,
-            "groups": groups}
+        groups.append(group(device, [
+            item(label, p + 1, {"slot": 0, "control": p} if device == "SYN" else None) for p, label in entries]))
+    return {"$type": "control-switch", "menu_label": "DEVICE", "clicks_per_group": CLICKS_PER_ITEM,
+            "select_by_value": True, "groups": groups}
 
 
 def choice_value(i: int, n: int) -> int:
@@ -131,6 +136,9 @@ def control(cc: int, param: dict, page: str | None = None) -> dict:
         c["bipolar"] = 1
     if (page, param["label"]) in FINE_STEP_LABELS:
         c["step"] = FINE_STEP
+    if page and page.startswith("LFO") and param["label"] == "DPTH":
+        c["bipolar"] = 1                          # MONO2K's LFO depth is signed about 64
+        c["display_center"] = 64                  # (shown -64..+63)
     return c
 
 
