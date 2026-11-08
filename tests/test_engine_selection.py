@@ -440,3 +440,150 @@ def test_menu_step_is_optional():
     fast.update_value(1)
     fast.update_value(1)
     assert fast.get_active_menu_item().label == "1"
+
+
+# ------------------------------------------- the LFO pages: DEST as menus
+
+
+def lfo_page(instrument, label="LFO 2"):
+    return next(d for d in instrument.current_devices if d.label == label)
+
+
+def test_lfo_page_starts_with_device_and_destination(app):
+    instrument, _ = make_instrument(app)
+    visible = lfo_page(instrument).get_visible_controls()
+    assert len(visible) == 8
+    assert visible[0].name == "Switch" and visible[1].name == "Menu"
+    assert [c.label for c in visible[2:]] == ["WAVE", "TRIG", "MULT", "SPD", "PHAS", "DPTH"]
+    assert [g.label for g in visible[0].groups] == [
+        "OFF", "SYN", "AMP", "FILT", "FX", "DSTR", "TRK", "LFO 1", "LFO 2", "LFO 3"]
+
+
+def nrpn_values(port, lsb):
+    calls = [c.args for c in port.control.call_args_list]
+    return [calls[i + 2][1] for i in range(len(calls) - 3)
+            if calls[i][:2] == (99, 0) and calls[i + 1][:2] == (98, lsb)]
+
+
+def test_picking_a_device_then_a_parameter_sets_dest(app):
+    instrument, ports = make_instrument(app)
+    app.metro_sequencer_mode.disable_controls = False                # (encoders reach the page)
+    port = ports["Pushpin 2 m2k"]
+    page = lfo_page(instrument)
+    switch = page.get_visible_controls()[0]
+    port.control.reset_mock()
+    for _ in range(4):
+        page.on_encoder_rotated(B.ENCODER_TRACK1_ENCODER, 1)        # OFF -> SYN
+    assert switch.get_active_group().label == "SYN"
+    assert nrpn_values(port, 105) == [1]                            # SYN A: parameter 0, DEST 1
+    for _ in range(4):
+        page.on_encoder_rotated(B.ENCODER_TRACK2_ENCODER, 1)        # SYN A -> SYN B
+    assert nrpn_values(port, 105) == [1, 2]
+    assert page.get_visible_controls()[1].get_active_menu_item().label == "SYN B"
+
+
+def test_a_dest_value_coming_back_selects_its_device_and_parameter(app):
+    instrument, _ = make_instrument(app)
+    page = lfo_page(instrument)
+    instrument.osc["client"].send_message("/cc/105", 19.0)          # FILT HPQ (parameter 18) + 1
+    visible = page.get_visible_controls()
+    assert visible[0].get_active_group().label == "FILT"
+    assert visible[1].get_active_menu_item().label == "HPQ"
+    instrument.osc["client"].send_message("/cc/105", 0.0)
+    assert page.get_visible_controls()[0].get_active_group().label == "OFF"
+
+
+def test_switch_set_state_takes_a_value_without_a_label():
+    from osc_controls import OSCControlSwitch
+    from pythonosc.dispatcher import Dispatcher
+    item = lambda v: {"$type": "menu-item", "label": str(v), "onselect": {"address": "/x", "value": v}}
+    group = lambda label, values: {"$type": "group", "label": label, "controls": [
+        {"$type": "control-menu", "items": [item(v) for v in values]}]}
+    plain = OSCControlSwitch({"$type": "control-switch", "groups": [group("a", [0, 1]), group("b", [2, 3])]},
+                             dispatcher=Dispatcher())
+    plain.set_state("/x", 3.0)                                       # no label: no error
+    assert plain.get_active_group().label == "a"                     # legacy: only first items move it
+    plain.set_state("/x", 2.0, "label")
+    assert plain.get_active_group().label == "b"
+    by_value = OSCControlSwitch({"$type": "control-switch", "select_by_value": True,
+                                 "groups": [group("a", [0, 1]), group("b", [2, 3])]}, dispatcher=Dispatcher())
+    by_value.set_state("/x", 3.0)
+    assert by_value.get_active_group().label == "b"
+
+
+def test_lfo_device_switch_shows_the_device_a_value_selected(app):
+    instrument, _ = make_instrument(app)
+    page = lfo_page(instrument)
+    instrument.osc["client"].send_message("/cc/105", 19.0)
+    assert page.get_visible_controls()[0].knob_value == 3.0             # FILT, as drawn
+
+
+# -------------------------------------------- p-locks let go after their step
+
+from unittest.mock import patch as _patch
+
+
+def sequencer_for(app, instrument):
+    from sequencer.sequencer_metro import SequencerMetro
+    seq = SequencerMetro.__new__(SequencerMetro)
+    seq.app = app
+    seq.name = instrument.name
+    seq.locks = [[[None] * 18 for _ in range(17)] for _ in range(64)]
+    seq.lock_scale = [7] * 64
+    seq.gate = ["On"] * 64
+    seq.controls_to_reset = []
+    seq.params = MagicMock(gate_track_active=True, gate_len=1)
+    seq.pitch, seq.octave, seq.velocity, seq.mutes_skips = [0] * 64, [0] * 64, [1] * 64, [False] * 64
+    seq.next_step_index = 1
+    seq.timeline = MagicMock()
+    return seq
+
+
+def play_step(seq, step):
+    seq.step_index, seq.next_step_index = step, step + 1
+    with _patch("sequencer.sequencer_metro.random.randint", return_value=1):   # (the note always plays)
+        seq.evaluate_and_play_notes()
+
+
+def test_a_p_lock_lets_go_after_its_step(app):
+    instrument, _ = make_instrument(app)
+    app.instruments = {instrument.name: instrument}
+    sent = []
+
+    def send_osc(address, value, name):
+        sent.append((address, value))
+        instrument.send_message(address, value)                     # (and its echo, as the app does)
+    app.send_osc = send_osc
+    base = next(d for d in instrument.current_devices if d.label == "FILT").controls[0]
+    instrument.osc["client"].send_message("/cc/72", 10.0)           # the knob's own value
+    seq = sequencer_for(app, instrument)
+    seq.locks[0][2][0] = 99.0                                       # step 0: FILT BASE locked
+    seq.locks[1][2][0] = 50.0                                       # step 1: locked again
+    play_step(seq, 0)
+    assert sent == [("/cc/72", 99.0)]
+    sent.clear()
+    play_step(seq, 1)
+    assert sent == [("/cc/72", 10.0), ("/cc/72", 50.0)]             # back to 10, then the next lock
+    sent.clear()
+    play_step(seq, 2)
+    assert sent == [("/cc/72", 10.0)]                               # and back to its own value
+    assert base.value == 10.0
+
+
+def test_a_scaled_lock_is_measured_from_the_knobs_value(app):
+    instrument, _ = make_instrument(app)
+    app.instruments = {instrument.name: instrument}
+    sent = []
+    app.send_osc = lambda address, value, name: (sent.append((address, value)), instrument.send_message(address, value))
+    instrument.osc["client"].send_message("/cc/72", 10.0)
+    seq = sequencer_for(app, instrument)
+    seq.lock_scale = [7] * 64
+    seq.lock_scale[1] = 3.5                                          # half way
+    seq.locks[0][2][0] = 90.0
+    seq.locks[1][2][0] = 90.0
+    play_step(seq, 0)
+    seq.controls_to_reset_before = list(seq.controls_to_reset)
+    seq.params.gate_track_active = False                             # no note on step 1: nothing undone
+    sent.clear()
+    play_step(seq, 1)
+    assert sent == [("/cc/72", 50.0)]                                # 10 + (90 - 10) / 2, not from 90

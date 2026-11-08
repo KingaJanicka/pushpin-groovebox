@@ -4,14 +4,726 @@
 	"init": [],
 	"controls": [
 		{
-			"$type": "control-spacer"
-		},
-		{
-			"$type": "control-range",
-			"label": "DEST",
-			"address": "/cc/105",
-			"min": 0,
-			"max": 71
+			"$type": "control-switch",
+			"clicks_per_group": 4,
+			"select_by_value": true,
+			"groups": [
+				{
+					"$type": "group",
+					"label": "OFF",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "DEST",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "OFF",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 0
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "SYN",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "DEST",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "SYN A",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 1
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "SYN B",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 2
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "SYN C",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 3
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "SYN D",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 4
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "SYN E",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 5
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "SYN F",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 6
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "SYN G",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 7
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "SYN H",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 8
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "AMP",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "DEST",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "ATCK",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 9
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "HOLD",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 10
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "DEC",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 11
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "REL",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 12
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "DIST",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 13
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "VOL",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 14
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "PAN",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 15
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "PORT",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 16
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "FILT",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "DEST",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "BASE",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 17
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "WDTH",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 18
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "HPQ",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 19
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LPQ",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 20
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "ATCK",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 21
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "DEC",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 22
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "B-OF",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 23
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "W-OF",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 24
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "FX",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "DEST",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "EQF",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 25
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "EQG",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 26
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "SRR",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 27
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "DTIM",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 28
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "DSND",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 29
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "DFB",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 30
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "DBAS",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 31
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "DWID",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 32
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "DSTR",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "DEST",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "BITS",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 33
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "FOLD",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 34
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "XOR",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 35
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "VERB",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 36
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "TYPE",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 67
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "RATE",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 68
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "DPTH",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 69
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "MIX",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 70
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "TRK",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "DEST",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "PTCH",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 37
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LEVL",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 38
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "MODE",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 39
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "SPD",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 40
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "RNG",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 41
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "GATE",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 42
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "LFO 1",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "DEST",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "WAVE",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 45
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "TRIG",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 46
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "MULT",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 47
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "SPD",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 48
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "PHAS",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 49
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "DPTH",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 50
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "LFO 2",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "DEST",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "WAVE",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 53
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "TRIG",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 54
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "MULT",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 55
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "SPD",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 56
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "PHAS",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 57
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "DPTH",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 58
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "LFO 3",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "DEST",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "WAVE",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 61
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "TRIG",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 62
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "MULT",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 63
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "SPD",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 64
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "PHAS",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 65
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "DPTH",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/105",
+										"value": 66
+									}
+								}
+							]
+						}
+					]
+				}
+			]
 		},
 		{
 			"$type": "control-range",

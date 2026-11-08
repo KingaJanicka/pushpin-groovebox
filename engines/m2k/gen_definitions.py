@@ -60,6 +60,43 @@ MOD_TYPES = ["CHOR", "FLNG", "PHAS"]          # MONO2K's own names (m2k_ui.c, K_
 MENU_CLICKS_PER_ITEM = 4
 
 
+# The LFO pages' destination: a device switch (knob 0) whose groups each hold a
+# menu of that device's parameters (knob 1), as Surge's filter-type pages do.
+# MONO2K's DEST is the target parameter's number + 1 (0: off).
+LFO_TARGETS = [
+    ("SYN", [(p, f"SYN {'ABCDEFGH'[p]}") for p in range(8)]),
+    ("AMP", list(range(8, 16))),
+    ("FILT", list(range(16, 24))),
+    ("FX", list(range(24, 32))),
+    ("DSTR", [32, 33, 34, 35, 66, 67, 68, 69]),
+    ("TRK", list(range(36, 42))),
+    ("LFO 1", list(range(44, 50))),              # (not an LFO's own TRCK and DEST)
+    ("LFO 2", list(range(52, 58))),
+    ("LFO 3", list(range(60, 66))),
+]
+LFO_TRCK, LFO_DEST = 0, 1                         # an LFO page's params by position
+CLICKS_PER_ITEM = 4
+
+
+def lfo_target_switch(dest_cc: int, labels: dict[int, str]) -> dict:
+    address = cc_address(dest_cc)
+
+    def item(label: str, value: int) -> dict:
+        return {"$type": "menu-item", "label": label,
+                "onselect": {"$type": "message", "address": address, "value": value}}
+
+    def group(label: str, items: list[dict]) -> dict:
+        return {"$type": "group", "label": label, "controls": [
+            {"$type": "control-menu", "menu_label": "DEST", "step": 1 / CLICKS_PER_ITEM, "items": items}]}
+
+    groups = [group("OFF", [item("OFF", 0)])]
+    for device, params in LFO_TARGETS:
+        entries = [p if isinstance(p, tuple) else (p, labels.get(p, str(p))) for p in params]
+        groups.append(group(device, [item(label, p + 1) for p, label in entries]))
+    return {"$type": "control-switch", "clicks_per_group": CLICKS_PER_ITEM, "select_by_value": True,
+            "groups": groups}
+
+
 def choice_value(i: int, n: int) -> int:
     """The middle of choice i of n on 0-127, as MONO2K's factory encodes it."""
     return (i * 128 + 64) // n
@@ -153,6 +190,10 @@ def page_devices(params: list[dict], labels: dict[int, str] | None = None) -> di
     for page, (stem, name, slot) in PAGES.items():
         if page == "DSTR" and labels is not None:
             controls = dstr_controls(params, labels)
+        elif page.startswith("LFO") and labels is not None:
+            lfo = [p for p in params if p["page"] == page]
+            controls = [lfo_target_switch(lfo[LFO_DEST]["cc"], labels)]
+            controls += [control(p["cc"], p["param"], page) for i, p in enumerate(lfo) if i not in (LFO_TRCK, LFO_DEST)]
         else:
             controls = [control(p["cc"], p["param"], page) for p in params if p["page"] == page]
         devices[stem] = {"name": name, "slot": slot, "init": [], "controls": controls}

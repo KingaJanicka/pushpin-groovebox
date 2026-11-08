@@ -233,6 +233,11 @@ def test_generated_controls_only_use_cc_and_param_addresses():
             if control["$type"] == "control-menu":
                 assert all(reachable(i["onselect"]["address"]) for i in control["items"]), (path, control)
                 continue
+            if control["$type"] == "control-switch":
+                for group in control["groups"]:
+                    for menu in group["controls"]:
+                        assert all(reachable(i["onselect"]["address"]) for i in menu["items"]), (path, group["label"])
+                continue
             assert control["$type"] == "control-range", path
             assert reachable(control["address"]), (path, control)
         for message in device["init"]:

@@ -556,6 +556,10 @@ class OSCControlSwitch(object):
         # it, a full 127-click sweep covers all groups, so switches with many
         # groups (e.g. 13 filter families) change every few clicks.
         self.clicks_per_group: float | None = config.get("clicks_per_group", None)
+        # Optional: a value coming back for the switch's (family) address moves it
+        # to the group whose menu holds that value, not only its first item's
+        # (mono2k's LFO destination: a device per group, its parameters a menu)
+        self.select_by_value: bool = bool(config.get("select_by_value", False))
         self.log = logger.getChild(f"{self.label}:Switch")
         groups = config.get("groups", [])
 
@@ -670,12 +674,22 @@ class OSCControlSwitch(object):
 
     def set_state(self, address: str, *args: Any) -> None:
         # print("Control switch args", args)
-        value, label = args
+        # Surge sends a value and a label; a MIDI-CC engine's echo only the value
+        value, *rest = args
         # print("switch val = ", value)
         self.log.debug((address, args))
         if address == self.family_address and self.recent_sends.contains(value):
             # Our own type change coming back (possibly late, after the user
             # has turned on further): applying it would jump the switch back.
+            return
+        if self.select_by_value and address == self.family_address:
+            for idx, group in enumerate(self.groups):
+                menu = self._family_menu(group)
+                if any(item.value is not None and int(round(float(item.value))) == int(round(float(value)))
+                       for item in menu.items):
+                    self._move_to_group(idx)
+                    self.knob_value = self.value          # (what draw() shows)
+                    return
             return
         # TODO do we need the following?
         for idx, group in enumerate(self.groups):
