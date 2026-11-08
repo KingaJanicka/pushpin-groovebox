@@ -259,8 +259,8 @@ reaches go as their CC, the others as NRPN 1:*p*. `sounds.json`
 
 ## Known limits of the spike
 
-- Not yet tested: the JACK path on the Pi. It builds only where JACK headers
-  exist; on macOS it was checked against stub headers only.
+- The JACK path builds only where JACK headers exist (the Pi; on macOS only
+  `--render` builds). It has been played on a Pi 5 through PipeWire's JACK.
 - Both engines of every track run all the time (8 Surge instances, one
   m2k-jack), so a track on mono2k still has its idle Surge using some CPU.
 - Switching a track clears its p-locks, in the sequence that's loaded; other
@@ -274,8 +274,11 @@ reaches go as their CC, the others as NRPN 1:*p*. `sounds.json`
   sequenced note is set at once rather than glided.
 - Choosing a machine always loads its INIT sound (AMP, FILT, FX and LFOs too),
   because pushpin can't read values back from m2k-jack and needs to know them.
-- Parameters with a few discrete choices (LFO WAVE, SID WAVE, ...) are plain
-  0–127 knobs, not menus.
+- DIGI-WAV's WAVE stays a knob (showing the wave's name): its waves change
+  with BANK (32 or 64), so no one menu holds both. AMP HOLD stays a number:
+  MONO2K shows it in ms at the tempo.
+- Before the first PLAY there's no clock, so m2k-jack runs at 120 BPM; while
+  stopped it keeps the last tempo it heard.
 
 ## Tempo
 
