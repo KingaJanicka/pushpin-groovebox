@@ -734,6 +734,94 @@
 			"max": 127,
 			"bipolar": 1,
 			"display_center": 64
+		},
+		{
+			"$type": "control-menu",
+			"menu_label": "TRCK",
+			"step": 0.25,
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "OWN",
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/88",
+						"value": 0
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "TRK 1",
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/88",
+						"value": 1
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "TRK 2",
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/88",
+						"value": 2
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "TRK 3",
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/88",
+						"value": 3
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "TRK 4",
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/88",
+						"value": 4
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "TRK 5",
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/88",
+						"value": 5
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "TRK 6",
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/88",
+						"value": 6
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "TRK 7",
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/88",
+						"value": 7
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "TRK 8",
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/88",
+						"value": 8
+					}
+				}
+			]
 		}
 	]
 }

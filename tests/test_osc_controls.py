@@ -594,3 +594,11 @@ def test_filter_switches_are_slowed_down():
     switches = [c for c in d["controls"] if c["$type"] == "control-switch"]
     assert len(switches) == 2
     assert all(s.get("clicks_per_group") == 25 for s in switches)
+
+
+def test_menu_takes_one_place_on_a_page():
+    """A menu has an encoder and a place on the display, so pages count it."""
+    from osc_controls import OSCControlMenu
+    menu = OSCControlMenu({"$type": "control-menu", "items": [
+        {"$type": "menu-item", "label": "A", "onselect": {"$type": "message", "address": "/a", "value": 0}}]})
+    assert menu.size == 1

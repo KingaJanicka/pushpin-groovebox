@@ -33,6 +33,9 @@
  *   CC 120, 123  all sound off / all notes off
  *   NRPN 0:<cc>  (CC 99 = 0, CC 98 = the parameter's CC number, then CC 6 = value, CC 38 = fine): the same
  *                parameter at 14 bits. The core keeps 1/256 of a step, so 7 of those bits reach the sound.
+ *   LFO TRCK     (CC 88/104/112, or NRPN): 0 = the track's own, 1-8 = track 1-8 (pushpin's encoding;
+ *                MONO2K's own reaches tracks 7-8 only past 127). The arp's MODE is always OFF: pushpin
+ *                sequences, and MONO2K's arp would run on its own clock.
  *   NRPN 1:<p>   (CC 99 = 1, CC 98 = MONO2K's parameter number p, 0-70): any track parameter, the ones no CC
  *                reaches too (the MOD effect, the wave bank, the arp, gate). pushpin saves and restores whole
  *                sounds with it.
@@ -153,8 +156,37 @@ static void pp_snap_param(int t, int param)
     pp_apply(t, param);
 }
 
+static int pp_is_trck(int param)
+{
+    return param == P_LFO + L_TRCK || param == P_LFO + 8 + L_TRCK || param == P_LFO + 16 + L_TRCK;
+}
+
+/* an LFO's TRCK as pushpin sends it (0: track t's own, 1-8: track 1-8) in MONO2K's encoding */
+static uint8_t pp_trck_value(int t, int sel)
+{
+    int track = sel <= 0 ? t : sel - 1;
+    if (track >= NT) track = NT - 1;
+    return track < M2K_TRACKS6 ? trck_enc(track) : (uint8_t)(TRCK_PAST + track - M2K_TRACKS6);
+}
+
+/* a parameter as pushpin knows it: TRCK the track's own, the arp off (the --describe export) */
+static int pp_export(int param, int v)
+{
+    return pp_is_trck(param) || param == P_AMOD ? 0 : v;
+}
+
 static void pp_set_param(int t, int param, int32_t q8)
 {
+    if (pp_is_trck(param)) {               /* (its own encoding; not glided) */
+        const uint8_t v = pp_trck_value(t, q8 >> 8);
+        PAT(cur_pat)->kit[t][param] = v;
+        trk[t].eff[param] = v;
+        pp_target[t][param] = pp_cur[t][param] = v * 256;
+        pp_moving[t][param] = 0;
+        trk[t].fine[param] = 0;
+        return;
+    }
+    if (param == P_AMOD) q8 = 0;           /* the arp stays off */
     const int32_t top = (param == P_LFO + L_DEST || param == P_LFO + 8 + L_DEST || param == P_LFO + 16 + L_DEST)
                             ? P_COUNT * 256 : 127 * 256;
     q8 = CLAMP(q8, 0, top);
@@ -205,6 +237,7 @@ static void pp_set_machine(int t, int m)
     kit_init(&pat_tmp, t, m);
     m_cpy(p->kit[t], pat_tmp.kit[t], P_COUNT);
     p->machine[t] = (uint8_t)m;
+    p->kit[t][P_AMOD] = 0;                 /* the arp stays off */
     m_cpy(trk[t].eff, p->kit[t], P_COUNT);
     if (t == ui.trk) track_home(t, mach_home(m));
     pp_params_reset(t);
@@ -271,9 +304,9 @@ static void pp_describe(void)
         }
         printf("],\n     \"init\": {");
         for (int i = 0; i < PP_NCC; i++)
-            printf("%s\"%d\": %d", i ? ", " : "", PP_CC[i].cc, pat_tmp.kit[0][PP_CC[i].param]);
+            printf("%s\"%d\": %d", i ? ", " : "", PP_CC[i].cc, pp_export(PP_CC[i].param, pat_tmp.kit[0][PP_CC[i].param]));
         printf("},\n     \"kit\": [");                /* every parameter of its INIT sound, by parameter number */
-        for (int p = 0; p < P_COUNT; p++) printf("%s%d", p ? ", " : "", pat_tmp.kit[0][p]);
+        for (int p = 0; p < P_COUNT; p++) printf("%s%d", p ? ", " : "", pp_export(p, pat_tmp.kit[0][p]));
         printf("]}%s\n", m + 1 < M_COUNT ? "," : "");
     }
     printf("  ],\n  \"param_count\": %d,\n  \"params_all\": [\n", P_COUNT);
@@ -302,7 +335,7 @@ static void pp_describe(void)
         printf(", \"machine\": %d, \"root\": %d, \"what\": ", d.machine, LIB[i].root);
         pp_json_str(LIB[i].what);
         printf(", \"kit\": [");
-        for (int p = 0; p < P_COUNT; p++) printf("%s%d", p ? ", " : "", d.kit[p]);
+        for (int p = 0; p < P_COUNT; p++) printf("%s%d", p ? ", " : "", pp_export(p, d.kit[p]));
         printf("]}%s\n", i + 1 < LIB_N ? "," : "");
     }
     printf("  ]\n}\n");

@@ -226,7 +226,7 @@ def test_generated_controls_only_use_cc_and_param_addresses():
 
     for path in m2k_files():
         device = json.load(open(path))
-        assert len(device["controls"]) <= 8, path
+        assert len(device["controls"]) <= 16, path          # (two pages at most)
         for control in device["controls"]:
             if control["$type"] == "control-spacer":
                 continue

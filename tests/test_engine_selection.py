@@ -667,3 +667,75 @@ def test_titled_switch_draws_level_with_menus():
         tops[name] = {c.args[3]: c.args[2] for c in show.call_args_list}
     assert tops["plain"] == {"a": 30, "b": 45, "c": 70}               # Surge's, as before
     assert tops["titled"] == {"DEVICE": 25, "a": 55, "b": 70, "c": 95} # a titled menu's rows
+
+
+# ------------------------------- second pages: PTCH, BANK, TRCK; arp and LEVL
+
+import json as _json
+import os as _os
+
+
+def machine_page(instrument, name):
+    return next(d for d in instrument.devices[0] if d.label == name)
+
+
+def test_machine_pages_have_ptch_on_their_second_page(app):
+    instrument, _ = make_instrument(app)
+    sine = machine_page(instrument, "GND-SIN")
+    assert len(sine.pages) == 2
+    second = sine.pages[1]
+    assert second[0].__class__.__name__ == "ControlSpacer" and second[1].label == "PTCH"
+    assert second[1].address == "/cc/20" and second[1].bipolar and second[1].display_text(70) == "+6"
+
+
+def test_only_digi_wav_has_bank(app):
+    instrument, _ = make_instrument(app)
+    second = machine_page(instrument, "DIGI-WAV").pages[1]
+    bank = second[0]
+    assert bank.menu_label == "BANK"
+    assert [(i.label, i.address, i.value) for i in bank.items] == [
+        ("M2K", "/m2k/param/70", 32), ("M64", "/m2k/param/70", 96)]
+    assert second[1].label == "PTCH"
+    others = [d for d in instrument.devices[0] if d.label != "DIGI-WAV"]
+    assert all(not hasattr(d.pages[1][0], "items") for d in others)
+
+
+def test_lfo_trck_is_on_the_lfos_second_page(app):
+    instrument, ports = make_instrument(app)
+    lfo = lfo_page(instrument, "LFO 1")
+    trck = lfo.pages[1][0]
+    assert trck.menu_label == "TRCK"
+    assert [(i.label, i.value) for i in trck.items] == [("OWN", 0)] + [(f"TRK {n}", n) for n in range(1, 9)]
+    assert all(i.address == "/cc/88" for i in trck.items)
+
+
+def test_machine_inits_aim_lfos_at_their_own_track_and_keep_the_arp_off():
+    from tests.test_cc_client import M2K_DIR
+    for name in sorted(_os.listdir(M2K_DIR)):
+        if not name.startswith("00_machine_"):
+            continue
+        init = {m["address"]: m["value"] for m in _json.load(open(_os.path.join(M2K_DIR, name)))["init"]}
+        assert init["/cc/88"] == init["/cc/104"] == init["/cc/112"] == 0, name    # OWN, not track 1
+        assert init["/m2k/param/38"] == 0, name                                    # arp OFF
+
+
+def test_sounds_aim_lfos_at_their_own_track_and_keep_the_arp_off():
+    from m2k_state import M2KSounds
+    sounds = M2KSounds.load()
+    for kit in [m["kit"] for m in sounds.machines] + [s["kit"] for s in sounds.library]:
+        assert kit[42] == kit[50] == kit[58] == 0 and kit[38] == 0
+
+
+def test_level_is_always_set_on_init_and_on_load():
+    """LEVL isn't on a page: every machine's init and every sound must set it."""
+    from m2k_state import M2KSounds, apply
+    from tests.test_cc_client import M2K_DIR
+    for name in sorted(_os.listdir(M2K_DIR)):
+        if name.startswith("00_machine_"):
+            init = {m["address"]: m["value"] for m in _json.load(open(_os.path.join(M2K_DIR, name)))["init"]}
+            assert 64 <= init["/cc/7"] <= 127, name
+    sounds = M2KSounds.load()
+    assert all(s["kit"][37] > 0 for s in sounds.library)
+    client = MagicMock()
+    apply(sounds.resolve("Factory/KICK/BOOM808"), client, sounds)
+    assert any(c.args[0] == "/cc/7" for c in client.send_message.call_args_list)

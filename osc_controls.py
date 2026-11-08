@@ -982,7 +982,7 @@ class OSCControlMenu(object):
         self.message: ConfigDict | None = config.get("onselect", None)
         self.address: str | None = self.message["address"] if self.message else None
         self.value: float | int | None = self.message["value"] if self.message else None
-        self.size: int = 0
+        self.size: int = 1                  # (one encoder and one place on the display)
         self.log = logger.getChild(f"{self.label}:Menu")
         self.recent_sends = RecentSends()
         # Optional: items moved per encoder click. Without it a full 127-click

@@ -171,7 +171,7 @@
 		{
 			"$type": "message",
 			"address": "/cc/88",
-			"value": 10
+			"value": 0
 		},
 		{
 			"$type": "message",
@@ -211,7 +211,7 @@
 		{
 			"$type": "message",
 			"address": "/cc/104",
-			"value": 10
+			"value": 0
 		},
 		{
 			"$type": "message",
@@ -251,7 +251,7 @@
 		{
 			"$type": "message",
 			"address": "/cc/112",
-			"value": 10
+			"value": 0
 		},
 		{
 			"$type": "message",
@@ -404,6 +404,18 @@
 			"address": "/cc/55",
 			"min": 0,
 			"max": 127
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-range",
+			"label": "PTCH",
+			"address": "/cc/20",
+			"min": 0,
+			"max": 127,
+			"bipolar": 1,
+			"display_center": 64
 		}
 	]
 }

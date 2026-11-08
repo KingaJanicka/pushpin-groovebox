@@ -181,15 +181,22 @@ engines/m2k/build.sh && python engines/m2k/gen_definitions.py
   the first page. Each device has a device slot of its own (machine 0, AMP 1,
   FILT 2, FX 3, DSTR 4, LFO 1–3 5–7; `M2KEngine.always_shown_slots`), because
   p-locks are stored by slot: two devices in one slot would share their locks.
-  There's no modulation page, so Right stays on the first.
 - **LFO 1–3**: knob 1 (DEVICE) picks the device to modulate (OFF, SYN, AMP,
   FILT, FX, DSTR, LFO 1–3) and knob 2 (DEST) the parameter on it, like Surge's
   filter-type pages (a switch whose groups each hold a menu); four clicks an
   entry. SYN's entries take the current machine's own names. They set MONO2K's
   DEST (the parameter's number + 1). Then WAVE TRIG MULT SPD PHAS and DPTH,
   which is bipolar and shown as -64..+63 (0: no modulation).
-  TRCK isn't on the page: in the core a TRCK value reaches only tracks 1–6 from
-  a knob, so cross-track LFOs would need more than a CC.
+  The second page (Right) has TRCK: the track the LFO modulates, OWN (its own
+  track, the default) or TRK 1–8. m2k-jack turns that into MONO2K's own TRCK
+  encoding, which a CC can't reach for tracks 7–8.
+- **Second pages**: every machine has PTCH (pitch in semitones, bipolar, shown
+  -64..+63) at knob 2 of its second page; DIGI-WAV also has BANK (M2K or M64,
+  NRPN 1:70) at knob 1.
+- **Not on any page**: the arp, which m2k-jack keeps OFF whatever arrives (and
+  never exports as on), and LEVL, left to PipeWire for volume. Every machine's
+  INIT and every sound still sets LEVL (CC 7), so a track always starts at its
+  sound's own level.
 
 Every control's address is `/cc/<n>`. On a mono2k track the instrument's
 `MidiCCClient` (`cc_client.py`) turns those into MIDI CCs on the track's MIDI

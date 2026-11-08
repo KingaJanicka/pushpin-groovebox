@@ -17,6 +17,7 @@ CC (if any), each machine's INIT sound, and MONO2K's factory library.
               (CC 14) and sends the machine's whole INIT sound, so every page
               shows the values m2k-jack actually has.
   slots 1-7   AMP, FILT, FX, DSTR, LFO 1-3: always shown, one per slot.
+  A machine's second page: BANK (DIGI-WAV only) and PTCH. An LFO's: TRCK.
 
 The labels and INIT values come from MONO2K (GPL-3.0-only), which is why the
 generated files live here and not in pushpin's MIT-licensed definitions/.
@@ -102,6 +103,20 @@ def lfo_target_switch(dest_cc: int, labels: dict[int, str]) -> dict:
             "select_by_value": True, "groups": groups}
 
 
+def lfo_track_menu(trck_cc: int) -> dict:
+    """The track an LFO modulates, in m2k-jack's own encoding for pushpin:
+    0 the LFO's own track, 1-8 track 1-8 (MONO2K's own needs >127 for 7-8)."""
+    address = cc_address(trck_cc)
+    items = [("OWN", 0)] + [(f"TRK {n}", n) for n in range(1, 9)]
+    return {
+        "$type": "control-menu",
+        "menu_label": "TRCK",
+        "step": 1 / CLICKS_PER_ITEM,
+        "items": [{"$type": "menu-item", "label": label,
+                   "onselect": {"$type": "message", "address": address, "value": value}} for label, value in items],
+    }
+
+
 def choice_value(i: int, n: int) -> int:
     """The middle of choice i of n on 0-127, as MONO2K's factory encodes it."""
     return (i * 128 + 64) // n
@@ -142,7 +157,38 @@ def control(cc: int, param: dict, page: str | None = None) -> dict:
     return c
 
 
-def machine_device(machine: dict, machine_cc: int, ccs: dict[int, int] | None = None) -> dict:
+# A machine page's second page: BANK (DIGI-WAV only, MONO2K's own wave bank
+# choice) then PTCH, the track's pitch in semitones
+WAVE_MACHINE = "DIGI-WAV"
+WAVE_BANK = 70
+BANKS = ["M2K", "M64"]                            # MONO2K's 32 waves, the 64 (m2k_ui.c, K_WBNK)
+PTCH_CC = 20
+
+
+def wave_bank_menu() -> dict:
+    return {
+        "$type": "control-menu",
+        "menu_label": "BANK",
+        "step": 1 / CLICKS_PER_ITEM,
+        "items": [
+            {"$type": "menu-item", "label": name,
+             "onselect": {"$type": "message", "address": param_address(WAVE_BANK), "value": choice_value(i, len(BANKS))}}
+            for i, name in enumerate(BANKS)
+        ],
+    }
+
+
+def machine_page_two(machine: dict, ptch: dict | None) -> list[dict]:
+    if ptch is None:
+        return []
+    first = wave_bank_menu() if machine["name"] == WAVE_MACHINE else {"$type": "control-spacer"}
+    pitch = control(PTCH_CC, ptch)
+    pitch["display_center"] = 64                  # semitones either way
+    return [first, pitch]
+
+
+def machine_device(machine: dict, machine_cc: int, ccs: dict[int, int] | None = None,
+                   ptch: dict | None = None) -> dict:
     init = [{"$type": "message", "$comment": "machine", "address": cc_address(machine_cc), "value": machine["index"]}]
     init += [
         {"$type": "message", "address": cc_address(int(cc)), "value": value}
@@ -160,7 +206,7 @@ def machine_device(machine: dict, machine_cc: int, ccs: dict[int, int] | None = 
         "name": machine["name"],
         "slot": 0,
         "init": init,
-        "controls": [control(s["cc"], s["param"]) for s in machine["syn"]],
+        "controls": [control(s["cc"], s["param"]) for s in machine["syn"]] + machine_page_two(machine, ptch),
     }
 
 
@@ -202,6 +248,7 @@ def page_devices(params: list[dict], labels: dict[int, str] | None = None) -> di
             lfo = [p for p in params if p["page"] == page]
             controls = [lfo_target_switch(lfo[LFO_DEST]["cc"], labels)]
             controls += [control(p["cc"], p["param"], page) for i, p in enumerate(lfo) if i not in (LFO_TRCK, LFO_DEST)]
+            controls.append(lfo_track_menu(lfo[LFO_TRCK]["cc"]))      # control 9: the second page
         else:
             controls = [control(p["cc"], p["param"], page) for p in params if p["page"] == page]
         devices[stem] = {"name": name, "slot": slot, "init": [], "controls": controls}
@@ -212,8 +259,9 @@ def build(describe: dict) -> dict[str, dict]:
     labels = {p["param"]: p["label"] for p in describe["params_all"]} if "params_all" in describe else None
     files = page_devices(describe["params"], labels)
     ccs = cc_by_param(describe) if "kit" in describe["machines"][0] else None
+    ptch = next((p["param"] for p in describe["params"] if p["cc"] == PTCH_CC), None)
     for m in describe["machines"]:
-        files[f"00_machine_{m['index']:02d}"] = machine_device(m, describe["machine_cc"], ccs)
+        files[f"00_machine_{m['index']:02d}"] = machine_device(m, describe["machine_cc"], ccs, ptch)
     return files
 
 
