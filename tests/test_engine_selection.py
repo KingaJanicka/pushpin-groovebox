@@ -816,3 +816,13 @@ def test_lfo_speed_reads_with_its_own_mult(app):
     slow = spd.display_text(64)
     client.send_message("/cc/108", 127.0)                             # X128
     assert spd.display_text(64) != slow and spd.display_text(0).startswith("STOP")
+
+
+# ------------------------------------------------------------- mono2k's clock
+
+def test_the_clock_goes_to_one_mono2k_port_the_first_tracks(app):
+    from modes.instrument import mono2k_clock_port
+    first, ports = make_instrument(app)
+    surge_only = MagicMock(voices={"surge-xt-cli": MagicMock()})
+    assert mono2k_clock_port({"Pushpin 1": surge_only, "Pushpin 2": first}) is ports["Pushpin 2 m2k"]
+    assert mono2k_clock_port({"Pushpin 1": surge_only}) is None

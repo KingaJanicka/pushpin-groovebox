@@ -25,6 +25,7 @@ from pythonosc.dispatcher import Dispatcher
 from engine import disconnectPipewireLink, spawn_logged
 from modes.melodic_mode import MelodicMode
 from modes.instrument_selection_mode import InstrumentSelectionMode
+from modes.instrument import mono2k_clock_port
 from modes.rhythmic_mode import RhythmicMode
 from modes.slice_notes_mode import SliceNotesMode
 from modes.metro_sequencer_mode import MetroSequencerMode
@@ -1370,8 +1371,13 @@ async def main():
         await app.instruments[instrument].configure_pipewire()
         
         app.queue.append(app.instruments[instrument].init_devices_sync())
-        # The clock goes to Surge's port, as before (m2k-jack ignores clock)
+        # The clock goes to each Surge port, as before
         app.global_timeline.add_output_device(app.instruments[instrument].surge_midi_out_device)
+    # ...and to one mono2k port: m2k-jack's tempo (after the routing, which may drop a mono2k voice)
+    m2k_clock = mono2k_clock_port(app.instruments)
+    if m2k_clock is not None:
+        m2k_clock.send_clock = True
+        app.global_timeline.add_output_device(m2k_clock)
     for instrument in app.external_instruments:
         await instrument.engine.configure_pipewire()
     while True:

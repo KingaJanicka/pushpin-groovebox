@@ -93,7 +93,9 @@ a pushpin track that plays Surge can stay connected to its MONO2K track.
 | CC 120, 123 | all sound off / all notes off |
 | NRPN 0:*n* | the parameter on CC *n* at 14 bits: CC 99 = 0, CC 98 = *n*, CC 6 = whole value, CC 38 = fraction × 128 (pushpin sends this) |
 | NRPN 1:*p* | any of MONO2K's 71 track parameters by number *p*, including the 9 no CC reaches (arp, gate, MOD effect, wave bank); pushpin saves and loads whole sounds with it |
-| clock, start, stop | ignored (pushpin sequences; MONO2K's sequencer stays stopped) |
+| clock | the tempo MONO2K times its LFOs (SPD), delays (DTIM) and AMP HOLD by: averaged over up to four beats, changed only past 0.25 % (pushpin's clock jitters; a moving delay time glides); a jump over 2 % starts the average over from the last beat. On any track's port, the first that sends it. MONO2K's sequencer stays stopped |
+| start, continue | the LFOs on FREE back to their PHAS, so they line up with PLAY (the others restart on notes) |
+| stop | ignored (the last tempo stays) |
 
 In `--render` scripts the MIDI channel picks the track (channel 1 = track 1).
 
@@ -274,3 +276,13 @@ reaches go as their CC, the others as NRPN 1:*p*. `sounds.json`
   because pushpin can't read values back from m2k-jack and needs to know them.
 - Parameters with a few discrete choices (LFO WAVE, SID WAVE, ...) are plain
   0–127 knobs, not menus.
+
+## Tempo
+
+pushpin's global timeline sends MIDI clock to every Surge port and to one
+mono2k port (the first track with a mono2k voice: `mono2k_clock_port` in
+modes/instrument.py), since one m2k-jack plays every track. PLAY sends Start,
+STOP sends Stop and the clock stops; m2k-jack keeps the last tempo meanwhile.
+Without a clock (before the first PLAY) it runs at 120 BPM.
+`tests/test_m2k_clock.py` renders a 1/4-note delay at 90 and 140 BPM, and at
+100 BPM with a jittery clock, through the built binary.

@@ -28,6 +28,18 @@ from time import sleep
 SURGE_ONLY_ADDRESS_PREFIXES = ("/patch/",)
 
 
+def mono2k_clock_port(instruments: dict[str, Any]) -> Any | None:
+    """The one mono2k MIDI port the global clock goes to. m2k-jack is one
+    process for every track and takes the tempo its LFOs, delays and HOLD keep
+    from that clock (and Start lines its free LFOs up with PLAY); one port is
+    enough, and the first track that has a mono2k voice gives it."""
+    for instrument in instruments.values():
+        voice = getattr(instrument, "voices", {}).get(engine.MONO2K_ENGINE)
+        if voice is not None:
+            return voice.midi_out_device
+    return None
+
+
 class Voice:
     """One synth engine on a track: the engine, its device pages, the slots
     that pick which pages show, and how the pages reach the synth (``osc``:

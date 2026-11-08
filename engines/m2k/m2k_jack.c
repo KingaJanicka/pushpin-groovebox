@@ -39,8 +39,10 @@
  *   NRPN 1:<p>   (CC 99 = 1, CC 98 = MONO2K's parameter number p, 0-70): any track parameter, the ones no CC
  *                reaches too (the MOD effect, the wave bank, the arp, gate). pushpin saves and restores whole
  *                sounds with it.
- *   Clock, start, stop and other system messages are dropped: pushpin sequences,
- *   MONO2K's own sequencer stays stopped.
+ *   Clock (on any track's port; the first port it comes on, if several send it) sets the tempo
+ *                MONO2K times its LFOs, delays and HOLD by: its sequencer stays stopped, pushpin
+ *                sequences. Start / Continue put the LFOs on FREE back to their PHAS, so they line
+ *                up with pushpin's first step. Stop and other system messages are dropped.
  *
  * The core runs at 44.1 kHz; the outputs are resampled (linear) to the JACK rate.
  *
@@ -434,10 +436,67 @@ static void pp_set_enabled(int t, int on)
     pp_enabled[t] = (uint8_t)(on != 0);
 }
 
+/* ------------------------------------------------------------------ MIDI clock in */
+
+/* The tempo from the clock's pulses (24 a beat), each stamped in seconds (JACK's frame clock, or a
+ * --render script's time). pushpin's clock comes from a Python thread, a few ms either way a pulse: so the
+ * period is the average over up to PP_CLK_N pulses, and the core's tempo only changes when that moves by
+ * more than PP_CLK_HYST (a delay whose time keeps changing glides, and is heard). A real tempo change, the
+ * last beat's PP_CLK_JUMP off the average, starts the average over from that beat. */
+#define PP_CLK_N 96                         /* four beats */
+#define PP_CLK_BEAT 24
+#define PP_CLK_HYST 0.0025
+#define PP_CLK_JUMP 0.02
+static double pp_now;                       /* the time of the message being handled, in seconds */
+static double pp_clk_t[PP_CLK_N], pp_clk_last = -1e9, pp_clk_per;   /* (pp_clk_per: the period the core has, s) */
+static int pp_clk_n, pp_clk_i, pp_clk_src = -1;
+
+static double pp_clk_at(int back) { return pp_clk_t[(pp_clk_i - 1 - back + 2 * PP_CLK_N) % PP_CLK_N]; }
+
+static void pp_clock_pulse(int t, double now)
+{
+    /* the same clock on another port as well: only the first port's counts (another takes over after 1 s) */
+    if (pp_clk_src >= 0 && t != pp_clk_src && now - pp_clk_last < 1.0) return;
+    pp_clk_src = t;
+    if (now - pp_clk_last > 0.5) pp_clk_n = 0;       /* after a stop (or under 5 BPM): the timing starts over */
+    pp_clk_last = now;
+    pp_clk_t[pp_clk_i] = now;
+    pp_clk_i = (pp_clk_i + 1) % PP_CLK_N;
+    if (pp_clk_n < PP_CLK_N) pp_clk_n++;
+    if (pp_clk_n <= PP_CLK_BEAT) return;              /* a beat at least */
+    double per = (pp_clk_at(0) - pp_clk_at(pp_clk_n - 1)) / (pp_clk_n - 1);
+    const double beat = (pp_clk_at(0) - pp_clk_at(PP_CLK_BEAT)) / PP_CLK_BEAT;
+    if (fabs(beat - per) > per * PP_CLK_JUMP) {      /* the tempo moved: from the last beat on */
+        pp_clk_n = PP_CLK_BEAT + 1;
+        per = beat;
+    }
+    if (per <= 0) return;
+    if (pp_clk_per > 0 && fabs(per - pp_clk_per) <= pp_clk_per * PP_CLK_HYST) return;
+    pp_clk_per = per;
+    /* the core's own clock-in tempo (seq_tempo: 24 pulses a beat), its sequencer still stopped */
+    mx.per_q8 = (uint32_t)lrint(per * M2K_SR * 256.0);
+    mx.ext = 1;
+}
+
+/* Start / Continue: the free-running LFOs back to their start phase, as a trig puts the others */
+static void pp_clock_start(void)
+{
+    for (int t = 0; t < NT; t++)
+        for (int l = 0; l < 3; l++) {
+            const int b = P_LFO + 8 * l;
+            if ((trk[t].eff[b + L_TRIG] * 5) >> 7) continue;          /* (not FREE: its notes restart it) */
+            trk[t].lph[l] = (uint32_t)trk[t].eff[b + L_PHAS] << 25;
+            trk[t].ldone[l] = 0;
+        }
+}
+
 /* one MIDI message for track t; called from the audio thread only */
 static void pp_handle_midi(int t, const uint8_t *m, size_t n)
 {
-    if (n == 0 || t < 0 || t >= NT) return;
+    if (n == 0) return;
+    if (m[0] == 0xF8) { pp_clock_pulse(t >= 0 && t < NT ? t : 0, pp_now); return; }
+    if (m[0] == 0xFA || m[0] == 0xFB) { pp_clock_start(); return; }
+    if (t < 0 || t >= NT) return;
     const int status = m[0];
     if (status < 0x80 || status >= 0xF0) return;      /* running status / system: not ours */
     const int cmd = status & 0xF0;
@@ -562,7 +621,7 @@ static const pp_ev_t PP_DEMO[] = {
     {1.20, {0xB0, 72, 30}},  {1.40, {0xB0, 72, 60}},
     {1.80, {0x80, 60, 0}},   {1.90, {0xB0, 72, 0}},
     {2.00, {0xB1, CC_MACHINE, M_SAW}}, {2.00, {0x91, 36, 100}}, {2.60, {0x81, 36, 0}},   /* track 2 */
-    {2.70, {0xF8, 0, 0}}, {2.70, {0xFA, 0, 0}},          /* clock and start: must be ignored */
+    {2.70, {0xF8, 0, 0}}, {2.70, {0xFA, 0, 0}},          /* a pulse and start: no tempo yet, no sequencer */
 };
 
 static void pp_put_le(FILE *f, uint32_t v, int bytes)
@@ -629,6 +688,7 @@ static int pp_render(const char *path, unsigned rate, double seconds, const char
         for (uint32_t i = 0; i < frames; i++) {
             const double now = (double)i / rate;
             while (next < nev && ev[next].t <= now) {
+                pp_now = ev[next].t;
                 pp_handle_midi(ev[next].m[0] & 15, ev[next].m, 3);   /* (the channel is the track) */
                 next++;
             }
@@ -655,7 +715,9 @@ static volatile sig_atomic_t pp_quit;
 /* the MIDI of every track, in time order, applied at the frame each falls on */
 static int pp_process(jack_nframes_t nframes, void *arg)
 {
-    (void)arg;
+    jack_client_t *client = arg;
+    const jack_nframes_t start = jack_last_frame_time(client);
+    const double rate = (double)jack_get_sample_rate(client);
     void *mbuf[NT];
     jack_nframes_t nev[NT], ei[NT];
     jack_midi_event_t ev[NT];
@@ -672,6 +734,7 @@ static int pp_process(jack_nframes_t nframes, void *arg)
     for (jack_nframes_t i = 0; i <= nframes; i++) {
         for (int t = 0; t < NT; t++)
             while (have[t] && (i == nframes || ev[t].time <= i)) {   /* (at the end: those stamped past the period) */
+                pp_now = (double)(start + ev[t].time) / rate;
                 pp_handle_midi(t, ev[t].buffer, ev[t].size);
                 have[t] = ++ei[t] < nev[t] && jack_midi_event_get(&ev[t], mbuf[t], ei[t]) == 0;
             }
@@ -731,7 +794,7 @@ static int run_jack(const char *name, const char *const midi_substr[NT], int aud
     for (int t = 0; t < NT; t++) if (!pp_midi_in[t]) { fprintf(stderr, "m2k-jack: could not register ports\n"); return 1; }
     for (int ch = 0; ch < NCH; ch++) if (!pp_out[ch]) { fprintf(stderr, "m2k-jack: could not register ports\n"); return 1; }
     pp_resampler_init(jack_get_sample_rate(c));
-    jack_set_process_callback(c, pp_process, NULL);
+    jack_set_process_callback(c, pp_process, c);
     jack_on_shutdown(c, on_shutdown, NULL);
     if (jack_activate(c)) { fprintf(stderr, "m2k-jack: could not activate\n"); return 1; }
     fprintf(stderr, "m2k-jack: \"%s\" at %u Hz (core %d Hz), tracks on:", jack_get_client_name(c),
