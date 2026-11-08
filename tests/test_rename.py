@@ -262,29 +262,43 @@ def test_keyboard_arrows_wrap_and_skip_empty_cells():
     assert k.char == "8"                                          # past the empty cell, wrapped
 
 
-def test_shift_opens_the_keyboard_on_the_cursor_character(overlay):
+def test_holding_shift_shows_the_keyboard_on_the_cursor_character(overlay):
     overlay.start("Rename", "MOOG", lambda name: None, cancel_button=B.BUTTON_UPPER_ROW_3)
     overlay.on_button_pressed(B.BUTTON_SHIFT)
     assert overlay.keyboard is not None and overlay.keyboard.char == "M"
-    overlay.on_button_pressed(B.BUTTON_SHIFT)
+    overlay.on_button_released(B.BUTTON_SHIFT)
     assert overlay.keyboard is None
 
 
-def test_keyboard_typing_writes_at_the_cursor_and_moves_on(overlay, app):
+def test_letting_go_of_shift_types_the_character_and_moves_on(overlay, app):
     confirmed = []
     overlay.start("Rename", "A", lambda name: confirmed.append(name), cancel_button=B.BUTTON_UPPER_ROW_3)
     overlay.on_button_pressed(B.BUTTON_SHIFT)                     # on "A"
     overlay.on_button_pressed(B.BUTTON_RIGHT)                     # B
-    overlay.on_button_pressed(B.BUTTON_SELECT)                    # types B over A
-    overlay.on_button_pressed(B.BUTTON_DOWN)                      # N
-    overlay.on_button_pressed(B.BUTTON_SELECT)
-    overlay.on_button_pressed(B.BUTTON_SELECT)
-    assert overlay.editor.text.strip() == "BNN"
-    assert overlay in app.active_modes                            # SELECT types, doesn't save
-    overlay.on_button_pressed(B.BUTTON_DELETE)                    # the blank after BNN
-    overlay.on_button_pressed(B.BUTTON_SHIFT)                     # keyboard closed
-    overlay.on_button_pressed(B.BUTTON_SELECT)                    # now SELECT saves
-    assert confirmed == ["BNN"]
+    overlay.on_button_released(B.BUTTON_SHIFT)                    # types B over A, cursor to 1
+    assert overlay.editor.text == "B " and overlay.editor.cursor == 1
+    overlay.on_button_pressed(B.BUTTON_SHIFT)                     # on the blank: SPC
+    overlay.on_button_pressed(B.BUTTON_UP)                        # up from SPC: "6"
+    overlay.on_button_pressed(B.BUTTON_SELECT)                    # SELECT does nothing while SHIFT is held
+    assert overlay in app.active_modes and overlay.editor.text == "B "
+    overlay.on_button_released(B.BUTTON_SHIFT)
+    assert overlay.editor.text == "B6 " and overlay.editor.cursor == 2
+    overlay.on_button_pressed(B.BUTTON_SELECT)                    # SHIFT up: SELECT saves
+    assert confirmed == ["B6"]
+
+
+def test_shift_on_its_own_steps_past_the_character(overlay):
+    overlay.start("Rename", "AB", lambda name: None, cancel_button=B.BUTTON_UPPER_ROW_3)
+    overlay.on_button_pressed(B.BUTTON_SHIFT)
+    overlay.on_button_released(B.BUTTON_SHIFT)
+    assert overlay.editor.text == "AB" and overlay.editor.cursor == 1
+
+
+def test_releasing_other_buttons_doesnt_type(overlay):
+    overlay.start("Rename", "AB", lambda name: None, cancel_button=B.BUTTON_UPPER_ROW_3)
+    overlay.on_button_pressed(B.BUTTON_SHIFT)
+    overlay.on_button_released(B.BUTTON_RIGHT)
+    assert overlay.keyboard is not None and overlay.editor.text == "AB"
 
 
 def test_keyboard_draws_every_key_and_highlights_one(overlay):

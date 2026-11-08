@@ -4,10 +4,10 @@ Left/Right move the cursor (Right past the end adds a character), Up/Down
 change the character under it, DELETE removes it, SELECT saves and the button
 that opened the editor cancels.
 
-SHIFT opens a keyboard (a grid of every character, as Elektron's naming
-screens have): the arrows move around it, SELECT types the highlighted
-character at the cursor and moves the cursor on, DELETE still removes one,
-and SHIFT closes it again.
+Holding SHIFT shows a keyboard (a grid of every character, as Elektron's
+naming screens have): the arrows move around it while SHIFT is held, and
+letting go of SHIFT types the highlighted character at the cursor and moves
+the cursor on to the next position.
 
 Whoever opens the editor (``RenameMode.start``) gets the new name through
 ``on_confirm``, which returns None when it's done, or a message to show (the
@@ -153,13 +153,16 @@ class RenameMode(definitions.PyshaMode):
             return
         self.close()
 
-    def toggle_keyboard(self) -> None:
-        if self.keyboard is None:
-            self.keyboard = Keyboard()
-            # start on the character under the cursor, so a small fix is a short trip
-            self.keyboard.go_to(self.editor.chars[self.editor.cursor] if self.editor else "A")
-        else:
-            self.keyboard = None
+    def open_keyboard(self) -> None:
+        self.keyboard = Keyboard()
+        # start on the character under the cursor, so a small fix is a short trip
+        self.keyboard.go_to(self.editor.chars[self.editor.cursor] if self.editor else "A")
+
+    def type_and_close_keyboard(self) -> None:
+        """SHIFT let go: the highlighted character goes in at the cursor, which moves on."""
+        if self.keyboard is not None and self.editor is not None:
+            self.editor.type(self.keyboard.char)
+        self.keyboard = None
 
     # ------------------------------------------------------------ the mode
 
@@ -186,14 +189,14 @@ class RenameMode(definitions.PyshaMode):
         if self.editor is None:
             return None
         if button_name == B.BUTTON_SHIFT:
-            self.toggle_keyboard()
+            self.open_keyboard()
             self.update_buttons()
         elif self.keyboard is not None and button_name in (B.BUTTON_LEFT, B.BUTTON_RIGHT, B.BUTTON_UP, B.BUTTON_DOWN):
             self.keyboard.move(*{
                 B.BUTTON_LEFT: (0, -1), B.BUTTON_RIGHT: (0, 1), B.BUTTON_UP: (-1, 0), B.BUTTON_DOWN: (1, 0),
             }[button_name])
         elif self.keyboard is not None and button_name == B.BUTTON_SELECT:
-            self.editor.type(self.keyboard.char)
+            return True                     # (SHIFT held: letting go of it types; SELECT waits)
         elif button_name == B.BUTTON_LEFT:
             self.editor.left()
         elif button_name == B.BUTTON_RIGHT:
@@ -216,8 +219,14 @@ class RenameMode(definitions.PyshaMode):
         return True
 
     def on_button_released(self, button_name: str) -> bool | None:
+        if self.editor is None:
+            return None
+        if button_name == B.BUTTON_SHIFT and self.keyboard is not None:
+            self.type_and_close_keyboard()
+            self.message = ""
+            self.update_buttons()
         # (SELECT released must not reach the preset browser underneath)
-        return True if self.editor is not None else None
+        return True
 
     def on_encoder_rotated(self, encoder_name: str, increment: int) -> bool:
         return True
@@ -283,7 +292,7 @@ class RenameMode(definitions.PyshaMode):
             ctx.set_font_size(12)
             ctx.set_source_rgb(*definitions.get_color_rgb_float(definitions.GRAY_LIGHT))
             ctx.move_to(8 + MAX_LENGTH * 18 + 20, 20)
-            ctx.show_text("arrows choose  SELECT type  DELETE remove  SHIFT done")
+            ctx.show_text("arrows choose   let go of SHIFT to type it")
             self._draw_keyboard(ctx, w)
             ctx.restore()
             return
@@ -301,5 +310,5 @@ class RenameMode(definitions.PyshaMode):
             ctx.show_text(self.message)
         ctx.set_source_rgb(*definitions.get_color_rgb_float(definitions.GRAY_LIGHT))
         ctx.move_to(12, 145)
-        ctx.show_text("SHIFT keyboard   < > move   Up/Down letter   DELETE remove   SELECT save   red button cancel")
+        ctx.show_text("hold SHIFT keyboard   < > move   Up/Down letter   DELETE remove   SELECT save   red button cancel")
         ctx.restore()
