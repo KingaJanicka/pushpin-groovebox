@@ -466,10 +466,10 @@ class SurgeXTEngine(Engine):
         for port in self.app.pipewire:
             if port['type'] == 'PipeWire:Interface:Port':
                 if port['info']['props']['node.id'] == surge_node['id']:
-                    if port['info']['props']['object.path'] in self.port_paths(self.output_port_names):
+                    if self.port_is(port, self.output_port_names):
                         surge_output_ports.append(port)
                         self.pw_ports["output"].append(port)
-                    if port['info']['props']['object.path'] in self.port_paths(self.input_port_names):
+                    if self.port_is(port, self.input_port_names):
                         self.pw_ports["input"].append(port)
 
         # Only this engine's own outputs' links: a shared process's other tracks route themselves
@@ -497,9 +497,9 @@ class SurgeXTEngine(Engine):
         volume_L_input = [port for port in volume_ports if port['info']['props']['object.path'] == f"pure_data:input_{volume_input_port_index_L}"].pop()
         volume_R_input = [port for port in volume_ports if port['info']['props']['object.path'] == f"pure_data:input_{volume_input_port_index_R}"].pop()
 
-        out_L_path, out_R_path = self.port_paths(self.output_port_names)
-        surge_L = [port for port in surge_output_ports if port['info']['props']['object.path'] == out_L_path].pop()
-        surge_R = [port for port in surge_output_ports if port['info']['props']['object.path'] == out_R_path].pop()
+        out_L_name, out_R_name = self.output_port_names
+        surge_L = [port for port in surge_output_ports if self.port_is(port, (out_L_name,))].pop()
+        surge_R = [port for port in surge_output_ports if self.port_is(port, (out_R_name,))].pop()
 
         await connectPipewireSourceToPipewireDest(surge_L['id'], volume_L_input['id'])
         await connectPipewireSourceToPipewireDest(surge_R['id'], volume_R_input['id'])
@@ -520,9 +520,17 @@ class SurgeXTEngine(Engine):
         for link in init_links:
             await disconnectPipewireLink(link['id'])
 
-    def port_paths(self, names) -> list[str]:
-        """PipeWire's object.path for this engine's JACK ports."""
-        return [f"{self.jack_client_name}:{name}" for name in names]
+    def port_is(self, port, names) -> bool:
+        """Whether a PipeWire port is one of this engine's JACK ports called ``names``.
+
+        PipeWire names a JACK client's ports by direction and index in
+        ``object.path`` ("M2K:output_2") and keeps the JACK name in
+        ``port.alias`` ("M2K:track2_L"). Surge's ports are called output_0/1,
+        so for Surge the two agree; for m2k-jack only the alias carries the name.
+        """
+        props = port.get('info', {}).get('props', {})
+        wanted = {f"{self.jack_client_name}:{name}" for name in names}
+        return props.get('object.path') in wanted or props.get('port.alias') in wanted
 
     def initial_slots(self) -> list[dict[str, Any] | None]:
         """The instrument's 16 device slots: the OSC address that says which

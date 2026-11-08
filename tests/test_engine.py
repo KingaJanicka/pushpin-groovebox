@@ -205,27 +205,36 @@ def test_m2k_shared_args_without_tracks_enable_none():
     assert engine.M2KShared().args(64)[-2:] == ["--enable", "none"]
 
 
-def _port(node_id, path, port_id):
-    return {
-        "id": port_id,
-        "type": "PipeWire:Interface:Port",
-        "info": {"props": {"node.id": node_id, "object.path": path}},
-    }
+def _port(node_id, path, port_id, alias=None):
+    props = {"node.id": node_id, "object.path": path}
+    if alias is not None:
+        props["port.alias"] = alias
+    return {"id": port_id, "type": "PipeWire:Interface:Port", "info": {"props": props}}
+
+
+def _m2k_port(node_id, index, jack_name, port_id):
+    """An m2k-jack port as PipeWire reports it on the Pi: object.path by direction
+    and index, the JACK name only in port.alias."""
+    return _port(node_id, f"M2K:output_{index}", port_id, alias=f"M2K:{jack_name}")
 
 
 @pytest.mark.parametrize(
     "engine_name, out_L, out_R",
-    [("surge-xt-cli", "Surge XT:output_0", "Surge XT:output_1"), ("mono2k", "M2K:track1_L", "M2K:track1_R")],
+    [
+        ("surge-xt-cli", ("Surge XT:output_0", None), ("Surge XT:output_1", None)),
+        ("mono2k", ("M2K:output_0", "M2K:track1_L"), ("M2K:output_1", "M2K:track1_R")),
+    ],
 )
 def test_configure_pipewire_routes_by_port_name(app, engine_name, out_L, out_R):
-    """Both engines route their own outputs through the volume node, found by port name."""
+    """Both engines route their own outputs through the volume node, found by
+    JACK port name (object.path for Surge, port.alias for m2k-jack)."""
     definition = m2k_definition(index=0, engine=engine_name)
     eng = engine.create_engine(app, definition, midi_device_idx=0)
     node = {"id": 10}
     volume_node = {"id": 20}
     app.pipewire = [
-        _port(10, out_L, 101),
-        _port(10, out_R, 102),
+        _port(10, out_L[0], 101, alias=out_L[1]),
+        _port(10, out_R[0], 102, alias=out_R[1]),
         _port(20, "pure_data:input_0", 201),
         _port(20, "pure_data:input_1", 202),
         _port(20, "pure_data:output_0", 203),
@@ -256,9 +265,9 @@ def test_m2k_track_routing_leaves_the_other_tracks_alone(app):
         "info": {"output-node-id": 10, "output-port-id": out_port, "input-port-id": in_port},
     }
     app.pipewire = [
-        _port(10, "M2K:track1_L", 101), _port(10, "M2K:track1_R", 102),
-        _port(10, "M2K:track2_L", 103), _port(10, "M2K:track2_R", 104),
-        _port(10, "M2K:fx_L", 105), _port(10, "M2K:fx_R", 106),
+        _m2k_port(10, 0, "track1_L", 101), _m2k_port(10, 1, "track1_R", 102),
+        _m2k_port(10, 2, "track2_L", 103), _m2k_port(10, 3, "track2_R", 104),
+        _m2k_port(10, 16, "fx_L", 105), _m2k_port(10, 17, "fx_R", 106),
         _port(20, "pure_data:input_2", 202), _port(20, "pure_data:input_3", 203),
         _port(20, "pure_data:output_2", 212), _port(20, "pure_data:output_3", 213),
         link(301, 101, 901), link(302, 102, 902),
@@ -298,3 +307,10 @@ def test_m2k_initial_slots_select_machine_by_cc(app):
     assert slots[0] == {"address": "/cc/14", "value": 7.0}
     assert slots[1:] == [None] * 15
     assert eng.control_transport == "midi-cc"
+
+
+def test_m2k_port_named_like_a_surge_port_is_not_taken_for_track1(app):
+    """M2K:output_0 is track1_L by index; track 2's engine must not match it by path."""
+    eng = engine.create_engine(app, m2k_definition(index=1), midi_device_idx=0)
+    assert not eng.port_is(_m2k_port(10, 0, "track1_L", 1), ("track2_L",))
+    assert eng.port_is(_m2k_port(10, 2, "track2_L", 2), ("track2_L",))
