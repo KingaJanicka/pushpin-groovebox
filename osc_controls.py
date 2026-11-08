@@ -61,9 +61,61 @@ class OSCControl(object):
         self.send_osc_func: OscSendFunc = send_osc_func or (lambda addr, val: None)
         self.log = logger.getChild(f"{self.label}:Range")
         self.bipolar: bool = config.get("bipolar", False)
+        # Optional: how far one encoder click moves the value, in the control's
+        # own units. Without it a click is (max - min) / SCALING_FACTOR.
+        self.step: float | None = config.get("step", None)
+        # Optional: show the value as an offset from this centre, signed
+        # (mono2k's LFO depth: 64 is none, below it the other way round)
+        self.display_center: float | None = config.get("display_center", None)
+        # Optional: what to show for each whole value (mono2k's own words for
+        # its values: "1/16 NOTE", "2.3 KHZ"). With "value_labels_by", the
+        # table follows another parameter's value: {"address", "choices",
+        # "tables"}, table (v * choices) >> 7 for that parameter's v (DIGI-WAV's
+        # waves follow its BANK, an LFO's SPD its MULT).
+        self.value_labels: list[str] | None = config.get("value_labels", None)
+        self.value_labels_by: ConfigDict | None = config.get("value_labels_by", None)
+        self.labels_source_value: float = 0.0
+        self.labels_address: str | None = self.value_labels_by["address"] if self.value_labels_by else None
 
     def query(self) -> None:
         self.send_osc_func("/q" + self.address, None)
+
+    def set_labels_source(self, address: str, *args: Any) -> None:
+        """The parameter the labels follow has a new value."""
+        if args:
+            try:
+                self.labels_source_value = float(args[0])
+            except (TypeError, ValueError):
+                pass
+
+    def labels_table(self) -> list[str] | None:
+        if self.value_labels_by:
+            tables = self.value_labels_by["tables"]
+            n = int(self.value_labels_by.get("choices", len(tables)))
+            v = min(max(int(self.labels_source_value), 0), 127)
+            return tables[min((v * n) >> 7, len(tables) - 1)]
+        return self.value_labels
+
+    @property
+    def has_value_labels(self) -> bool:
+        return bool(self.value_labels or self.value_labels_by)
+
+    def display_text(self, value: float) -> str:
+        table = self.labels_table()
+        if table:
+            return table[min(max(int(float(value)), 0), len(table) - 1)]
+        if self.display_center is not None:
+            offset = round(float(value) - float(self.display_center), 2)
+            return "0" if offset == 0 else f"{offset:+g}"
+        return str(round(value, 2))
+
+    def fraction(self, value: float) -> float:
+        """Where ``value`` sits between min and max, 0..1, for drawing. Surge's
+        controls run 0..1, mono2k's 0..127: the drawing must not assume either."""
+        span = self.max - self.min
+        if span <= 0:
+            return 0.0
+        return min(max((value - self.min) / span, 0.0), 1.0)
 
     def draw(self, ctx: Any, x_part: int, draw_lock: bool = False, lock_value: float | None = None) -> None:
         font_color = definitions.WHITE        
@@ -117,11 +169,13 @@ class OSCControl(object):
                 ctx,
                 x_part,
                 margin_top + name_height,
-                str(round(value, 2)),
+                self.display_text(value),
                 # str(self.string),
                 height=val_height,
                 font_color=color,
-                margin_left=int(value / self.max * 80 + 10),
+                # (words don't fit where a number rides along with the knob)
+                center_horizontally=self.has_value_labels,
+                margin_left=int(self.fraction(value) * 80 + 10),
             )
 
             # Knob
@@ -146,7 +200,7 @@ class OSCControl(object):
             ctx.stroke()
 
             # Inner line
-            bipolar_value = value / self.max - 0.5 * self.max
+            bipolar_value = self.fraction(value) - 0.5
             ctx.move_to(xc, yc)
             ctx.line_to(xc + length, yc)
             ctx.set_source_rgb(*definitions.get_color_rgb_float(definitions.GRAY_LIGHT))
@@ -161,16 +215,15 @@ class OSCControl(object):
             ctx.stroke()
 
             # Triangle indicator
-            ctx.move_to(xc + length * value / self.max, yc - triangle_padding)
+            ctx.move_to(xc + length * self.fraction(value), yc - triangle_padding)
             ctx.line_to(
-                xc + length * value / self.max - triangle_size,
+                xc + length * self.fraction(value) - triangle_size,
                 yc - triangle_padding - 2 * triangle_size,
             )
             ctx.line_to(
-                xc + length * value / self.max + triangle_size,
+                xc + length * self.fraction(value) + triangle_size,
                 yc - triangle_padding - 2 * triangle_size,
             )
-            ctx.move_to(xc + length * value, yc - triangle_padding)
             ctx.close_path()
             ctx.set_source_rgb(*definitions.get_color_rgb_float(color))
             ctx.fill()
@@ -198,11 +251,13 @@ class OSCControl(object):
                 ctx,
                 x_part,
                 margin_top + name_height,
-                str(round(value, 2)),
+                self.display_text(value),
                 # str(self.string),
                 height=val_height,
                 font_color=color,
-                margin_left=int(value / self.max * 80 + 10),
+                # (words don't fit where a number rides along with the knob)
+                center_horizontally=self.has_value_labels,
+                margin_left=int(self.fraction(value) * 80 + 10),
             )
 
             # Knob
@@ -236,22 +291,21 @@ class OSCControl(object):
 
             # Outer line
             ctx.move_to(xc, yc)
-            ctx.line_to(xc + length * value / self.max, yc)
+            ctx.line_to(xc + length * self.fraction(value), yc)
             ctx.set_source_rgb(*definitions.get_color_rgb_float(color))
             ctx.set_line_width(3)
             ctx.stroke()
 
             # Triangle indicator
-            ctx.move_to(xc + length * value / self.max, yc - triangle_padding)
+            ctx.move_to(xc + length * self.fraction(value), yc - triangle_padding)
             ctx.line_to(
-                xc + length * value / self.max - triangle_size,
+                xc + length * self.fraction(value) - triangle_size,
                 yc - triangle_padding - 2 * triangle_size,
             )
             ctx.line_to(
-                xc + length * value / self.max + triangle_size,
+                xc + length * self.fraction(value) + triangle_size,
                 yc - triangle_padding - 2 * triangle_size,
             )
-            ctx.move_to(xc + length * value, yc - triangle_padding)
             ctx.close_path()
             ctx.set_source_rgb(*definitions.get_color_rgb_float(color))
             ctx.fill()
@@ -309,7 +363,7 @@ class OSCControl(object):
             str(round(value, 2)),
             height=val_height,
             font_color=color,
-            margin_left=int(value / self.max * line_width * 0.75 + 10),
+            margin_left=int(self.fraction(value) * line_width * 0.75 + 10),
         )
 
         radius = name_height / 2
@@ -346,7 +400,10 @@ class OSCControl(object):
         # self.string = string
 
     def update_value(self, increment: float, **kwargs: Any) -> None:
-        scaled = scale_value(increment, self.min, self.max)
+        if self.step is not None:
+            scaled = round(increment * self.step, DECIMAL_PLACES)
+        else:
+            scaled = scale_value(increment, self.min, self.max)
         if self.value + scaled > self.max:
             self.value = self.max
         elif self.value + scaled < self.min:
@@ -544,6 +601,13 @@ class OSCControlSwitch(object):
         # it, a full 127-click sweep covers all groups, so switches with many
         # groups (e.g. 13 filter families) change every few clicks.
         self.clicks_per_group: float | None = config.get("clicks_per_group", None)
+        # Optional title above it, as a menu's menu_label (and drawn the same
+        # height, so its selection lines up with menus and range controls)
+        self.menu_label: str | None = config.get("menu_label", None)
+        # Optional: a value coming back for the switch's (family) address moves it
+        # to the group whose menu holds that value, not only its first item's
+        # (mono2k's LFO destination: a device per group, its parameters a menu)
+        self.select_by_value: bool = bool(config.get("select_by_value", False))
         self.log = logger.getChild(f"{self.label}:Switch")
         groups = config.get("groups", [])
 
@@ -585,9 +649,11 @@ class OSCControlSwitch(object):
             scaled = increment / self.clicks_per_group
         else:
             scaled = scale_value(increment, 0, len(self.groups))
-        if 0 <= (self.value + scaled) <= len(self.groups):
-            self.value += scaled
-            self.knob_value = self.value
+        # Stay within the groups: the value used to reach len(groups), one past
+        # the last, and drawing it raised IndexError (and stopped the app)
+        last = float(max(len(self.groups) - 1, 0))
+        self.value = min(max(self.value + scaled, 0.0), last)
+        self.knob_value = self.value
         if int(self.value) != prev_idx:
             active = self.get_active_group()
             if active:
@@ -658,12 +724,22 @@ class OSCControlSwitch(object):
 
     def set_state(self, address: str, *args: Any) -> None:
         # print("Control switch args", args)
-        value, label = args
+        # Surge sends a value and a label; a MIDI-CC engine's echo only the value
+        value, *rest = args
         # print("switch val = ", value)
         self.log.debug((address, args))
         if address == self.family_address and self.recent_sends.contains(value):
             # Our own type change coming back (possibly late, after the user
             # has turned on further): applying it would jump the switch back.
+            return
+        if self.select_by_value and address == self.family_address:
+            for idx, group in enumerate(self.groups):
+                menu = self._family_menu(group)
+                if any(item.value is not None and int(round(float(item.value))) == int(round(float(value)))
+                       for item in menu.items):
+                    self._move_to_group(idx)
+                    self.knob_value = self.value          # (what draw() shows)
+                    return
             return
         # TODO do we need the following?
         for idx, group in enumerate(self.groups):
@@ -716,6 +792,22 @@ class OSCControlSwitch(object):
     
                 
         
+        if not self.groups:
+            return
+        idx = min(max(idx, 0), len(self.groups) - 1)
+        tip_top = 0
+        if self.menu_label:
+            tip_top = 25
+            show_text(
+                ctx,
+                offset,
+                tip_top,
+                self.menu_label,
+                height=20,
+                font_color=definitions.WHITE,
+                center_horizontally=True,
+            )
+        margin_top += tip_top   # (a stray value or lock must not crash the display)
         if len(self.groups) > idx + 1:
             next_label = self.groups[idx + 1].label
 
@@ -926,9 +1018,12 @@ class OSCControlMenu(object):
         self.message: ConfigDict | None = config.get("onselect", None)
         self.address: str | None = self.message["address"] if self.message else None
         self.value: float | int | None = self.message["value"] if self.message else None
-        self.size: int = 0
+        self.size: int = 1                  # (one encoder and one place on the display)
         self.log = logger.getChild(f"{self.label}:Menu")
         self.recent_sends = RecentSends()
+        # Optional: items moved per encoder click. Without it a full 127-click
+        # sweep covers the whole menu, so a short menu takes ~40 clicks an item.
+        self.step: float | None = config.get("step", None)
 
         for item in config.get("items", []):
             self.items.append(OSCMenuItem(item, send_osc_func=send_osc_func))
@@ -956,7 +1051,10 @@ class OSCControlMenu(object):
             self.send_osc_func("/q" + self.address, None)
 
     def update_value(self, increment: float, **kwargs: Any) -> None:
-        scaled = scale_value(increment, 0, len(self.items))
+        if self.step is not None:
+            scaled = increment * self.step
+        else:
+            scaled = scale_value(increment, 0, len(self.items))
         current = self.value if self.value is not None else 0.0
         prev_item = self.get_active_menu_item()
         new_value = current + scaled
@@ -983,6 +1081,14 @@ class OSCControlMenu(object):
         return None
 
     def get_closest_idx(self, value: float) -> int | None:
+        try:
+            whole = int(float(value))
+        except (TypeError, ValueError):
+            whole = None
+        if whole is not None:
+            for idx, item in enumerate(self.items):
+                if item.range is not None and item.range[0] <= whole <= item.range[1]:
+                    return idx
         closest_value = closest([float(item.value) for item in self.items if item.value is not None], value)
         for idx, item in enumerate(self.items):
             if item.value == closest_value:
@@ -1141,12 +1247,36 @@ class OSCMenuItem(object):
         if config.get("$type", None) != "menu-item":
             raise Exception("Invalid config passed to new OSCMenuItem")
 
-        self.label: str = config.get("label", "")
+        self.label = config.get("label", "")
         self.message: ConfigDict | None = config.get("onselect", None)
         self.modmatrix: bool = config.get("modmatrix", True)
         self.address: str | None = self.message["address"] if self.message else None
         self.value: float | int | None = self.message["value"] if self.message else None
+        # Optional: [lo, hi], every whole value that means this item (mono2k's
+        # choices are runs of values, not all the same length)
+        self.range: list[int] | None = config.get("range", None)
         self.send_osc_func: OscSendFunc = send_osc_func or (lambda addr, val: None)
+        # Optional: {"slot": s, "control": k}: the item names the k-th control of
+        # the device slot s shows (mono2k's LFO destinations on the machine page).
+        # Whoever owns the devices sets label_func to resolve it; until then, and
+        # whenever it has nothing, the static label shows.
+        self.label_from: ConfigDict | None = config.get("label_from", None)
+        self.label_func: Callable[[], str | None] | None = None
+
+    @property
+    def label(self) -> str:
+        if self.label_func is not None:
+            try:
+                dynamic = self.label_func()
+            except Exception:
+                dynamic = None
+            if dynamic:
+                return dynamic
+        return self._label
+
+    @label.setter
+    def label(self, value: str) -> None:
+        self._label = value
 
     def select(self) -> None:
         if self.address is not None and self.value is not None:

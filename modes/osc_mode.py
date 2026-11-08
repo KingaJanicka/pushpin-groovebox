@@ -34,6 +34,10 @@ from osc_controls import (
 logger = logging.getLogger("osc_mode")
 
 
+from modes.device_definitions import load_device_definitions  # noqa: E402  (re-exported)
+from modes.engine_selection_mode import load_track_engines, TRACK_ENGINES_FILENAME  # noqa: E402
+
+
 class OSCMode(PyshaMode):
     upper_row_button_names = [
         push2_python.constants.BUTTON_UPPER_ROW_1,
@@ -118,6 +122,11 @@ class OSCMode(PyshaMode):
             except FileNotFoundError:
                 device_definitions[modulation_name] = {}
 
+        # mono2k's pages, shared by every track's mono2k voice
+        m2k_device_definitions = load_device_definitions(definitions.M2K_DEFINITION_FOLDER)
+        # Each track's engine as last chosen with ADD TRACK
+        track_engines = load_track_engines(TRACK_ENGINES_FILENAME)
+
         for (
             instrument_short_name
         ) in self.get_all_distinct_instrument_short_names_helper():
@@ -142,6 +151,8 @@ class OSCMode(PyshaMode):
                 device_definitions,
                 get_current_instrument_color_helper=self.get_current_instrument_color_helper,
                 app=self.app,
+                initial_engine=track_engines.get(instrument_short_name),
+                m2k_device_definitions=m2k_device_definitions,
             )
 
     def load_state(self):
@@ -346,6 +357,10 @@ class OSCMode(PyshaMode):
         
         # Only pages when you're not trying to pick a new device
         if self.app.is_mode_active(self.app.menu_mode) == False:
+            instrument = self.get_current_instrument()
+            if new_instrument_page and instrument is not None and not instrument.devices_modulation:
+                # (no modulation page: mono2k's LFOs are on the first one)
+                new_instrument_page = 0
             self.instrument_page = new_instrument_page or 0
             self.app.buttons_need_update = True
             self.query_all_instrument_page_params()

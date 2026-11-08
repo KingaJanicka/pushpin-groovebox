@@ -1,0 +1,414 @@
+{
+	"name": "DSTR",
+	"slot": 4,
+	"init": [],
+	"controls": [
+		{
+			"$type": "control-menu",
+			"menu_label": "BITS",
+			"step": 0.5,
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "16 BIT",
+					"range": [
+						0,
+						9
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/16",
+						"value": 5
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "15 BIT",
+					"range": [
+						10,
+						18
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/16",
+						"value": 14
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "14 BIT",
+					"range": [
+						19,
+						27
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/16",
+						"value": 23
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "13 BIT",
+					"range": [
+						28,
+						36
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/16",
+						"value": 32
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "12 BIT",
+					"range": [
+						37,
+						45
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/16",
+						"value": 41
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "11 BIT",
+					"range": [
+						46,
+						54
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/16",
+						"value": 50
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "10 BIT",
+					"range": [
+						55,
+						63
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/16",
+						"value": 59
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "9 BIT",
+					"range": [
+						64,
+						73
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/16",
+						"value": 69
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "8 BIT",
+					"range": [
+						74,
+						82
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/16",
+						"value": 78
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "7 BIT",
+					"range": [
+						83,
+						91
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/16",
+						"value": 87
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "6 BIT",
+					"range": [
+						92,
+						100
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/16",
+						"value": 96
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "5 BIT",
+					"range": [
+						101,
+						109
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/16",
+						"value": 105
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "4 BIT",
+					"range": [
+						110,
+						118
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/16",
+						"value": 114
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "3 BIT",
+					"range": [
+						119,
+						127
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/16",
+						"value": 123
+					}
+				}
+			]
+		},
+		{
+			"$type": "control-range",
+			"label": "FOLD",
+			"address": "/cc/17",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "XOR",
+			"address": "/cc/18",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "VERB",
+			"address": "/cc/19",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-menu",
+			"menu_label": "TYPE",
+			"step": 0.25,
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "CHOR",
+					"range": [
+						0,
+						42
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/m2k/param/66",
+						"value": 21
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "FLNG",
+					"range": [
+						43,
+						85
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/m2k/param/66",
+						"value": 64
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "PHAS",
+					"range": [
+						86,
+						127
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/m2k/param/66",
+						"value": 107
+					}
+				}
+			]
+		},
+		{
+			"$type": "control-range",
+			"label": "RATE",
+			"address": "/m2k/param/67",
+			"min": 0,
+			"max": 127,
+			"value_labels": [
+				"0.1 HZ",
+				"0.1 HZ",
+				"0.1 HZ",
+				"0.1 HZ",
+				"0.1 HZ",
+				"0.1 HZ",
+				"0.1 HZ",
+				"0.1 HZ",
+				"0.1 HZ",
+				"0.1 HZ",
+				"0.1 HZ",
+				"0.1 HZ",
+				"0.2 HZ",
+				"0.2 HZ",
+				"0.2 HZ",
+				"0.2 HZ",
+				"0.2 HZ",
+				"0.2 HZ",
+				"0.2 HZ",
+				"0.2 HZ",
+				"0.2 HZ",
+				"0.2 HZ",
+				"0.2 HZ",
+				"0.2 HZ",
+				"0.2 HZ",
+				"0.2 HZ",
+				"0.3 HZ",
+				"0.3 HZ",
+				"0.3 HZ",
+				"0.3 HZ",
+				"0.3 HZ",
+				"0.3 HZ",
+				"0.3 HZ",
+				"0.3 HZ",
+				"0.3 HZ",
+				"0.4 HZ",
+				"0.4 HZ",
+				"0.4 HZ",
+				"0.4 HZ",
+				"0.4 HZ",
+				"0.4 HZ",
+				"0.4 HZ",
+				"0.5 HZ",
+				"0.5 HZ",
+				"0.5 HZ",
+				"0.5 HZ",
+				"0.5 HZ",
+				"0.5 HZ",
+				"0.6 HZ",
+				"0.6 HZ",
+				"0.6 HZ",
+				"0.6 HZ",
+				"0.7 HZ",
+				"0.7 HZ",
+				"0.7 HZ",
+				"0.7 HZ",
+				"0.8 HZ",
+				"0.8 HZ",
+				"0.8 HZ",
+				"0.8 HZ",
+				"0.9 HZ",
+				"0.9 HZ",
+				"0.9 HZ",
+				"1.0 HZ",
+				"1.0 HZ",
+				"1.1 HZ",
+				"1.1 HZ",
+				"1.1 HZ",
+				"1.2 HZ",
+				"1.2 HZ",
+				"1.3 HZ",
+				"1.3 HZ",
+				"1.4 HZ",
+				"1.4 HZ",
+				"1.5 HZ",
+				"1.5 HZ",
+				"1.6 HZ",
+				"1.6 HZ",
+				"1.7 HZ",
+				"1.8 HZ",
+				"1.8 HZ",
+				"1.9 HZ",
+				"2.0 HZ",
+				"2.0 HZ",
+				"2.1 HZ",
+				"2.2 HZ",
+				"2.3 HZ",
+				"2.3 HZ",
+				"2.4 HZ",
+				"2.5 HZ",
+				"2.6 HZ",
+				"2.7 HZ",
+				"2.8 HZ",
+				"2.9 HZ",
+				"3.0 HZ",
+				"3.1 HZ",
+				"3.2 HZ",
+				"3.4 HZ",
+				"3.5 HZ",
+				"3.6 HZ",
+				"3.8 HZ",
+				"3.9 HZ",
+				"4.0 HZ",
+				"4.2 HZ",
+				"4.3 HZ",
+				"4.5 HZ",
+				"4.7 HZ",
+				"4.8 HZ",
+				"5.0 HZ",
+				"5.2 HZ",
+				"5.4 HZ",
+				"5.6 HZ",
+				"5.8 HZ",
+				"6.0 HZ",
+				"6.2 HZ",
+				"6.5 HZ",
+				"6.7 HZ",
+				"7.0 HZ",
+				"7.2 HZ",
+				"7.5 HZ",
+				"7.8 HZ",
+				"8.0 HZ",
+				"8.3 HZ",
+				"8.6 HZ",
+				"9.0 HZ",
+				"9.3 HZ",
+				"9.6 HZ",
+				"10.0 HZ"
+			]
+		},
+		{
+			"$type": "control-range",
+			"label": "DPTH",
+			"address": "/m2k/param/68",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "MIX",
+			"address": "/m2k/param/69",
+			"min": 0,
+			"max": 127
+		}
+	]
+}

@@ -90,6 +90,8 @@ class OSCDevice(PyshaMode):
                 case "control-range":
                     control = OSCControl(control_def, get_color, self.send_message)
                     self.dispatcher.map(control.address, control.set_state)
+                    if control.labels_address:
+                        self.dispatcher.map(control.labels_address, control.set_labels_source)
                     self.controls.append(control)
                 case "control-spacer-address":
                     control = OSCSpacerAddress(control_def, self.send_message)
@@ -304,6 +306,10 @@ class OSCDevice(PyshaMode):
                 ].index(encoder_name)
                 if self.app.metro_sequencer_mode.disable_controls == False:
                     visible_controls = self.get_visible_controls()
+                    # A page with fewer than 8 controls (a device's last page) leaves
+                    # the encoders past them with nothing to turn
+                    if encoder_idx >= len(visible_controls):
+                        return
                     control = visible_controls[encoder_idx]
                     control.update_value(increment)
                     

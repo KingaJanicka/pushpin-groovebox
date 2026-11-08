@@ -113,6 +113,8 @@ DEVICE_DEFINITION_FOLDER = DEFINITIONS_FOLDER +"/"+"device_definitions"
 EFFECT_DEFINITION_FOLDER = DEFINITIONS_FOLDER +"/"+"effect_definitions"
 MODULATION_DEFINITIONS_FOLDER = DEFINITIONS_FOLDER +"/"+"modulation_definitions"
 INSTRUMENT_LISTING_PATH = "definitions/instrument_listing.json"
+# mono2k's device pages (every track's mono2k voice; see modes/instrument.py)
+M2K_DEFINITION_FOLDER = "engines/m2k/definitions"
 SURGE_XT_ROOT = (
     f"{path.expanduser('~')}/.local/share/surge-xt"
     if path.isdir(f"{path.expanduser('~')}/.local/share/surge-xt")
@@ -128,6 +130,10 @@ USER_CONFIG_FOLDER = f"{path.expanduser('~')}/.local/share/pushpin"
 makedirs(USER_CONFIG_FOLDER, exist_ok=True)
 
 SURGE_STATE_FOLDER = f"{path.expanduser('~')}/s/music_devices/pushpin-groovebox/surge_state" # Root is ~/Documents/Surge XT/Patches
+# mono2k sounds (m2k_state.py): each track's 8 preset slots, and presets saved
+# with "Save to New" (the browser's User folder)
+M2K_STATE_FOLDER = f"{USER_CONFIG_FOLDER}/m2k_state"
+M2K_USER_PRESETS_FOLDER = f"{USER_CONFIG_FOLDER}/m2k_presets"
 
 TRACK_NAMES_METRO = [
     "pitch",

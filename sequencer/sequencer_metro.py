@@ -11,6 +11,20 @@ from definitions import TRACK_NAMES_METRO
 from sequencer.sequencer_params import SequencerParams
 
 
+def lock_message(control, value):
+    """The (address, value) a p-lock of ``value`` on ``control`` plays. A menu's
+    locks are item positions: play the item's own message, not the position
+    (most of Surge's menus send their position, but not all, and mono2k's
+    MOD type sends 21/64/106)."""
+    items = getattr(control, "items", None)
+    if items:
+        idx = min(max(int(round(float(value))), 0), len(items) - 1)
+        item = items[idx]
+        if item.address is not None and item.value is not None:
+            return item.address, float(item.value)
+    return control.address, value
+
+
 default_number_of_steps = 64
 
 from typing import Any
@@ -323,14 +337,22 @@ class SequencerMetro(object):
                 
                 if prob >= random.randint(1, 6):
                     # We need to reset values that were changed by param locks
-                    for control in self.controls_to_reset:
+                    for control, unlocked in self.controls_to_reset:
                         # print(control.name, control.label)
                         if control.name == "Switch":
                             control.reset_group()
                         else:
-                            self.app.send_osc(control.address, float(control.value), instrument.name)
+                            # Back to the value it had before the lock. Not
+                            # control.value: the synth's echo of the lock has
+                            # overwritten that with the locked value, which made
+                            # every p-lock stick after its step.
+                            control.value = unlocked
+                            self.app.send_osc(*lock_message(control, float(unlocked)), instrument.name)
                     self.timeline.schedule(
-                        {"note": pitch_and_octave, "gate": gate, "amplitude": velocity}, count=1, output_device=self.midi_out_device
+                        {"note": pitch_and_octave, "gate": gate, "amplitude": velocity}, count=1,
+                        # the track's active engine's port (Surge's, or its mono2k port), looked up
+                        # each step so an engine switch takes effect on the next note
+                        output_device=instrument.midi_out_device
                     )
                     self.controls_to_reset.clear()
             
@@ -358,21 +380,21 @@ class SequencerMetro(object):
                                     if self.locks[self.step_index][slot_idx][control_idx] != None:
                                         lock_value = self.locks[self.step_index][slot_idx][control_idx] 
                                         if hasattr(control, "value"):
-                                            lock_offset = lock_value - control.value
-                                            value_after_scale = lock_offset * lock_scale_value + control.value
+                                            unlocked = self.remember_unlocked(control)   # (before the lock and its echo)
+                                            lock_offset = lock_value - unlocked
+                                            value_after_scale = lock_offset * lock_scale_value + unlocked
                                             
                                             if lock_value != None and lock_address != None:
-                                                self.app.send_osc(lock_address, value_after_scale, instrument.name)
+                                                self.app.send_osc(*lock_message(control, value_after_scale), instrument.name)
                                             elif lock_value != None and control.name == "Switch":
                                                     control.update_value_lock(value_after_scale)
                                             
-                                            self.controls_to_reset.append(control)
                                                 
                                     else:
                                         lock_value = 0
                 # This elif branch is for slots that have only one device and therefore
                 # don't have the device address/val in the init
-                elif slot_idx == 2 or slot_idx == 3 or slot_idx == 4:
+                elif slot_idx in getattr(instrument.engine, "always_shown_slots", (2, 3, 4)):
                     for device_idx, device in enumerate(instrument.devices[slot_idx]):
                         # we have the right device
                         # Now we just need to enum the controls and send the values 
@@ -383,15 +405,15 @@ class SequencerMetro(object):
                             if self.locks[self.step_index][slot_idx][control_idx] != None:
                                 lock_value = self.locks[self.step_index][slot_idx][control_idx] 
                                 if hasattr(control, "value"):
-                                    lock_offset = lock_value - control.value
-                                    value_after_scale = lock_offset * lock_scale_value + control.value
+                                    unlocked = self.remember_unlocked(control)   # (before the lock and its echo)
+                                    lock_offset = lock_value - unlocked
+                                    value_after_scale = lock_offset * lock_scale_value + unlocked
                                     
                                     if lock_value != None and lock_address != None:
-                                        self.app.send_osc(lock_address, value_after_scale, instrument.name)
+                                        self.app.send_osc(*lock_message(control, value_after_scale), instrument.name)
                                     elif lock_value != None and control.name == "Switch":
                                             control.update_value_lock(value_after_scale)
                                     
-                                    self.controls_to_reset.append(control)
                             else:
                                 lock_value = 0
 
@@ -475,6 +497,24 @@ class SequencerMetro(object):
             
         selected_track = self.app.metro_sequencer_mode.selected_track
         return self.locks[index * 8][device_idx][parameter_idx]
+
+    def remember_unlocked(self, control):
+        """A lock is about to be sent to ``control``: keep the value it goes back
+        to (its own, from before any lock still waiting to be undone), and
+        return it: the base a scaled lock is measured from."""
+        for c, unlocked in self.controls_to_reset:
+            if c is control:
+                return unlocked
+        self.controls_to_reset.append((control, control.value))
+        return control.value
+
+    def clear_all_locks(self):
+        """Every step's p-locks: they are stored by page position, so they
+        mean other parameters once the track plays another engine."""
+        for step_locks in self.locks:
+            for device_locks in step_locks:
+                for parameter_idx in range(len(device_locks)):
+                    device_locks[parameter_idx] = None
 
     def clear_all_locks_for_step(self, index):
         device = self.app.osc_mode.get_current_instrument_device()

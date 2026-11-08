@@ -1,0 +1,1347 @@
+{
+	"name": "DRM-SNAR",
+	"slot": 0,
+	"init": [
+		{
+			"$type": "message",
+			"$comment": "machine",
+			"address": "/cc/14",
+			"value": 16
+		},
+		{
+			"$type": "message",
+			"address": "/cc/48",
+			"value": 16
+		},
+		{
+			"$type": "message",
+			"address": "/cc/49",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/50",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/51",
+			"value": 100
+		},
+		{
+			"$type": "message",
+			"address": "/cc/52",
+			"value": 80
+		},
+		{
+			"$type": "message",
+			"address": "/cc/53",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/cc/54",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/55",
+			"value": 6
+		},
+		{
+			"$type": "message",
+			"address": "/cc/56",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/57",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/58",
+			"value": 35
+		},
+		{
+			"$type": "message",
+			"address": "/cc/59",
+			"value": 20
+		},
+		{
+			"$type": "message",
+			"address": "/cc/60",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/cc/61",
+			"value": 105
+		},
+		{
+			"$type": "message",
+			"address": "/cc/62",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/cc/63",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/72",
+			"value": 8
+		},
+		{
+			"$type": "message",
+			"address": "/cc/73",
+			"value": 52
+		},
+		{
+			"$type": "message",
+			"address": "/cc/74",
+			"value": 18
+		},
+		{
+			"$type": "message",
+			"address": "/cc/75",
+			"value": 9
+		},
+		{
+			"$type": "message",
+			"address": "/cc/76",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/77",
+			"value": 32
+		},
+		{
+			"$type": "message",
+			"address": "/cc/78",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/cc/79",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/cc/80",
+			"value": 72
+		},
+		{
+			"$type": "message",
+			"address": "/cc/81",
+			"value": 53
+		},
+		{
+			"$type": "message",
+			"address": "/cc/82",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/83",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/cc/84",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/cc/85",
+			"value": 32
+		},
+		{
+			"$type": "message",
+			"address": "/cc/86",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/87",
+			"value": 127
+		},
+		{
+			"$type": "message",
+			"address": "/cc/88",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/89",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/90",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/91",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/92",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/93",
+			"value": 48
+		},
+		{
+			"$type": "message",
+			"address": "/cc/94",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/95",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/cc/104",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/105",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/106",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/107",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/108",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/109",
+			"value": 48
+		},
+		{
+			"$type": "message",
+			"address": "/cc/110",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/111",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/cc/112",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/113",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/114",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/115",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/116",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/117",
+			"value": 48
+		},
+		{
+			"$type": "message",
+			"address": "/cc/118",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/119",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/cc/16",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/17",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/18",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/19",
+			"value": 4
+		},
+		{
+			"$type": "message",
+			"address": "/cc/20",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/cc/7",
+			"value": 127
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/38",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/39",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/40",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/41",
+			"value": 14
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/66",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/67",
+			"value": 40
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/68",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/69",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/70",
+			"value": 0
+		}
+	],
+	"controls": [
+		{
+			"$type": "control-menu",
+			"menu_label": "TONE",
+			"step": 0.25,
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "SIN",
+					"range": [
+						0,
+						31
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/48",
+						"value": 16
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "TRI",
+					"range": [
+						32,
+						63
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/48",
+						"value": 48
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "SAW",
+					"range": [
+						64,
+						95
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/48",
+						"value": 80
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "SQR",
+					"range": [
+						96,
+						127
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/48",
+						"value": 112
+					}
+				}
+			]
+		},
+		{
+			"$type": "control-range",
+			"label": "PDEP",
+			"address": "/cc/49",
+			"min": 0,
+			"max": 127,
+			"value_labels": [
+				"1.0X",
+				"1.0X",
+				"1.0X",
+				"1.0X",
+				"1.0X",
+				"1.0X",
+				"1.0X",
+				"1.0X",
+				"1.1X",
+				"1.1X",
+				"1.1X",
+				"1.2X",
+				"1.2X",
+				"1.3X",
+				"1.3X",
+				"1.4X",
+				"1.5X",
+				"1.5X",
+				"1.6X",
+				"1.7X",
+				"1.7X",
+				"1.8X",
+				"1.9X",
+				"2.0X",
+				"2.1X",
+				"2.2X",
+				"2.3X",
+				"2.4X",
+				"2.5X",
+				"2.6X",
+				"2.7X",
+				"2.9X",
+				"3.0X",
+				"3.1X",
+				"3.2X",
+				"3.4X",
+				"3.5X",
+				"3.7X",
+				"3.8X",
+				"4.0X",
+				"4.1X",
+				"4.3X",
+				"4.5X",
+				"4.6X",
+				"4.8X",
+				"5.0X",
+				"5.1X",
+				"5.3X",
+				"5.5X",
+				"5.7X",
+				"5.9X",
+				"6.1X",
+				"6.3X",
+				"6.5X",
+				"6.7X",
+				"7.0X",
+				"7.2X",
+				"7.4X",
+				"7.6X",
+				"7.9X",
+				"8.1X",
+				"8.3X",
+				"8.6X",
+				"8.8X",
+				"9.1X",
+				"9.3X",
+				"9.6X",
+				"9.9X",
+				"10.1X",
+				"10.4X",
+				"10.7X",
+				"11.0X",
+				"11.2X",
+				"11.5X",
+				"11.8X",
+				"12.1X",
+				"12.4X",
+				"12.7X",
+				"13.0X",
+				"13.3X",
+				"13.6X",
+				"14.0X",
+				"14.3X",
+				"14.6X",
+				"15.0X",
+				"15.3X",
+				"15.6X",
+				"16.0X",
+				"16.3X",
+				"16.7X",
+				"17.0X",
+				"17.4X",
+				"17.7X",
+				"18.1X",
+				"18.5X",
+				"18.9X",
+				"19.2X",
+				"19.6X",
+				"20.0X",
+				"20.4X",
+				"20.8X",
+				"21.2X",
+				"21.6X",
+				"22.0X",
+				"22.4X",
+				"22.8X",
+				"23.2X",
+				"23.7X",
+				"24.1X",
+				"24.5X",
+				"25.0X",
+				"25.4X",
+				"25.8X",
+				"26.3X",
+				"26.7X",
+				"27.2X",
+				"27.6X",
+				"28.1X",
+				"28.6X",
+				"29.0X",
+				"29.5X",
+				"30.0X",
+				"30.5X",
+				"31.0X",
+				"31.5X",
+				"32.0X",
+				"32.5X",
+				"33.0X"
+			]
+		},
+		{
+			"$type": "control-range",
+			"label": "PDEC",
+			"address": "/cc/50",
+			"min": 0,
+			"max": 127,
+			"value_labels": [
+				"1.5 MS",
+				"1.9 MS",
+				"3.0 MS",
+				"4.2 MS",
+				"5.4 MS",
+				"6.6 MS",
+				"7.9 MS",
+				"9.1 MS",
+				"10 MS",
+				"11 MS",
+				"13 MS",
+				"14 MS",
+				"15 MS",
+				"17 MS",
+				"18 MS",
+				"20 MS",
+				"21 MS",
+				"23 MS",
+				"24 MS",
+				"26 MS",
+				"27 MS",
+				"29 MS",
+				"31 MS",
+				"32 MS",
+				"34 MS",
+				"36 MS",
+				"37 MS",
+				"39 MS",
+				"41 MS",
+				"43 MS",
+				"45 MS",
+				"47 MS",
+				"49 MS",
+				"51 MS",
+				"53 MS",
+				"55 MS",
+				"57 MS",
+				"60 MS",
+				"62 MS",
+				"64 MS",
+				"67 MS",
+				"69 MS",
+				"72 MS",
+				"74 MS",
+				"77 MS",
+				"80 MS",
+				"82 MS",
+				"85 MS",
+				"88 MS",
+				"91 MS",
+				"94 MS",
+				"97 MS",
+				"100 MS",
+				"104 MS",
+				"107 MS",
+				"111 MS",
+				"114 MS",
+				"118 MS",
+				"122 MS",
+				"126 MS",
+				"130 MS",
+				"134 MS",
+				"138 MS",
+				"142 MS",
+				"147 MS",
+				"152 MS",
+				"157 MS",
+				"162 MS",
+				"167 MS",
+				"172 MS",
+				"178 MS",
+				"183 MS",
+				"189 MS",
+				"195 MS",
+				"202 MS",
+				"209 MS",
+				"215 MS",
+				"223 MS",
+				"230 MS",
+				"238 MS",
+				"246 MS",
+				"255 MS",
+				"263 MS",
+				"273 MS",
+				"282 MS",
+				"293 MS",
+				"303 MS",
+				"314 MS",
+				"326 MS",
+				"338 MS",
+				"352 MS",
+				"365 MS",
+				"380 MS",
+				"395 MS",
+				"412 MS",
+				"429 MS",
+				"447 MS",
+				"467 MS",
+				"488 MS",
+				"511 MS",
+				"535 MS",
+				"561 MS",
+				"589 MS",
+				"620 MS",
+				"653 MS",
+				"689 MS",
+				"729 MS",
+				"773 MS",
+				"821 MS",
+				"875 MS",
+				"935 MS",
+				"1.0 S",
+				"1.0 S",
+				"1.1 S",
+				"1.2 S",
+				"1.3 S",
+				"1.5 S",
+				"1.6 S",
+				"1.8 S",
+				"2.1 S",
+				"2.4 S",
+				"2.9 S",
+				"3.5 S",
+				"4.4 S",
+				"5.9 S",
+				"9.0 S",
+				"18.1 S",
+				"18.1 S"
+			]
+		},
+		{
+			"$type": "control-range",
+			"label": "NOIS",
+			"address": "/cc/51",
+			"min": 0,
+			"max": 127,
+			"value_labels": [
+				"173 HZ",
+				"173 HZ",
+				"520 HZ",
+				"520 HZ",
+				"868 HZ",
+				"868 HZ",
+				"1.2 KHZ",
+				"1.2 KHZ",
+				"1.5 KHZ",
+				"1.5 KHZ",
+				"1.9 KHZ",
+				"1.9 KHZ",
+				"2.2 KHZ",
+				"2.2 KHZ",
+				"2.6 KHZ",
+				"2.6 KHZ",
+				"2.9 KHZ",
+				"2.9 KHZ",
+				"3.2 KHZ",
+				"3.2 KHZ",
+				"3.6 KHZ",
+				"3.6 KHZ",
+				"3.9 KHZ",
+				"3.9 KHZ",
+				"4.3 KHZ",
+				"4.3 KHZ",
+				"4.6 KHZ",
+				"4.6 KHZ",
+				"5.0 KHZ",
+				"5.0 KHZ",
+				"5.3 KHZ",
+				"5.3 KHZ",
+				"5.7 KHZ",
+				"5.7 KHZ",
+				"6.0 KHZ",
+				"6.0 KHZ",
+				"6.4 KHZ",
+				"6.4 KHZ",
+				"6.7 KHZ",
+				"6.7 KHZ",
+				"7.1 KHZ",
+				"7.1 KHZ",
+				"7.4 KHZ",
+				"7.4 KHZ",
+				"7.8 KHZ",
+				"7.8 KHZ",
+				"8.1 KHZ",
+				"8.1 KHZ",
+				"8.5 KHZ",
+				"8.5 KHZ",
+				"8.8 KHZ",
+				"8.8 KHZ",
+				"9.2 KHZ",
+				"9.2 KHZ",
+				"9.5 KHZ",
+				"9.5 KHZ",
+				"9.8 KHZ",
+				"9.8 KHZ",
+				"10.2 KHZ",
+				"10.2 KHZ",
+				"10.5 KHZ",
+				"10.5 KHZ",
+				"10.9 KHZ",
+				"10.9 KHZ",
+				"11.2 KHZ",
+				"11.2 KHZ",
+				"11.6 KHZ",
+				"11.6 KHZ",
+				"11.9 KHZ",
+				"11.9 KHZ",
+				"12.3 KHZ",
+				"12.3 KHZ",
+				"12.6 KHZ",
+				"12.6 KHZ",
+				"13.0 KHZ",
+				"13.0 KHZ",
+				"13.3 KHZ",
+				"13.3 KHZ",
+				"13.7 KHZ",
+				"13.7 KHZ",
+				"14.0 KHZ",
+				"14.0 KHZ",
+				"14.4 KHZ",
+				"14.4 KHZ",
+				"14.7 KHZ",
+				"14.7 KHZ",
+				"15.1 KHZ",
+				"15.1 KHZ",
+				"15.4 KHZ",
+				"15.4 KHZ",
+				"15.7 KHZ",
+				"15.7 KHZ",
+				"16.1 KHZ",
+				"16.1 KHZ",
+				"16.4 KHZ",
+				"16.4 KHZ",
+				"16.8 KHZ",
+				"16.8 KHZ",
+				"17.1 KHZ",
+				"17.1 KHZ",
+				"17.5 KHZ",
+				"17.5 KHZ",
+				"17.8 KHZ",
+				"17.8 KHZ",
+				"18.2 KHZ",
+				"18.2 KHZ",
+				"18.5 KHZ",
+				"18.5 KHZ",
+				"18.9 KHZ",
+				"18.9 KHZ",
+				"19.2 KHZ",
+				"19.2 KHZ",
+				"19.6 KHZ",
+				"19.6 KHZ",
+				"19.9 KHZ",
+				"19.9 KHZ",
+				"20.3 KHZ",
+				"20.3 KHZ",
+				"20.6 KHZ",
+				"20.6 KHZ",
+				"21.0 KHZ",
+				"21.0 KHZ",
+				"21.3 KHZ",
+				"21.3 KHZ",
+				"21.7 KHZ",
+				"21.7 KHZ",
+				"22.0 KHZ",
+				"22.0 KHZ"
+			]
+		},
+		{
+			"$type": "control-range",
+			"label": "MIX",
+			"address": "/cc/52",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "NFLT",
+			"address": "/cc/53",
+			"min": 0,
+			"max": 127,
+			"bipolar": 1
+		},
+		{
+			"$type": "control-menu",
+			"menu_label": "CLAP",
+			"step": 0.5,
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "OFF",
+					"range": [
+						0,
+						7
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/54",
+						"value": 4
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "1 HITS",
+					"range": [
+						8,
+						15
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/54",
+						"value": 12
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "2 HITS",
+					"range": [
+						16,
+						23
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/54",
+						"value": 20
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "3 HITS",
+					"range": [
+						24,
+						31
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/54",
+						"value": 28
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "4 HITS",
+					"range": [
+						32,
+						39
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/54",
+						"value": 36
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "5 HITS",
+					"range": [
+						40,
+						47
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/54",
+						"value": 44
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "6 HITS",
+					"range": [
+						48,
+						55
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/54",
+						"value": 52
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "7 HITS",
+					"range": [
+						56,
+						63
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/54",
+						"value": 60
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "8 HITS",
+					"range": [
+						64,
+						71
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/54",
+						"value": 68
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "9 HITS",
+					"range": [
+						72,
+						79
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/54",
+						"value": 76
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "10 HITS",
+					"range": [
+						80,
+						87
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/54",
+						"value": 84
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "11 HITS",
+					"range": [
+						88,
+						95
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/54",
+						"value": 92
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "12 HITS",
+					"range": [
+						96,
+						103
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/54",
+						"value": 100
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "13 HITS",
+					"range": [
+						104,
+						111
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/54",
+						"value": 108
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "14 HITS",
+					"range": [
+						112,
+						119
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/54",
+						"value": 116
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "15 HITS",
+					"range": [
+						120,
+						127
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/54",
+						"value": 124
+					}
+				}
+			]
+		},
+		{
+			"$type": "control-range",
+			"label": "CSPC",
+			"address": "/cc/55",
+			"min": 0,
+			"max": 127,
+			"value_labels": [
+				"1.5 MS",
+				"1.9 MS",
+				"3.0 MS",
+				"4.2 MS",
+				"5.4 MS",
+				"6.6 MS",
+				"7.9 MS",
+				"9.1 MS",
+				"10 MS",
+				"11 MS",
+				"13 MS",
+				"14 MS",
+				"15 MS",
+				"17 MS",
+				"18 MS",
+				"20 MS",
+				"21 MS",
+				"23 MS",
+				"24 MS",
+				"26 MS",
+				"27 MS",
+				"29 MS",
+				"31 MS",
+				"32 MS",
+				"34 MS",
+				"36 MS",
+				"37 MS",
+				"39 MS",
+				"41 MS",
+				"43 MS",
+				"45 MS",
+				"47 MS",
+				"49 MS",
+				"51 MS",
+				"53 MS",
+				"55 MS",
+				"57 MS",
+				"60 MS",
+				"62 MS",
+				"64 MS",
+				"67 MS",
+				"69 MS",
+				"72 MS",
+				"74 MS",
+				"77 MS",
+				"80 MS",
+				"82 MS",
+				"85 MS",
+				"88 MS",
+				"91 MS",
+				"94 MS",
+				"97 MS",
+				"100 MS",
+				"104 MS",
+				"107 MS",
+				"111 MS",
+				"114 MS",
+				"118 MS",
+				"122 MS",
+				"126 MS",
+				"130 MS",
+				"134 MS",
+				"138 MS",
+				"142 MS",
+				"147 MS",
+				"152 MS",
+				"157 MS",
+				"162 MS",
+				"167 MS",
+				"172 MS",
+				"178 MS",
+				"183 MS",
+				"189 MS",
+				"195 MS",
+				"202 MS",
+				"209 MS",
+				"215 MS",
+				"223 MS",
+				"230 MS",
+				"238 MS",
+				"246 MS",
+				"255 MS",
+				"263 MS",
+				"273 MS",
+				"282 MS",
+				"293 MS",
+				"303 MS",
+				"314 MS",
+				"326 MS",
+				"338 MS",
+				"352 MS",
+				"365 MS",
+				"380 MS",
+				"395 MS",
+				"412 MS",
+				"429 MS",
+				"447 MS",
+				"467 MS",
+				"488 MS",
+				"511 MS",
+				"535 MS",
+				"561 MS",
+				"589 MS",
+				"620 MS",
+				"653 MS",
+				"689 MS",
+				"729 MS",
+				"773 MS",
+				"821 MS",
+				"875 MS",
+				"935 MS",
+				"1.0 S",
+				"1.0 S",
+				"1.1 S",
+				"1.2 S",
+				"1.3 S",
+				"1.5 S",
+				"1.6 S",
+				"1.8 S",
+				"2.1 S",
+				"2.4 S",
+				"2.9 S",
+				"3.5 S",
+				"4.4 S",
+				"5.9 S",
+				"9.0 S",
+				"18.1 S",
+				"18.1 S"
+			]
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-range",
+			"label": "PTCH",
+			"address": "/cc/20",
+			"min": 0,
+			"max": 127,
+			"bipolar": 1,
+			"value_labels": [
+				"-64 SEMI",
+				"-63 SEMI",
+				"-62 SEMI",
+				"-61 SEMI",
+				"-60 SEMI",
+				"-59 SEMI",
+				"-58 SEMI",
+				"-57 SEMI",
+				"-56 SEMI",
+				"-55 SEMI",
+				"-54 SEMI",
+				"-53 SEMI",
+				"-52 SEMI",
+				"-51 SEMI",
+				"-50 SEMI",
+				"-49 SEMI",
+				"-48 SEMI",
+				"-47 SEMI",
+				"-46 SEMI",
+				"-45 SEMI",
+				"-44 SEMI",
+				"-43 SEMI",
+				"-42 SEMI",
+				"-41 SEMI",
+				"-40 SEMI",
+				"-39 SEMI",
+				"-38 SEMI",
+				"-37 SEMI",
+				"-36 SEMI",
+				"-35 SEMI",
+				"-34 SEMI",
+				"-33 SEMI",
+				"-32 SEMI",
+				"-31 SEMI",
+				"-30 SEMI",
+				"-29 SEMI",
+				"-28 SEMI",
+				"-27 SEMI",
+				"-26 SEMI",
+				"-25 SEMI",
+				"-24 SEMI",
+				"-23 SEMI",
+				"-22 SEMI",
+				"-21 SEMI",
+				"-20 SEMI",
+				"-19 SEMI",
+				"-18 SEMI",
+				"-17 SEMI",
+				"-16 SEMI",
+				"-15 SEMI",
+				"-14 SEMI",
+				"-13 SEMI",
+				"-12 SEMI",
+				"-11 SEMI",
+				"-10 SEMI",
+				"-9 SEMI",
+				"-8 SEMI",
+				"-7 SEMI",
+				"-6 SEMI",
+				"-5 SEMI",
+				"-4 SEMI",
+				"-3 SEMI",
+				"-2 SEMI",
+				"-1 SEMI",
+				"0 SEMI",
+				"1 SEMI",
+				"2 SEMI",
+				"3 SEMI",
+				"4 SEMI",
+				"5 SEMI",
+				"6 SEMI",
+				"7 SEMI",
+				"8 SEMI",
+				"9 SEMI",
+				"10 SEMI",
+				"11 SEMI",
+				"12 SEMI",
+				"13 SEMI",
+				"14 SEMI",
+				"15 SEMI",
+				"16 SEMI",
+				"17 SEMI",
+				"18 SEMI",
+				"19 SEMI",
+				"20 SEMI",
+				"21 SEMI",
+				"22 SEMI",
+				"23 SEMI",
+				"24 SEMI",
+				"25 SEMI",
+				"26 SEMI",
+				"27 SEMI",
+				"28 SEMI",
+				"29 SEMI",
+				"30 SEMI",
+				"31 SEMI",
+				"32 SEMI",
+				"33 SEMI",
+				"34 SEMI",
+				"35 SEMI",
+				"36 SEMI",
+				"37 SEMI",
+				"38 SEMI",
+				"39 SEMI",
+				"40 SEMI",
+				"41 SEMI",
+				"42 SEMI",
+				"43 SEMI",
+				"44 SEMI",
+				"45 SEMI",
+				"46 SEMI",
+				"47 SEMI",
+				"48 SEMI",
+				"49 SEMI",
+				"50 SEMI",
+				"51 SEMI",
+				"52 SEMI",
+				"53 SEMI",
+				"54 SEMI",
+				"55 SEMI",
+				"56 SEMI",
+				"57 SEMI",
+				"58 SEMI",
+				"59 SEMI",
+				"60 SEMI",
+				"61 SEMI",
+				"62 SEMI",
+				"63 SEMI"
+			]
+		}
+	]
+}

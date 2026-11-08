@@ -550,3 +550,27 @@ def test_that_bit_of_logic_in_oscdevice(mocker):
         "",
         "Z",
     ], "Should display groups and spacers"
+
+
+def test_encoders_past_a_short_page_do_nothing():
+    """A page with fewer than 8 controls: the remaining encoders must not raise."""
+    sent = []
+    osc = {"client": MagicMock(send_message=lambda *a: sent.append(a)), "server": None, "dispatcher": Dispatcher()}
+    app = MagicMock(name="app")
+    app.metro_sequencer_mode.disable_controls = False
+    config = {
+        "name": "Short",
+        "controls": [
+            {"$type": "control-range", "label": f"C{i}", "address": f"/cc/{i}", "min": 0, "max": 127}
+            for i in range(6)
+        ],
+    }
+    device = OSCDevice(config, osc, app=app, osc_in_port=9000, osc_out_port=9001)
+    assert len(device.get_visible_controls()) == 6
+
+    device.on_encoder_rotated(push2_python.constants.ENCODER_TRACK7_ENCODER, 1)
+    device.on_encoder_rotated(push2_python.constants.ENCODER_TRACK8_ENCODER, 1)
+    assert sent == []
+
+    device.on_encoder_rotated(push2_python.constants.ENCODER_TRACK6_ENCODER, 1)
+    assert sent == [("/cc/5", 1.0)]

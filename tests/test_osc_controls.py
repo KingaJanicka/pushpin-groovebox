@@ -315,6 +315,54 @@ def test_OSCControlMenu(mocker):
     assert 0 < control.value < 1, "A single click moves the menu fractionally"
 
 
+# --- drawing stays inside the control's column (mono2k's 0..127 ranges) ---
+
+import pytest  # noqa: E402
+import push2_python as _push2_python  # noqa: E402
+from unittest.mock import MagicMock as _MagicMock, patch as _patch  # noqa: E402
+from osc_controls import OSCControl as _OSCControl  # noqa: E402
+
+
+def _drawn_xs(control, x_part, lock_value=None):
+    ctx = _MagicMock(name="cairo")
+    with _patch("osc_controls.show_text"):
+        if lock_value is None:
+            control.draw(ctx, x_part)
+        else:
+            control.draw(ctx, x_part, draw_lock=True, lock_value=lock_value)
+    return [c.args[0] for c in ctx.move_to.call_args_list + ctx.line_to.call_args_list]
+
+
+@pytest.mark.parametrize("bipolar", [False, True])
+@pytest.mark.parametrize("lo, hi, value", [(0, 127, 0), (0, 127, 64), (0, 127, 127), (0, 1, 0.5), (0, 71, 30)])
+def test_knob_drawing_stays_in_its_column(bipolar, lo, hi, value):
+    control = _OSCControl({"$type": "control-range", "label": "PAN", "address": "/cc/62",
+                           "min": lo, "max": hi, "bipolar": int(bipolar)})
+    control.value = value
+    column = _push2_python.constants.DISPLAY_LINE_PIXELS // 8
+    x_part = 3
+    for x in _drawn_xs(control, x_part) + _drawn_xs(control, x_part, lock_value=value):
+        assert column * x_part - 1 <= x <= column * (x_part + 1) + 1, (x, value, hi)
+
+
+def test_bipolar_line_starts_at_centre_and_follows_the_value():
+    control = _OSCControl({"$type": "control-range", "label": "PAN", "address": "/cc/62",
+                           "min": 0, "max": 127, "bipolar": 1})
+    control.value = 63.5
+    ctx = _MagicMock(name="cairo")
+    with _patch("osc_controls.show_text"):
+        control.draw(ctx, 0)
+    # the coloured line: move_to the centre, line_to centre + (fraction - 0.5) * length
+    centre_moves = [c.args[0] for c in ctx.move_to.call_args_list]
+    lines = [c.args[0] for c in ctx.line_to.call_args_list]
+    assert any(abs(m - x) < 1e-9 for m in centre_moves for x in lines)   # zero-length at the centre
+
+
+def test_fraction_handles_min_and_clamps():
+    control = _OSCControl({"$type": "control-range", "label": "X", "address": "/x", "min": -1, "max": 1})
+    assert control.fraction(0) == 0.5
+    assert control.fraction(5) == 1.0
+    assert control.fraction(-5) == 0.0
 def _filter_type_menu(send):
     """A filter-type style menu: items share one address, values aren't 0..n."""
     items = [("12db LP", 1.0), ("24db LP", 2.0), ("12db BP", 6.0), ("24db BP", 23.0)]
@@ -546,3 +594,11 @@ def test_filter_switches_are_slowed_down():
     switches = [c for c in d["controls"] if c["$type"] == "control-switch"]
     assert len(switches) == 2
     assert all(s.get("clicks_per_group") == 25 for s in switches)
+
+
+def test_menu_takes_one_place_on_a_page():
+    """A menu has an encoder and a place on the display, so pages count it."""
+    from osc_controls import OSCControlMenu
+    menu = OSCControlMenu({"$type": "control-menu", "items": [
+        {"$type": "menu-item", "label": "A", "onselect": {"$type": "message", "address": "/a", "value": 0}}]})
+    assert menu.size == 1

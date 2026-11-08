@@ -25,6 +25,7 @@ from pythonosc.dispatcher import Dispatcher
 from engine import disconnectPipewireLink, spawn_logged
 from modes.melodic_mode import MelodicMode
 from modes.instrument_selection_mode import InstrumentSelectionMode
+from modes.instrument import mono2k_clock_port
 from modes.rhythmic_mode import RhythmicMode
 from modes.slice_notes_mode import SliceNotesMode
 from modes.metro_sequencer_mode import MetroSequencerMode
@@ -36,6 +37,8 @@ from modes.osc_mode import OSCMode
 from modes.preset_selection_mode import PresetSelectionMode
 from modes.ddrm_tone_selector_mode import DDRMToneSelectorMode
 from modes.menu_mode import MenuMode
+from modes.engine_selection_mode import EngineSelectionMode
+from modes.rename_mode import RenameMode
 from modes.mute_mode import MuteMode
 from user_interface.display_utils import show_notification
 from user_interface.recording_context import RecordingContext
@@ -205,6 +208,9 @@ class PyshaApp(object):
         )  
         self.ddrm_tone_selector_mode = DDRMToneSelectorMode(self, settings=settings)
         self.menu_mode = MenuMode(self, settings=settings, send_osc_func=self.send_osc)
+        self.engine_selection_mode = EngineSelectionMode(self, settings=settings)
+        # The name editor the preset browser opens to rename a preset (not active until then)
+        self.rename_mode = RenameMode(self, settings=settings)
         self.settings_mode = SettingsMode(self, settings=settings)
         self.mute_mode = MuteMode(self, settings=settings) 
         overwitch_def = {
@@ -270,6 +276,18 @@ class PyshaApp(object):
 
     # TODO: preset sel/trig edit get wonky when switching from one to another
     # One triggering needs to shut down another
+
+    def toggle_engine_selection_mode(self):
+        """ADD TRACK: the menu that picks the current track's engine."""
+        if self.is_mode_active(self.engine_selection_mode):
+            self.active_modes = [m for m in self.active_modes if m != self.engine_selection_mode]
+            self.engine_selection_mode.deactivate()
+        else:
+            if self.is_mode_active(self.menu_mode):
+                self.toggle_menu_mode()
+            self.active_modes = self.active_modes + [self.engine_selection_mode]
+            self.engine_selection_mode.activate()
+        self.buttons_need_update = True
 
     def toggle_preset_selection_mode(self):
         
@@ -709,22 +727,12 @@ class PyshaApp(object):
         # )
         # print("App.py send_osc", address, value, instrument_short_name)
         try:
-            if instrument_short_name is not None:
-                # This is for the sequencer
-                client = self.instruments[instrument_short_name].osc.get(
-                    "client", None
-                )
-                if client:
-                    client.send_message(address, value)
-            else:
+            if instrument_short_name is None:
                 # This is for wiggling knobs
-                client = self.instruments[
-                    self.instrument_selection_mode.get_current_instrument_short_name()
-                ].get("client", None)
-
-                if client:
-                    client.send_message(address, value)
-                # print("adress", address, value)
+                instrument_short_name = self.instrument_selection_mode.get_current_instrument_short_name()
+            # The instrument picks the client: its active engine's, or Surge's
+            # for patch commands
+            self.instruments[instrument_short_name].send_message(address, value)
         except Exception as e:
             print("Exception in app.py send_osc")
             traceback.print_exc()
@@ -987,6 +995,12 @@ class PyshaApp(object):
         # Refresh sequencer param snapshots so the MIDI clock thread can read
         # up-to-date UI state without touching mode objects directly.
         self.metro_sequencer_mode.refresh_sequencer_params()
+
+        # mono2k tracks' sounds, saved into their slots when they change
+        try:
+            self.preset_selection_mode.autosave_m2k()
+        except Exception as e:
+            logger.warning("mono2k autosave failed: %s", e)
     
     async def queue_tasks(self):
         for task in self.queue:
@@ -1002,6 +1016,8 @@ class PyshaApp(object):
         print("Loading State ...")
         self.metro_sequencer_mode.load_state()
         self.preset_selection_mode.init_surge_preset_state()
+        # Tracks playing mono2k: their current slot's saved sound
+        self.preset_selection_mode.restore_m2k_slots()
         
         for idx, instrument_shortname in enumerate(self.instruments):
             instrument = self.instruments[instrument_shortname]
@@ -1351,10 +1367,17 @@ async def main():
     for index, instrument in enumerate(app.instruments):
         # IDK why the fuck but after switch to JACK
         # The config_pw call makes surge-xt instances crash
-        await app.instruments[instrument].engine.configure_pipewire()
+        # Every engine the track can play (Surge, and mono2k when built)
+        await app.instruments[instrument].configure_pipewire()
         
         app.queue.append(app.instruments[instrument].init_devices_sync())
-        app.global_timeline.add_output_device(app.instruments[instrument].midi_out_device)    
+        # The clock goes to each Surge port, as before
+        app.global_timeline.add_output_device(app.instruments[instrument].surge_midi_out_device)
+    # ...and to one mono2k port: m2k-jack's tempo (after the routing, which may drop a mono2k voice)
+    m2k_clock = mono2k_clock_port(app.instruments)
+    if m2k_clock is not None:
+        m2k_clock.send_clock = True
+        app.global_timeline.add_output_device(m2k_clock)
     for instrument in app.external_instruments:
         await instrument.engine.configure_pipewire()
     while True:

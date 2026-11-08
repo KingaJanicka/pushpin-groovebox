@@ -1,0 +1,2262 @@
+{
+	"name": "LFO 3",
+	"slot": 7,
+	"init": [],
+	"controls": [
+		{
+			"$type": "control-switch",
+			"menu_label": "DEVICE",
+			"clicks_per_group": 4,
+			"select_by_value": true,
+			"groups": [
+				{
+					"$type": "group",
+					"label": "OFF",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "DEST",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "OFF",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 0
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "SYN",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "DEST",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "SYN A",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 1
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 0
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "SYN B",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 2
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 1
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "SYN C",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 3
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 2
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "SYN D",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 4
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 3
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "SYN E",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 5
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 4
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "SYN F",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 6
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 5
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "SYN G",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 7
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 6
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "SYN H",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 8
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 7
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "AMP",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "DEST",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "ATCK",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 9
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "HOLD",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 10
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "DEC",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 11
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "REL",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 12
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "DIST",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 13
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "VOL",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 14
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "PAN",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 15
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "PORT",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 16
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "FILT",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "DEST",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "BASE",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 17
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "WDTH",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 18
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "HPQ",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 19
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LPQ",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 20
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "ATCK",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 21
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "DEC",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 22
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "B-OF",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 23
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "W-OF",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 24
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "FX",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "DEST",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "EQF",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 25
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "EQG",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 26
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "SRR",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 27
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "DTIM",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 28
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "DSND",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 29
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "DFB",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 30
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "DBAS",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 31
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "DWID",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 32
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "DSTR",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "DEST",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "BITS",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 33
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "FOLD",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 34
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "XOR",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 35
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "VERB",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 36
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "TYPE",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 67
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "RATE",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 68
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "DPTH",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 69
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "MIX",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 70
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "LFO 1",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "DEST",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "WAVE",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 45
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "TRIG",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 46
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "MULT",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 47
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "SPD",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 48
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "PHAS",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 49
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "DPTH",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 50
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "LFO 2",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "DEST",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "WAVE",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 53
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "TRIG",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 54
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "MULT",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 55
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "SPD",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 56
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "PHAS",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 57
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "DPTH",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 58
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "LFO 3",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "DEST",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "WAVE",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 61
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "TRIG",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 62
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "MULT",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 63
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "SPD",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 64
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "PHAS",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 65
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "DPTH",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/113",
+										"value": 66
+									}
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"$type": "control-menu",
+			"menu_label": "WAVE",
+			"step": 0.25,
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "TRI",
+					"range": [
+						0,
+						18
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/114",
+						"value": 9
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "SIN",
+					"range": [
+						19,
+						36
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/114",
+						"value": 28
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "SQR",
+					"range": [
+						37,
+						54
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/114",
+						"value": 46
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "SAW",
+					"range": [
+						55,
+						73
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/114",
+						"value": 64
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "EXP",
+					"range": [
+						74,
+						91
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/114",
+						"value": 83
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "RMP",
+					"range": [
+						92,
+						109
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/114",
+						"value": 101
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "RND",
+					"range": [
+						110,
+						127
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/114",
+						"value": 119
+					}
+				}
+			]
+		},
+		{
+			"$type": "control-menu",
+			"menu_label": "TRIG",
+			"step": 0.25,
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "FREE",
+					"range": [
+						0,
+						25
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/115",
+						"value": 13
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "TRIG",
+					"range": [
+						26,
+						51
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/115",
+						"value": 39
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "HOLD",
+					"range": [
+						52,
+						76
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/115",
+						"value": 64
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "ONE",
+					"range": [
+						77,
+						102
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/115",
+						"value": 90
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "HALF",
+					"range": [
+						103,
+						127
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/115",
+						"value": 115
+					}
+				}
+			]
+		},
+		{
+			"$type": "control-menu",
+			"menu_label": "MULT",
+			"step": 0.25,
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "X1",
+					"range": [
+						0,
+						15
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/116",
+						"value": 8
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "X2",
+					"range": [
+						16,
+						31
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/116",
+						"value": 24
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "X4",
+					"range": [
+						32,
+						47
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/116",
+						"value": 40
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "X8",
+					"range": [
+						48,
+						63
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/116",
+						"value": 56
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "X16",
+					"range": [
+						64,
+						79
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/116",
+						"value": 72
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "X32",
+					"range": [
+						80,
+						95
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/116",
+						"value": 88
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "X64",
+					"range": [
+						96,
+						111
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/116",
+						"value": 104
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "X128",
+					"range": [
+						112,
+						127
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/116",
+						"value": 120
+					}
+				}
+			]
+		},
+		{
+			"$type": "control-range",
+			"label": "SPD",
+			"address": "/cc/117",
+			"min": 0,
+			"max": 127,
+			"value_labels_by": {
+				"address": "/cc/116",
+				"choices": 8,
+				"tables": [
+					[
+						"STOP",
+						"30.6 BARS",
+						"28.9 BARS",
+						"27.2 BARS",
+						"25.7 BARS",
+						"24 BARS",
+						"22.9 BARS",
+						"21.6 BARS",
+						"20.4 BARS",
+						"19.3 BARS",
+						"18.2 BARS",
+						"17.1 BARS",
+						"16 BARS",
+						"15.3 BARS",
+						"14.4 BARS",
+						"13.6 BARS",
+						"12.8 BARS",
+						"12 BARS",
+						"11.4 BARS",
+						"10.8 BARS",
+						"10.2 BARS",
+						"9.6 BARS",
+						"9.1 BARS",
+						"8.5 BARS",
+						"8 BARS",
+						"7.6 BARS",
+						"7.2 BARS",
+						"6.8 BARS",
+						"6.4 BARS",
+						"6 BARS",
+						"5.7 BARS",
+						"5.4 BARS",
+						"5.1 BARS",
+						"4.8 BARS",
+						"4.5 BARS",
+						"4.2 BARS",
+						"4 BARS",
+						"3.8 BARS",
+						"3.6 BARS",
+						"3.4 BARS",
+						"3.2 BARS",
+						"3 BARS",
+						"2.8 BARS",
+						"2.7 BARS",
+						"2.5 BARS",
+						"2.4 BARS",
+						"2.2 BARS",
+						"2.1 BARS",
+						"2 BARS",
+						"1.9 BARS",
+						"1.8 BARS",
+						"1.7 BARS",
+						"1.6 BARS",
+						"1.5 BARS",
+						"1.4 BARS",
+						"1.3 BARS",
+						"1.2 BARS",
+						"1.2 BARS",
+						"1.1 BARS",
+						"1.0 BARS",
+						"1 BAR",
+						"3.8 BEATS",
+						"3.6 BEATS",
+						"3.4 BEATS",
+						"3.2 BEATS",
+						"1/2.",
+						"2.8 BEATS",
+						"2.7 BEATS",
+						"2.5 BEATS",
+						"2.4 BEATS",
+						"2.2 BEATS",
+						"2.1 BEATS",
+						"1/2 NOTE",
+						"1.9 BEATS",
+						"1.8 BEATS",
+						"1.7 BEATS",
+						"1.6 BEATS",
+						"1/4.",
+						"1.4 BEATS",
+						"1/2T",
+						"1.2 BEATS",
+						"1.2 BEATS",
+						"1.1 BEATS",
+						"1.0 BEATS",
+						"1/4 NOTE",
+						"0.95 BEAT",
+						"0.90 BEAT",
+						"0.85 BEAT",
+						"0.80 BEAT",
+						"1/8.",
+						"0.71 BEAT",
+						"1/4T",
+						"0.63 BEAT",
+						"0.60 BEAT",
+						"0.56 BEAT",
+						"0.53 BEAT",
+						"1/8 NOTE",
+						"0.47 BEAT",
+						"0.45 BEAT",
+						"0.42 BEAT",
+						"0.40 BEAT",
+						"1/16.",
+						"0.35 BEAT",
+						"1/8T",
+						"0.32 BEAT",
+						"0.30 BEAT",
+						"0.28 BEAT",
+						"0.26 BEAT",
+						"1/16 NOTE",
+						"0.23 BEAT",
+						"0.22 BEAT",
+						"0.21 BEAT",
+						"0.20 BEAT",
+						"1/32.",
+						"0.17 BEAT",
+						"1/16T",
+						"0.16 BEAT",
+						"0.15 BEAT",
+						"0.14 BEAT",
+						"0.13 BEAT",
+						"1/32 NOTE",
+						"16.7 HZ",
+						"17.7 HZ",
+						"18.7 HZ",
+						"19.8 HZ",
+						"21.0 HZ",
+						"22.3 HZ",
+						"23.6 HZ"
+					],
+					[
+						"STOP",
+						"15.3 BARS",
+						"14.4 BARS",
+						"13.6 BARS",
+						"12.8 BARS",
+						"12 BARS",
+						"11.4 BARS",
+						"10.8 BARS",
+						"10.2 BARS",
+						"9.6 BARS",
+						"9.1 BARS",
+						"8.5 BARS",
+						"8 BARS",
+						"7.6 BARS",
+						"7.2 BARS",
+						"6.8 BARS",
+						"6.4 BARS",
+						"6 BARS",
+						"5.7 BARS",
+						"5.4 BARS",
+						"5.1 BARS",
+						"4.8 BARS",
+						"4.5 BARS",
+						"4.2 BARS",
+						"4 BARS",
+						"3.8 BARS",
+						"3.6 BARS",
+						"3.4 BARS",
+						"3.2 BARS",
+						"3 BARS",
+						"2.8 BARS",
+						"2.7 BARS",
+						"2.5 BARS",
+						"2.4 BARS",
+						"2.2 BARS",
+						"2.1 BARS",
+						"2 BARS",
+						"1.9 BARS",
+						"1.8 BARS",
+						"1.7 BARS",
+						"1.6 BARS",
+						"1.5 BARS",
+						"1.4 BARS",
+						"1.3 BARS",
+						"1.2 BARS",
+						"1.2 BARS",
+						"1.1 BARS",
+						"1.0 BARS",
+						"1 BAR",
+						"3.8 BEATS",
+						"3.6 BEATS",
+						"3.4 BEATS",
+						"3.2 BEATS",
+						"1/2.",
+						"2.8 BEATS",
+						"2.7 BEATS",
+						"2.5 BEATS",
+						"2.4 BEATS",
+						"2.2 BEATS",
+						"2.1 BEATS",
+						"1/2 NOTE",
+						"1.9 BEATS",
+						"1.8 BEATS",
+						"1.7 BEATS",
+						"1.6 BEATS",
+						"1/4.",
+						"1.4 BEATS",
+						"1/2T",
+						"1.2 BEATS",
+						"1.2 BEATS",
+						"1.1 BEATS",
+						"1.0 BEATS",
+						"1/4 NOTE",
+						"0.95 BEAT",
+						"0.90 BEAT",
+						"0.85 BEAT",
+						"0.80 BEAT",
+						"1/8.",
+						"0.71 BEAT",
+						"1/4T",
+						"0.63 BEAT",
+						"0.60 BEAT",
+						"0.56 BEAT",
+						"0.53 BEAT",
+						"1/8 NOTE",
+						"0.47 BEAT",
+						"0.45 BEAT",
+						"0.42 BEAT",
+						"0.40 BEAT",
+						"1/16.",
+						"0.35 BEAT",
+						"1/8T",
+						"0.31 BEAT",
+						"0.30 BEAT",
+						"0.28 BEAT",
+						"0.26 BEAT",
+						"1/16 NOTE",
+						"0.23 BEAT",
+						"0.22 BEAT",
+						"0.21 BEAT",
+						"0.20 BEAT",
+						"1/32.",
+						"0.17 BEAT",
+						"1/16T",
+						"0.16 BEAT",
+						"0.15 BEAT",
+						"0.14 BEAT",
+						"0.13 BEAT",
+						"1/32 NOTE",
+						"16.7 HZ",
+						"17.7 HZ",
+						"18.7 HZ",
+						"19.8 HZ",
+						"21.0 HZ",
+						"22.3 HZ",
+						"23.6 HZ",
+						"25.0 HZ",
+						"26.5 HZ",
+						"28.1 HZ",
+						"29.7 HZ",
+						"1/64 NOTE",
+						"33.4 HZ",
+						"35.4 HZ",
+						"37.5 HZ",
+						"39.7 HZ",
+						"42.1 HZ",
+						"44.6 HZ",
+						"47.2 HZ"
+					],
+					[
+						"STOP",
+						"7.6 BARS",
+						"7.2 BARS",
+						"6.8 BARS",
+						"6.4 BARS",
+						"6 BARS",
+						"5.7 BARS",
+						"5.4 BARS",
+						"5.1 BARS",
+						"4.8 BARS",
+						"4.5 BARS",
+						"4.2 BARS",
+						"4 BARS",
+						"3.8 BARS",
+						"3.6 BARS",
+						"3.4 BARS",
+						"3.2 BARS",
+						"3 BARS",
+						"2.8 BARS",
+						"2.7 BARS",
+						"2.5 BARS",
+						"2.4 BARS",
+						"2.2 BARS",
+						"2.1 BARS",
+						"2 BARS",
+						"1.9 BARS",
+						"1.8 BARS",
+						"1.7 BARS",
+						"1.6 BARS",
+						"1.5 BARS",
+						"1.4 BARS",
+						"1.3 BARS",
+						"1.2 BARS",
+						"1.2 BARS",
+						"1.1 BARS",
+						"1.0 BARS",
+						"1 BAR",
+						"3.8 BEATS",
+						"3.6 BEATS",
+						"3.4 BEATS",
+						"3.2 BEATS",
+						"1/2.",
+						"2.8 BEATS",
+						"2.7 BEATS",
+						"2.5 BEATS",
+						"2.4 BEATS",
+						"2.2 BEATS",
+						"2.1 BEATS",
+						"1/2 NOTE",
+						"1.9 BEATS",
+						"1.8 BEATS",
+						"1.7 BEATS",
+						"1.6 BEATS",
+						"1/4.",
+						"1.4 BEATS",
+						"1/2T",
+						"1.2 BEATS",
+						"1.2 BEATS",
+						"1.1 BEATS",
+						"1.0 BEATS",
+						"1/4 NOTE",
+						"0.95 BEAT",
+						"0.90 BEAT",
+						"0.85 BEAT",
+						"0.80 BEAT",
+						"1/8.",
+						"0.71 BEAT",
+						"1/4T",
+						"0.63 BEAT",
+						"0.60 BEAT",
+						"0.56 BEAT",
+						"0.53 BEAT",
+						"1/8 NOTE",
+						"0.47 BEAT",
+						"0.45 BEAT",
+						"0.42 BEAT",
+						"0.40 BEAT",
+						"1/16.",
+						"0.35 BEAT",
+						"1/8T",
+						"0.31 BEAT",
+						"0.30 BEAT",
+						"0.28 BEAT",
+						"0.26 BEAT",
+						"1/16 NOTE",
+						"0.23 BEAT",
+						"0.22 BEAT",
+						"0.21 BEAT",
+						"0.20 BEAT",
+						"1/32.",
+						"0.17 BEAT",
+						"1/16T",
+						"0.15 BEAT",
+						"0.15 BEAT",
+						"0.14 BEAT",
+						"0.13 BEAT",
+						"1/32 NOTE",
+						"16.7 HZ",
+						"17.7 HZ",
+						"18.7 HZ",
+						"19.8 HZ",
+						"21.0 HZ",
+						"22.3 HZ",
+						"23.6 HZ",
+						"25.0 HZ",
+						"26.5 HZ",
+						"28.1 HZ",
+						"29.7 HZ",
+						"1/64 NOTE",
+						"33.4 HZ",
+						"35.4 HZ",
+						"37.5 HZ",
+						"39.7 HZ",
+						"42.1 HZ",
+						"44.6 HZ",
+						"47.2 HZ",
+						"50.0 HZ",
+						"53.0 HZ",
+						"56.2 HZ",
+						"59.5 HZ",
+						"63.0 HZ",
+						"66.8 HZ",
+						"70.8 HZ",
+						"75.0 HZ",
+						"79.4 HZ",
+						"84.2 HZ",
+						"89.2 HZ",
+						"94.5 HZ"
+					],
+					[
+						"STOP",
+						"3.8 BARS",
+						"3.6 BARS",
+						"3.4 BARS",
+						"3.2 BARS",
+						"3 BARS",
+						"2.8 BARS",
+						"2.7 BARS",
+						"2.5 BARS",
+						"2.4 BARS",
+						"2.2 BARS",
+						"2.1 BARS",
+						"2 BARS",
+						"1.9 BARS",
+						"1.8 BARS",
+						"1.7 BARS",
+						"1.6 BARS",
+						"1.5 BARS",
+						"1.4 BARS",
+						"1.3 BARS",
+						"1.2 BARS",
+						"1.2 BARS",
+						"1.1 BARS",
+						"1.0 BARS",
+						"1 BAR",
+						"3.8 BEATS",
+						"3.6 BEATS",
+						"3.4 BEATS",
+						"3.2 BEATS",
+						"1/2.",
+						"2.8 BEATS",
+						"2.7 BEATS",
+						"2.5 BEATS",
+						"2.4 BEATS",
+						"2.2 BEATS",
+						"2.1 BEATS",
+						"1/2 NOTE",
+						"1.9 BEATS",
+						"1.8 BEATS",
+						"1.7 BEATS",
+						"1.6 BEATS",
+						"1/4.",
+						"1.4 BEATS",
+						"1/2T",
+						"1.2 BEATS",
+						"1.2 BEATS",
+						"1.1 BEATS",
+						"1.0 BEATS",
+						"1/4 NOTE",
+						"0.95 BEAT",
+						"0.90 BEAT",
+						"0.85 BEAT",
+						"0.80 BEAT",
+						"1/8.",
+						"0.71 BEAT",
+						"1/4T",
+						"0.63 BEAT",
+						"0.60 BEAT",
+						"0.56 BEAT",
+						"0.53 BEAT",
+						"1/8 NOTE",
+						"0.47 BEAT",
+						"0.45 BEAT",
+						"0.42 BEAT",
+						"0.40 BEAT",
+						"1/16.",
+						"0.35 BEAT",
+						"1/8T",
+						"0.31 BEAT",
+						"0.30 BEAT",
+						"0.28 BEAT",
+						"0.26 BEAT",
+						"1/16 NOTE",
+						"0.23 BEAT",
+						"0.22 BEAT",
+						"0.21 BEAT",
+						"0.20 BEAT",
+						"1/32.",
+						"0.17 BEAT",
+						"1/16T",
+						"0.15 BEAT",
+						"0.15 BEAT",
+						"0.14 BEAT",
+						"0.13 BEAT",
+						"1/32 NOTE",
+						"16.7 HZ",
+						"17.7 HZ",
+						"18.7 HZ",
+						"19.8 HZ",
+						"21.0 HZ",
+						"22.3 HZ",
+						"23.6 HZ",
+						"25.0 HZ",
+						"26.5 HZ",
+						"28.1 HZ",
+						"29.7 HZ",
+						"1/64 NOTE",
+						"33.4 HZ",
+						"35.4 HZ",
+						"37.5 HZ",
+						"39.7 HZ",
+						"42.1 HZ",
+						"44.6 HZ",
+						"47.2 HZ",
+						"50.0 HZ",
+						"53.0 HZ",
+						"56.2 HZ",
+						"59.5 HZ",
+						"63.0 HZ",
+						"66.8 HZ",
+						"70.8 HZ",
+						"75.0 HZ",
+						"79.4 HZ",
+						"84.2 HZ",
+						"89.2 HZ",
+						"94.5 HZ",
+						"100 HZ",
+						"106 HZ",
+						"112 HZ",
+						"119 HZ",
+						"126 HZ",
+						"134 HZ",
+						"142 HZ",
+						"150 HZ",
+						"159 HZ",
+						"168 HZ",
+						"178 HZ",
+						"189 HZ"
+					],
+					[
+						"STOP",
+						"1.9 BARS",
+						"1.8 BARS",
+						"1.7 BARS",
+						"1.6 BARS",
+						"1.5 BARS",
+						"1.4 BARS",
+						"1.3 BARS",
+						"1.2 BARS",
+						"1.2 BARS",
+						"1.1 BARS",
+						"1.0 BARS",
+						"1 BAR",
+						"3.8 BEATS",
+						"3.6 BEATS",
+						"3.4 BEATS",
+						"3.2 BEATS",
+						"1/2.",
+						"2.8 BEATS",
+						"2.7 BEATS",
+						"2.5 BEATS",
+						"2.4 BEATS",
+						"2.2 BEATS",
+						"2.1 BEATS",
+						"1/2 NOTE",
+						"1.9 BEATS",
+						"1.8 BEATS",
+						"1.7 BEATS",
+						"1.6 BEATS",
+						"1/4.",
+						"1.4 BEATS",
+						"1/2T",
+						"1.2 BEATS",
+						"1.2 BEATS",
+						"1.1 BEATS",
+						"1.0 BEATS",
+						"1/4 NOTE",
+						"0.95 BEAT",
+						"0.90 BEAT",
+						"0.85 BEAT",
+						"0.80 BEAT",
+						"1/8.",
+						"0.71 BEAT",
+						"1/4T",
+						"0.63 BEAT",
+						"0.60 BEAT",
+						"0.56 BEAT",
+						"0.53 BEAT",
+						"1/8 NOTE",
+						"0.47 BEAT",
+						"0.45 BEAT",
+						"0.42 BEAT",
+						"0.40 BEAT",
+						"1/16.",
+						"0.35 BEAT",
+						"1/8T",
+						"0.31 BEAT",
+						"0.30 BEAT",
+						"0.28 BEAT",
+						"0.26 BEAT",
+						"1/16 NOTE",
+						"0.23 BEAT",
+						"0.22 BEAT",
+						"0.21 BEAT",
+						"0.20 BEAT",
+						"1/32.",
+						"0.17 BEAT",
+						"1/16T",
+						"0.15 BEAT",
+						"0.15 BEAT",
+						"0.14 BEAT",
+						"0.13 BEAT",
+						"1/32 NOTE",
+						"16.7 HZ",
+						"17.7 HZ",
+						"18.7 HZ",
+						"19.8 HZ",
+						"21.0 HZ",
+						"22.3 HZ",
+						"23.6 HZ",
+						"25.0 HZ",
+						"26.5 HZ",
+						"28.1 HZ",
+						"29.7 HZ",
+						"1/64 NOTE",
+						"33.4 HZ",
+						"35.4 HZ",
+						"37.5 HZ",
+						"39.7 HZ",
+						"42.1 HZ",
+						"44.6 HZ",
+						"47.2 HZ",
+						"50.0 HZ",
+						"53.0 HZ",
+						"56.2 HZ",
+						"59.5 HZ",
+						"63.0 HZ",
+						"66.8 HZ",
+						"70.8 HZ",
+						"75.0 HZ",
+						"79.4 HZ",
+						"84.2 HZ",
+						"89.2 HZ",
+						"94.5 HZ",
+						"100 HZ",
+						"106 HZ",
+						"112 HZ",
+						"119 HZ",
+						"126 HZ",
+						"134 HZ",
+						"142 HZ",
+						"150 HZ",
+						"159 HZ",
+						"168 HZ",
+						"178 HZ",
+						"189 HZ",
+						"200 HZ",
+						"212 HZ",
+						"225 HZ",
+						"238 HZ",
+						"252 HZ",
+						"267 HZ",
+						"283 HZ",
+						"300 HZ",
+						"318 HZ",
+						"337 HZ",
+						"345 HZ",
+						"345 HZ"
+					],
+					[
+						"STOP",
+						"3.8 BEATS",
+						"3.6 BEATS",
+						"3.4 BEATS",
+						"3.2 BEATS",
+						"1/2.",
+						"2.8 BEATS",
+						"2.7 BEATS",
+						"2.5 BEATS",
+						"2.4 BEATS",
+						"2.2 BEATS",
+						"2.1 BEATS",
+						"1/2 NOTE",
+						"1.9 BEATS",
+						"1.8 BEATS",
+						"1.7 BEATS",
+						"1.6 BEATS",
+						"1/4.",
+						"1.4 BEATS",
+						"1/2T",
+						"1.2 BEATS",
+						"1.2 BEATS",
+						"1.1 BEATS",
+						"1.0 BEATS",
+						"1/4 NOTE",
+						"0.95 BEAT",
+						"0.90 BEAT",
+						"0.85 BEAT",
+						"0.80 BEAT",
+						"1/8.",
+						"0.71 BEAT",
+						"1/4T",
+						"0.63 BEAT",
+						"0.60 BEAT",
+						"0.56 BEAT",
+						"0.53 BEAT",
+						"1/8 NOTE",
+						"0.47 BEAT",
+						"0.45 BEAT",
+						"0.42 BEAT",
+						"0.40 BEAT",
+						"1/16.",
+						"0.35 BEAT",
+						"1/8T",
+						"0.31 BEAT",
+						"0.30 BEAT",
+						"0.28 BEAT",
+						"0.26 BEAT",
+						"1/16 NOTE",
+						"0.23 BEAT",
+						"0.22 BEAT",
+						"0.21 BEAT",
+						"0.20 BEAT",
+						"1/32.",
+						"0.17 BEAT",
+						"1/16T",
+						"0.15 BEAT",
+						"0.15 BEAT",
+						"0.14 BEAT",
+						"0.13 BEAT",
+						"1/32 NOTE",
+						"16.7 HZ",
+						"17.7 HZ",
+						"18.7 HZ",
+						"19.8 HZ",
+						"21.0 HZ",
+						"22.3 HZ",
+						"23.6 HZ",
+						"25.0 HZ",
+						"26.5 HZ",
+						"28.1 HZ",
+						"29.7 HZ",
+						"1/64 NOTE",
+						"33.4 HZ",
+						"35.4 HZ",
+						"37.5 HZ",
+						"39.7 HZ",
+						"42.1 HZ",
+						"44.6 HZ",
+						"47.2 HZ",
+						"50.0 HZ",
+						"53.0 HZ",
+						"56.2 HZ",
+						"59.5 HZ",
+						"63.0 HZ",
+						"66.8 HZ",
+						"70.8 HZ",
+						"75.0 HZ",
+						"79.4 HZ",
+						"84.2 HZ",
+						"89.2 HZ",
+						"94.5 HZ",
+						"100 HZ",
+						"106 HZ",
+						"112 HZ",
+						"119 HZ",
+						"126 HZ",
+						"134 HZ",
+						"142 HZ",
+						"150 HZ",
+						"159 HZ",
+						"168 HZ",
+						"178 HZ",
+						"189 HZ",
+						"200 HZ",
+						"212 HZ",
+						"225 HZ",
+						"238 HZ",
+						"252 HZ",
+						"267 HZ",
+						"283 HZ",
+						"300 HZ",
+						"318 HZ",
+						"337 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ"
+					],
+					[
+						"STOP",
+						"1.9 BEATS",
+						"1.8 BEATS",
+						"1.7 BEATS",
+						"1.6 BEATS",
+						"1/4.",
+						"1.4 BEATS",
+						"1/2T",
+						"1.2 BEATS",
+						"1.2 BEATS",
+						"1.1 BEATS",
+						"1.0 BEATS",
+						"1/4 NOTE",
+						"0.95 BEAT",
+						"0.90 BEAT",
+						"0.85 BEAT",
+						"0.80 BEAT",
+						"1/8.",
+						"0.71 BEAT",
+						"1/4T",
+						"0.63 BEAT",
+						"0.60 BEAT",
+						"0.56 BEAT",
+						"0.53 BEAT",
+						"1/8 NOTE",
+						"0.47 BEAT",
+						"0.45 BEAT",
+						"0.42 BEAT",
+						"0.40 BEAT",
+						"1/16.",
+						"0.35 BEAT",
+						"1/8T",
+						"0.31 BEAT",
+						"0.30 BEAT",
+						"0.28 BEAT",
+						"0.26 BEAT",
+						"1/16 NOTE",
+						"0.23 BEAT",
+						"0.22 BEAT",
+						"0.21 BEAT",
+						"0.20 BEAT",
+						"1/32.",
+						"0.17 BEAT",
+						"1/16T",
+						"0.15 BEAT",
+						"0.15 BEAT",
+						"0.14 BEAT",
+						"0.13 BEAT",
+						"1/32 NOTE",
+						"16.7 HZ",
+						"17.7 HZ",
+						"18.7 HZ",
+						"19.8 HZ",
+						"21.0 HZ",
+						"22.3 HZ",
+						"23.6 HZ",
+						"25.0 HZ",
+						"26.5 HZ",
+						"28.1 HZ",
+						"29.7 HZ",
+						"1/64 NOTE",
+						"33.4 HZ",
+						"35.4 HZ",
+						"37.5 HZ",
+						"39.7 HZ",
+						"42.1 HZ",
+						"44.6 HZ",
+						"47.2 HZ",
+						"50.0 HZ",
+						"53.0 HZ",
+						"56.2 HZ",
+						"59.5 HZ",
+						"63.0 HZ",
+						"66.8 HZ",
+						"70.8 HZ",
+						"75.0 HZ",
+						"79.4 HZ",
+						"84.2 HZ",
+						"89.2 HZ",
+						"94.5 HZ",
+						"100 HZ",
+						"106 HZ",
+						"112 HZ",
+						"119 HZ",
+						"126 HZ",
+						"134 HZ",
+						"142 HZ",
+						"150 HZ",
+						"159 HZ",
+						"168 HZ",
+						"178 HZ",
+						"189 HZ",
+						"200 HZ",
+						"212 HZ",
+						"225 HZ",
+						"238 HZ",
+						"252 HZ",
+						"267 HZ",
+						"283 HZ",
+						"300 HZ",
+						"318 HZ",
+						"337 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ"
+					],
+					[
+						"STOP",
+						"0.95 BEAT",
+						"0.90 BEAT",
+						"0.85 BEAT",
+						"0.80 BEAT",
+						"1/8.",
+						"0.71 BEAT",
+						"1/4T",
+						"0.63 BEAT",
+						"0.60 BEAT",
+						"0.56 BEAT",
+						"0.53 BEAT",
+						"1/8 NOTE",
+						"0.47 BEAT",
+						"0.45 BEAT",
+						"0.42 BEAT",
+						"0.40 BEAT",
+						"1/16.",
+						"0.35 BEAT",
+						"1/8T",
+						"0.31 BEAT",
+						"0.30 BEAT",
+						"0.28 BEAT",
+						"0.26 BEAT",
+						"1/16 NOTE",
+						"0.23 BEAT",
+						"0.22 BEAT",
+						"0.21 BEAT",
+						"0.20 BEAT",
+						"1/32.",
+						"0.17 BEAT",
+						"1/16T",
+						"0.15 BEAT",
+						"0.15 BEAT",
+						"0.14 BEAT",
+						"0.13 BEAT",
+						"1/32 NOTE",
+						"16.7 HZ",
+						"17.7 HZ",
+						"18.7 HZ",
+						"19.8 HZ",
+						"21.0 HZ",
+						"22.3 HZ",
+						"23.6 HZ",
+						"25.0 HZ",
+						"26.5 HZ",
+						"28.1 HZ",
+						"29.7 HZ",
+						"1/64 NOTE",
+						"33.4 HZ",
+						"35.4 HZ",
+						"37.5 HZ",
+						"39.7 HZ",
+						"42.1 HZ",
+						"44.6 HZ",
+						"47.2 HZ",
+						"50.0 HZ",
+						"53.0 HZ",
+						"56.2 HZ",
+						"59.5 HZ",
+						"63.0 HZ",
+						"66.8 HZ",
+						"70.8 HZ",
+						"75.0 HZ",
+						"79.4 HZ",
+						"84.2 HZ",
+						"89.2 HZ",
+						"94.5 HZ",
+						"100 HZ",
+						"106 HZ",
+						"112 HZ",
+						"119 HZ",
+						"126 HZ",
+						"134 HZ",
+						"142 HZ",
+						"150 HZ",
+						"159 HZ",
+						"168 HZ",
+						"178 HZ",
+						"189 HZ",
+						"200 HZ",
+						"212 HZ",
+						"225 HZ",
+						"238 HZ",
+						"252 HZ",
+						"267 HZ",
+						"283 HZ",
+						"300 HZ",
+						"318 HZ",
+						"337 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ",
+						"345 HZ"
+					]
+				]
+			}
+		},
+		{
+			"$type": "control-range",
+			"label": "PHAS",
+			"address": "/cc/118",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "DPTH",
+			"address": "/cc/119",
+			"min": 0,
+			"max": 127,
+			"bipolar": 1,
+			"value_labels": [
+				"-100 %",
+				"-96 %",
+				"-93 %",
+				"-90 %",
+				"-87 %",
+				"-85 %",
+				"-82 %",
+				"-79 %",
+				"-76 %",
+				"-73 %",
+				"-71 %",
+				"-68 %",
+				"-66 %",
+				"-63 %",
+				"-61 %",
+				"-58 %",
+				"-56 %",
+				"-53 %",
+				"-51 %",
+				"-49 %",
+				"-47 %",
+				"-45 %",
+				"-43 %",
+				"-41 %",
+				"-39 %",
+				"-37 %",
+				"-35 %",
+				"-33 %",
+				"-31 %",
+				"-29 %",
+				"-28 %",
+				"-26 %",
+				"-25 %",
+				"-23 %",
+				"-22 %",
+				"-20 %",
+				"-19 %",
+				"-17 %",
+				"-16 %",
+				"-15 %",
+				"-14 %",
+				"-12 %",
+				"-11 %",
+				"-10 %",
+				"-9.8 %",
+				"-8.8 %",
+				"-7.9 %",
+				"-7.1 %",
+				"-6.3 %",
+				"-5.5 %",
+				"-4.8 %",
+				"-4.1 %",
+				"-3.5 %",
+				"-3.0 %",
+				"-2.4 %",
+				"-2.0 %",
+				"-1.6 %",
+				"-1.2 %",
+				"-0.9 %",
+				"-0.6 %",
+				"-0.4 %",
+				"-0.2 %",
+				"-0.1 %",
+				"0 %",
+				"0 %",
+				"0 %",
+				"+0.1 %",
+				"+0.2 %",
+				"+0.4 %",
+				"+0.6 %",
+				"+0.9 %",
+				"+1.2 %",
+				"+1.6 %",
+				"+2.0 %",
+				"+2.5 %",
+				"+3.1 %",
+				"+3.6 %",
+				"+4.3 %",
+				"+4.9 %",
+				"+5.7 %",
+				"+6.4 %",
+				"+7.3 %",
+				"+8.2 %",
+				"+9.1 %",
+				"+10 %",
+				"+11 %",
+				"+12 %",
+				"+13 %",
+				"+14 %",
+				"+15 %",
+				"+17 %",
+				"+18 %",
+				"+19 %",
+				"+21 %",
+				"+22 %",
+				"+24 %",
+				"+25 %",
+				"+27 %",
+				"+29 %",
+				"+30 %",
+				"+32 %",
+				"+34 %",
+				"+36 %",
+				"+38 %",
+				"+40 %",
+				"+42 %",
+				"+44 %",
+				"+46 %",
+				"+48 %",
+				"+51 %",
+				"+53 %",
+				"+55 %",
+				"+58 %",
+				"+60 %",
+				"+63 %",
+				"+65 %",
+				"+68 %",
+				"+70 %",
+				"+73 %",
+				"+76 %",
+				"+79 %",
+				"+81 %",
+				"+84 %",
+				"+87 %",
+				"+90 %",
+				"+93 %",
+				"+96 %",
+				"+100 %"
+			]
+		},
+		{
+			"$type": "control-menu",
+			"menu_label": "TRCK",
+			"step": 0.25,
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "OWN",
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/112",
+						"value": 0
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "TRK 1",
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/112",
+						"value": 1
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "TRK 2",
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/112",
+						"value": 2
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "TRK 3",
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/112",
+						"value": 3
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "TRK 4",
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/112",
+						"value": 4
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "TRK 5",
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/112",
+						"value": 5
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "TRK 6",
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/112",
+						"value": 6
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "TRK 7",
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/112",
+						"value": 7
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "TRK 8",
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/112",
+						"value": 8
+					}
+				}
+			]
+		}
+	]
+}

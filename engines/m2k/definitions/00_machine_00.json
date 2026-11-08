@@ -1,0 +1,826 @@
+{
+	"name": "GND-SIN",
+	"slot": 0,
+	"init": [
+		{
+			"$type": "message",
+			"$comment": "machine",
+			"address": "/cc/14",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/48",
+			"value": 18
+		},
+		{
+			"$type": "message",
+			"address": "/cc/49",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/50",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/51",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/52",
+			"value": 40
+		},
+		{
+			"$type": "message",
+			"address": "/cc/53",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/54",
+			"value": 50
+		},
+		{
+			"$type": "message",
+			"address": "/cc/55",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/cc/56",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/57",
+			"value": 24
+		},
+		{
+			"$type": "message",
+			"address": "/cc/58",
+			"value": 113
+		},
+		{
+			"$type": "message",
+			"address": "/cc/59",
+			"value": 37
+		},
+		{
+			"$type": "message",
+			"address": "/cc/60",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/cc/61",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/cc/62",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/cc/63",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/72",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/73",
+			"value": 127
+		},
+		{
+			"$type": "message",
+			"address": "/cc/74",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/75",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/76",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/77",
+			"value": 32
+		},
+		{
+			"$type": "message",
+			"address": "/cc/78",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/cc/79",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/cc/80",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/cc/81",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/cc/82",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/83",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/cc/84",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/cc/85",
+			"value": 32
+		},
+		{
+			"$type": "message",
+			"address": "/cc/86",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/87",
+			"value": 127
+		},
+		{
+			"$type": "message",
+			"address": "/cc/88",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/89",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/90",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/91",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/92",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/93",
+			"value": 48
+		},
+		{
+			"$type": "message",
+			"address": "/cc/94",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/95",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/cc/104",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/105",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/106",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/107",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/108",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/109",
+			"value": 48
+		},
+		{
+			"$type": "message",
+			"address": "/cc/110",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/111",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/cc/112",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/113",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/114",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/115",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/116",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/117",
+			"value": 48
+		},
+		{
+			"$type": "message",
+			"address": "/cc/118",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/119",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/cc/16",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/17",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/18",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/19",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/20",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/cc/7",
+			"value": 104
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/38",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/39",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/40",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/41",
+			"value": 14
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/66",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/67",
+			"value": 40
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/68",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/69",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/70",
+			"value": 0
+		}
+	],
+	"controls": [
+		{
+			"$type": "control-range",
+			"label": "FOLD",
+			"address": "/cc/48",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "SUB",
+			"address": "/cc/49",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "NOIS",
+			"address": "/cc/50",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "PDEP",
+			"address": "/cc/51",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "PDEC",
+			"address": "/cc/52",
+			"min": 0,
+			"max": 127,
+			"value_labels": [
+				"0.3 MS",
+				"1.1 MS",
+				"1.1 MS",
+				"1.2 MS",
+				"1.3 MS",
+				"1.4 MS",
+				"1.5 MS",
+				"1.6 MS",
+				"1.7 MS",
+				"1.9 MS",
+				"2.0 MS",
+				"2.1 MS",
+				"2.3 MS",
+				"2.5 MS",
+				"2.6 MS",
+				"2.8 MS",
+				"3.0 MS",
+				"3.2 MS",
+				"3.5 MS",
+				"3.7 MS",
+				"4.0 MS",
+				"4.3 MS",
+				"4.6 MS",
+				"4.9 MS",
+				"5.3 MS",
+				"5.7 MS",
+				"6.1 MS",
+				"6.5 MS",
+				"7.0 MS",
+				"7.5 MS",
+				"8.0 MS",
+				"8.6 MS",
+				"9.2 MS",
+				"9.8 MS",
+				"10 MS",
+				"11 MS",
+				"12 MS",
+				"13 MS",
+				"13 MS",
+				"14 MS",
+				"16 MS",
+				"17 MS",
+				"18 MS",
+				"19 MS",
+				"21 MS",
+				"22 MS",
+				"24 MS",
+				"26 MS",
+				"27 MS",
+				"29 MS",
+				"32 MS",
+				"34 MS",
+				"36 MS",
+				"39 MS",
+				"42 MS",
+				"45 MS",
+				"48 MS",
+				"52 MS",
+				"55 MS",
+				"59 MS",
+				"64 MS",
+				"68 MS",
+				"73 MS",
+				"78 MS",
+				"84 MS",
+				"90 MS",
+				"97 MS",
+				"104 MS",
+				"111 MS",
+				"119 MS",
+				"128 MS",
+				"137 MS",
+				"147 MS",
+				"157 MS",
+				"168 MS",
+				"181 MS",
+				"194 MS",
+				"207 MS",
+				"222 MS",
+				"238 MS",
+				"256 MS",
+				"274 MS",
+				"294 MS",
+				"315 MS",
+				"337 MS",
+				"362 MS",
+				"388 MS",
+				"415 MS",
+				"445 MS",
+				"477 MS",
+				"512 MS",
+				"548 MS",
+				"588 MS",
+				"630 MS",
+				"675 MS",
+				"724 MS",
+				"776 MS",
+				"831 MS",
+				"891 MS",
+				"955 MS",
+				"1.0 S",
+				"1.0 S",
+				"1.1 S",
+				"1.2 S",
+				"1.3 S",
+				"1.4 S",
+				"1.5 S",
+				"1.6 S",
+				"1.7 S",
+				"1.9 S",
+				"2.0 S",
+				"2.1 S",
+				"2.3 S",
+				"2.5 S",
+				"2.7 S",
+				"2.8 S",
+				"3.1 S",
+				"3.3 S",
+				"3.5 S",
+				"3.8 S",
+				"4.0 S",
+				"4.3 S",
+				"4.7 S",
+				"5.0 S",
+				"5.4 S",
+				"5.7 S",
+				"6.2 S",
+				"6.6 S"
+			]
+		},
+		{
+			"$type": "control-range",
+			"label": "CLIK",
+			"address": "/cc/53",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "HARM",
+			"address": "/cc/54",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "TUNE",
+			"address": "/cc/55",
+			"min": 0,
+			"max": 127,
+			"value_labels": [
+				"-200 CENT",
+				"-196 CENT",
+				"-193 CENT",
+				"-190 CENT",
+				"-187 CENT",
+				"-184 CENT",
+				"-181 CENT",
+				"-178 CENT",
+				"-175 CENT",
+				"-171 CENT",
+				"-168 CENT",
+				"-165 CENT",
+				"-162 CENT",
+				"-159 CENT",
+				"-156 CENT",
+				"-153 CENT",
+				"-150 CENT",
+				"-146 CENT",
+				"-143 CENT",
+				"-140 CENT",
+				"-137 CENT",
+				"-134 CENT",
+				"-131 CENT",
+				"-128 CENT",
+				"-125 CENT",
+				"-121 CENT",
+				"-118 CENT",
+				"-115 CENT",
+				"-112 CENT",
+				"-109 CENT",
+				"-106 CENT",
+				"-103 CENT",
+				"-100 CENT",
+				"-96 CENT",
+				"-93 CENT",
+				"-90 CENT",
+				"-87 CENT",
+				"-84 CENT",
+				"-81 CENT",
+				"-78 CENT",
+				"-75 CENT",
+				"-71 CENT",
+				"-68 CENT",
+				"-65 CENT",
+				"-62 CENT",
+				"-59 CENT",
+				"-56 CENT",
+				"-53 CENT",
+				"-50 CENT",
+				"-46 CENT",
+				"-43 CENT",
+				"-40 CENT",
+				"-37 CENT",
+				"-34 CENT",
+				"-31 CENT",
+				"-28 CENT",
+				"-25 CENT",
+				"-21 CENT",
+				"-18 CENT",
+				"-15 CENT",
+				"-12 CENT",
+				"-9 CENT",
+				"-6 CENT",
+				"-3 CENT",
+				"0 CENT",
+				"3 CENT",
+				"6 CENT",
+				"9 CENT",
+				"12 CENT",
+				"15 CENT",
+				"18 CENT",
+				"21 CENT",
+				"25 CENT",
+				"28 CENT",
+				"31 CENT",
+				"34 CENT",
+				"37 CENT",
+				"40 CENT",
+				"43 CENT",
+				"46 CENT",
+				"50 CENT",
+				"53 CENT",
+				"56 CENT",
+				"59 CENT",
+				"62 CENT",
+				"65 CENT",
+				"68 CENT",
+				"71 CENT",
+				"75 CENT",
+				"78 CENT",
+				"81 CENT",
+				"84 CENT",
+				"87 CENT",
+				"90 CENT",
+				"93 CENT",
+				"96 CENT",
+				"100 CENT",
+				"103 CENT",
+				"106 CENT",
+				"109 CENT",
+				"112 CENT",
+				"115 CENT",
+				"118 CENT",
+				"121 CENT",
+				"125 CENT",
+				"128 CENT",
+				"131 CENT",
+				"134 CENT",
+				"137 CENT",
+				"140 CENT",
+				"143 CENT",
+				"146 CENT",
+				"150 CENT",
+				"153 CENT",
+				"156 CENT",
+				"159 CENT",
+				"162 CENT",
+				"165 CENT",
+				"168 CENT",
+				"171 CENT",
+				"175 CENT",
+				"178 CENT",
+				"181 CENT",
+				"184 CENT",
+				"187 CENT",
+				"190 CENT",
+				"193 CENT",
+				"196 CENT"
+			]
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-range",
+			"label": "PTCH",
+			"address": "/cc/20",
+			"min": 0,
+			"max": 127,
+			"bipolar": 1,
+			"value_labels": [
+				"-64 SEMI",
+				"-63 SEMI",
+				"-62 SEMI",
+				"-61 SEMI",
+				"-60 SEMI",
+				"-59 SEMI",
+				"-58 SEMI",
+				"-57 SEMI",
+				"-56 SEMI",
+				"-55 SEMI",
+				"-54 SEMI",
+				"-53 SEMI",
+				"-52 SEMI",
+				"-51 SEMI",
+				"-50 SEMI",
+				"-49 SEMI",
+				"-48 SEMI",
+				"-47 SEMI",
+				"-46 SEMI",
+				"-45 SEMI",
+				"-44 SEMI",
+				"-43 SEMI",
+				"-42 SEMI",
+				"-41 SEMI",
+				"-40 SEMI",
+				"-39 SEMI",
+				"-38 SEMI",
+				"-37 SEMI",
+				"-36 SEMI",
+				"-35 SEMI",
+				"-34 SEMI",
+				"-33 SEMI",
+				"-32 SEMI",
+				"-31 SEMI",
+				"-30 SEMI",
+				"-29 SEMI",
+				"-28 SEMI",
+				"-27 SEMI",
+				"-26 SEMI",
+				"-25 SEMI",
+				"-24 SEMI",
+				"-23 SEMI",
+				"-22 SEMI",
+				"-21 SEMI",
+				"-20 SEMI",
+				"-19 SEMI",
+				"-18 SEMI",
+				"-17 SEMI",
+				"-16 SEMI",
+				"-15 SEMI",
+				"-14 SEMI",
+				"-13 SEMI",
+				"-12 SEMI",
+				"-11 SEMI",
+				"-10 SEMI",
+				"-9 SEMI",
+				"-8 SEMI",
+				"-7 SEMI",
+				"-6 SEMI",
+				"-5 SEMI",
+				"-4 SEMI",
+				"-3 SEMI",
+				"-2 SEMI",
+				"-1 SEMI",
+				"0 SEMI",
+				"1 SEMI",
+				"2 SEMI",
+				"3 SEMI",
+				"4 SEMI",
+				"5 SEMI",
+				"6 SEMI",
+				"7 SEMI",
+				"8 SEMI",
+				"9 SEMI",
+				"10 SEMI",
+				"11 SEMI",
+				"12 SEMI",
+				"13 SEMI",
+				"14 SEMI",
+				"15 SEMI",
+				"16 SEMI",
+				"17 SEMI",
+				"18 SEMI",
+				"19 SEMI",
+				"20 SEMI",
+				"21 SEMI",
+				"22 SEMI",
+				"23 SEMI",
+				"24 SEMI",
+				"25 SEMI",
+				"26 SEMI",
+				"27 SEMI",
+				"28 SEMI",
+				"29 SEMI",
+				"30 SEMI",
+				"31 SEMI",
+				"32 SEMI",
+				"33 SEMI",
+				"34 SEMI",
+				"35 SEMI",
+				"36 SEMI",
+				"37 SEMI",
+				"38 SEMI",
+				"39 SEMI",
+				"40 SEMI",
+				"41 SEMI",
+				"42 SEMI",
+				"43 SEMI",
+				"44 SEMI",
+				"45 SEMI",
+				"46 SEMI",
+				"47 SEMI",
+				"48 SEMI",
+				"49 SEMI",
+				"50 SEMI",
+				"51 SEMI",
+				"52 SEMI",
+				"53 SEMI",
+				"54 SEMI",
+				"55 SEMI",
+				"56 SEMI",
+				"57 SEMI",
+				"58 SEMI",
+				"59 SEMI",
+				"60 SEMI",
+				"61 SEMI",
+				"62 SEMI",
+				"63 SEMI"
+			]
+		}
+	]
+}

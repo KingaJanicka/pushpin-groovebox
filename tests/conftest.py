@@ -92,6 +92,14 @@ def reset_mode_state():
     """
     yield
 
+    # The mono2k engines' shared process registry (engine.py) is module state too.
+    try:
+        import engine
+
+        engine.reset_m2k_shared()
+    except Exception:
+        pass
+
     # Imported lazily so that conftest import never fails if a module is absent.
     try:
         from modes.melodic_mode import MelodicMode
