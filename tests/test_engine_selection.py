@@ -207,10 +207,36 @@ def test_menu_lists_the_engines_with_availability(menu):
     assert mode.options() == [(SURGE, "Surge XT", True), (M2K, "Monomachine", True)]
 
 
-def test_menu_button_switches_the_track_saves_and_closes(menu, app):
+B = push2_python.constants
+
+
+def test_menu_opens_on_the_tracks_engine(menu):
+    mode, instrument, _ = menu
+    mode.activate()
+    assert mode.selected_index == 0                  # Surge XT
+    instrument.set_active_engine(M2K)
+    mode.activate()
+    assert mode.selected_index == 1                  # Monomachine
+
+
+def test_arrows_move_the_highlight_and_stop_at_the_ends(menu):
+    mode, instrument, _ = menu
+    mode.activate()
+    assert mode.on_button_pressed(B.BUTTON_LEFT) is True
+    assert mode.selected_index == 0
+    assert mode.on_button_pressed(B.BUTTON_RIGHT) is True
+    assert mode.selected_index == 1
+    mode.on_button_pressed(B.BUTTON_RIGHT)
+    assert mode.selected_index == 1
+    assert instrument.active_engine_name == SURGE    # moving the highlight changes nothing yet
+
+
+def test_add_track_switches_to_the_highlighted_engine_saves_and_closes(menu, app):
     mode, instrument, _ = menu
     app.is_mode_active.return_value = True
-    assert mode.on_button_pressed(push2_python.constants.BUTTON_UPPER_ROW_2) is True
+    mode.activate()
+    mode.on_button_pressed(B.BUTTON_RIGHT)
+    assert mode.on_button_pressed(B.BUTTON_ADD_TRACK) is True
     assert instrument.active_engine_name == M2K
     assert load_track_engines(mode.track_engines_filename) == {"Pushpin 2": M2K}
     app.add_display_notification.assert_called_with("Pushpin 2: Monomachine")
@@ -218,23 +244,26 @@ def test_menu_button_switches_the_track_saves_and_closes(menu, app):
     app.toggle_engine_selection_mode.assert_called_once()
 
 
-def test_menu_pressing_the_current_engine_just_closes(menu, app):
+def test_add_track_on_the_tracks_own_engine_just_closes(menu, app):
     mode, instrument, _ = menu
     app.is_mode_active.return_value = True
-    mode.on_button_pressed(push2_python.constants.BUTTON_UPPER_ROW_1)
+    mode.activate()
+    mode.on_button_pressed(B.BUTTON_ADD_TRACK)
     assert instrument.active_engine_name == SURGE
     assert load_track_engines(mode.track_engines_filename) == {}
     app.toggle_engine_selection_mode.assert_called_once()
 
 
-def test_menu_unavailable_engine_explains_and_stays_open(app, tmp_path):
+def test_add_track_on_an_unavailable_engine_explains_and_stays_open(app, tmp_path):
     instrument, _ = make_instrument(app, definition=surge_definition(), m2k_built=False)
     app.instruments = {"Pushpin 2": instrument}
     app.instrument_selection_mode.get_current_instrument_short_name.return_value = "Pushpin 2"
     mode = EngineSelectionMode(app, settings=None)
     mode.track_engines_filename = str(tmp_path / "track_engines.json")
+    mode.activate()
     assert mode.options()[1] == (M2K, "Monomachine", False)
-    mode.on_button_pressed(push2_python.constants.BUTTON_UPPER_ROW_2)
+    mode.on_button_pressed(B.BUTTON_RIGHT)
+    mode.on_button_pressed(B.BUTTON_ADD_TRACK)
     assert instrument.active_engine_name == SURGE
     app.add_display_notification.assert_called_with("Monomachine isn't available (build engines/m2k)")
     app.toggle_engine_selection_mode.assert_not_called()
@@ -242,18 +271,35 @@ def test_menu_unavailable_engine_explains_and_stays_open(app, tmp_path):
 
 def test_menu_blocks_encoders_and_passes_other_buttons(menu):
     mode, _, _ = menu
-    assert mode.on_encoder_rotated(push2_python.constants.ENCODER_TRACK1_ENCODER, 1) is True
-    assert mode.on_button_pressed(push2_python.constants.BUTTON_PLAY) is None
+    assert mode.on_encoder_rotated(B.ENCODER_TRACK1_ENCODER, 1) is True
+    assert mode.on_button_pressed(B.BUTTON_PLAY) is None
+    assert mode.on_button_pressed(B.BUTTON_UPPER_ROW_2) is None   # like ADD DEVICE: arrows, not the upper row
 
 
-def test_menu_lights_the_current_engine(menu, push):
+def test_menu_lights_the_arrows_it_can_move(menu, push):
     mode, _, _ = menu
-    mode.update_buttons()
-    colors = {c.args[0]: c.args[1] for c in push.buttons.set_button_color.call_args_list}
     import definitions
-    assert colors[push2_python.constants.BUTTON_UPPER_ROW_1] == definitions.YELLOW
-    assert colors[push2_python.constants.BUTTON_UPPER_ROW_2] == definitions.WHITE
-    assert colors[push2_python.constants.BUTTON_UPPER_ROW_3] == definitions.BLACK
+    mode.activate()                                  # on Surge XT, the first
+    colors = {c.args[0]: c.args[1] for c in push.buttons.set_button_color.call_args_list}
+    assert colors[B.BUTTON_LEFT] == definitions.BLACK
+    assert colors[B.BUTTON_RIGHT] == definitions.WHITE
+    push.buttons.set_button_color.reset_mock()
+    mode.on_button_pressed(B.BUTTON_RIGHT)
+    colors = {c.args[0]: c.args[1] for c in push.buttons.set_button_color.call_args_list}
+    assert colors[B.BUTTON_LEFT] == definitions.WHITE
+    assert colors[B.BUTTON_RIGHT] == definitions.BLACK
+
+
+def test_menu_draws_the_highlight_yellow(menu):
+    from unittest.mock import patch
+    import definitions
+    mode, _, _ = menu
+    mode.activate()
+    mode.on_button_pressed(B.BUTTON_RIGHT)
+    with patch("modes.engine_selection_mode.show_text") as show:
+        mode.update_display(MagicMock(), 960, 160)
+    boxes = {c.args[3]: c.kwargs.get("background_color") for c in show.call_args_list if c.kwargs.get("background_color")}
+    assert boxes == {"Surge XT": definitions.GRAY_LIGHT, "Monomachine": definitions.YELLOW}
 
 
 def test_add_track_button_toggles_the_menu(app):

@@ -1,9 +1,10 @@
 """ADD TRACK: pick the current track's synth engine (Surge XT or Monomachine).
 
 Each track (Instrument) owns a voice per available engine and plays one at a
-time. This mode shows the engines on the upper row of buttons; pressing one
-switches the current track to it, saves the choice (``track_engines.json``,
-read back at startup) and closes the menu. ADD TRACK again closes it too.
+time. The menu works like ADD DEVICE's: it opens on the track's engine, Left
+and Right move the highlight, and ADD TRACK switches the track to the
+highlighted engine (saving the choice in ``track_engines.json``, read back at
+startup) and closes the menu; on the track's own engine it just closes.
 """
 from __future__ import annotations
 
@@ -23,16 +24,9 @@ logger = logging.getLogger("engine_selection_mode")
 TRACK_ENGINES_FILENAME = "track_engines.json"
 ENGINE_ORDER = [engine.DEFAULT_ENGINE, engine.MONO2K_ENGINE]
 
-UPPER_ROW_BUTTONS = [
-    push2_python.constants.BUTTON_UPPER_ROW_1,
-    push2_python.constants.BUTTON_UPPER_ROW_2,
-    push2_python.constants.BUTTON_UPPER_ROW_3,
-    push2_python.constants.BUTTON_UPPER_ROW_4,
-    push2_python.constants.BUTTON_UPPER_ROW_5,
-    push2_python.constants.BUTTON_UPPER_ROW_6,
-    push2_python.constants.BUTTON_UPPER_ROW_7,
-    push2_python.constants.BUTTON_UPPER_ROW_8,
-]
+LEFT = push2_python.constants.BUTTON_LEFT
+RIGHT = push2_python.constants.BUTTON_RIGHT
+ADD_TRACK = push2_python.constants.BUTTON_ADD_TRACK
 
 
 def load_track_engines(path: str = TRACK_ENGINES_FILENAME) -> dict[str, str]:
@@ -62,6 +56,7 @@ def save_track_engine(instrument_short_name: str, engine_name: str, path: str = 
 
 class EngineSelectionMode(definitions.PyshaMode):
     track_engines_filename = TRACK_ENGINES_FILENAME
+    selected_index = 0
 
     def get_settings_to_save(self) -> dict[str, Any]:
         return {}
@@ -107,24 +102,22 @@ class EngineSelectionMode(definitions.PyshaMode):
     # ------------------------------------------------------------ the mode
 
     def activate(self) -> None:
+        # Open on the track's own engine, as ADD DEVICE opens on the current device
+        instrument = self.current_instrument()
+        names = [name for name, _, _ in self.options()]
+        active = instrument.active_engine_name if instrument is not None else None
+        self.selected_index = names.index(active) if active in names else 0
         self.update_buttons()
 
     def deactivate(self) -> None:
-        for button_name in UPPER_ROW_BUTTONS:
+        for button_name in (LEFT, RIGHT):
             self.push.buttons.set_button_color(button_name, definitions.BLACK)
         self.app.buttons_need_update = True
 
     def update_buttons(self) -> None:
-        instrument = self.current_instrument()
-        active = instrument.active_engine_name if instrument is not None else None
-        options = self.options()
-        for idx, button_name in enumerate(UPPER_ROW_BUTTONS):
-            if idx >= len(options):
-                color = definitions.BLACK
-            else:
-                name, _, available = options[idx]
-                color = definitions.YELLOW if name == active else (definitions.WHITE if available else definitions.GRAY_DARK)
-            self.push.buttons.set_button_color(button_name, color)
+        n = len(self.options())
+        self.push.buttons.set_button_color(LEFT, definitions.WHITE if self.selected_index > 0 else definitions.BLACK)
+        self.push.buttons.set_button_color(RIGHT, definitions.WHITE if self.selected_index < n - 1 else definitions.BLACK)
 
     def update_display(self, ctx: Any, w: int, h: int) -> None:
         # Over whatever page is underneath
@@ -136,8 +129,9 @@ class EngineSelectionMode(definitions.PyshaMode):
 
         instrument = self.current_instrument()
         active = instrument.active_engine_name if instrument is not None else None
+        active_label = engine.ENGINE_LABELS.get(active, "-") if active else "-"
         for idx, (name, label, available) in enumerate(self.options()):
-            if name == active:
+            if idx == self.selected_index:
                 background = definitions.YELLOW
             elif available:
                 background = definitions.GRAY_LIGHT
@@ -156,20 +150,29 @@ class EngineSelectionMode(definitions.PyshaMode):
                 center_horizontally=True,
                 rectangle_padding=1,
             )
-        title = f"{instrument.name} engine" if instrument is not None else "No track"
+        title = f"{instrument.name}: {active_label}" if instrument is not None else "No track"
         show_text(ctx, 0, 60, title, height=25, font_color=definitions.WHITE)
-        show_text(ctx, 0, 100, "ADD TRACK: close", height=20, font_color=definitions.GRAY_LIGHT)
+        show_text(ctx, 0, 100, "< > choose, ADD TRACK: select", height=20, font_color=definitions.GRAY_LIGHT)
 
     def on_button_pressed(self, button_name: str) -> bool | None:
-        if button_name in UPPER_ROW_BUTTONS:
-            idx = UPPER_ROW_BUTTONS.index(button_name)
-            options = self.options()
-            if idx < len(options):
-                switched = self.select(options[idx][0])
-                if switched or options[idx][2]:
-                    self.close()
-                else:
-                    self.update_buttons()
+        options = self.options()
+        if button_name == LEFT:
+            if self.selected_index > 0:
+                self.selected_index -= 1
+            self.update_buttons()
+            return True
+        if button_name == RIGHT:
+            if self.selected_index < len(options) - 1:
+                self.selected_index += 1
+            self.update_buttons()
+            return True
+        if button_name == ADD_TRACK:
+            name, _, available = options[self.selected_index]
+            if not available:
+                self.select(name)            # explains why, and the menu stays open
+                return True
+            self.select(name)                # (does nothing on the track's own engine)
+            self.close()
             return True
         return None
 

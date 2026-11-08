@@ -116,8 +116,11 @@ in their definitions).
 
 ## Using it for a pushpin track
 
-Every track can play Surge XT or mono2k, chosen on the Push: press **ADD TRACK**,
-then the upper button under **Surge XT** or **Monomachine**. The choice is saved in
+Every track can play Surge XT or mono2k, chosen on the Push the way ADD DEVICE
+picks a device: press **ADD TRACK** (the menu opens on the track's engine), move
+the highlight with **Left/Right**, and press **ADD TRACK** again to switch to the
+highlighted engine and close the menu (on the track's own engine it just
+closes). The choice is saved in
 `track_engines.json` (in pushpin's working directory) and used at the next start;
 a track with no saved choice starts on its instrument JSON's `"engine"`
 (`"surge-xt-cli"` or `"mono2k"`, default Surge XT).
