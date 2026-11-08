@@ -213,7 +213,9 @@ mono2k's own sounds:
 - **Renaming.** Upper button 3, **Rename**, opens a name editor for the slot's
   user preset: Left/Right move the cursor (Right past the end adds a letter),
   Up/Down change the letter, DELETE removes it, SELECT saves, button 3 again
-  cancels. The preset file is renamed and every slot using it follows. Factory
+  cancels. SHIFT opens a keyboard (every letter, digit and symbol in a grid):
+  the arrows move around it, SELECT types the highlighted character and moves
+  on, and SHIFT closes it again. The preset file is renamed and every slot using it follows. Factory
   sounds can't be renamed (Save to New first). On Surge tracks the same button
   renames Surge user patches (the `.fxp` in Surge's user patch folder).
 

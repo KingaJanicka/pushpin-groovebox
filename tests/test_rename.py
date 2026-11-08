@@ -238,3 +238,70 @@ def test_surge_factory_patches_cant_be_renamed(app, tmp_path, monkeypatch):
     with patch("modes.preset_selection_mode.glob", lambda *a, **k: []):
         mode = PresetSelectionMode(app, settings=None)
     assert mode.rename_target("Pushpin 2") is None              # "Init Saw", a factory patch
+
+
+# ------------------------------------------------------------ the keyboard
+
+from modes.rename_mode import KEYBOARD, Keyboard  # noqa: E402
+
+
+def test_keyboard_holds_every_character_once():
+    cells = [ch for row in KEYBOARD for ch in row if ch != ""]
+    assert sorted(cells) == sorted(CHARSET)
+    assert len({len(row) for row in KEYBOARD}) == 1                # a rectangle
+
+
+def test_keyboard_arrows_wrap_and_skip_empty_cells():
+    k = Keyboard()
+    k.move(0, -1)
+    assert k.char == "L"                                          # wrapped to the row's end
+    k.move(-1, 0)
+    assert k.char == "7"                                          # up from L: the bottom row's empty cell skipped
+    k.go_to(" ")
+    k.move(0, 1)
+    assert k.char == "8"                                          # past the empty cell, wrapped
+
+
+def test_shift_opens_the_keyboard_on_the_cursor_character(overlay):
+    overlay.start("Rename", "MOOG", lambda name: None, cancel_button=B.BUTTON_UPPER_ROW_3)
+    overlay.on_button_pressed(B.BUTTON_SHIFT)
+    assert overlay.keyboard is not None and overlay.keyboard.char == "M"
+    overlay.on_button_pressed(B.BUTTON_SHIFT)
+    assert overlay.keyboard is None
+
+
+def test_keyboard_typing_writes_at_the_cursor_and_moves_on(overlay, app):
+    confirmed = []
+    overlay.start("Rename", "A", lambda name: confirmed.append(name), cancel_button=B.BUTTON_UPPER_ROW_3)
+    overlay.on_button_pressed(B.BUTTON_SHIFT)                     # on "A"
+    overlay.on_button_pressed(B.BUTTON_RIGHT)                     # B
+    overlay.on_button_pressed(B.BUTTON_SELECT)                    # types B over A
+    overlay.on_button_pressed(B.BUTTON_DOWN)                      # N
+    overlay.on_button_pressed(B.BUTTON_SELECT)
+    overlay.on_button_pressed(B.BUTTON_SELECT)
+    assert overlay.editor.text.strip() == "BNN"
+    assert overlay in app.active_modes                            # SELECT types, doesn't save
+    overlay.on_button_pressed(B.BUTTON_DELETE)                    # the blank after BNN
+    overlay.on_button_pressed(B.BUTTON_SHIFT)                     # keyboard closed
+    overlay.on_button_pressed(B.BUTTON_SELECT)                    # now SELECT saves
+    assert confirmed == ["BNN"]
+
+
+def test_keyboard_draws_every_key_and_highlights_one(overlay):
+    overlay.start("Rename", "A", lambda name: None, cancel_button=B.BUTTON_UPPER_ROW_3)
+    overlay.on_button_pressed(B.BUTTON_SHIFT)
+    ctx = MagicMock()
+    overlay.update_display(ctx, 960, 160)
+    shown = [c.args[0] for c in ctx.show_text.call_args_list]
+    for ch in "AZaz09-()":
+        assert ch in shown
+    assert "SPC" in shown
+
+
+def test_shift_is_lit_yellow_while_the_keyboard_is_open(overlay, push):
+    import definitions as d
+    overlay.start("Rename", "A", lambda name: None, cancel_button=B.BUTTON_UPPER_ROW_3)
+    push.buttons.set_button_color.reset_mock()
+    overlay.on_button_pressed(B.BUTTON_SHIFT)
+    colors = {c.args[0]: c.args[1] for c in push.buttons.set_button_color.call_args_list}
+    assert colors[B.BUTTON_SHIFT] == d.YELLOW
