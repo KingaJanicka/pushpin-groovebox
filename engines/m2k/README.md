@@ -116,27 +116,35 @@ in their definitions).
 
 ## Using it for a pushpin track
 
-Add `"engine": "mono2k"` (and optionally a starting `"m2k_machine"`) to the
-track's file in `definitions/instrument_definitions/`, e.g. `Pushpin 3.json`:
+Every track can play Surge XT or mono2k, chosen on the Push: press **ADD TRACK**,
+then the upper button under **Surge XT** or **Monomachine**. The choice is saved in
+`track_engines.json` (in pushpin's working directory) and used at the next start;
+a track with no saved choice starts on its instrument JSON's `"engine"`
+(`"surge-xt-cli"` or `"mono2k"`, default Surge XT).
 
-```json
-{
-  "instrument_name": "Pushpin 3",
-  "instrument_short_name": "Pushpin 3",
-  "instrument_index": 3,
-  "engine": "mono2k",
-  "m2k_machine": 5,
-  ...
-}
-```
+How it works:
 
-The track's `instrument_index` (0–7) picks its MONO2K track. pushpin starts one
-`pw-jack m2k-jack --name M2K --enable … --midi-connect N=<instrument> …` for all
-mono2k tracks, in place of their `surge-xt-cli` instances. Each track's pair is
-routed through the volume node the way a Surge instance's is. The machine is
-sent over MIDI when pushpin selects the track's first device at startup. The
-binary path defaults to `engines/m2k/build/m2k-jack`; set `PUSHPIN_M2K_BIN` to
-override it. The log goes to `m2k.log` in pushpin's log directory.
+- Each track (`Instrument`) has a **voice** per engine: its own engine, device
+  pages, slots and transport (OSC for Surge, `MidiCCClient` for mono2k). The
+  track's `engine`, `osc`, `devices`, `slots` and `midi_out_device` are the
+  active voice's.
+- **Both engines run all the time** and both are routed through the volume node.
+  Surge listens to the track's MIDI port (`Pushpin N`); mono2k to a second one,
+  `Pushpin N m2k`. The sequencer and the pads only play the active engine's port,
+  so the other one is silent. (Muting the inactive engine's PipeWire node doesn't
+  work: a `pw-jack` client's output ignores node mute, measured on the Pi.)
+- **Switching** sends all-notes-off to the old engine, initialises the new one's
+  pages on its first use (for mono2k: its machine and INIT sound), clears the
+  track's p-locks (they are stored by page position) and saves the choice.
+- Surge's patch commands (`/patch/...`) always go to the track's Surge, so
+  presets still load into it while the track plays mono2k; the mono2k pages
+  are left alone.
+- Without `engines/m2k/build/m2k-jack` (or `PUSHPIN_M2K_BIN`) there is no mono2k
+  voice: the menu shows Monomachine dimmed and every track plays Surge.
+
+pushpin starts one `pw-jack m2k-jack --name M2K --enable 1,…,8 --midi-connect
+N="Pushpin N-1 m2k" …` for all tracks. A track's `instrument_index` (0–7) is
+its MONO2K track. The log goes to `m2k.log` in pushpin's log directory.
 
 ## Device pages
 
@@ -167,8 +175,11 @@ the machine, and sequencer p-locks work as they do for Surge.
 
 - Not yet tested: the JACK path on the Pi. It builds only where JACK headers
   exist; on macOS it was checked against stub headers only.
-- The engine is still fixed per track at startup. Choosing Surge or mono2k for
-  a track at run time (the ADD TRACK menu) is the next step.
+- Both engines of every track run all the time (8 Surge instances, one
+  m2k-jack), so a track on mono2k still has its idle Surge using some CPU.
+- Switching a track clears its p-locks, in the sequence that's loaded; other
+  clips saved for the track keep theirs, which then land on the other engine's
+  parameters if loaded.
 - The core runs at 44.1 kHz and is resampled linearly to the JACK rate (48 kHz on
   the Pi), which loses a little treble.
 - The bus (reverb decay, tape, crunch, drive) has no CC; it runs with the blank

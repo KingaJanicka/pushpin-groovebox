@@ -36,6 +36,7 @@ from modes.osc_mode import OSCMode
 from modes.preset_selection_mode import PresetSelectionMode
 from modes.ddrm_tone_selector_mode import DDRMToneSelectorMode
 from modes.menu_mode import MenuMode
+from modes.engine_selection_mode import EngineSelectionMode
 from modes.mute_mode import MuteMode
 from user_interface.display_utils import show_notification
 from user_interface.recording_context import RecordingContext
@@ -205,6 +206,7 @@ class PyshaApp(object):
         )  
         self.ddrm_tone_selector_mode = DDRMToneSelectorMode(self, settings=settings)
         self.menu_mode = MenuMode(self, settings=settings, send_osc_func=self.send_osc)
+        self.engine_selection_mode = EngineSelectionMode(self, settings=settings)
         self.settings_mode = SettingsMode(self, settings=settings)
         self.mute_mode = MuteMode(self, settings=settings) 
         overwitch_def = {
@@ -270,6 +272,18 @@ class PyshaApp(object):
 
     # TODO: preset sel/trig edit get wonky when switching from one to another
     # One triggering needs to shut down another
+
+    def toggle_engine_selection_mode(self):
+        """ADD TRACK: the menu that picks the current track's engine."""
+        if self.is_mode_active(self.engine_selection_mode):
+            self.active_modes = [m for m in self.active_modes if m != self.engine_selection_mode]
+            self.engine_selection_mode.deactivate()
+        else:
+            if self.is_mode_active(self.menu_mode):
+                self.toggle_menu_mode()
+            self.active_modes = self.active_modes + [self.engine_selection_mode]
+            self.engine_selection_mode.activate()
+        self.buttons_need_update = True
 
     def toggle_preset_selection_mode(self):
         
@@ -709,22 +723,12 @@ class PyshaApp(object):
         # )
         # print("App.py send_osc", address, value, instrument_short_name)
         try:
-            if instrument_short_name is not None:
-                # This is for the sequencer
-                client = self.instruments[instrument_short_name].osc.get(
-                    "client", None
-                )
-                if client:
-                    client.send_message(address, value)
-            else:
+            if instrument_short_name is None:
                 # This is for wiggling knobs
-                client = self.instruments[
-                    self.instrument_selection_mode.get_current_instrument_short_name()
-                ].get("client", None)
-
-                if client:
-                    client.send_message(address, value)
-                # print("adress", address, value)
+                instrument_short_name = self.instrument_selection_mode.get_current_instrument_short_name()
+            # The instrument picks the client: its active engine's, or Surge's
+            # for patch commands
+            self.instruments[instrument_short_name].send_message(address, value)
         except Exception as e:
             print("Exception in app.py send_osc")
             traceback.print_exc()
@@ -1351,10 +1355,12 @@ async def main():
     for index, instrument in enumerate(app.instruments):
         # IDK why the fuck but after switch to JACK
         # The config_pw call makes surge-xt instances crash
-        await app.instruments[instrument].engine.configure_pipewire()
+        # Every engine the track can play (Surge, and mono2k when built)
+        await app.instruments[instrument].configure_pipewire()
         
         app.queue.append(app.instruments[instrument].init_devices_sync())
-        app.global_timeline.add_output_device(app.instruments[instrument].midi_out_device)    
+        # The clock goes to Surge's port, as before (m2k-jack ignores clock)
+        app.global_timeline.add_output_device(app.instruments[instrument].surge_midi_out_device)
     for instrument in app.external_instruments:
         await instrument.engine.configure_pipewire()
     while True:

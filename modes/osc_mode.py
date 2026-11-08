@@ -34,12 +34,8 @@ from osc_controls import (
 logger = logging.getLogger("osc_mode")
 
 
-def load_device_definitions(folder):
-    """Every ``*.json`` in ``folder`` keyed by file stem, in file-name order (which is page order)."""
-    return {
-        Path(path).stem: json.load(open(path))
-        for path in sorted(glob(os.path.join(folder, "*.json")))
-    }
+from modes.device_definitions import load_device_definitions  # noqa: E402  (re-exported)
+from modes.engine_selection_mode import load_track_engines, TRACK_ENGINES_FILENAME  # noqa: E402
 
 
 class OSCMode(PyshaMode):
@@ -126,6 +122,11 @@ class OSCMode(PyshaMode):
             except FileNotFoundError:
                 device_definitions[modulation_name] = {}
 
+        # mono2k's pages, shared by every track's mono2k voice
+        m2k_device_definitions = load_device_definitions(definitions.M2K_DEFINITION_FOLDER)
+        # Each track's engine as last chosen with ADD TRACK
+        track_engines = load_track_engines(TRACK_ENGINES_FILENAME)
+
         for (
             instrument_short_name
         ) in self.get_all_distinct_instrument_short_names_helper():
@@ -147,19 +148,12 @@ class OSCMode(PyshaMode):
             self.app.instruments[instrument_short_name] = Instrument(
                 instrument_short_name,
                 instrument_definition,
-                self.device_definitions_for(instrument_definition, device_definitions),
+                device_definitions,
                 get_current_instrument_color_helper=self.get_current_instrument_color_helper,
                 app=self.app,
+                initial_engine=track_engines.get(instrument_short_name),
+                m2k_device_definitions=m2k_device_definitions,
             )
-
-    @staticmethod
-    def device_definitions_for(instrument_definition, surge_device_definitions):
-        """The device pages for an instrument: Surge's, unless its engine has its own folder."""
-        engine_name = instrument_definition.get("engine", None)
-        folder = definitions.ENGINE_DEVICE_DEFINITION_FOLDERS.get(engine_name, None)
-        if folder is None:
-            return surge_device_definitions
-        return load_device_definitions(folder)
 
     def load_state(self):
         try:

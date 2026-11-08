@@ -164,7 +164,7 @@ def test_create_engine_picks_mono2k(app):
     assert isinstance(eng, engine.M2KEngine)
     assert eng.jack_client_name == "M2K"
     assert eng.output_port_names == ("track3_L", "track3_R")
-    assert engine.m2k_shared().tracks == {2: "Pushpin 2"}
+    assert engine.m2k_shared().tracks == {2: "Pushpin 2 m2k"}
 
 
 def test_create_engine_rejects_unknown_engine(app):
@@ -196,8 +196,8 @@ def test_m2k_tracks_share_one_m2k_jack(app, log_dir, monkeypatch):
         "pw-jack", "-p", "128", "/opt/m2k/m2k-jack",
         "--name", "M2K",
         "--enable", "2,5",
-        "--midi-connect", "2=Pushpin 1",
-        "--midi-connect", "5=Pushpin 4",
+        "--midi-connect", "2=Pushpin 1 m2k",
+        "--midi-connect", "5=Pushpin 4 m2k",
     )
     assert kwargs["stdin"] is asyncio.subprocess.PIPE
     assert (log_dir / "m2k.log").exists()

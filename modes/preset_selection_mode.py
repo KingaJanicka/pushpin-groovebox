@@ -143,6 +143,10 @@ class PresetSelectionMode(definitions.PyshaMode):
         self.send_osc("/patch/load", preset_path, instrument_shortname=instrument_shortname)
         # print("loading preset", preset_path)
         await asyncio.sleep(0.5)
+        if not getattr(instrument, "plays_surge", True):
+            # The patch went to the track's Surge; the pages showing are another
+            # engine's, and re-selecting them would reset its sound
+            return
         instrument.query_slots()
         await asyncio.sleep(0.5)
         instrument.update_current_devices()
@@ -473,6 +477,8 @@ class PresetSelectionMode(definitions.PyshaMode):
         query_slots() and update_current_devices() to let the OSC replies arrive.
         """
         instrument = self.app.instruments[instrument_shortname]
+        if not getattr(instrument, "plays_surge", True):
+            return  # the preset is Surge's; another engine's pages are showing
         instrument.query_slots()
         await asyncio.sleep(0.5)
         instrument.update_current_devices()

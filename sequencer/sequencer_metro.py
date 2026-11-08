@@ -330,7 +330,10 @@ class SequencerMetro(object):
                         else:
                             self.app.send_osc(control.address, float(control.value), instrument.name)
                     self.timeline.schedule(
-                        {"note": pitch_and_octave, "gate": gate, "amplitude": velocity}, count=1, output_device=self.midi_out_device
+                        {"note": pitch_and_octave, "gate": gate, "amplitude": velocity}, count=1,
+                        # the track's active engine's port (Surge's, or its mono2k port), looked up
+                        # each step so an engine switch takes effect on the next note
+                        output_device=instrument.midi_out_device
                     )
                     self.controls_to_reset.clear()
             
@@ -475,6 +478,14 @@ class SequencerMetro(object):
             
         selected_track = self.app.metro_sequencer_mode.selected_track
         return self.locks[index * 8][device_idx][parameter_idx]
+
+    def clear_all_locks(self):
+        """Every step's p-locks: they are stored by page position, so they
+        mean other parameters once the track plays another engine."""
+        for step_locks in self.locks:
+            for device_locks in step_locks:
+                for parameter_idx in range(len(device_locks)):
+                    device_locks[parameter_idx] = None
 
     def clear_all_locks_for_step(self, index):
         device = self.app.osc_mode.get_current_instrument_device()

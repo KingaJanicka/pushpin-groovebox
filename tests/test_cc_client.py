@@ -302,14 +302,8 @@ def test_generated_filter_page_has_fine_steps():
 # ------------------------------------------------------------- osc_mode choice
 
 
-def test_device_definitions_for_surge_is_the_shared_set():
-    surge = {"sine_1": {}}
-    assert OSCMode.device_definitions_for({"instrument_short_name": "Pushpin 0"}, surge) is surge
-
-
-def test_device_definitions_for_mono2k_load_in_page_order():
-    defs = OSCMode.device_definitions_for({"engine": "mono2k"}, {"sine_1": {}})
-    assert "sine_1" not in defs
+def test_load_device_definitions_is_in_page_order():
+    defs = load_device_definitions(M2K_DIR)
     assert list(defs)[0] == "00_machine_00"
     assert list(defs)[-4:] == ["40_dstr", "50_lfo1", "51_lfo2", "52_lfo3"]
 
@@ -329,25 +323,39 @@ M2K_INSTRUMENT = {
 }
 
 
-@pytest.fixture
-def m2k_instrument(app):
-    """A real Instrument on the mono2k engine, with the MIDI ports mocked out."""
+def make_instrument(app, definition=M2K_INSTRUMENT, m2k_built=True, **kwargs):
+    """A real Instrument with both voices (Surge with no pages, mono2k with its
+    generated ones) and every MIDI port mocked: returns it and its ports by name."""
     from modes.instrument import Instrument
 
     app.tempo = 120
-    midi_out = MagicMock(name="midi_out_device")
-    with patch("modes.instrument.iso") as iso, patch("modes.instrument.mido") as mido:
-        iso.MidiOutputDevice.return_value = midi_out
-        iso.get_midi_input_names.return_value = ["Pushpin 2 port"]
-        mido.get_input_names.return_value = ["Pushpin 2 port"]
+    ports = {}
+    with patch("modes.instrument.iso") as iso, patch("modes.instrument.mido") as mido, patch(
+        "engine.m2k_available", return_value=m2k_built
+    ):
+        iso.MidiOutputDevice.side_effect = lambda device_name, **kw: ports.setdefault(
+            device_name, MagicMock(name=device_name)
+        )
+        short = definition["instrument_short_name"]
+        iso.get_midi_input_names.return_value = [f"{short} port"]
+        mido.get_input_names.return_value = [f"{short} port"]
         instrument = Instrument(
-            "Pushpin 2",
-            M2K_INSTRUMENT,
-            load_device_definitions(M2K_DIR),
+            short,
+            definition,
+            {},
             get_current_instrument_color_helper=lambda: definitions.CYAN,
             app=app,
+            m2k_device_definitions=load_device_definitions(M2K_DIR),
+            **kwargs,
         )
-    return instrument, midi_out
+    return instrument, ports
+
+
+@pytest.fixture
+def m2k_instrument(app):
+    """A real Instrument playing its mono2k voice; returns it and the mono2k port."""
+    instrument, ports = make_instrument(app)
+    return instrument, ports["Pushpin 2 m2k"]
 
 
 def device(instrument, label):

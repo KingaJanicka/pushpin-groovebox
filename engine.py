@@ -1015,43 +1015,57 @@ def m2k_binary() -> str:
     return os.path.expanduser(os.environ.get(M2K_BINARY_ENV) or DEFAULT_M2K_BINARY)
 
 
+def m2k_available() -> bool:
+    """Whether m2k-jack is built (engines/m2k/build.sh), so tracks can play mono2k."""
+    path = m2k_binary()
+    return os.path.isfile(path) and os.access(path, os.X_OK)
+
+
+# A track's mono2k voice gets a MIDI port of its own beside the one Surge listens
+# to, so each engine only hears notes while it is the track's active one.
+M2K_PORT_SUFFIX = " m2k"
+
+
+def m2k_port_name(instrument_short_name: str) -> str:
+    return f"{instrument_short_name}{M2K_PORT_SUFFIX}"
+
+
 M2K_TRACKS = 8
 
 
 class M2KShared:
-    """The one m2k-jack process every mono2k track plays in.
+    """The one m2k-jack process every track's mono2k voice plays in.
 
     Each M2KEngine registers its track when it is built (all instruments are
     built before any engine starts); the first start() spawns m2k-jack with
-    every registered track connected to its instrument's MIDI port and turned
-    on. The other tracks stay off, so they make no sound.
+    every registered track connected to its MIDI port. A track whose active
+    engine is Surge sends nothing on that port, so its mono2k track is silent.
     """
 
     jack_client_name = "M2K"
 
     def __init__(self) -> None:
-        self.tracks: dict[int, str] = {}  # m2k track (0-7) -> instrument short name
+        self.tracks: dict[int, str] = {}  # m2k track (0-7) -> the MIDI port it listens to
         self.process: asyncio.subprocess.Process | None = None
         self._starting: asyncio.Lock | None = None
 
-    def register(self, track: int, instrument_short_name: str) -> None:
+    def register(self, track: int, midi_port_name: str) -> None:
         if not 0 <= track < M2K_TRACKS:
             raise ValueError(
-                f"{instrument_short_name}: mono2k has tracks 0-{M2K_TRACKS - 1}, not {track} "
+                f"{midi_port_name}: mono2k has tracks 0-{M2K_TRACKS - 1}, not {track} "
                 "(the track is the instrument's instrument_index)"
             )
         other = self.tracks.get(track)
-        if other is not None and other != instrument_short_name:
-            raise ValueError(f"mono2k track {track} is taken by {other}, not free for {instrument_short_name}")
-        self.tracks[track] = instrument_short_name
+        if other is not None and other != midi_port_name:
+            raise ValueError(f"mono2k track {track} is taken by {other}, not free for {midi_port_name}")
+        self.tracks[track] = midi_port_name
 
     def args(self, buffer_size: int) -> list[str]:
         args = ["pw-jack", "-p", f"{buffer_size}", m2k_binary(), "--name", self.jack_client_name]
         # m2k-jack's tracks count from 1
         args += ["--enable", ",".join(str(t + 1) for t in sorted(self.tracks)) or "none"]
-        for track, short_name in sorted(self.tracks.items()):
-            # The instrument's isobar port is named after the instrument
-            args += ["--midi-connect", f"{track + 1}={short_name}"]
+        for track, port_name in sorted(self.tracks.items()):
+            args += ["--midi-connect", f"{track + 1}={port_name}"]
         return args
 
     async def ensure_started(self, buffer_size: int) -> asyncio.subprocess.Process:
@@ -1080,15 +1094,16 @@ def reset_m2k_shared() -> None:
 
 
 class M2KEngine(SurgeXTEngine):
-    """One MONO2K track (engines/m2k/m2k-jack) in place of a Surge XT instance.
+    """One MONO2K track (engines/m2k/m2k-jack): a track's mono2k voice.
 
-    All mono2k tracks share one m2k-jack process: pushpin instrument N plays
-    its track N (the instrument_index), out of that track's own JACK ports
-    (trackN_L/R, counted from 1). Each track goes through the volume node the
-    way a Surge instance does; the process's shared reverb return (fx_L/R)
-    stays on the outputs it connected itself to. Its device pages
-    (engines/m2k/definitions) send MIDI CC through the instrument's
-    MidiCCClient instead of OSC.
+    All tracks share one m2k-jack process: pushpin instrument N plays its
+    track N (the instrument_index), out of that track's own JACK ports
+    (trackN_L/R, counted from 1), listening to the instrument's own mono2k
+    MIDI port ("<instrument> m2k"). Each track goes through the volume node
+    the way a Surge instance does; the process's shared reverb return
+    (fx_L/R) stays on the outputs it connected itself to. Its device pages
+    (engines/m2k/definitions) send MIDI CC through the voice's MidiCCClient
+    instead of OSC.
     """
 
     def __init__(
@@ -1113,7 +1128,8 @@ class M2KEngine(SurgeXTEngine):
         self.jack_client_name = M2KShared.jack_client_name
         self.output_port_names = (f"track{self.track + 1}_L", f"track{self.track + 1}_R")
         self.input_port_names = ()
-        m2k_shared().register(self.track, self.instrument["instrument_short_name"])
+        self.midi_port_name = m2k_port_name(self.instrument["instrument_short_name"])
+        m2k_shared().register(self.track, self.midi_port_name)
 
     control_transport = "midi-cc"
     # m2k-jack takes parameter values as 14-bit NRPN (its core keeps 1/256 of a
@@ -1144,6 +1160,9 @@ ENGINES: dict[str, type[Engine]] = {
     "mono2k": M2KEngine,
 }
 DEFAULT_ENGINE = "surge-xt-cli"
+MONO2K_ENGINE = "mono2k"
+# What the ADD TRACK menu calls each engine
+ENGINE_LABELS = {"surge-xt-cli": "Surge XT", "mono2k": "Monomachine"}
 
 
 def create_engine(app, instrument_definition, midi_device_idx) -> Engine:
