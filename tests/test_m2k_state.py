@@ -373,3 +373,80 @@ def test_long_press_opens_the_browser_on_surge_tracks_too(app, tmp_path, monkeyp
     press_and_hold(mode, 0, 1.0)
     assert mode.browser_active is True
     assert mode.browser_tree() is mode.patches
+
+
+# ------------------------------------------- LFOs and the MOD effect, saved and recalled
+
+def page(instrument, label):
+    return next(d for slot in instrument.devices for d in slot if d.label == label)
+
+
+# every LFO parameter (TRCK DEST WAVE TRIG MULT SPD PHAS DPTH, three times) and MOD TYPE RATE DPTH MIX
+LFO_AND_MOD_EDITS = {
+    42: 3.0, 43: 18.0, 44: 5.0, 45: 2.0, 46: 7.0, 47: 99.0, 48: 31.0, 49: 20.0,     # LFO 1: TRK 3 -> FILT WDTH
+    50: 8.0, 51: 54.0, 52: 1.0, 53: 3.0, 54: 4.0, 55: 12.0, 56: 64.0, 57: 100.0,    # LFO 2: TRK 8 -> LFO 2 TRIG
+    58: 0.0, 59: 2.0, 60: 9.0, 61: 1.0, 62: 2.0, 63: 77.0, 64: 0.0, 65: 64.0,       # LFO 3: OWN -> SYN SUB
+    66: 106.0, 67: 40.0, 68: 90.0, 69: 70.0,                                          # MOD: PHAS
+}
+
+
+def edit(instrument, sounds, edits):
+    client = instrument.osc["client"]
+    for param, value in edits.items():
+        client.send_message(sounds.address(param), value)
+
+
+def test_lfo_and_mod_params_are_saved_and_recalled_with_the_slot(browser):
+    mode, instrument, port, _ = browser
+    edit(instrument, mode.m2k_sounds, LFO_AND_MOD_EDITS)
+    mode.on_pad_pressed(None, (1, 0), 100)                            # slot 1: slot 0 is saved
+    saved = json.load(open(slot_file(mode, 0)))["params"]
+    assert {p: saved[p] for p in LFO_AND_MOD_EDITS} == LFO_AND_MOD_EDITS
+    other = m2k_state.capture(instrument.osc["client"], mode.m2k_sounds).params
+    assert all(other[p] != v for p, v in LFO_AND_MOD_EDITS.items() if p in (42, 43, 49, 66))
+
+    mode.on_pad_pressed(None, (0, 0), 100)                            # back: every value is sent again...
+    captured = m2k_state.capture(instrument.osc["client"], mode.m2k_sounds).params
+    assert {p: captured[p] for p in LFO_AND_MOD_EDITS} == LFO_AND_MOD_EDITS
+
+    lfo1, lfo2, lfo3 = page(instrument, "LFO 1"), page(instrument, "LFO 2"), page(instrument, "LFO 3")
+    # ...and the pages show them: the DEVICE switch, its DEST menu and TRCK
+    for lfo, device, dest, trck in ((lfo1, "FILT", "WDTH", "TRK 3"), (lfo2, "LFO 2", "TRIG", "TRK 8"),
+                                     (lfo3, "SYN", "SUB", "OWN")):
+        switch = lfo.controls[0]
+        assert switch.get_active_group().label == device, lfo.label
+        assert switch.get_active_group().controls[0].get_active_menu_item().label == dest, lfo.label
+        assert lfo.controls[-1].get_active_menu_item().label == trck, lfo.label
+    assert lfo1.controls[6].value == 20.0 and lfo2.controls[4].value == 12.0   # DPTH, SPD
+    dstr = page(instrument, "DSTR")
+    assert dstr.controls[4].get_active_menu_item().label == "PHAS"
+    assert [c.value for c in dstr.controls[5:]] == [40.0, 90.0, 70.0]
+
+
+def test_a_p_lock_playing_while_saving_isnt_saved(browser):
+    """The sequencer sends a lock through the same client; the slot keeps the knob's own value."""
+    mode, instrument, port, _ = browser
+    seq = MagicMock()
+    mode.app.metro_sequencer_mode.instrument_sequencers = {"Pushpin 2": seq}
+    lfo1, dstr = page(instrument, "LFO 1"), page(instrument, "DSTR")
+    depth, mod_type = lfo1.controls[6], dstr.controls[4]
+    client = instrument.osc["client"]
+    client.send_message("/cc/95", 20.0)
+    client.send_message("/m2k/param/66", 21.0)                        # CHOR
+    seq.controls_to_reset = [(depth, depth.value), (mod_type, mod_type.value)]
+    client.send_message("/cc/95", 120.0)                              # the locks, playing
+    client.send_message("/m2k/param/66", 106.0)
+    mode.save_m2k_slot(instrument)
+    saved = json.load(open(slot_file(mode, 0)))["params"]
+    assert saved[49] == 20.0 and saved[66] == 21.0
+
+
+def test_old_files_with_a_raw_lfo_track_load_as_own_track(tmp_path):
+    """Before TRCK was on a page, slots saved the INIT's raw MONO2K value (10: track 1)."""
+    sounds = M2KSounds.load(user_folder=str(tmp_path))
+    params = list(sounds.machines[0]["kit"])
+    params[42], params[50], params[58] = 10, 10, 5
+    path = tmp_path / "old.json"
+    path.write_text(json.dumps({"format": 1, "engine": "mono2k", "machine": 0, "params": params}))
+    sound = sounds.read(str(path))
+    assert (sound.params[42], sound.params[50], sound.params[58]) == (0.0, 0.0, 5.0)

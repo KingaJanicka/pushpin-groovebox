@@ -32,6 +32,7 @@ logger = logging.getLogger("m2k_state")
 SOUNDS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "engines", "m2k", "sounds.json")
 MACHINE_ADDRESS = "/cc/14"
 FORMAT = 1
+LFO_TRACKS = 8                             # TRCK: 0 the LFO's own track, 1-8 track 1-8
 
 # The preset browser's top level for a mono2k track; a sound's id is its path
 # in the tree ("Factory/KICK/BOOM808", "Machines/GND-SIN", "User/my bass").
@@ -105,7 +106,17 @@ class M2KSounds:
                 full[i] = float(v)
             except (TypeError, ValueError):
                 pass
+        for i in self.lfo_track_params:
+            # Before TRCK had a page, files kept MONO2K's own raw value (the
+            # INIT's 10, track 1, for every track); pushpin's TRCK is 0 (the
+            # LFO's own track) or 1-8, so anything else means the old default.
+            if i < len(full) and not 0 <= full[i] <= LFO_TRACKS:
+                full[i] = 0.0
         return full
+
+    @property
+    def lfo_track_params(self) -> list[int]:
+        return [i for i, label in enumerate(self.labels) if label == "TRCK"]
 
     def sound_from_json(self, data: Any) -> Sound | None:
         try:
@@ -193,8 +204,11 @@ class M2KSounds:
 # ---------------------------------------------------------------- the voice
 
 
-def capture(client: Any, catalogue: M2KSounds) -> Sound | None:
-    """The sound a mono2k voice's client last sent, or None before any machine."""
+def capture(client: Any, catalogue: M2KSounds, unlocked: dict[str, float] | None = None) -> Sound | None:
+    """The sound a mono2k voice's client last sent, or None before any machine.
+
+    ``unlocked`` (address -> value) wins over what was sent: the values the
+    sequencer's p-locks playing now will go back to, so a lock isn't saved."""
     values: dict[str, float] = getattr(client, "values", {})
     if MACHINE_ADDRESS not in values:
         return None
@@ -206,6 +220,8 @@ def capture(client: Any, catalogue: M2KSounds) -> Sound | None:
         address = catalogue.address(p)
         if address in values:
             params[p] = float(values[address])
+        if unlocked and address in unlocked:
+            params[p] = float(unlocked[address])
     return Sound(machine, params, catalogue.machines[machine]["name"])
 
 

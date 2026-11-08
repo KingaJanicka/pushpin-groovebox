@@ -141,7 +141,7 @@ class PresetSelectionMode(definitions.PyshaMode):
         if self.m2k_sounds is None:
             return
         slot = self.current_slot(instrument.name) if slot is None else slot
-        sound = m2k_state.capture(instrument.osc["client"], self.m2k_sounds)
+        sound = m2k_state.capture(instrument.osc["client"], self.m2k_sounds, self.unlocked_values(instrument.name))
         if sound is None:
             return
         try:
@@ -149,6 +149,24 @@ class PresetSelectionMode(definitions.PyshaMode):
             self._m2k_saved[instrument.name] = (slot, sound.params, sound.machine)
         except OSError as e:
             log.warning("could not save %s slot %s: %s", instrument.name, slot, e)
+
+    def unlocked_values(self, instrument_short_name):
+        """address -> value for the track's p-locks playing now: what each
+        locked control goes back to after its step (the sound's own value)."""
+        try:
+            sequencer = self.app.metro_sequencer_mode.instrument_sequencers[instrument_short_name]
+            resets = list(sequencer.controls_to_reset)
+        except (AttributeError, KeyError, TypeError):
+            return {}
+        from sequencer.sequencer_metro import lock_message      # (it imports the modes)
+        values = {}
+        for control, unlocked in resets:
+            if getattr(control, "name", None) == "Switch" or unlocked is None:
+                continue
+            address, value = lock_message(control, unlocked)
+            if address is not None and value is not None:
+                values[address] = float(value)
+        return values
 
     def load_m2k_slot(self, instrument, slot):
         """Play the track's slot on its mono2k voice: the saved sound, or for an
@@ -186,7 +204,7 @@ class PresetSelectionMode(definitions.PyshaMode):
             instrument = self.m2k_instrument(name)
             if instrument is None:
                 continue
-            sound = m2k_state.capture(instrument.osc["client"], self.m2k_sounds)
+            sound = m2k_state.capture(instrument.osc["client"], self.m2k_sounds, self.unlocked_values(name))
             if sound is None:
                 continue
             if self._m2k_saved.get(name) != (self.current_slot(name), sound.params, sound.machine):
