@@ -198,8 +198,11 @@ mono2k's own sounds:
   also saved when you leave the browser or switch the track's engine, and every
   5 seconds while it changes, so a power cut loses at most that much. At startup
   each mono2k track gets its current slot back.
-- **Browsing.** Hold SELECT and press a slot's pad, keep the pad held and turn
-  the encoders (one per level of the tree). The tree is **Factory**
+- **Browsing.** Hold a slot's pad for half a second (or hold SELECT and press
+  the pad, which opens it at once), keep the pad held and turn the encoders (one
+  per level of the tree). Opened by a long press, releasing the pad loads a
+  sound only if you turned an encoder, so holding a pad and letting go never
+  replaces the slot's sound. The tree is **Factory**
   (MONO2K's 96-sound library, by category: KICK SNARE HATS PERC BASS LEAD PAD FX),
   **Machines** (each machine's INIT) and **User**. Releasing the pad loads the
   highlighted sound into the slot; the slot's name is kept in `m2k_presets.json`.

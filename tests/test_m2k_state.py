@@ -292,3 +292,84 @@ def test_surge_tracks_are_untouched(app, tmp_path, monkeypatch):
     mode.save_all_presets_to_state()
     assert not os.path.exists(mode.m2k_state_folder)
     ports["Pushpin 2 m2k"].control.assert_not_called()
+
+
+# ------------------------------------------------- long press opens the browser
+
+import time as _time
+from modes import preset_selection_mode as _psm
+
+
+def press_and_hold(mode, slot, seconds):
+    mode.app.steps_held = []
+    mode.on_pad_pressed(None, (slot, 0), 100)
+    mode.check_for_delayed_actions(now=mode._pad_down_at + seconds)
+
+
+def test_long_press_opens_the_browser_after_half_a_second(browser):
+    mode, _, _, _ = browser
+    press_and_hold(mode, 0, _psm.PAD_LONG_PRESS_SECONDS - 0.1)
+    assert mode.browser_active is False
+    mode.check_for_delayed_actions(now=_time.monotonic() + 1)
+    assert mode.browser_active is True
+
+
+def test_long_press_then_release_without_browsing_keeps_the_slot(browser):
+    mode, instrument, _, _ = browser
+    instrument.osc["client"].send_message("/cc/73", 44.0)            # an edit to keep
+    press_and_hold(mode, 0, 1.0)
+    mode.current_address = "Factory/KICK/BOOM808"                     # whatever the browser shows
+    mode.on_pad_released(None, (0, 0), 0)
+    captured = m2k_state.capture(instrument.osc["client"], mode.m2k_sounds)
+    assert captured.machine == 0 and captured.params[17] == 44.0
+    assert mode.m2k_presets["Pushpin 2"][0] is None
+    assert mode.browser_active is False
+
+
+def test_long_press_browse_and_release_loads_the_sound(browser):
+    mode, instrument, _, _ = browser
+    press_and_hold(mode, 0, 1.0)
+    mode.on_encoder_rotated(B.ENCODER_TRACK3_ENCODER, 1)
+    mode.current_address = "Factory/KICK/BOOM808"
+    mode.on_pad_released(None, (0, 0), 0)
+    assert m2k_state.capture(instrument.osc["client"], mode.m2k_sounds).machine == 15
+    assert mode.m2k_presets["Pushpin 2"][0] == "Factory/KICK/BOOM808"
+
+
+def test_select_and_pad_still_load_on_release(browser):
+    mode, instrument, _, _ = browser
+    mode.app.steps_held = []
+    mode.on_button_pressed(B.BUTTON_SELECT)
+    mode.on_pad_pressed(None, (0, 0), 100)
+    assert mode.browser_active is True                                # at once, as before
+    mode.current_address = "Factory/KICK/BOOM808"
+    mode.on_pad_released(None, (0, 0), 0)
+    assert m2k_state.capture(instrument.osc["client"], mode.m2k_sounds).machine == 15
+
+
+def test_a_short_press_never_opens_the_browser(browser):
+    mode, _, _, _ = browser
+    mode.app.steps_held = []
+    mode.on_pad_pressed(None, (1, 0), 100)
+    mode.on_pad_released(None, (1, 0), 0)
+    mode.check_for_delayed_actions(now=_time.monotonic() + 10)
+    assert mode.browser_active is False
+
+
+def test_long_press_opens_the_browser_on_surge_tracks_too(app, tmp_path, monkeypatch):
+    definition = dict(M2K_INSTRUMENT)
+    definition.pop("engine")
+    instrument, _ = make_instrument(app, definition=definition)
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr("modes.preset_selection_mode.glob", lambda *a, **k: [])
+    app.instruments = {"Pushpin 2": instrument}
+    ism = app.instrument_selection_mode
+    ism.get_all_distinct_instrument_short_names.return_value = ["Pushpin 2"]
+    ism.get_current_instrument_short_name.return_value = "Pushpin 2"
+    ism.selected_instrument = 0
+    app.osc_mode.get_current_instrument_devices.return_value = []
+    mode = PresetSelectionMode(app, settings=None)
+    mode.update_pads = lambda: None
+    press_and_hold(mode, 0, 1.0)
+    assert mode.browser_active is True
+    assert mode.browser_tree() is mode.patches

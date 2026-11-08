@@ -17,6 +17,8 @@ log = logging.getLogger("preset_selection_mode")
 # mono2k tracks' current slots are saved this often (seconds) when they changed,
 # so a power cut loses at most that much of a sound's edits
 M2K_AUTOSAVE_SECONDS = 5.0
+# Holding a slot's pad this long (seconds) opens the browser, as SELECT + pad does
+PAD_LONG_PRESS_SECONDS = 0.5
 
 # log.setLevel(level=logging.DEBUG)
 
@@ -35,6 +37,13 @@ class PresetSelectionMode(definitions.PyshaMode):
     current_address = None
     select_button_held = False
     browser_active = False
+    # A pad held without SELECT opens the browser after PAD_LONG_PRESS_SECONDS.
+    # Opened that way, releasing the pad loads a sound only once an encoder has
+    # moved the browser: it opens on the slot's own preset, and just holding and
+    # letting go must not reload that over the slot's edits.
+    _pad_down_at = None
+    _opened_by_long_press = False
+    _browsed = False
     # mono2k: each track's slot names (browser ids), its sound catalogue, and
     # what was last saved for each track (to autosave only changes)
     m2k_presets = {}
@@ -566,6 +575,10 @@ class PresetSelectionMode(definitions.PyshaMode):
 
         if self.select_button_held:
             self.browser_active = True
+            self._opened_by_long_press = False
+            self._pad_down_at = None
+        else:
+            self._pad_down_at = time.monotonic()
 
         # Resets the last knob position on the mod matrix
         # to avoid indexing OOB when switching presets
@@ -576,6 +589,24 @@ class PresetSelectionMode(definitions.PyshaMode):
                 device.controls[7] = 0
 
         return True  # Prevent other modes to get this event
+
+    def check_for_delayed_actions(self, now=None):
+        """A slot's pad held long enough opens the browser."""
+        if self._pad_down_at is None or self.browser_active or not self.app.steps_held:
+            return
+        now = time.monotonic() if now is None else now
+        if now - self._pad_down_at >= PAD_LONG_PRESS_SECONDS:
+            self._pad_down_at = None
+            self.browser_active = True
+            self._opened_by_long_press = True
+            self._browsed = False
+            self.set_knob_postions()
+
+    def browser_choice_wanted(self):
+        """Whether releasing the pad should load the browsed sound into the slot."""
+        if not (self.browser_active and self.current_address):
+            return False
+        return self._browsed or not self._opened_by_long_press
 
     def set_pad_preset_slot(self, pad_ij):
         """Load the browsed preset into the selected slot on long press.
@@ -588,7 +619,7 @@ class PresetSelectionMode(definitions.PyshaMode):
 
                 m2k_instrument = self.m2k_instrument(instrument_shortname)
                 if m2k_instrument is not None:
-                    if not (self.browser_active and self.current_address):
+                    if not self.browser_choice_wanted():
                         return False
                     sound = self.m2k_sounds.resolve(self.current_address)
                     if sound is None:
@@ -599,7 +630,7 @@ class PresetSelectionMode(definitions.PyshaMode):
                     self.save_m2k_presets()
                     return True
 
-                if self.browser_active and self.current_address:
+                if self.browser_choice_wanted():
                     # Load the chosen preset into Surge XT
                     self.send_osc("/patch/load", self.current_address, instrument_shortname=instrument_shortname)
                     time.sleep(0.5)
@@ -662,6 +693,9 @@ class PresetSelectionMode(definitions.PyshaMode):
         idx_j = pad_ij[1]
         self.app.steps_held.remove(idx_j)
         self.browser_active = False
+        self._pad_down_at = None
+        self._opened_by_long_press = False
+        self._browsed = False
 
         return True  # Prevent other modes to get this event
 
@@ -950,6 +984,8 @@ class PresetSelectionMode(definitions.PyshaMode):
             return True
 
     def on_encoder_rotated(self, encoder_name, increment):
+        if self.browser_active:
+            self._browsed = True
         try:
             encoder_idx = [
                 push2_python.constants.ENCODER_TRACK1_ENCODER,
