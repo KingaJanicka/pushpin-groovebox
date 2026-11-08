@@ -944,6 +944,10 @@ class M2KEngine(SurgeXTEngine):
         self.machine = self.instrument.get("m2k_machine", None)
 
     control_transport = "midi-cc"
+    # m2k-jack takes parameter values as 14-bit NRPN (its core keeps 1/256 of a
+    # step); these CCs are switches and stay plain 7-bit
+    nrpn = True
+    PLAIN_CCS = frozenset({3, 14, 120, 123})  # mute, machine, all sound/notes off
     # m2k-jack's machine-select CC; engines/m2k/definitions' slot-0 devices select on it
     MACHINE_ADDRESS = "/cc/14"
 

@@ -60,6 +60,9 @@ class OSCControl(object):
         self.send_osc_func: OscSendFunc = send_osc_func or (lambda addr, val: None)
         self.log = logger.getChild(f"{self.label}:Range")
         self.bipolar: bool = config.get("bipolar", False)
+        # Optional: how far one encoder click moves the value, in the control's
+        # own units. Without it a click is (max - min) / SCALING_FACTOR.
+        self.step: float | None = config.get("step", None)
 
     def query(self) -> None:
         self.send_osc_func("/q" + self.address, None)
@@ -345,7 +348,10 @@ class OSCControl(object):
         # self.string = string
 
     def update_value(self, increment: float, **kwargs: Any) -> None:
-        scaled = scale_value(increment, self.min, self.max)
+        if self.step is not None:
+            scaled = round(increment * self.step, DECIMAL_PLACES)
+        else:
+            scaled = scale_value(increment, self.min, self.max)
         if self.value + scaled > self.max:
             self.value = self.max
         elif self.value + scaled < self.min:

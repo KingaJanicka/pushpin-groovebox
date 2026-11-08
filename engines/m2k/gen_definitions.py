@@ -40,13 +40,17 @@ PAGES = {
 }
 # A process plays one track, so an LFO can only modulate its own: TRCK stays as INIT sets it.
 HIDDEN_LABELS = {"TRCK", "-"}
+# Frequencies whose one step is 1/8 octave: half a step per encoder click (m2k-jack takes 14-bit NRPN
+# and glides between values, so the in-between values are heard)
+FINE_STEP = 0.5
+FINE_STEP_LABELS = {("FILT", "BASE"), ("FILT", "WDTH"), ("FX", "EQF"), ("FX", "DBAS")}
 
 
 def cc_address(cc: int) -> str:
     return f"/cc/{cc}"
 
 
-def control(cc: int, param: dict) -> dict:
+def control(cc: int, param: dict, page: str | None = None) -> dict:
     if param["label"] in HIDDEN_LABELS:
         return {"$type": "control-spacer"}
     c = {
@@ -58,6 +62,8 @@ def control(cc: int, param: dict) -> dict:
     }
     if param["bipolar"]:
         c["bipolar"] = 1
+    if (page, param["label"]) in FINE_STEP_LABELS:
+        c["step"] = FINE_STEP
     return c
 
 
@@ -82,7 +88,7 @@ def page_devices(params: list[dict]) -> dict[str, dict]:
             "name": name,
             "slot": slot,
             "init": [],
-            "controls": [control(p["cc"], p["param"]) for p in params if p["page"] == page],
+            "controls": [control(p["cc"], p["param"], page) for p in params if p["page"] == page],
         }
     return devices
 

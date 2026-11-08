@@ -50,6 +50,7 @@ One process plays one MONO2K track. All MIDI channels are folded onto it.
 | **CC 14** | machine, value = number from `--list-machines`; loads that machine's INIT sound (pushpin's addition) |
 | **CC 16–20** | DSTR: BITS FOLD XOR, reverb send, track pitch (pushpin's addition) |
 | CC 120, 123 | all sound off / all notes off |
+| NRPN 0:*n* | the parameter on CC *n* at 14 bits: CC 99 = 0, CC 98 = *n*, CC 6 = whole value, CC 38 = fraction × 128 (pushpin sends this) |
 | clock, start, stop | ignored (pushpin sequences; MONO2K's sequencer stays stopped) |
 
 ## Known limits of the spike
@@ -58,12 +59,43 @@ One process plays one MONO2K track. All MIDI channels are folded onto it.
   the Pi), which loses a little treble.
 - MIDI is applied with sample accuracy, but the core only reads parameters every
   16 samples.
+
+## Resolution and smoothing
+
+MONO2K stores every parameter as 0–127, and one step of FILT BASE or WDTH moves
+the cutoff 1/8 octave (1.5 semitones). On its own the core applies a new value
+at the next 16-sample block with no smoothing, so a knob turned through the
+filter is heard as steps. m2k-jack fixes that:
+
+- **Finer values.** `patches/0001-fine-parameter-offset.patch` adds a
+  `fine` offset to each parameter, which the core's `P8()` adds in 1/256 of a
+  step (the resolution its LFOs already use). `build.sh` applies the patches to
+  a copy of the source in `build/mono2k/`, so neither `vendor/` nor `M2K_SRC`
+  is changed. NRPN values reach the sound at 1/128 of a step.
+- **Glide.** A new value is approached with a one-pole glide, `--glide-ms`
+  (default 20; 0 turns it off), updated every block. Measured on a WDTH sweep
+  sent one step every 30 ms, the largest cutoff change per 16-sample block went
+  from 150 cents to 3.5 cents.
+- **P-locks stay sharp.** A value that arrives within `--snap-ms` (default 10)
+  of a note-on, before or after it, is set at once, so pushpin's p-locks are
+  heard on their note and not glided into.
+- **Choices never glide.** Waves, modes, LFO destinations and other choices
+  jump straight to the new choice.
+- `--render ... --trace-param P` writes parameter P as the DSP reads it, once
+  per block, to stderr (P is MONO2K's parameter number, e.g. 17 = WDTH).
+
+On the pushpin side, `MidiCCClient` sends mono2k parameters as NRPN, so a
+control's fractional value isn't rounded, and the filter and EQ frequency
+controls (BASE, WDTH, EQF, DBAS) move half a step per encoder click (`"step"`
+in their definitions).
 - MONO2K's lofi bus (reverb, tape) runs inside every process with the factory
   defaults. Only the track's reverb send has a CC (19); the bus itself has none.
 - Not yet tested: the JACK path on the Pi. It builds only where JACK headers
   exist; on macOS it was checked against stub headers only.
 - Presets don't work on m2k tracks: pushpin's preset code sends Surge's
   `/patch/...` commands, which the CC client ignores.
+- The snap window can misfire: a knob move that happens within 10 ms of a
+  sequenced note is set at once rather than glided.
 - Choosing a machine always loads its INIT sound (AMP, FILT, FX and LFOs too),
   because pushpin can't read values back from m2k-jack and needs to know them.
 - Parameters with a few discrete choices (LFO WAVE, SID WAVE, ...) are plain

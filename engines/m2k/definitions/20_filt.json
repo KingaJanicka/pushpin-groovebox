@@ -8,14 +8,16 @@
 			"label": "BASE",
 			"address": "/cc/72",
 			"min": 0,
-			"max": 127
+			"max": 127,
+			"step": 0.5
 		},
 		{
 			"$type": "control-range",
 			"label": "WDTH",
 			"address": "/cc/73",
 			"min": 0,
-			"max": 127
+			"max": 127,
+			"step": 0.5
 		},
 		{
 			"$type": "control-range",

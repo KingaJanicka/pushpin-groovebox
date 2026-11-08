@@ -22,13 +22,20 @@
  *   CC 14        machine (its number from --list-machines); loads the machine's INIT sound
  *   CC 16-20     DSTR: BITS FOLD XOR, reverb send (VERB), track pitch (PTCH)
  *   CC 120, 123  all sound off / all notes off
+ *   NRPN 0:<cc>  (CC 99 = 0, CC 98 = the parameter's CC number, then CC 6 = value, CC 38 = fine): the same
+ *                parameter at 14 bits. The core keeps 1/256 of a step, so 7 of those bits reach the sound.
  *   Clock, start, stop and other system messages are dropped: pushpin sequences,
  *   MONO2K's own sequencer stays stopped.
  *
  * The core runs at 44.1 kHz; the output is resampled (linear) to the JACK rate.
  *
+ * Parameters glide to a new value over --glide-ms (one pole, default 20 ms), at the core's 1/256 of a step
+ * (a patch adds trk_t.fine to the core's P8()), so a knob turned through MONO2K's 1/8-octave filter steps
+ * sweeps instead of stepping. A change that lands within --snap-ms (default 10 ms) of a note-on, as
+ * pushpin's p-locks do, is set at once. Choices (waves, modes, LFO destinations) always snap.
+ *
  * Usage:
- *   m2k-jack [--name NAME] [--machine N] [--midi-connect SUBSTR] [--no-audio-connect]
+ *   m2k-jack [--name NAME] [--machine N] [--midi-connect SUBSTR] [--no-audio-connect] [--glide-ms MS] [--snap-ms MS]
  *   m2k-jack --render OUT.wav [--rate HZ] [--machine N] [--script FILE]
  *   m2k-jack --list-machines
  *   m2k-jack --describe          every machine's parameters and INIT sound as JSON
@@ -43,6 +50,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <math.h>
 
 #include "m2k_core.c"
 
@@ -67,6 +75,103 @@ static const pp_ccmap_t PP_CC[] = {
 };
 #define PP_NCC ((int)(sizeof PP_CC / sizeof PP_CC[0]))
 
+/* ------------------------------------------------------- parameters, smoothed */
+
+/* each parameter as 0..127*256 (the core's P8 scale): where it is going and where it is heard. The kit keeps the
+ * whole part of the target (a note-on copies the kit into eff), trk_t.fine carries the rest and the glide */
+static int32_t pp_target[P_COUNT], pp_cur[P_COUNT];
+static uint8_t pp_moving[P_COUNT];
+static uint32_t pp_set_at[P_COUNT], pp_note_at;
+static int pp_have_note;
+static int32_t pp_glide_k = 0;          /* per 16-sample block, Q16; 0: no glide */
+static uint32_t pp_snap = M2K_SR / 100;
+
+static void pp_set_glide(double ms)
+{
+    if (ms <= 0) { pp_glide_k = 0; return; }
+    const double k = 1.0 - exp(-(double)M2K_SUB / (ms * 0.001 * M2K_SR));
+    pp_glide_k = (int32_t)(k * 65536.0 + 0.5);
+    if (pp_glide_k < 1) pp_glide_k = 1;
+}
+
+static void pp_params_reset(void)
+{
+    const uint8_t *kit = PAT(cur_pat)->kit[TRACK];
+    for (int p = 0; p < P_COUNT; p++) {
+        pp_target[p] = pp_cur[p] = kit[p] * 256;
+        pp_moving[p] = 0;
+        trk[TRACK].fine[p] = 0;
+    }
+}
+
+/* a choice (a wave, a mode, a destination): never through the values between */
+static int pp_discrete(int param)
+{
+    const int kind = pinfo(TRACK, param)->kind;
+    return kind_choices(kind) != 0 || kind == K_DEST || kind == K_TRK;
+}
+
+static void pp_apply(int param)
+{
+    trk[TRACK].fine[param] = pp_cur[param] - trk[TRACK].eff[param] * 256;
+}
+
+static void pp_snap_param(int param)
+{
+    pp_cur[param] = pp_target[param];
+    pp_moving[param] = 0;
+    pp_apply(param);
+}
+
+static void pp_set_param(int param, int32_t q8)
+{
+    const int32_t top = (param == P_LFO + L_DEST || param == P_LFO + 8 + L_DEST || param == P_LFO + 16 + L_DEST)
+                            ? P_COUNT * 256 : 127 * 256;
+    q8 = CLAMP(q8, 0, top);
+    if (pp_discrete(param)) q8 &= ~255;
+    const uint8_t whole = (uint8_t)(q8 >> 8);
+    PAT(cur_pat)->kit[TRACK][param] = whole;
+    trk[TRACK].eff[param] = whole;
+    pp_target[param] = q8;
+    pp_set_at[param] = m2k_samples();
+    if (!pp_glide_k || pp_discrete(param) || (pp_have_note && m2k_samples() - pp_note_at <= pp_snap))
+        pp_snap_param(param);
+    else {
+        pp_moving[param] = 1;
+        pp_apply(param);                /* (eff moved under it: heard where it was) */
+    }
+}
+
+/* a note-on: what was set just before it (a p-lock) is heard on it, not glided into */
+static void pp_note_on(void)
+{
+    const uint32_t now = m2k_samples();
+    pp_note_at = now;
+    pp_have_note = 1;
+    for (int p = 0; p < P_COUNT; p++)
+        if (pp_moving[p] && now - pp_set_at[p] <= pp_snap) pp_snap_param(p);
+}
+
+/* a note-on copies the kit into eff, so fine is set again after every MIDI message too */
+static void pp_glide_block(void)
+{
+    for (int p = 0; p < P_COUNT; p++) {
+        if (!pp_moving[p]) { pp_apply(p); continue; }
+        const int32_t d = pp_target[p] - pp_cur[p];
+        int32_t step = (int32_t)(((int64_t)d * pp_glide_k) >> 16);
+        if (step == 0) step = d > 0 ? 1 : -1;
+        if (d > -2 && d < 2) pp_snap_param(p);
+        else { pp_cur[p] += step; pp_apply(p); }
+    }
+}
+
+static int pp_param_of_cc(int cc)
+{
+    for (int i = 0; i < PP_NCC; i++)
+        if (PP_CC[i].cc == cc) return PP_CC[i].param;
+    return -1;
+}
+
 /* machine m on the track with its whole INIT sound: the same sound whatever was there before, so pushpin,
  * which hears nothing back, knows every parameter's value after a machine change */
 static void pp_set_machine(int m)
@@ -78,6 +183,7 @@ static void pp_set_machine(int m)
     p->machine[TRACK] = (uint8_t)m;
     m_cpy(trk[TRACK].eff, p->kit[TRACK], P_COUNT);
     track_home(TRACK, mach_home(m));
+    pp_params_reset();
 }
 
 static void pp_engine_init(int machine)
@@ -150,6 +256,25 @@ static void pp_all_notes_off(void)
     voice_off(TRACK);
 }
 
+/* NRPN: the parameter chosen (CC 99, CC 98: 0 and a CC number), its value's coarse part (CC 6) */
+static int pp_nrpn_param = -1, pp_nrpn_msb = 0, pp_nrpn_hi = 127;
+
+static void pp_nrpn_cc(int cc, int v)
+{
+    switch (cc) {
+    case 99: pp_nrpn_hi = v; pp_nrpn_param = -1; break;
+    case 98: pp_nrpn_param = pp_nrpn_hi == 0 ? pp_param_of_cc(v) : -1; break;
+    case 101: case 100: pp_nrpn_param = -1; break;           /* an RPN: not ours */
+    case 6:
+        pp_nrpn_msb = v;
+        if (pp_nrpn_param >= 0) pp_set_param(pp_nrpn_param, v * 256);
+        break;
+    case 38:
+        if (pp_nrpn_param >= 0) pp_set_param(pp_nrpn_param, pp_nrpn_msb * 256 + v * 2);
+        break;
+    }
+}
+
 /* one MIDI message from pushpin; called from the audio thread only */
 static void pp_handle_midi(const uint8_t *m, size_t n)
 {
@@ -161,29 +286,32 @@ static void pp_handle_midi(const uint8_t *m, size_t n)
     if (cmd == 0xB0) {
         if (d1 == CC_MACHINE) { pp_set_machine(d2); return; }
         if (d1 == 120 || d1 == 123) { pp_all_notes_off(); return; }
-        if (d1 >= 16 && d1 <= 20) {                     /* pushpin's: parameters the Monomachine's map leaves out */
-            for (int i = 0; i < PP_NCC; i++)
-                if (PP_CC[i].cc == d1) {
-                    PAT(cur_pat)->kit[TRACK][PP_CC[i].param] = (uint8_t)d2;
-                    trk[TRACK].eff[PP_CC[i].param] = (uint8_t)d2;
-                }
-            return;
-        }
+        if (d1 == 99 || d1 == 98 || d1 == 101 || d1 == 100 || d1 == 6 || d1 == 38) { pp_nrpn_cc(d1, d2); return; }
+        const int param = pp_param_of_cc(d1);
+        if (param >= 0) { pp_set_param(param, d2 * 256); return; }
     }
+    if (cmd == 0x90 && d2) pp_note_on();
     if (cmd == 0x80 || cmd == 0x90 || cmd == 0xB0)
         m2k_midi(cmd | ((midi_ch() + TRACK) & 15), d1, d2);
+    if (cmd == 0x90) for (int p = 0; p < P_COUNT; p++) pp_apply(p);   /* (the note copied the kit into eff) */
 }
 
 /* ------------------------------------------------- 44.1 kHz -> host rate */
 
 static int16_t pp_blk[M2K_SUB * 2];
+static int pp_trace_param = -1;         /* --trace-param: that parameter as the DSP reads it, a line a block */
 static int pp_pos = M2K_SUB;
 static float pp_s0[2], pp_s1[2];
 static double pp_ph, pp_step;
 
 static void pp_next_in(float out[2])
 {
-    if (pp_pos >= M2K_SUB) { m2k_render(pp_blk, M2K_SUB); pp_pos = 0; }
+    if (pp_pos >= M2K_SUB) {
+        pp_glide_block();
+        if (pp_trace_param >= 0) fprintf(stderr, "%u %d\n", m2k_samples(), P8(&trk[TRACK], pp_trace_param));
+        m2k_render(pp_blk, M2K_SUB);
+        pp_pos = 0;
+    }
     out[0] = pp_blk[2 * pp_pos] * (1.0f / 32768.0f);
     out[1] = pp_blk[2 * pp_pos + 1] * (1.0f / 32768.0f);
     pp_pos++;
@@ -363,7 +491,9 @@ static void pp_usage(void)
 {
     fprintf(stderr,
             "usage: m2k-jack [--name NAME] [--machine N] [--midi-connect SUBSTR] [--no-audio-connect]\n"
+            "                [--glide-ms MS (20)] [--snap-ms MS (10)]\n"
             "       m2k-jack --render OUT.wav [--rate HZ] [--seconds S] [--machine N] [--script FILE]\n"
+            "                [--trace-param P]   (stderr: samples and parameter P as the DSP reads it, Q8, per block)\n"
             "       m2k-jack --list-machines | --describe\n");
 }
 
@@ -373,6 +503,7 @@ int main(int argc, char **argv)
     unsigned rate = 48000;
     double seconds = 3.0;
     int machine = -1, audio_connect = 1;
+    double glide_ms = 20.0, snap_ms = 10.0;
     for (int i = 1; i < argc; i++) {
         const char *a = argv[i];
         const int more = i + 1 < argc;
@@ -387,15 +518,21 @@ int main(int argc, char **argv)
         else if (!strcmp(a, "--machine") && more) machine = atoi(argv[++i]);
         else if (!strcmp(a, "--midi-connect") && more) midi_substr = argv[++i];
         else if (!strcmp(a, "--no-audio-connect")) audio_connect = 0;
+        else if (!strcmp(a, "--glide-ms") && more) glide_ms = atof(argv[++i]);
+        else if (!strcmp(a, "--snap-ms") && more) snap_ms = atof(argv[++i]);
         else if (!strcmp(a, "--render") && more) render_path = argv[++i];
         else if (!strcmp(a, "--rate") && more) rate = (unsigned)atoi(argv[++i]);
         else if (!strcmp(a, "--seconds") && more) seconds = atof(argv[++i]);
         else if (!strcmp(a, "--script") && more) script = argv[++i];
+        else if (!strcmp(a, "--trace-param") && more) pp_trace_param = atoi(argv[++i]);
         else { pp_usage(); return 2; }
     }
     if (machine >= M_COUNT) { fprintf(stderr, "m2k-jack: machine %d out of range (0-%d)\n", machine, M_COUNT - 1); return 2; }
     if (rate < 8000 || rate > 384000) { fprintf(stderr, "m2k-jack: bad rate %u\n", rate); return 2; }
 
+    if (glide_ms < 0 || snap_ms < 0) { fprintf(stderr, "m2k-jack: --glide-ms and --snap-ms are 0 or more\n"); return 2; }
+    pp_set_glide(glide_ms);
+    pp_snap = (uint32_t)(snap_ms * 0.001 * M2K_SR);
     pp_engine_init(machine);
     if (render_path) return pp_render(render_path, rate, seconds, script);
 #ifdef M2K_WITH_JACK

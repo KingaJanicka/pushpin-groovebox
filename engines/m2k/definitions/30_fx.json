@@ -8,7 +8,8 @@
 			"label": "EQF",
 			"address": "/cc/80",
 			"min": 0,
-			"max": 127
+			"max": 127,
+			"step": 0.5
 		},
 		{
 			"$type": "control-range",
@@ -52,7 +53,8 @@
 			"label": "DBAS",
 			"address": "/cc/86",
 			"min": 0,
-			"max": 127
+			"max": 127,
+			"step": 0.5
 		},
 		{
 			"$type": "control-range",

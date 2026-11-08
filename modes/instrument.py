@@ -86,6 +86,8 @@ class Instrument(PyshaMode):
                 self.midi_out_device,
                 dispatcher,
                 channel=instrument_definition.get("midi_channel", 0),
+                nrpn=getattr(self.engine, "nrpn", False),
+                plain_ccs=getattr(self.engine, "PLAIN_CCS", ()),
             )
         elif self.osc_in_port:
             client = SimpleUDPClient("127.0.0.1", self.osc_in_port)

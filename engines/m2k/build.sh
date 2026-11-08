@@ -25,9 +25,21 @@ if [ -z "${M2K_SRC:-}" ]; then
     fi
 fi
 
+# pushpin's patches (patches/*.patch) go onto a copy, so neither vendor/ nor a
+# local M2K_SRC checkout is changed
 mkdir -p "$OUT"
+CORE="$OUT/mono2k"
+rm -rf "$CORE"
+mkdir -p "$CORE/firmware"
+cp -R "$M2K_SRC/firmware/src" "$M2K_SRC/firmware/gen" "$CORE/firmware/"
+for p in "$HERE"/patches/*.patch; do
+    [ -e "$p" ] || continue
+    patch -s -p1 -d "$CORE" < "$p"
+    echo "applied $(basename "$p")"
+done
+
 CC=${CC:-cc}
-CFLAGS="-std=gnu11 -O2 -Wall -Wno-unused-function -I$M2K_SRC/firmware/src -I$M2K_SRC/firmware/gen"
+CFLAGS="-std=gnu11 -O2 -Wall -Wno-unused-function -I$CORE/firmware/src -I$CORE/firmware/gen"
 LIBS="-lm"
 
 if pkg-config --exists jack 2>/dev/null; then

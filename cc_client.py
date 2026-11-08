@@ -10,8 +10,11 @@ controls on the Push display (and the instrument's slot state) up to date.
 same behaviour:
 
 * ``/cc/<n>`` with a value sends control change ``n`` on the instrument's MIDI
-  port (the value is rounded and clamped to 0..127) and echoes the value back
-  through the instrument's dispatcher, as Surge would.
+  port and echoes the value back through the instrument's dispatcher, as Surge
+  would. With ``nrpn=True`` it goes as a 14-bit NRPN (CC 99 = 0, CC 98 = n,
+  CC 6 = whole part, CC 38 = fraction x 128), so a control's fractional value
+  reaches the synth; CCs in ``plain_ccs`` (switches, not values) stay plain.
+  Without NRPN the value is rounded and clamped to 0..127.
 * ``/q/cc/<n>`` replays the last value sent for ``/cc/<n>``, if any.
 * Any other address (Surge's ``/patch/...``, ``/q/param/...``) is ignored.
 """
@@ -19,7 +22,8 @@ from __future__ import annotations
 
 import logging
 import re
-from typing import Any
+import threading
+from typing import Any, Iterable
 
 logger = logging.getLogger("cc_client")
 
@@ -41,15 +45,39 @@ def cc_value(value: Any) -> int:
     return int(round(min(max(float(value), 0.0), 127.0)))
 
 
+def nrpn_value(value: Any) -> tuple[int, int]:
+    """A control's float value as NRPN data entry: (whole part, fraction in 1/128)."""
+    v = min(max(float(value), 0.0), 127.0)
+    whole = int(v)
+    fraction = int(round((v - whole) * 128))
+    if fraction == 128:
+        whole, fraction = whole + 1, 0
+    if whole >= 127:
+        return 127, 0
+    return whole, fraction
+
+
 class MidiCCClient:
-    def __init__(self, midi_out: Any, dispatcher: Any, channel: int = 0) -> None:
+    def __init__(
+        self,
+        midi_out: Any,
+        dispatcher: Any,
+        channel: int = 0,
+        nrpn: bool = False,
+        plain_ccs: Iterable[int] = (),
+    ) -> None:
         """``midi_out`` needs ``control(control, value, channel)`` (isobar's
         MidiOutputDevice has it); ``dispatcher`` is the instrument's
         python-osc Dispatcher, used for the echo."""
         self.midi_out = midi_out
         self.dispatcher = dispatcher
         self.channel = max(0, min(int(channel), 15))
+        self.nrpn = nrpn
+        self.plain_ccs = frozenset(plain_ccs)
         self.values: dict[str, float] = {}
+        # An NRPN is four messages; the encoders and the sequencer send from
+        # different threads, and interleaved halves would set the wrong parameter.
+        self._send_lock = threading.Lock()
 
     def send_message(self, address: str, value: Any) -> None:
         if address.startswith(QUERY_PREFIX + "/"):
@@ -64,9 +92,21 @@ class MidiCCClient:
             return
         if value is None:
             return
-        self.midi_out.control(cc, cc_value(value), self.channel)
+        self._send(cc, value)
         self.values[address] = float(value)
         self._echo(address, float(value))
+
+    def _send(self, cc: int, value: Any) -> None:
+        if not self.nrpn or cc in self.plain_ccs:
+            self.midi_out.control(cc, cc_value(value), self.channel)
+            return
+        whole, fraction = nrpn_value(value)
+        with self._send_lock:
+            # The parameter is chosen every time: a restarted synth has forgotten it.
+            self.midi_out.control(99, 0, self.channel)
+            self.midi_out.control(98, cc, self.channel)
+            self.midi_out.control(6, whole, self.channel)
+            self.midi_out.control(38, fraction, self.channel)
 
     def _echo(self, address: str, value: float) -> None:
         """Hand ``address value`` to the dispatcher's handlers, as an OSC reply would."""
