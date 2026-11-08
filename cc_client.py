@@ -16,6 +16,9 @@ same behaviour:
   reaches the synth; CCs in ``plain_ccs`` (switches, not values) stay plain.
   Without NRPN the value is rounded and clamped to 0..127.
 * ``/q/cc/<n>`` replays the last value sent for ``/cc/<n>``, if any.
+* ``/mnote [note, velocity]`` and ``/mnote/rel [note, velocity]``, Surge's
+  OSC notes, which the Push's pads send (``MelodicMode``), become note-on and
+  note-off on the same port. The sequencer plays through that port already.
 * Any other address (Surge's ``/patch/...``, ``/q/param/...``) is ignored.
 """
 from __future__ import annotations
@@ -29,6 +32,8 @@ logger = logging.getLogger("cc_client")
 
 CC_ADDRESS = re.compile(r"^/cc/(\d{1,3})$")
 QUERY_PREFIX = "/q"
+NOTE_ON_ADDRESS = "/mnote"
+NOTE_OFF_ADDRESS = "/mnote/rel"
 
 
 def cc_number(address: str) -> int | None:
@@ -80,6 +85,9 @@ class MidiCCClient:
         self._send_lock = threading.Lock()
 
     def send_message(self, address: str, value: Any) -> None:
+        if address in (NOTE_ON_ADDRESS, NOTE_OFF_ADDRESS):
+            self._send_note(address == NOTE_ON_ADDRESS, value)
+            return
         if address.startswith(QUERY_PREFIX + "/"):
             target = address[len(QUERY_PREFIX):]
             if target in self.values:
@@ -95,6 +103,20 @@ class MidiCCClient:
         self._send(cc, value)
         self.values[address] = float(value)
         self._echo(address, float(value))
+
+    def _send_note(self, on: bool, value: Any) -> None:
+        try:
+            note, velocity = (int(round(float(v))) for v in list(value)[:2])
+        except (TypeError, ValueError):
+            logger.debug("ignoring note %r: not [note, velocity]", value)
+            return
+        if not 0 <= note <= 127:
+            return
+        with self._send_lock:
+            if on and velocity > 0:
+                self.midi_out.note_on(note, min(velocity, 127), self.channel)
+            else:
+                self.midi_out.note_off(note, self.channel)
 
     def _send(self, cc: int, value: Any) -> None:
         if not self.nrpn or cc in self.plain_ccs:

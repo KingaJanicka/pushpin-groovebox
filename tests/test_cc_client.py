@@ -100,6 +100,28 @@ def test_query_for_unsent_cc_is_silent(client, dispatcher):
     assert seen == []
 
 
+def test_pad_notes_become_midi_notes(client, midi_out):
+    """The Push's pads send Surge's /mnote; a MIDI-CC engine gets real notes."""
+    client.send_message("/mnote", [60.0, 100.0])
+    client.send_message("/mnote/rel", [60.0, 0.0])
+    midi_out.note_on.assert_called_once_with(60, 100, 3)
+    midi_out.note_off.assert_called_once_with(60, 3)
+    midi_out.control.assert_not_called()
+
+
+def test_pad_note_on_with_zero_velocity_is_a_note_off(client, midi_out):
+    client.send_message("/mnote", [61.0, 0.0])
+    midi_out.note_on.assert_not_called()
+    midi_out.note_off.assert_called_once_with(61, 3)
+
+
+@pytest.mark.parametrize("value", [None, [60.0], ["x", 1], [200.0, 100.0], 60.0])
+def test_malformed_pad_notes_are_ignored(client, midi_out, value):
+    client.send_message("/mnote", value)
+    midi_out.note_on.assert_not_called()
+    midi_out.note_off.assert_not_called()
+
+
 def test_surge_addresses_are_ignored(client, midi_out):
     client.send_message("/patch/load", "/some/patch.fxp")
     client.send_message("/q/param/a/osc/1/type", None)
@@ -362,6 +384,13 @@ def test_selecting_a_machine_switches_page_and_loads_its_init(m2k_instrument):
     amp = device(instrument, "AMP")
     for control in amp.controls:
         assert control.value == expected[control.address], control.label
+
+
+def test_pads_on_an_m2k_instrument_play_its_port(m2k_instrument):
+    """MelodicMode sends app.send_osc("/mnote", ...) to the instrument's client."""
+    instrument, midi_out = m2k_instrument
+    instrument.osc["client"].send_message("/mnote", [48.0, 90.0])
+    midi_out.note_on.assert_called_once_with(48, 90, 2)
 
 
 def test_p_lock_style_send_reaches_synth_and_display(m2k_instrument):
