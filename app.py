@@ -37,6 +37,7 @@ from modes.preset_selection_mode import PresetSelectionMode
 from modes.ddrm_tone_selector_mode import DDRMToneSelectorMode
 from modes.menu_mode import MenuMode
 from modes.engine_selection_mode import EngineSelectionMode
+from modes.rename_mode import RenameMode
 from modes.mute_mode import MuteMode
 from user_interface.display_utils import show_notification
 from user_interface.recording_context import RecordingContext
@@ -207,6 +208,8 @@ class PyshaApp(object):
         self.ddrm_tone_selector_mode = DDRMToneSelectorMode(self, settings=settings)
         self.menu_mode = MenuMode(self, settings=settings, send_osc_func=self.send_osc)
         self.engine_selection_mode = EngineSelectionMode(self, settings=settings)
+        # The name editor the preset browser opens to rename a preset (not active until then)
+        self.rename_mode = RenameMode(self, settings=settings)
         self.settings_mode = SettingsMode(self, settings=settings)
         self.mute_mode = MuteMode(self, settings=settings) 
         overwitch_def = {

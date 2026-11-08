@@ -210,6 +210,12 @@ mono2k's own sounds:
   sound into the slot; upper button 2, **Save to New**, saves it as a new user
   preset (`~/.local/share/pushpin/m2k_presets/<MACHINE> <n>.json`) and names the
   slot after it. Upper button 7 names the slot after the browsed sound.
+- **Renaming.** Upper button 3, **Rename**, opens a name editor for the slot's
+  user preset: Left/Right move the cursor (Right past the end adds a letter),
+  Up/Down change the letter, DELETE removes it, SELECT saves, button 3 again
+  cancels. The preset file is renamed and every slot using it follows. Factory
+  sounds can't be renamed (Save to New first). On Surge tracks the same button
+  renames Surge user patches (the `.fxp` in Surge's user patch folder).
 
 How: the voice's `MidiCCClient` keeps the last value it sent for every address,
 and a machine's init sets every parameter, so its cache is the track's sound

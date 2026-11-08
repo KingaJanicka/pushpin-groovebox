@@ -192,6 +192,95 @@ class PresetSelectionMode(definitions.PyshaMode):
             if self._m2k_saved.get(name) != (self.current_slot(name), sound.params, sound.machine):
                 self.save_m2k_slot(instrument)
 
+    # --------------------------------------------------------------- renaming
+
+    def rename_target(self, instrument_short_name):
+        """The current slot's preset, if it's a user preset that can be renamed:
+        ("mono2k", name) or ("surge", path without .fxp); else None."""
+        slot = self.current_slot(instrument_short_name)
+        if self.m2k_instrument(instrument_short_name) is not None:
+            sound_id = self.m2k_presets.get(instrument_short_name, [None] * 8)[slot]
+            if sound_id and sound_id.startswith(m2k_state.USER + "/") and sound_id.split("/", 1)[1] in self.m2k_sounds.user_files():
+                return ("mono2k", sound_id.split("/", 1)[1])
+            return None
+        path = self.presets.get(instrument_short_name, [None] * 8)[slot]
+        if path and path.startswith(definitions.USER_PATCHES_FOLDER + "/") and os.path.isfile(path + ".fxp"):
+            return ("surge", path)
+        return None
+
+    @staticmethod
+    def _name_problem(name):
+        if not name or name in (".", "..") or "/" in name or "\\" in name:
+            return "That name can't be used"
+        return None
+
+    def rename_preset(self, instrument_short_name, new_name):
+        """Rename the current slot's user preset to ``new_name``, and every slot
+        that uses it. Returns None when done, or why not."""
+        new_name = new_name.strip()
+        problem = self._name_problem(new_name)
+        if problem:
+            return problem
+        target = self.rename_target(instrument_short_name)
+        if target is None:
+            return "This slot's preset isn't a user preset"
+        kind, old = target
+        if kind == "mono2k":
+            if new_name == old:
+                return None
+            files = self.m2k_sounds.user_files()
+            if new_name in files:
+                return "That name is taken"
+            new_path = os.path.join(self.m2k_sounds.user_folder, f"{new_name}.json")
+            sound = self.m2k_sounds.read(files[old])
+            if sound is None:
+                return "The preset couldn't be read"
+            sound.name = new_name
+            self.m2k_sounds.write(new_path, sound)
+            os.remove(files[old])
+            old_id, new_id = f"{m2k_state.USER}/{old}", f"{m2k_state.USER}/{new_name}"
+            for slots in self.m2k_presets.values():
+                for i, sound_id in enumerate(slots):
+                    if sound_id == old_id:
+                        slots[i] = new_id
+            self.save_m2k_presets()
+        else:
+            new_path = os.path.join(os.path.dirname(old), new_name)
+            if new_path == old:
+                return None
+            if os.path.exists(new_path + ".fxp"):
+                return "That name is taken"
+            os.rename(old + ".fxp", new_path + ".fxp")
+            for slots in self.presets.values():
+                for i, path in enumerate(slots):
+                    if path == old:
+                        slots[i] = new_path
+            self.save_presets()
+            self.patches["User"] = self.create_dict_from_paths(
+                glob("**/*.fxp", recursive=True, root_dir=definitions.USER_PATCHES_FOLDER)
+            )
+        self.set_knob_postions()
+        self.app.add_display_notification(f"Renamed to {new_name}")
+        return None
+
+    def start_rename(self):
+        """Upper button 3: rename the current slot's user preset on the Push."""
+        name = self.get_current_instrument_short_name_helper()
+        target = self.rename_target(name)
+        if target is None:
+            hint = "Save to New first" if self.m2k_instrument(name) is not None else "only Surge user patches"
+            self.app.add_display_notification(f"Only user presets can be renamed ({hint})")
+            return
+        kind, old = target
+        current = old if kind == "mono2k" else os.path.basename(old)
+        slot = self.current_slot(name) + 1
+        self.app.rename_mode.start(
+            f"Rename {name} slot {slot}: {current}",
+            current,
+            lambda new_name: self.rename_preset(name, new_name),
+            cancel_button=push2_python.constants.BUTTON_UPPER_ROW_3,
+        )
+
     def browser_tree(self):
         """The preset browser's tree for the current track's engine."""
         if self.m2k_instrument(self.get_current_instrument_short_name_helper()) is not None:
@@ -791,6 +880,14 @@ class PresetSelectionMode(definitions.PyshaMode):
                 height=15,
                 font_color=definitions.WHITE,
             )
+            show_text(
+                ctx,
+                2,
+                15,
+                "Rename",
+                height=15,
+                font_color=definitions.WHITE,
+            )
             # show_text(
             #     ctx,
             #     3,
@@ -950,6 +1047,10 @@ class PresetSelectionMode(definitions.PyshaMode):
             # self.app.metro_sequencer_mode.save_state()
             
             
+        elif button_name == push2_python.constants.BUTTON_UPPER_ROW_3:
+            self.start_rename()
+            return True
+
         elif button_name == push2_python.constants.BUTTON_UPPER_ROW_7 and self.m2k_instrument(
             self.get_current_instrument_short_name_helper()
         ) is not None:
