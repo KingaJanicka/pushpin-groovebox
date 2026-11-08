@@ -92,6 +92,7 @@ a pushpin track that plays Surge can stay connected to its MONO2K track.
 | **CC 16–20** | DSTR: BITS FOLD XOR, reverb send, track pitch (pushpin's addition) |
 | CC 120, 123 | all sound off / all notes off |
 | NRPN 0:*n* | the parameter on CC *n* at 14 bits: CC 99 = 0, CC 98 = *n*, CC 6 = whole value, CC 38 = fraction × 128 (pushpin sends this) |
+| NRPN 1:*p* | any of MONO2K's 71 track parameters by number *p*, including the 9 no CC reaches (arp, gate, MOD effect, wave bank); pushpin saves and loads whole sounds with it |
 | clock, start, stop | ignored (pushpin sequences; MONO2K's sequencer stays stopped) |
 
 In `--render` scripts the MIDI channel picks the track (channel 1 = track 1).
@@ -184,6 +185,35 @@ port, and sends each value back through the instrument's OSC dispatcher, the
 way Surge echoes values. That way the display, the device slot that selects
 the machine, and sequencer p-locks work as they do for Surge.
 
+## Saving sounds (the preset browser)
+
+On a track playing Monomachine, BROWSE works as it does for Surge, with
+mono2k's own sounds:
+
+- **Slots.** Each track has 8 slots (the pad rows). A slot keeps a whole sound:
+  the machine and all 71 parameters, in
+  `~/.local/share/pushpin/m2k_state/<track>_<slot>.json`. Switching slots saves
+  the one being left and plays the new one; an empty slot starts on its
+  machine's INIT (the track's `m2k_machine`, else GND-SIN). The current slot is
+  also saved when you leave the browser or switch the track's engine, and every
+  5 seconds while it changes, so a power cut loses at most that much. At startup
+  each mono2k track gets its current slot back.
+- **Browsing.** Hold a slot's pad and press SELECT: the tree is **Factory**
+  (MONO2K's 96-sound library, by category: KICK SNARE HATS PERC BASS LEAD PAD FX),
+  **Machines** (each machine's INIT) and **User**. Releasing the pad loads the
+  highlighted sound into the slot; the slot's name is kept in `m2k_presets.json`.
+- **Saving.** With a pad held: upper button 1, **Save to Current**, saves the
+  sound into the slot; upper button 2, **Save to New**, saves it as a new user
+  preset (`~/.local/share/pushpin/m2k_presets/<MACHINE> <n>.json`) and names the
+  slot after it. Upper button 7 names the slot after the browsed sound.
+
+How: the voice's `MidiCCClient` keeps the last value it sent for every address,
+and a machine's init sets every parameter, so its cache is the track's sound
+(`m2k_state.capture`). Loading sends the machine, then every parameter, through
+the same client (`m2k_state.apply`), so the pages follow. Parameters a page
+reaches go as their CC, the others as NRPN 1:*p*. `sounds.json`
+(`gen_definitions.py`) holds which is which, the machines' INITs and the library.
+
 ## Known limits of the spike
 
 - Not yet tested: the JACK path on the Pi. It builds only where JACK headers
@@ -199,8 +229,6 @@ the machine, and sequencer p-locks work as they do for Surge.
   pattern's settings. Only each track's reverb send (CC 19) is controllable.
 - The snap window can misfire: a knob move that happens within 10 ms of a
   sequenced note is set at once rather than glided.
-- Presets don't work on m2k tracks: pushpin's preset code sends Surge's
-  `/patch/...` commands, which the CC client ignores.
 - Choosing a machine always loads its INIT sound (AMP, FILT, FX and LFOs too),
   because pushpin can't read values back from m2k-jack and needs to know them.
 - Parameters with a few discrete choices (LFO WAVE, SID WAVE, ...) are plain
