@@ -15,6 +15,9 @@ same behaviour:
   CC 6 = whole part, CC 38 = fraction x 128), so a control's fractional value
   reaches the synth; CCs in ``plain_ccs`` (switches, not values) stay plain.
   Without NRPN the value is rounded and clamped to 0..127.
+* ``/m2k/param/<n>`` (NRPN mode only) sets an engine parameter no CC reaches,
+  as NRPN 1:<n> (m2k-jack: MONO2K's parameter number); cached and echoed the
+  same way, so the client always knows the whole sound it has sent.
 * ``/q/cc/<n>`` replays the last value sent for ``/cc/<n>``, if any.
 * ``/mnote [note, velocity]`` and ``/mnote/rel [note, velocity]``, Surge's
   OSC notes, which the Push's pads send (``MelodicMode``), become note-on and
@@ -31,6 +34,10 @@ from typing import Any, Iterable
 logger = logging.getLogger("cc_client")
 
 CC_ADDRESS = re.compile(r"^/cc/(\d{1,3})$")
+PARAM_ADDRESS = re.compile(r"^/m2k/param/(\d{1,3})$")
+# NRPN parameter-number MSBs: 0 = a CC's parameter, 1 = an engine parameter by number
+NRPN_CC = 0
+NRPN_PARAM = 1
 QUERY_PREFIX = "/q"
 NOTE_ON_ADDRESS = "/mnote"
 NOTE_OFF_ADDRESS = "/mnote/rel"
@@ -39,6 +46,15 @@ NOTE_OFF_ADDRESS = "/mnote/rel"
 def cc_number(address: str) -> int | None:
     """The CC number in a ``/cc/<n>`` address, or None for any other address."""
     match = CC_ADDRESS.match(address)
+    if not match:
+        return None
+    n = int(match.group(1))
+    return n if n <= 127 else None
+
+
+def param_number(address: str) -> int | None:
+    """The parameter number in a ``/m2k/param/<n>`` address, or None."""
+    match = PARAM_ADDRESS.match(address)
     if not match:
         return None
     n = int(match.group(1))
@@ -95,12 +111,16 @@ class MidiCCClient:
             return
 
         cc = cc_number(address)
-        if cc is None:
+        param = param_number(address) if cc is None else None
+        if cc is None and (param is None or not self.nrpn):
             logger.debug("ignoring %s %r: not a CC address", address, value)
             return
         if value is None:
             return
-        self._send(cc, value)
+        if cc is not None:
+            self._send(cc, value)
+        else:
+            self._send_nrpn(NRPN_PARAM, param, value)
         self.values[address] = float(value)
         self._echo(address, float(value))
 
@@ -122,11 +142,14 @@ class MidiCCClient:
         if not self.nrpn or cc in self.plain_ccs:
             self.midi_out.control(cc, cc_value(value), self.channel)
             return
+        self._send_nrpn(NRPN_CC, cc, value)
+
+    def _send_nrpn(self, msb: int, lsb: int, value: Any) -> None:
         whole, fraction = nrpn_value(value)
         with self._send_lock:
             # The parameter is chosen every time: a restarted synth has forgotten it.
-            self.midi_out.control(99, 0, self.channel)
-            self.midi_out.control(98, cc, self.channel)
+            self.midi_out.control(99, msb, self.channel)
+            self.midi_out.control(98, lsb, self.channel)
             self.midi_out.control(6, whole, self.channel)
             self.midi_out.control(38, fraction, self.channel)
 

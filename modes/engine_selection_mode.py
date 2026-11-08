@@ -89,8 +89,13 @@ class EngineSelectionMode(definitions.PyshaMode):
             return False
         if engine_name == instrument.active_engine_name:
             return False
+        presets = getattr(self.app, "preset_selection_mode", None)
+        if presets is not None and instrument.active_engine_name == engine.MONO2K_ENGINE:
+            presets.save_m2k_slot(instrument)            # the sound being left, kept in its slot
         if not instrument.set_active_engine(engine_name):
             return False
+        if presets is not None and engine_name == engine.MONO2K_ENGINE:
+            presets.restore_m2k_slot(instrument)         # its slot's saved sound, if any
         save_track_engine(instrument.name, engine_name, self.track_engines_filename)
         # The new engine's pages: start from its first device and page
         self.app.osc_mode.current_device_index_and_page = [0, 0]

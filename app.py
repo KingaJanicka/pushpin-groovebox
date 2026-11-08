@@ -991,6 +991,12 @@ class PyshaApp(object):
         # Refresh sequencer param snapshots so the MIDI clock thread can read
         # up-to-date UI state without touching mode objects directly.
         self.metro_sequencer_mode.refresh_sequencer_params()
+
+        # mono2k tracks' sounds, saved into their slots when they change
+        try:
+            self.preset_selection_mode.autosave_m2k()
+        except Exception as e:
+            logger.warning("mono2k autosave failed: %s", e)
     
     async def queue_tasks(self):
         for task in self.queue:
@@ -1006,6 +1012,8 @@ class PyshaApp(object):
         print("Loading State ...")
         self.metro_sequencer_mode.load_state()
         self.preset_selection_mode.init_surge_preset_state()
+        # Tracks playing mono2k: their current slot's saved sound
+        self.preset_selection_mode.restore_m2k_slots()
         
         for idx, instrument_shortname in enumerate(self.instruments):
             instrument = self.instruments[instrument_shortname]

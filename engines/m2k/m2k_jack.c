@@ -33,6 +33,9 @@
  *   CC 120, 123  all sound off / all notes off
  *   NRPN 0:<cc>  (CC 99 = 0, CC 98 = the parameter's CC number, then CC 6 = value, CC 38 = fine): the same
  *                parameter at 14 bits. The core keeps 1/256 of a step, so 7 of those bits reach the sound.
+ *   NRPN 1:<p>   (CC 99 = 1, CC 98 = MONO2K's parameter number p, 0-70): any track parameter, the ones no CC
+ *                reaches too (the MOD effect, the wave bank, the arp, gate). pushpin saves and restores whole
+ *                sounds with it.
  *   Clock, start, stop and other system messages are dropped: pushpin sequences,
  *   MONO2K's own sequencer stays stopped.
  *
@@ -135,7 +138,7 @@ static void pp_params_reset(int t)
 static int pp_discrete(int t, int param)
 {
     const int kind = pinfo(t, param)->kind;
-    return kind_choices(kind) != 0 || kind == K_DEST || kind == K_TRK;
+    return kind_choices(kind) != 0 || kind == K_DEST || kind == K_TRK || kind == K_WBNK;
 }
 
 static void pp_apply(int t, int param)
@@ -248,7 +251,8 @@ static void pp_describe(void)
     int first = 1;
     for (int i = 0; i < PP_NCC; i++) {
         if (PP_CC[i].param < 8) continue;                  /* SYN: the machines' own, below */
-        printf("%s    {\"cc\": %d, \"page\": \"%s\", \"param\": ", first ? "" : ",\n", PP_CC[i].cc, PP_CC[i].page);
+        printf("%s    {\"cc\": %d, \"id\": %d, \"page\": \"%s\", \"param\": ", first ? "" : ",\n", PP_CC[i].cc,
+               PP_CC[i].param, PP_CC[i].page);
         pp_json_param(pinfo(0, PP_CC[i].param));
         putchar('}');
         first = 0;
@@ -261,14 +265,45 @@ static void pp_describe(void)
         printf(", \"syn\": [");
         for (int k = 0; k < 8; k++) {
             if (k) printf(", ");
-            printf("{\"cc\": %d, \"param\": ", 48 + k);
+            printf("{\"cc\": %d, \"id\": %d, \"param\": ", 48 + k, P_SYN + k);
             pp_json_param(&MI[m].syn[k]);
             putchar('}');
         }
         printf("],\n     \"init\": {");
         for (int i = 0; i < PP_NCC; i++)
             printf("%s\"%d\": %d", i ? ", " : "", PP_CC[i].cc, pat_tmp.kit[0][PP_CC[i].param]);
-        printf("}}%s\n", m + 1 < M_COUNT ? "," : "");
+        printf("},\n     \"kit\": [");                /* every parameter of its INIT sound, by parameter number */
+        for (int p = 0; p < P_COUNT; p++) printf("%s%d", p ? ", " : "", pat_tmp.kit[0][p]);
+        printf("]}%s\n", m + 1 < M_COUNT ? "," : "");
+    }
+    printf("  ],\n  \"param_count\": %d,\n  \"params_all\": [\n", P_COUNT);
+    for (int p = 0; p < P_COUNT; p++) {                  /* (SYN A-H: the first machine's labels) */
+        const pi_t *pi = pinfo(0, p);
+        printf("    {\"param\": %d, \"label\": ", p);
+        pp_json_str(pi->s4);
+        printf(", \"name\": ");
+        pp_json_str(pi->name);
+        printf("}%s\n", p + 1 < P_COUNT ? "," : "");
+    }
+    /* MONO2K's factory sound library (m2k_lib.c): each sound its machine and every parameter */
+    printf("  ],\n  \"categories\": [");
+    for (int c = 1; c < CAT_COUNT; c++) { if (c > 1) printf(", "); pp_json_str(CAT_N[c]); }
+    printf("],\n  \"library\": [\n");
+    for (int i = 0; i < LIB_N; i++) {
+        m2k_sound_t d;
+        char name[9];
+        lib_sound(i, &d);
+        m_cpy(name, d.name, 8);
+        name[8] = 0;
+        printf("    {\"index\": %d, \"name\": ", i);
+        pp_json_str(name);
+        printf(", \"category\": ");
+        pp_json_str(LIB[i].cat > 0 && LIB[i].cat < CAT_COUNT ? CAT_N[LIB[i].cat] : "");
+        printf(", \"machine\": %d, \"root\": %d, \"what\": ", d.machine, LIB[i].root);
+        pp_json_str(LIB[i].what);
+        printf(", \"kit\": [");
+        for (int p = 0; p < P_COUNT; p++) printf("%s%d", p ? ", " : "", d.kit[p]);
+        printf("]}%s\n", i + 1 < LIB_N ? "," : "");
     }
     printf("  ]\n}\n");
 }
@@ -288,7 +323,9 @@ static void pp_nrpn_cc(int t, int cc, int v)
 {
     switch (cc) {
     case 99: pp_nrpn_hi[t] = v; pp_nrpn_param[t] = -1; break;
-    case 98: pp_nrpn_param[t] = pp_nrpn_hi[t] == 0 ? pp_param_of_cc(v) : -1; break;
+    case 98:
+        pp_nrpn_param[t] = pp_nrpn_hi[t] == 0 ? pp_param_of_cc(v) : pp_nrpn_hi[t] == 1 && v < P_COUNT ? v : -1;
+        break;
     case 101: case 100: pp_nrpn_param[t] = -1; break;        /* an RPN: not ours */
     case 6:
         pp_nrpn_msb[t] = v;

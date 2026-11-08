@@ -7,6 +7,11 @@
 Writes engines/m2k/definitions/*.json, the same format as Surge's device
 definitions. Every control's address is "/cc/<number>"; on a mono2k track the
 instrument's MidiCCClient turns those into MIDI CCs (see cc_client.py).
+Parameters no page control reaches are "/m2k/param/<number>" (NRPN 1:<number>).
+
+Also writes engines/m2k/sounds.json for saving and loading whole sounds
+(m2k_state.py) and for the preset browser: every parameter's number, label and
+CC (if any), each machine's INIT sound, and MONO2K's factory library.
 
   slot 0      one device per machine (SYN A-H). Its init selects the machine
               (CC 14) and sends the machine's whole INIT sound, so every page
@@ -26,6 +31,7 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT_DIR = os.path.join(HERE, "definitions")
+SOUNDS_PATH = os.path.join(HERE, "sounds.json")
 BINARY = os.path.join(HERE, "build", "m2k-jack")
 
 # page -> (file stem, device name, slot); file stems sort into display order
@@ -50,6 +56,18 @@ def cc_address(cc: int) -> str:
     return f"/cc/{cc}"
 
 
+def param_address(param: int) -> str:
+    return f"/m2k/param/{param}"
+
+
+def cc_by_param(describe: dict) -> dict[int, int]:
+    """Parameter number -> its CC, for the parameters a page control reaches."""
+    ccs = {p["id"]: p["cc"] for p in describe["params"]}
+    for s in describe["machines"][0]["syn"]:
+        ccs[s["id"]] = s["cc"]
+    return ccs
+
+
 def control(cc: int, param: dict, page: str | None = None) -> dict:
     if param["label"] in HIDDEN_LABELS:
         return {"$type": "control-spacer"}
@@ -67,12 +85,20 @@ def control(cc: int, param: dict, page: str | None = None) -> dict:
     return c
 
 
-def machine_device(machine: dict, machine_cc: int) -> dict:
+def machine_device(machine: dict, machine_cc: int, ccs: dict[int, int] | None = None) -> dict:
     init = [{"$type": "message", "$comment": "machine", "address": cc_address(machine_cc), "value": machine["index"]}]
     init += [
         {"$type": "message", "address": cc_address(int(cc)), "value": value}
         for cc, value in machine["init"].items()
     ]
+    # The rest of its INIT sound, so pushpin knows every parameter of the track
+    # (what m2k_state.py saves) from the moment a machine is chosen
+    if ccs is not None and "kit" in machine:
+        init += [
+            {"$type": "message", "address": param_address(param), "value": value}
+            for param, value in enumerate(machine["kit"])
+            if param not in ccs
+        ]
     return {
         "name": machine["name"],
         "slot": 0,
@@ -95,9 +121,29 @@ def page_devices(params: list[dict]) -> dict[str, dict]:
 
 def build(describe: dict) -> dict[str, dict]:
     files = page_devices(describe["params"])
+    ccs = cc_by_param(describe) if "kit" in describe["machines"][0] else None
     for m in describe["machines"]:
-        files[f"00_machine_{m['index']:02d}"] = machine_device(m, describe["machine_cc"])
+        files[f"00_machine_{m['index']:02d}"] = machine_device(m, describe["machine_cc"], ccs)
     return files
+
+
+def build_sounds(describe: dict) -> dict:
+    """sounds.json: what m2k_state.py and the preset browser need."""
+    ccs = cc_by_param(describe)
+    return {
+        "machine_cc": describe["machine_cc"],
+        "param_count": describe["param_count"],
+        "params": [
+            {"param": p["param"], "label": p["label"], "name": p["name"], "cc": ccs.get(p["param"])}
+            for p in describe["params_all"]
+        ],
+        "machines": [{"index": m["index"], "name": m["name"], "kit": m["kit"]} for m in describe["machines"]],
+        "categories": describe["categories"],
+        "library": [
+            {k: s[k] for k in ("name", "category", "machine", "root", "what", "kit")}
+            for s in describe["library"]
+        ],
+    }
 
 
 def main(argv: list[str]) -> int:
@@ -116,6 +162,10 @@ def main(argv: list[str]) -> int:
             json.dump(device, f, indent="\t")
             f.write("\n")
     print(f"wrote {len(files)} device definitions to {OUT_DIR}")
+    with open(SOUNDS_PATH, "w") as f:
+        json.dump(build_sounds(describe), f, indent=1)
+        f.write("\n")
+    print(f"wrote {SOUNDS_PATH}")
     return 0
 
 

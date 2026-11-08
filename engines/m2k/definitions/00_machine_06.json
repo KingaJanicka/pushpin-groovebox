@@ -317,6 +317,51 @@
 			"$type": "message",
 			"address": "/cc/7",
 			"value": 127
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/38",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/39",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/40",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/41",
+			"value": 60
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/66",
+			"value": 21
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/67",
+			"value": 18
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/68",
+			"value": 83
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/69",
+			"value": 58
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/70",
+			"value": 0
 		}
 	],
 	"controls": [

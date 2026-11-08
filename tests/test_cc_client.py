@@ -12,7 +12,7 @@ from pythonosc.dispatcher import Dispatcher
 
 import definitions
 import engine
-from cc_client import MidiCCClient, cc_number, cc_value, nrpn_value
+from cc_client import MidiCCClient, cc_number, cc_value, nrpn_value, param_number
 from modes.osc_device import OSCDevice
 from modes.osc_mode import OSCMode, load_device_definitions
 from osc_controls import OSCControl
@@ -230,7 +230,8 @@ def test_generated_controls_only_use_cc_addresses():
             assert control["$type"] == "control-range", path
             assert cc_number(control["address"]) is not None, (path, control)
         for message in device["init"]:
-            assert cc_number(message["address"]) is not None, (path, message)
+            assert cc_number(message["address"]) is not None or param_number(message["address"]) is not None, (
+                path, message)
 
 
 def test_machine_devices_select_their_machine_first():

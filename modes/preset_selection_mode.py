@@ -11,7 +11,12 @@ from pathlib import Path
 import logging
 import time
 import asyncio
+import m2k_state
 log = logging.getLogger("preset_selection_mode")
+
+# mono2k tracks' current slots are saved this often (seconds) when they changed,
+# so a power cut loses at most that much of a sound's edits
+M2K_AUTOSAVE_SECONDS = 5.0
 
 # log.setLevel(level=logging.DEBUG)
 
@@ -30,6 +35,15 @@ class PresetSelectionMode(definitions.PyshaMode):
     current_address = None
     select_button_held = False
     browser_active = False
+    # mono2k: each track's slot names (browser ids), its sound catalogue, and
+    # what was last saved for each track (to autosave only changes)
+    m2k_presets = {}
+    m2k_presets_filename = "m2k_presets.json"
+    m2k_sounds = None
+    m2k_state_folder = definitions.M2K_STATE_FOLDER
+    _m2k_saved = {}
+    _m2k_autosave_at = 0.0
+    _browsing_m2k = False
 
     def initialize(self, settings=None):
         for idx, instrument_short_name in enumerate(
@@ -71,6 +85,116 @@ class PresetSelectionMode(definitions.PyshaMode):
             self.load_presets()
         except:
             self.save_presets()
+
+        self.m2k_sounds = m2k_state.M2KSounds.load(user_folder=definitions.M2K_USER_PRESETS_FOLDER)
+        self.m2k_presets = {
+            name: [None] * 8 for name in self.get_all_distinct_instrument_short_names_helper()
+        }
+        self._m2k_saved = {}
+        self.load_m2k_presets()
+
+    # ------------------------------------------------------------------ mono2k
+
+    def load_m2k_presets(self):
+        try:
+            with open(self.m2k_presets_filename) as f:
+                saved = json.load(f)
+        except (OSError, ValueError):
+            return
+        for name, slots in saved.items():
+            if name in self.m2k_presets and isinstance(slots, list):
+                self.m2k_presets[name] = (list(slots) + [None] * 8)[:8]
+
+    def save_m2k_presets(self):
+        try:
+            with open(self.m2k_presets_filename, "w") as f:
+                json.dump(self.m2k_presets, f, indent=1)
+        except OSError as e:
+            log.warning("could not save %s: %s", self.m2k_presets_filename, e)
+
+    def m2k_instrument(self, instrument_short_name):
+        """The instrument if it's playing mono2k (and the sounds are known), else None."""
+        if self.m2k_sounds is None:
+            return None
+        instrument = self.app.instruments.get(instrument_short_name, None)
+        if instrument is None or getattr(instrument, "active_engine_name", None) != "mono2k":
+            return None
+        return instrument
+
+    def m2k_slot_path(self, instrument_short_name, slot):
+        return os.path.join(self.m2k_state_folder, f"{instrument_short_name}_{slot}.json")
+
+    def current_slot(self, instrument_short_name):
+        return self.last_pad_in_column_pressed[instrument_short_name][0]
+
+    def save_m2k_slot(self, instrument, slot=None):
+        """Save what the track's mono2k voice plays into its slot (default: the current one)."""
+        if self.m2k_sounds is None:
+            return
+        slot = self.current_slot(instrument.name) if slot is None else slot
+        sound = m2k_state.capture(instrument.osc["client"], self.m2k_sounds)
+        if sound is None:
+            return
+        try:
+            self.m2k_sounds.write(self.m2k_slot_path(instrument.name, slot), sound)
+            self._m2k_saved[instrument.name] = (slot, sound.params, sound.machine)
+        except OSError as e:
+            log.warning("could not save %s slot %s: %s", instrument.name, slot, e)
+
+    def load_m2k_slot(self, instrument, slot):
+        """Play the track's slot on its mono2k voice: the saved sound, or for an
+        empty slot its machine's INIT (the definition's m2k_machine, else the first)."""
+        if self.m2k_sounds is None:
+            return
+        sound = self.m2k_sounds.read(self.m2k_slot_path(instrument.name, slot))
+        if sound is None:
+            machine = getattr(instrument, "definition", {}).get("m2k_machine", 0) or 0
+            sound = self.m2k_sounds.machine_sound(int(machine))
+        m2k_state.apply(sound, instrument.osc["client"], self.m2k_sounds)
+        self._m2k_saved[instrument.name] = (slot, sound.params, sound.machine)
+
+    def restore_m2k_slot(self, instrument):
+        """The track's current slot's saved sound, if it has one, on its mono2k voice."""
+        if self.m2k_instrument(instrument.name) is None:
+            return
+        slot = self.current_slot(instrument.name)
+        if os.path.isfile(self.m2k_slot_path(instrument.name, slot)):
+            self.load_m2k_slot(instrument, slot)
+
+    def restore_m2k_slots(self):
+        """At startup: each track playing mono2k gets its current slot's saved sound."""
+        for name in self.app.instruments:
+            self.restore_m2k_slot(self.app.instruments[name])
+
+    def autosave_m2k(self, now=None):
+        """Save each mono2k track's current slot when its sound changed (at most
+        every M2K_AUTOSAVE_SECONDS)."""
+        now = time.monotonic() if now is None else now
+        if now - self._m2k_autosave_at < M2K_AUTOSAVE_SECONDS:
+            return
+        self._m2k_autosave_at = now
+        for name in self.app.instruments:
+            instrument = self.m2k_instrument(name)
+            if instrument is None:
+                continue
+            sound = m2k_state.capture(instrument.osc["client"], self.m2k_sounds)
+            if sound is None:
+                continue
+            if self._m2k_saved.get(name) != (self.current_slot(name), sound.params, sound.machine):
+                self.save_m2k_slot(instrument)
+
+    def browser_tree(self):
+        """The preset browser's tree for the current track's engine."""
+        if self.m2k_instrument(self.get_current_instrument_short_name_helper()) is not None:
+            return self.m2k_sounds.tree()
+        return self.patches
+
+    def slot_label(self, instrument_short_name, index):
+        """What the slot grid shows for a slot."""
+        if self.m2k_instrument(instrument_short_name) is not None:
+            sound_id = self.m2k_presets.get(instrument_short_name, [None] * 8)[index]
+            return sound_id.split("/")[-1] if sound_id else "-"
+        return self._resolve_preset(self.presets[instrument_short_name][index]).split("/")[-1]
 
 
     DEFAULT_PRESET = f"{definitions.FACTORY_PATCHES_FOLDER}/Templates/Init Saw"
@@ -120,6 +244,10 @@ class PresetSelectionMode(definitions.PyshaMode):
 
     def save_all_presets_to_state(self):
         # print("saving presets")
+        for name in self.app.instruments:
+            instrument = self.m2k_instrument(name)
+            if instrument is not None:
+                self.save_m2k_slot(instrument)
         for idx, instrument_shortname in enumerate(self.app.instruments):
             preset_index = self.last_pad_in_column_pressed[instrument_shortname][0]
             preset_name = f"{instrument_shortname}_{preset_index}"            
@@ -419,7 +547,13 @@ class PresetSelectionMode(definitions.PyshaMode):
             self.app.instrument_selection_mode.get_current_instrument_short_name()
         )
         if self.last_pad_in_column_pressed[instrument_short_name] != pad_ij:
+            m2k_instrument = self.m2k_instrument(instrument_short_name)
+            if m2k_instrument is not None:
+                # Keep the edits of the slot being left, then play the new one
+                self.save_m2k_slot(m2k_instrument, self.current_slot(instrument_short_name))
             self.last_pad_in_column_pressed[instrument_short_name] = pad_ij
+            if m2k_instrument is not None:
+                self.load_m2k_slot(m2k_instrument, pad_ij[0])
             self.set_knob_postions()
             preset_name = f"{instrument_short_name}_{pad_ij[0]}"
             preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
@@ -451,6 +585,19 @@ class PresetSelectionMode(definitions.PyshaMode):
         for idx, instrument_shortname in enumerate(self.app.instruments):
             if idx == pad_ij[1]:
                 preset_number = self.last_pad_in_column_pressed[instrument_shortname][0]
+
+                m2k_instrument = self.m2k_instrument(instrument_shortname)
+                if m2k_instrument is not None:
+                    if not (self.browser_active and self.current_address):
+                        return False
+                    sound = self.m2k_sounds.resolve(self.current_address)
+                    if sound is None:
+                        return False
+                    m2k_state.apply(sound, m2k_instrument.osc["client"], self.m2k_sounds)
+                    self.save_m2k_slot(m2k_instrument, preset_number)
+                    self.m2k_presets[instrument_shortname][preset_number] = self.current_address
+                    self.save_m2k_presets()
+                    return True
 
                 if self.browser_active and self.current_address:
                     # Load the chosen preset into Surge XT
@@ -507,7 +654,9 @@ class PresetSelectionMode(definitions.PyshaMode):
             instrument.query_slots()
             instrument.query_all_controls()
             instrument.update_current_devices()
-            instrument.init_devices_sync()
+            if getattr(instrument, "plays_surge", True):
+                # (re-sending a mono2k machine's init would reset its sound to INIT)
+                instrument.init_devices_sync()
 
         self.update_pads()
         idx_j = pad_ij[1]
@@ -542,9 +691,12 @@ class PresetSelectionMode(definitions.PyshaMode):
 
             if isinstance(val, str) and idx - 2 <= self.state[level] <= idx + 2:
                 if idx == int(self.state[level]):
-                    self.current_address = os.path.splitext(self.get_preset_path(val))[
-                        0
-                    ]
+                    if self._browsing_m2k:
+                        self.current_address = val          # a mono2k sound id
+                    else:
+                        self.current_address = os.path.splitext(self.get_preset_path(val))[
+                            0
+                        ]
                 show_text(
                     ctx,
                     level,
@@ -587,7 +739,8 @@ class PresetSelectionMode(definitions.PyshaMode):
 
     def update_display(self, ctx, w, h):
         if self.browser_active and len(self.app.steps_held) != 0:
-            self.nested_draw(ctx, self.patches, level=0, max_height=h)
+            self._browsing_m2k = self.m2k_instrument(self.get_current_instrument_short_name_helper()) is not None
+            self.nested_draw(ctx, self.browser_tree(), level=0, max_height=h)
             show_text(
                 ctx,
                 0,
@@ -639,8 +792,7 @@ class PresetSelectionMode(definitions.PyshaMode):
         else:
             for instrument_idx, instrument in enumerate(self.app.instruments):
                 for index in range(8):
-                    preset_path = self._resolve_preset(self.presets[instrument][index])
-                    preset_name = preset_path.split("/")
+                    preset_name = [self.slot_label(instrument, index)]
                     
                     instrument_info = self.app.instrument_selection_mode.instruments_info[instrument_idx]
                     instrument_short_name = instrument_info["instrument_short_name"]
@@ -665,6 +817,18 @@ class PresetSelectionMode(definitions.PyshaMode):
         instrument_short_name = (
             self.app.instrument_selection_mode.get_current_instrument_short_name()
         )
+        if self.m2k_instrument(instrument_short_name) is not None:
+            # Open the browser on the slot's sound: walk its id down the tree
+            sound_id = self.m2k_presets[instrument_short_name][self.current_slot(instrument_short_name)]
+            for idx in range(len(self.state)):
+                self.state[idx] = 0
+            level = self.m2k_sounds.tree()
+            for idx, piece in enumerate((sound_id or "").split("/")):
+                if not isinstance(level, dict) or piece not in level or idx >= len(self.state):
+                    break
+                self.state[idx] = list(level).index(piece)
+                level = level[piece]
+            return
         preset_number = self.last_pad_in_column_pressed[instrument_short_name][0]
         preset_address = self._resolve_preset(self.presets[instrument_short_name][preset_number])
 
@@ -717,6 +881,30 @@ class PresetSelectionMode(definitions.PyshaMode):
         # elif button_name in push2_python.constants.BUTTON_UPPER_ROW_6:
         #     self.save_all_presets_to_state()
         
+        elif button_name == push2_python.constants.BUTTON_UPPER_ROW_1 and self.m2k_instrument(
+            self.get_current_instrument_short_name_helper()
+        ) is not None:
+            # "Save to Current": the track's sound into its slot
+            instrument = self.m2k_instrument(self.get_current_instrument_short_name_helper())
+            self.save_m2k_slot(instrument)
+            self.app.add_display_notification(f"{instrument.name}: saved to slot {self.current_slot(instrument.name) + 1}")
+            return True
+
+        elif button_name == push2_python.constants.BUTTON_UPPER_ROW_2 and self.m2k_instrument(
+            self.get_current_instrument_short_name_helper()
+        ) is not None:
+            # "Save to New": the track's sound as a new user preset, and its slot named after it
+            instrument = self.m2k_instrument(self.get_current_instrument_short_name_helper())
+            sound = m2k_state.capture(instrument.osc["client"], self.m2k_sounds)
+            if sound is not None and self.m2k_sounds.user_folder:
+                sound_id = self.m2k_sounds.save_user(sound)
+                slot = self.current_slot(instrument.name)
+                self.m2k_presets[instrument.name][slot] = sound_id
+                self.save_m2k_presets()
+                self.save_m2k_slot(instrument, slot)
+                self.app.add_display_notification(f"Saved {sound_id.split('/')[-1]}")
+            return True
+
         elif button_name in push2_python.constants.BUTTON_UPPER_ROW_1:
             instrument_short_name = (
                 self.app.instrument_selection_mode.get_current_instrument_short_name()
@@ -728,6 +916,16 @@ class PresetSelectionMode(definitions.PyshaMode):
             # self.app.metro_sequencer_mode.save_state()
             
             
+        elif button_name == push2_python.constants.BUTTON_UPPER_ROW_7 and self.m2k_instrument(
+            self.get_current_instrument_short_name_helper()
+        ) is not None:
+            # Name the slot after the browsed sound (mono2k's own list, not Surge's)
+            instrument_short_name = self.get_current_instrument_short_name_helper()
+            if self.current_address:
+                self.m2k_presets[instrument_short_name][self.current_slot(instrument_short_name)] = self.current_address
+                self.save_m2k_presets()
+            return True
+
         elif button_name in push2_python.constants.BUTTON_UPPER_ROW_7:
             instrument_short_name = (
                 self.app.instrument_selection_mode.get_current_instrument_short_name()
@@ -764,7 +962,7 @@ class PresetSelectionMode(definitions.PyshaMode):
                 push2_python.constants.ENCODER_TRACK8_ENCODER,
             ].index(encoder_name)
 
-            current_dict = self.patches
+            current_dict = self.browser_tree()
             for level in range(encoder_idx):
                 for idx, entry in enumerate(current_dict.values()):
                     if int(self.state[level]) == idx:
