@@ -39,7 +39,7 @@ for p in "$HERE"/patches/*.patch; do
 done
 
 CC=${CC:-cc}
-CFLAGS="-std=gnu11 -O2 -Wall -Wno-unused-function -I$CORE/firmware/src -I$CORE/firmware/gen"
+CFLAGS="-std=gnu11 -O2 -Wall -Wno-unused-function -DM2K_TRACKS=8 -I$CORE/firmware/src -I$CORE/firmware/gen"
 LIBS="-lm"
 
 if pkg-config --exists jack 2>/dev/null; then

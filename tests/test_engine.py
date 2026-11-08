@@ -149,7 +149,9 @@ def test_create_engine_defaults_to_surge(app):
 def test_create_engine_picks_mono2k(app):
     eng = engine.create_engine(app, m2k_definition(index=2), midi_device_idx=0)
     assert isinstance(eng, engine.M2KEngine)
-    assert eng.jack_client_name == "M2K 2"
+    assert eng.jack_client_name == "M2K"
+    assert eng.output_port_names == ("track3_L", "track3_R")
+    assert engine.m2k_shared().tracks == {2: "Pushpin 2"}
 
 
 def test_create_engine_rejects_unknown_engine(app):
@@ -164,35 +166,43 @@ def test_m2k_binary_honours_env(monkeypatch):
     assert engine.m2k_binary() == "/opt/m2k/m2k-jack"
 
 
-def test_m2k_start_launches_m2k_jack(app, log_dir, monkeypatch):
+def test_m2k_tracks_share_one_m2k_jack(app, log_dir, monkeypatch):
     monkeypatch.setenv(engine.M2K_BINARY_ENV, "/opt/m2k/m2k-jack")
-    eng = engine.create_engine(app, m2k_definition(index=4, m2k_machine=5), midi_device_idx=0)
+    first = engine.create_engine(app, m2k_definition(index=4, m2k_machine=5), midi_device_idx=0)
+    second = engine.create_engine(app, m2k_definition(index=1), midi_device_idx=0)
     exec_mock = fake_exec()
     with patch("engine.asyncio.create_subprocess_exec", exec_mock), patch(
         "engine.asyncio.sleep", AsyncMock()
     ):
-        asyncio.run(eng.start())
+        asyncio.run(first.start())
+        asyncio.run(second.start())
 
+    exec_mock.assert_called_once()
     args, kwargs = exec_mock.call_args
     assert args == (
         "pw-jack", "-p", "128", "/opt/m2k/m2k-jack",
-        "--name", "M2K 4",
-        "--midi-connect", "Pushpin 4",
-        "--machine", "5",
+        "--name", "M2K",
+        "--enable", "2,5",
+        "--midi-connect", "2=Pushpin 1",
+        "--midi-connect", "5=Pushpin 4",
     )
     assert kwargs["stdin"] is asyncio.subprocess.PIPE
-    assert (log_dir / "m2k-4.log").exists()
-    assert eng.PID == 4242
+    assert (log_dir / "m2k.log").exists()
+    assert first.PID == second.PID == 4242
 
 
-def test_m2k_start_without_machine_keeps_core_default(app, log_dir):
-    eng = engine.create_engine(app, m2k_definition(index=1), midi_device_idx=0)
-    exec_mock = fake_exec()
-    with patch("engine.asyncio.create_subprocess_exec", exec_mock), patch(
-        "engine.asyncio.sleep", AsyncMock()
-    ):
-        asyncio.run(eng.start())
-    assert "--machine" not in exec_mock.call_args[0]
+def test_m2k_track_must_be_0_to_7_and_free(app):
+    with pytest.raises(ValueError, match="tracks 0-7, not 8"):
+        engine.create_engine(app, m2k_definition(index=8), midi_device_idx=0)
+    engine.create_engine(app, m2k_definition(index=3), midi_device_idx=0)
+    other = m2k_definition(index=3)
+    other["instrument_short_name"] = "Other"
+    with pytest.raises(ValueError, match="taken by Pushpin 3"):
+        engine.create_engine(app, other, midi_device_idx=0)
+
+
+def test_m2k_shared_args_without_tracks_enable_none():
+    assert engine.M2KShared().args(64)[-2:] == ["--enable", "none"]
 
 
 def _port(node_id, path, port_id):
@@ -203,16 +213,19 @@ def _port(node_id, path, port_id):
     }
 
 
-@pytest.mark.parametrize("engine_name, client", [("surge-xt-cli", "Surge XT"), ("mono2k", "M2K 0")])
-def test_configure_pipewire_routes_by_client_name(app, engine_name, client):
-    """Both engines route their outputs through the volume node by JACK client name."""
+@pytest.mark.parametrize(
+    "engine_name, out_L, out_R",
+    [("surge-xt-cli", "Surge XT:output_0", "Surge XT:output_1"), ("mono2k", "M2K:track1_L", "M2K:track1_R")],
+)
+def test_configure_pipewire_routes_by_port_name(app, engine_name, out_L, out_R):
+    """Both engines route their own outputs through the volume node, found by port name."""
     definition = m2k_definition(index=0, engine=engine_name)
     eng = engine.create_engine(app, definition, midi_device_idx=0)
     node = {"id": 10}
     volume_node = {"id": 20}
     app.pipewire = [
-        _port(10, f"{client}:output_0", 101),
-        _port(10, f"{client}:output_1", 102),
+        _port(10, out_L, 101),
+        _port(10, out_R, 102),
         _port(20, "pure_data:input_0", 201),
         _port(20, "pure_data:input_1", 202),
         _port(20, "pure_data:output_0", 203),
@@ -233,6 +246,35 @@ def test_configure_pipewire_routes_by_client_name(app, engine_name, client):
 
     assert [c.args for c in connect.call_args_list] == [(101, 201), (102, 202), (203, 901), (204, 902)]
     assert [c.args for c in disconnect.call_args_list] == [(301,), (302,)]
+
+
+def test_m2k_track_routing_leaves_the_other_tracks_alone(app):
+    """In the shared process, track 2's routing must not touch track 1's or the return's links."""
+    eng = engine.create_engine(app, m2k_definition(index=1), midi_device_idx=0)
+    link = lambda lid, out_port, in_port: {
+        "id": lid, "type": "PipeWire:Interface:Link",
+        "info": {"output-node-id": 10, "output-port-id": out_port, "input-port-id": in_port},
+    }
+    app.pipewire = [
+        _port(10, "M2K:track1_L", 101), _port(10, "M2K:track1_R", 102),
+        _port(10, "M2K:track2_L", 103), _port(10, "M2K:track2_R", 104),
+        _port(10, "M2K:fx_L", 105), _port(10, "M2K:fx_R", 106),
+        _port(20, "pure_data:input_2", 202), _port(20, "pure_data:input_3", 203),
+        _port(20, "pure_data:output_2", 212), _port(20, "pure_data:output_3", 213),
+        link(301, 101, 901), link(302, 102, 902),
+        link(303, 103, 901), link(304, 104, 902),
+        link(305, 105, 901), link(306, 106, 902),
+    ]
+    app.get_volume_node.return_value = {"id": 20}
+    connect, disconnect = AsyncMock(), AsyncMock()
+    with patch.object(engine.Engine, "configure_pipewire", AsyncMock()), patch(
+        "engine.connectPipewireSourceToPipewireDest", connect
+    ), patch("engine.disconnectPipewireLink", disconnect):
+        eng.instrument_nodes = [{"id": 10}]
+        asyncio.run(eng.configure_pipewire())
+
+    assert [c.args for c in connect.call_args_list] == [(103, 202), (104, 203), (212, 901), (213, 902)]
+    assert [c.args for c in disconnect.call_args_list] == [(303,), (304,)]
 
 
 def test_surge_initial_slots_are_surges_type_addresses(app):

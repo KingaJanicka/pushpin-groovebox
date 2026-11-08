@@ -411,6 +411,9 @@ class SurgeXTEngine(Engine):
 
     # JACK client name; PipeWire reports its ports as "<client>:output_0" etc.
     jack_client_name: str = "Surge XT"
+    # This engine's own JACK ports (an engine may be one track of a shared process)
+    output_port_names: tuple[str, str] = ("output_0", "output_1")
+    input_port_names: tuple[str, ...] = ("input_0", "input_1")
     # How device pages reach the synth: "osc" (UDP to osc_in_port) or "midi-cc"
     control_transport: str = "osc"
     puredata_process_id: int | None = None
@@ -463,14 +466,20 @@ class SurgeXTEngine(Engine):
         for port in self.app.pipewire:
             if port['type'] == 'PipeWire:Interface:Port':
                 if port['info']['props']['node.id'] == surge_node['id']:
-                    if port['info']['props']['object.path'] == f"{self.jack_client_name}:output_0" or port['info']['props']['object.path'] == f"{self.jack_client_name}:output_1":
+                    if port['info']['props']['object.path'] in self.port_paths(self.output_port_names):
                         surge_output_ports.append(port)
                         self.pw_ports["output"].append(port)
-                    if port['info']['props']['object.path'] == f"{self.jack_client_name}:input_0" or port['info']['props']['object.path'] == f"{self.jack_client_name}:input_1":
+                    if port['info']['props']['object.path'] in self.port_paths(self.input_port_names):
                         self.pw_ports["input"].append(port)
 
-    
-        init_links = [link for link in self.app.pipewire if link['type'] == 'PipeWire:Interface:Link' and link['info']['output-node-id'] == surge_node['id']]
+        # Only this engine's own outputs' links: a shared process's other tracks route themselves
+        own_output_ids = {port['id'] for port in surge_output_ports}
+        init_links = [
+            link for link in self.app.pipewire
+            if link['type'] == 'PipeWire:Interface:Link'
+            and link['info']['output-node-id'] == surge_node['id']
+            and link['info']['output-port-id'] in own_output_ids
+        ]
 
         # connect source of link to duplex in
         volume_node = self.app.get_volume_node()
@@ -488,8 +497,9 @@ class SurgeXTEngine(Engine):
         volume_L_input = [port for port in volume_ports if port['info']['props']['object.path'] == f"pure_data:input_{volume_input_port_index_L}"].pop()
         volume_R_input = [port for port in volume_ports if port['info']['props']['object.path'] == f"pure_data:input_{volume_input_port_index_R}"].pop()
 
-        surge_L = [port for port in surge_output_ports if port['info']['props']['object.path'] == f"{self.jack_client_name}:output_0"].pop()
-        surge_R = [port for port in surge_output_ports if port['info']['props']['object.path'] == f"{self.jack_client_name}:output_1"].pop()
+        out_L_path, out_R_path = self.port_paths(self.output_port_names)
+        surge_L = [port for port in surge_output_ports if port['info']['props']['object.path'] == out_L_path].pop()
+        surge_R = [port for port in surge_output_ports if port['info']['props']['object.path'] == out_R_path].pop()
 
         await connectPipewireSourceToPipewireDest(surge_L['id'], volume_L_input['id'])
         await connectPipewireSourceToPipewireDest(surge_R['id'], volume_R_input['id'])
@@ -509,6 +519,10 @@ class SurgeXTEngine(Engine):
         # Which is why we're disconencting last
         for link in init_links:
             await disconnectPipewireLink(link['id'])
+
+    def port_paths(self, names) -> list[str]:
+        """PipeWire's object.path for this engine's JACK ports."""
+        return [f"{self.jack_client_name}:{name}" for name in names]
 
     def initial_slots(self) -> list[dict[str, Any] | None]:
         """The instrument's 16 device slots: the OSC address that says which
@@ -914,13 +928,79 @@ def m2k_binary() -> str:
     return os.path.expanduser(os.environ.get(M2K_BINARY_ENV) or DEFAULT_M2K_BINARY)
 
 
-class M2KEngine(SurgeXTEngine):
-    """A MONO2K track (engines/m2k/m2k-jack) in place of a Surge XT instance.
+M2K_TRACKS = 8
 
-    It plugs into the same PipeWire routing as Surge (through the volume
-    node), so only the launch differs: m2k-jack is told its JACK client name
-    and links itself to the instrument's virtual MIDI port by name. Its device
-    pages (engines/m2k/definitions) send MIDI CC through the instrument's
+
+class M2KShared:
+    """The one m2k-jack process every mono2k track plays in.
+
+    Each M2KEngine registers its track when it is built (all instruments are
+    built before any engine starts); the first start() spawns m2k-jack with
+    every registered track connected to its instrument's MIDI port and turned
+    on. The other tracks stay off, so they make no sound.
+    """
+
+    jack_client_name = "M2K"
+
+    def __init__(self) -> None:
+        self.tracks: dict[int, str] = {}  # m2k track (0-7) -> instrument short name
+        self.process: asyncio.subprocess.Process | None = None
+        self._starting: asyncio.Lock | None = None
+
+    def register(self, track: int, instrument_short_name: str) -> None:
+        if not 0 <= track < M2K_TRACKS:
+            raise ValueError(
+                f"{instrument_short_name}: mono2k has tracks 0-{M2K_TRACKS - 1}, not {track} "
+                "(the track is the instrument's instrument_index)"
+            )
+        other = self.tracks.get(track)
+        if other is not None and other != instrument_short_name:
+            raise ValueError(f"mono2k track {track} is taken by {other}, not free for {instrument_short_name}")
+        self.tracks[track] = instrument_short_name
+
+    def args(self, buffer_size: int) -> list[str]:
+        args = ["pw-jack", "-p", f"{buffer_size}", m2k_binary(), "--name", self.jack_client_name]
+        # m2k-jack's tracks count from 1
+        args += ["--enable", ",".join(str(t + 1) for t in sorted(self.tracks)) or "none"]
+        for track, short_name in sorted(self.tracks.items()):
+            # The instrument's isobar port is named after the instrument
+            args += ["--midi-connect", f"{track + 1}={short_name}"]
+        return args
+
+    async def ensure_started(self, buffer_size: int) -> asyncio.subprocess.Process:
+        if self._starting is None:
+            self._starting = asyncio.Lock()
+        async with self._starting:
+            if self.process is None:
+                self.process = await spawn_logged("m2k", *self.args(buffer_size))
+                # m2k-jack is up in well under a second; this matches Surge's
+                # wait so PipeWire has the node by the time configure_pipewire runs.
+                await asyncio.sleep(2)
+        return self.process
+
+
+_m2k_shared = M2KShared()
+
+
+def m2k_shared() -> M2KShared:
+    return _m2k_shared
+
+
+def reset_m2k_shared() -> None:
+    """Forget the shared process and its tracks (tests; a restart)."""
+    global _m2k_shared
+    _m2k_shared = M2KShared()
+
+
+class M2KEngine(SurgeXTEngine):
+    """One MONO2K track (engines/m2k/m2k-jack) in place of a Surge XT instance.
+
+    All mono2k tracks share one m2k-jack process: pushpin instrument N plays
+    its track N (the instrument_index), out of that track's own JACK ports
+    (trackN_L/R, counted from 1). Each track goes through the volume node the
+    way a Surge instance does; the process's shared reverb return (fx_L/R)
+    stays on the outputs it connected itself to. Its device pages
+    (engines/m2k/definitions) send MIDI CC through the instrument's
     MidiCCClient instead of OSC.
     """
 
@@ -940,14 +1020,19 @@ class M2KEngine(SurgeXTEngine):
             instrument_definition=instrument_definition,
         )
         assert self.instrument is not None
-        self.jack_client_name = f"M2K {self.instrument_index}"
+        assert self.instrument_index is not None
+        self.track = int(self.instrument_index)
         self.machine = self.instrument.get("m2k_machine", None)
+        self.jack_client_name = M2KShared.jack_client_name
+        self.output_port_names = (f"track{self.track + 1}_L", f"track{self.track + 1}_R")
+        self.input_port_names = ()
+        m2k_shared().register(self.track, self.instrument["instrument_short_name"])
 
     control_transport = "midi-cc"
     # m2k-jack takes parameter values as 14-bit NRPN (its core keeps 1/256 of a
     # step); these CCs are switches and stay plain 7-bit
     nrpn = True
-    PLAIN_CCS = frozenset({3, 14, 120, 123})  # mute, machine, all sound/notes off
+    PLAIN_CCS = frozenset({3, 9, 14, 120, 123})  # mute, track on/off, machine, all sound/notes off
     # m2k-jack's machine-select CC; engines/m2k/definitions' slot-0 devices select on it
     MACHINE_ADDRESS = "/cc/14"
 
@@ -962,25 +1047,9 @@ class M2KEngine(SurgeXTEngine):
         assert self.instrument is not None
         self.osc_in_port = self.instrument.get("osc_in_port")
         self.osc_out_port = self.instrument.get("osc_out_port")
-        args = [
-            "pw-jack",
-            "-p",
-            f"{self.buffer_size}",
-            m2k_binary(),
-            "--name",
-            self.jack_client_name,
-            # The instrument's isobar port is named after the instrument
-            "--midi-connect",
-            self.instrument["instrument_short_name"],
-        ]
-        if self.machine is not None:
-            args += ["--machine", f"{int(self.machine)}"]
-        proc = await spawn_logged(f"m2k-{self.instrument_index}", *args)
+        proc = await m2k_shared().ensure_started(self.buffer_size)
         self.process = proc
         self.PID = proc.pid
-        # m2k-jack is up in well under a second; this matches Surge's wait so
-        # PipeWire has the node by the time configure_pipewire runs.
-        await asyncio.sleep(2)
 
 
 ENGINES: dict[str, type[Engine]] = {
