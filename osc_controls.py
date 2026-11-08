@@ -67,6 +67,14 @@ class OSCControl(object):
     def query(self) -> None:
         self.send_osc_func("/q" + self.address, None)
 
+    def fraction(self, value: float) -> float:
+        """Where ``value`` sits between min and max, 0..1, for drawing. Surge's
+        controls run 0..1, mono2k's 0..127: the drawing must not assume either."""
+        span = self.max - self.min
+        if span <= 0:
+            return 0.0
+        return min(max((value - self.min) / span, 0.0), 1.0)
+
     def draw(self, ctx: Any, x_part: int, draw_lock: bool = False, lock_value: float | None = None) -> None:
         font_color = definitions.WHITE        
         value = self.value
@@ -123,7 +131,7 @@ class OSCControl(object):
                 # str(self.string),
                 height=val_height,
                 font_color=color,
-                margin_left=int(value / self.max * 80 + 10),
+                margin_left=int(self.fraction(value) * 80 + 10),
             )
 
             # Knob
@@ -148,7 +156,7 @@ class OSCControl(object):
             ctx.stroke()
 
             # Inner line
-            bipolar_value = value / self.max - 0.5 * self.max
+            bipolar_value = self.fraction(value) - 0.5
             ctx.move_to(xc, yc)
             ctx.line_to(xc + length, yc)
             ctx.set_source_rgb(*definitions.get_color_rgb_float(definitions.GRAY_LIGHT))
@@ -163,16 +171,15 @@ class OSCControl(object):
             ctx.stroke()
 
             # Triangle indicator
-            ctx.move_to(xc + length * value / self.max, yc - triangle_padding)
+            ctx.move_to(xc + length * self.fraction(value), yc - triangle_padding)
             ctx.line_to(
-                xc + length * value / self.max - triangle_size,
+                xc + length * self.fraction(value) - triangle_size,
                 yc - triangle_padding - 2 * triangle_size,
             )
             ctx.line_to(
-                xc + length * value / self.max + triangle_size,
+                xc + length * self.fraction(value) + triangle_size,
                 yc - triangle_padding - 2 * triangle_size,
             )
-            ctx.move_to(xc + length * value, yc - triangle_padding)
             ctx.close_path()
             ctx.set_source_rgb(*definitions.get_color_rgb_float(color))
             ctx.fill()
@@ -204,7 +211,7 @@ class OSCControl(object):
                 # str(self.string),
                 height=val_height,
                 font_color=color,
-                margin_left=int(value / self.max * 80 + 10),
+                margin_left=int(self.fraction(value) * 80 + 10),
             )
 
             # Knob
@@ -238,22 +245,21 @@ class OSCControl(object):
 
             # Outer line
             ctx.move_to(xc, yc)
-            ctx.line_to(xc + length * value / self.max, yc)
+            ctx.line_to(xc + length * self.fraction(value), yc)
             ctx.set_source_rgb(*definitions.get_color_rgb_float(color))
             ctx.set_line_width(3)
             ctx.stroke()
 
             # Triangle indicator
-            ctx.move_to(xc + length * value / self.max, yc - triangle_padding)
+            ctx.move_to(xc + length * self.fraction(value), yc - triangle_padding)
             ctx.line_to(
-                xc + length * value / self.max - triangle_size,
+                xc + length * self.fraction(value) - triangle_size,
                 yc - triangle_padding - 2 * triangle_size,
             )
             ctx.line_to(
-                xc + length * value / self.max + triangle_size,
+                xc + length * self.fraction(value) + triangle_size,
                 yc - triangle_padding - 2 * triangle_size,
             )
-            ctx.move_to(xc + length * value, yc - triangle_padding)
             ctx.close_path()
             ctx.set_source_rgb(*definitions.get_color_rgb_float(color))
             ctx.fill()
@@ -311,7 +317,7 @@ class OSCControl(object):
             str(round(value, 2)),
             height=val_height,
             font_color=color,
-            margin_left=int(value / self.max * line_width * 0.75 + 10),
+            margin_left=int(self.fraction(value) * line_width * 0.75 + 10),
         )
 
         radius = name_height / 2
