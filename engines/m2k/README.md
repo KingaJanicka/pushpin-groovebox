@@ -61,4 +61,28 @@ One process plays one MONO2K track. All MIDI channels are folded onto it.
   defaults; there is no CC for it yet.
 - Not yet tested: the JACK path on the Pi. It builds only where JACK headers
   exist; on macOS it was checked against stub headers only.
-- Not wired into pushpin yet (no `M2KEngine`, no CC-sending device definitions).
+- The Push's device pages for an m2k track still show Surge's controls, and
+  they do nothing (they send OSC, which m2k-jack doesn't listen to). Notes and
+  the sequencer work, because they go over MIDI. Sending CCs from the pages is
+  the next step.
+
+## Using it for a pushpin track
+
+Add `"engine": "mono2k"` (and optionally a starting `"m2k_machine"`) to the
+track's file in `definitions/instrument_definitions/`, e.g. `Pushpin 3.json`:
+
+```json
+{
+  "instrument_name": "Pushpin 3",
+  "instrument_short_name": "Pushpin 3",
+  "engine": "mono2k",
+  "m2k_machine": 5,
+  ...
+}
+```
+
+pushpin then starts `pw-jack m2k-jack --name "M2K 3" --midi-connect "Pushpin 3"`
+in place of `surge-xt-cli` and routes its outputs through the volume node, the
+same way it routes Surge. The binary path defaults to
+`engines/m2k/build/m2k-jack`; set `PUSHPIN_M2K_BIN` to override it. The log
+goes to `m2k-3.log` in pushpin's log directory.

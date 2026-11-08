@@ -87,8 +87,8 @@ class Instrument(PyshaMode):
         )
         
         print("MIDI", midi_out_idx, mido.get_input_names()[midi_out_idx])  # type: ignore[attr-defined]
-        if kwargs.get("engine", "surge-xt-cli") == "surge-xt-cli":
-            self.engine = engine.SurgeXTEngine(app, midi_device_idx=midi_out_idx, instrument_definition=instrument_definition)
+        # The definition's "engine" key picks the synth ("surge-xt-cli" or "mono2k")
+        self.engine = engine.create_engine(app, instrument_definition, midi_device_idx=midi_out_idx)
                    
         client = None
         server = None

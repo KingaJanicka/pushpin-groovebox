@@ -409,6 +409,8 @@ class Engine(ABC):
 
 class SurgeXTEngine(Engine):
 
+    # JACK client name; PipeWire reports its ports as "<client>:output_0" etc.
+    jack_client_name: str = "Surge XT"
     puredata_process_id: int | None = None
     puredata_client_id: Any = None
     # Magic number is defined in the puradata patch
@@ -459,10 +461,10 @@ class SurgeXTEngine(Engine):
         for port in self.app.pipewire:
             if port['type'] == 'PipeWire:Interface:Port':
                 if port['info']['props']['node.id'] == surge_node['id']:
-                    if port['info']['props']['object.path'] == "Surge XT:output_0" or port['info']['props']['object.path'] == "Surge XT:output_1":
+                    if port['info']['props']['object.path'] == f"{self.jack_client_name}:output_0" or port['info']['props']['object.path'] == f"{self.jack_client_name}:output_1":
                         surge_output_ports.append(port)
                         self.pw_ports["output"].append(port)
-                    if port['info']['props']['object.path'] == "Surge XT:input_0" or port['info']['props']['object.path'] == "Surge XT:input_1":
+                    if port['info']['props']['object.path'] == f"{self.jack_client_name}:input_0" or port['info']['props']['object.path'] == f"{self.jack_client_name}:input_1":
                         self.pw_ports["input"].append(port)
 
     
@@ -484,8 +486,8 @@ class SurgeXTEngine(Engine):
         volume_L_input = [port for port in volume_ports if port['info']['props']['object.path'] == f"pure_data:input_{volume_input_port_index_L}"].pop()
         volume_R_input = [port for port in volume_ports if port['info']['props']['object.path'] == f"pure_data:input_{volume_input_port_index_R}"].pop()
 
-        surge_L = [port for port in surge_output_ports if port['info']['props']['object.path'] == "Surge XT:output_0"].pop()
-        surge_R = [port for port in surge_output_ports if port['info']['props']['object.path'] == "Surge XT:output_1"].pop()
+        surge_L = [port for port in surge_output_ports if port['info']['props']['object.path'] == f"{self.jack_client_name}:output_0"].pop()
+        surge_R = [port for port in surge_output_ports if port['info']['props']['object.path'] == f"{self.jack_client_name}:output_1"].pop()
 
         await connectPipewireSourceToPipewireDest(surge_L['id'], volume_L_input['id'])
         await connectPipewireSourceToPipewireDest(surge_R['id'], volume_R_input['id'])
@@ -725,13 +727,13 @@ class SurgeXTEngine(Engine):
         for port in self.app.pipewire:
             if port['type'] == 'PipeWire:Interface:Port':
                 if port['info']['props']['node.id'] == surge_node['id']:
-                    if port['info']['props']['object.path'] == "Surge XT:input_0" or port['info']['props']['object.path'] == "Surge XT:input_1":
+                    if port['info']['props']['object.path'] == f"{self.jack_client_name}:input_0" or port['info']['props']['object.path'] == f"{self.jack_client_name}:input_1":
                         surge_input_ports.append(port)
         
         
         
-        surge_L_input = [port for port in surge_input_ports if port['info']['props']['object.path'] == 'Surge XT:input_0'].pop()
-        surge_R_input = [port for port in surge_input_ports if port['info']['props']['object.path'] == 'Surge XT:input_1'].pop()
+        surge_L_input = [port for port in surge_input_ports if port['info']['props']['object.path'] == f"{self.jack_client_name}:input_0"].pop()
+        surge_R_input = [port for port in surge_input_ports if port['info']['props']['object.path'] == f"{self.jack_client_name}:input_1"].pop()
 
 
         for idx in range(8):
@@ -874,6 +876,95 @@ async def getPipewireConfigForPID(pid):
             if i >= 10:
                 raise Exception("GetPipewireConfigForPid unable to get nodes")
             await asyncio.sleep(0.25)
+
+
+M2K_BINARY_ENV = "PUSHPIN_M2K_BIN"
+DEFAULT_M2K_BINARY = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "engines", "m2k", "build", "m2k-jack"
+)
+
+
+def m2k_binary() -> str:
+    """Path to m2k-jack ($PUSHPIN_M2K_BIN, else the engines/m2k build output)."""
+    return os.path.expanduser(os.environ.get(M2K_BINARY_ENV) or DEFAULT_M2K_BINARY)
+
+
+class M2KEngine(SurgeXTEngine):
+    """A MONO2K track (engines/m2k/m2k-jack) in place of a Surge XT instance.
+
+    It plugs into the same PipeWire routing as Surge (through the volume
+    node), so only the launch differs: m2k-jack is told its JACK client name
+    and links itself to the instrument's virtual MIDI port by name. It has no
+    OSC: Surge's OSC sends to this instrument go nowhere until the device
+    pages learn to send MIDI CC.
+    """
+
+    def __init__(
+        self,
+        app,
+        sample_rate=48000,
+        buffer_size=128,
+        midi_device_idx=None,
+        instrument_definition=None,
+    ):
+        super().__init__(
+            app,
+            sample_rate=sample_rate,
+            buffer_size=buffer_size,
+            midi_device_idx=midi_device_idx,
+            instrument_definition=instrument_definition,
+        )
+        assert self.instrument is not None
+        self.jack_client_name = f"M2K {self.instrument_index}"
+        self.machine = self.instrument.get("m2k_machine", None)
+
+    async def start(self) -> None:
+        assert self.instrument is not None
+        self.osc_in_port = self.instrument.get("osc_in_port")
+        self.osc_out_port = self.instrument.get("osc_out_port")
+        args = [
+            "pw-jack",
+            "-p",
+            f"{self.buffer_size}",
+            m2k_binary(),
+            "--name",
+            self.jack_client_name,
+            # The instrument's isobar port is named after the instrument
+            "--midi-connect",
+            self.instrument["instrument_short_name"],
+        ]
+        if self.machine is not None:
+            args += ["--machine", f"{int(self.machine)}"]
+        proc = await spawn_logged(f"m2k-{self.instrument_index}", *args)
+        self.process = proc
+        self.PID = proc.pid
+        # m2k-jack is up in well under a second; this matches Surge's wait so
+        # PipeWire has the node by the time configure_pipewire runs.
+        await asyncio.sleep(2)
+
+
+ENGINES: dict[str, type[Engine]] = {
+    "surge-xt-cli": SurgeXTEngine,
+    "mono2k": M2KEngine,
+}
+DEFAULT_ENGINE = "surge-xt-cli"
+
+
+def create_engine(app, instrument_definition, midi_device_idx) -> Engine:
+    """Build the engine named by the definition's "engine" key (default Surge XT)."""
+    name = instrument_definition.get("engine", DEFAULT_ENGINE)
+    try:
+        engine_class = ENGINES[name]
+    except KeyError:
+        raise ValueError(
+            f'Unknown engine "{name}" for {instrument_definition.get("instrument_short_name")}; '
+            f"expected one of {sorted(ENGINES)}"
+        ) from None
+    return engine_class(
+        app,
+        midi_device_idx=midi_device_idx,
+        instrument_definition=instrument_definition,
+    )
 
 
 class ExternalEngine(Engine):

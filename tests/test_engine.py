@@ -119,3 +119,117 @@ def test_pd_node_sends_output_to_instrument_log(app, log_dir):
     assert kwargs["stderr"] is asyncio.subprocess.STDOUT
     assert (log_dir / "puredata-5.log").exists()
     assert eng.puredata_process_id == 4242
+
+
+# ------------------------------------------------------------ engine choice
+
+
+def m2k_definition(index=2, **extra):
+    definition = {
+        "instrument_name": f"Pushpin {index}",
+        "instrument_short_name": f"Pushpin {index}",
+        "instrument_index": index,
+        "osc_in_port": 1030 + index,
+        "osc_out_port": 1040 + index,
+        "duplex_osc_port": 1050 + index,
+        "engine": "mono2k",
+    }
+    definition.update(extra)
+    return definition
+
+
+def test_create_engine_defaults_to_surge(app):
+    definition = m2k_definition()
+    del definition["engine"]
+    eng = engine.create_engine(app, definition, midi_device_idx=0)
+    assert type(eng) is SurgeXTEngine
+    assert eng.jack_client_name == "Surge XT"
+
+
+def test_create_engine_picks_mono2k(app):
+    eng = engine.create_engine(app, m2k_definition(index=2), midi_device_idx=0)
+    assert isinstance(eng, engine.M2KEngine)
+    assert eng.jack_client_name == "M2K 2"
+
+
+def test_create_engine_rejects_unknown_engine(app):
+    with pytest.raises(ValueError, match="Unknown engine \"moog\""):
+        engine.create_engine(app, m2k_definition(engine="moog"), midi_device_idx=0)
+
+
+def test_m2k_binary_honours_env(monkeypatch):
+    monkeypatch.delenv(engine.M2K_BINARY_ENV, raising=False)
+    assert engine.m2k_binary().endswith("engines/m2k/build/m2k-jack")
+    monkeypatch.setenv(engine.M2K_BINARY_ENV, "/opt/m2k/m2k-jack")
+    assert engine.m2k_binary() == "/opt/m2k/m2k-jack"
+
+
+def test_m2k_start_launches_m2k_jack(app, log_dir, monkeypatch):
+    monkeypatch.setenv(engine.M2K_BINARY_ENV, "/opt/m2k/m2k-jack")
+    eng = engine.create_engine(app, m2k_definition(index=4, m2k_machine=5), midi_device_idx=0)
+    exec_mock = fake_exec()
+    with patch("engine.asyncio.create_subprocess_exec", exec_mock), patch(
+        "engine.asyncio.sleep", AsyncMock()
+    ):
+        asyncio.run(eng.start())
+
+    args, kwargs = exec_mock.call_args
+    assert args == (
+        "pw-jack", "-p", "128", "/opt/m2k/m2k-jack",
+        "--name", "M2K 4",
+        "--midi-connect", "Pushpin 4",
+        "--machine", "5",
+    )
+    assert kwargs["stdin"] is asyncio.subprocess.PIPE
+    assert (log_dir / "m2k-4.log").exists()
+    assert eng.PID == 4242
+
+
+def test_m2k_start_without_machine_keeps_core_default(app, log_dir):
+    eng = engine.create_engine(app, m2k_definition(index=1), midi_device_idx=0)
+    exec_mock = fake_exec()
+    with patch("engine.asyncio.create_subprocess_exec", exec_mock), patch(
+        "engine.asyncio.sleep", AsyncMock()
+    ):
+        asyncio.run(eng.start())
+    assert "--machine" not in exec_mock.call_args[0]
+
+
+def _port(node_id, path, port_id):
+    return {
+        "id": port_id,
+        "type": "PipeWire:Interface:Port",
+        "info": {"props": {"node.id": node_id, "object.path": path}},
+    }
+
+
+@pytest.mark.parametrize("engine_name, client", [("surge-xt-cli", "Surge XT"), ("mono2k", "M2K 0")])
+def test_configure_pipewire_routes_by_client_name(app, engine_name, client):
+    """Both engines route their outputs through the volume node by JACK client name."""
+    definition = m2k_definition(index=0, engine=engine_name)
+    eng = engine.create_engine(app, definition, midi_device_idx=0)
+    node = {"id": 10}
+    volume_node = {"id": 20}
+    app.pipewire = [
+        _port(10, f"{client}:output_0", 101),
+        _port(10, f"{client}:output_1", 102),
+        _port(20, "pure_data:input_0", 201),
+        _port(20, "pure_data:input_1", 202),
+        _port(20, "pure_data:output_0", 203),
+        _port(20, "pure_data:output_1", 204),
+        {"id": 301, "type": "PipeWire:Interface:Link",
+         "info": {"output-node-id": 10, "output-port-id": 101, "input-port-id": 901}},
+        {"id": 302, "type": "PipeWire:Interface:Link",
+         "info": {"output-node-id": 10, "output-port-id": 102, "input-port-id": 902}},
+    ]
+    app.get_volume_node.return_value = volume_node
+    connect = AsyncMock()
+    disconnect = AsyncMock()
+    with patch.object(engine.Engine, "configure_pipewire", AsyncMock()), patch(
+        "engine.connectPipewireSourceToPipewireDest", connect
+    ), patch("engine.disconnectPipewireLink", disconnect):
+        eng.instrument_nodes = [node]
+        asyncio.run(eng.configure_pipewire())
+
+    assert [c.args for c in connect.call_args_list] == [(101, 201), (102, 202), (203, 901), (204, 902)]
+    assert [c.args for c in disconnect.call_args_list] == [(301,), (302,)]
