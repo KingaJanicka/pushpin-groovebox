@@ -90,6 +90,8 @@ class OSCDevice(PyshaMode):
                 case "control-range":
                     control = OSCControl(control_def, get_color, self.send_message)
                     self.dispatcher.map(control.address, control.set_state)
+                    if control.labels_address:
+                        self.dispatcher.map(control.labels_address, control.set_labels_source)
                     self.controls.append(control)
                 case "control-spacer-address":
                     control = OSCSpacerAddress(control_def, self.send_message)

@@ -232,7 +232,9 @@ class Instrument(PyshaMode):
                 continue
             controls = getattr(device, "controls", [])
             if control_idx < len(controls):
-                return getattr(controls[control_idx], "label", None) or "-"
+                control = controls[control_idx]
+                # a menu's label is its selected item; its name is its menu_label (WAVE, not SIN)
+                return getattr(control, "menu_label", None) or getattr(control, "label", None) or "-"
             return "-"
         return None
 

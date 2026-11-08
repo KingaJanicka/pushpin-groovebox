@@ -137,13 +137,85 @@ def cc_by_param(describe: dict) -> dict[int, int]:
     return ccs
 
 
-def control(cc: int, param: dict, page: str | None = None) -> dict:
+# ------------------------------------------------- MONO2K's own words for values
+#
+# m2k-jack --describe gives, for every parameter, what MONO2K's screen shows
+# for each value 0-127 (m2k_ui.c's fmt(): a text and a unit) and, for a choice
+# (a wave, a mode, a ratio), which choice each value is. A choice, or anything
+# with few enough distinct values (BITS), becomes a menu of them; a quantity
+# (a time, a frequency, a note length) stays a knob that shows the words.
+
+MAX_MENU_ITEMS = 24                               # (FM+'s 24 ratios; a 128-value quantity stays a knob)
+K_NUM, K_BI = 0, 1                                # plain numbers: nothing to name
+
+# param number -> its address, filled by build() (a label table may follow another parameter)
+ADDRESS_OF: dict[int, str] = {}
+
+
+def value_label(text: str, unit: str) -> str:
+    """One value's words, short enough for a Push column."""
+    if not unit:
+        return text
+    if unit.startswith("/"):                      # DTIM: 37 "/256 NOTE" -> 37/256
+        return text + unit.split()[0]
+    if unit.startswith("X "):                     # the drums' sweep: 1.5 "X PITCH" -> 1.5X
+        return text + "X"
+    if len(unit) > 5 or unit in ("STILL", "RATIO"):   # ("PREV TRK"; a ratio is plain; STOP's "STILL")
+        return text
+    return f"{text} {unit}"
+
+
+def value_labels(table: dict) -> list[str]:
+    return [value_label(t, u) for t, u in zip(table["text"], table["unit"])]
+
+
+def runs(keys: list) -> list[tuple[int, int]]:
+    """The [lo, hi] runs of equal keys over 0-127."""
+    out, lo = [], 0
+    for v in range(1, len(keys) + 1):
+        if v == len(keys) or keys[v] != keys[lo]:
+            out.append((lo, v - 1))
+            lo = v
+    return out
+
+
+def value_menu(label: str, address: str, labels: list[str], keys: list) -> dict:
+    items = [
+        {"$type": "menu-item", "label": labels[(lo + hi + 1) // 2], "range": [lo, hi],
+         "onselect": {"$type": "message", "address": address, "value": (lo + hi + 1) // 2}}
+        for lo, hi in runs(keys)
+    ]
+    clicks = CLICKS_PER_ITEM if len(items) <= 8 else 2
+    return {"$type": "control-menu", "menu_label": label, "step": 1 / clicks, "items": items}
+
+
+def described(c: dict, param: dict) -> dict:
+    """``c`` (a knob) as MONO2K names its values: a menu, or a knob with words."""
+    kind = param.get("kind", K_NUM)
+    if kind in (K_NUM, K_BI) or ("values" not in param and "values_by" not in param):
+        return c
+    if "values_by" in param:
+        by = param["values_by"]
+        tables = [value_labels(t) for t in by["tables"]]
+        c["value_labels_by"] = {"address": ADDRESS_OF.get(by["param"], param_address(by["param"])),
+                                "choices": len(tables), "tables": tables}
+        return c
+    labels = value_labels(param["values"])
+    keys = param.get("choice") or labels
+    if "choice" in param or len(runs(keys)) <= MAX_MENU_ITEMS:
+        return value_menu(c["label"], c["address"], labels, keys)
+    c["value_labels"] = labels
+    c.pop("display_center", None)                 # (the words say which way)
+    return c
+
+
+def control(cc: int, param: dict, page: str | None = None, address: str | None = None) -> dict:
     if param["label"] in HIDDEN_LABELS:
         return {"$type": "control-spacer"}
     c = {
         "$type": "control-range",
         "label": param["label"],
-        "address": cc_address(cc),
+        "address": address or cc_address(cc),
         "min": 0,
         "max": param["max"],
     }
@@ -153,8 +225,8 @@ def control(cc: int, param: dict, page: str | None = None) -> dict:
         c["step"] = FINE_STEP
     if page and page.startswith("LFO") and param["label"] == "DPTH":
         c["bipolar"] = 1                          # MONO2K's LFO depth is signed about 64
-        c["display_center"] = 64                  # (shown -64..+63)
-    return c
+        c["display_center"] = 64                  # (shown -64..+63 where the words aren't known)
+    return described(c, param)
 
 
 # A machine page's second page: BANK (DIGI-WAV only, MONO2K's own wave bank
@@ -183,7 +255,8 @@ def machine_page_two(machine: dict, ptch: dict | None) -> list[dict]:
         return []
     first = wave_bank_menu() if machine["name"] == WAVE_MACHINE else {"$type": "control-spacer"}
     pitch = control(PTCH_CC, ptch)
-    pitch["display_center"] = 64                  # semitones either way
+    if "value_labels" not in pitch:
+        pitch["display_center"] = 64              # semitones either way
     return [first, pitch]
 
 
@@ -231,19 +304,26 @@ def mod_type_menu() -> dict:
     }
 
 
-def dstr_controls(params: list[dict], labels: dict[int, str]) -> list[dict]:
+def dstr_controls(params: list[dict], labels: dict[int, str], all_params: dict[int, dict] | None = None) -> list[dict]:
     by_cc = {p["cc"]: p for p in params}
     controls = [control(cc, by_cc[cc]["param"], "DSTR") for cc in DSTR_CCS]
-    controls.append(mod_type_menu())
-    controls += [param_control(p, labels.get(p, str(p))) for p in (MOD_RATE, MOD_DEPTH, MOD_MIX)]
+    for p in (MOD_TYPE, MOD_RATE, MOD_DEPTH, MOD_MIX):
+        info = (all_params or {}).get(p)
+        if info is not None and "values" in info:
+            controls.append(control(0, dict(info, max=127, bipolar=False), "DSTR", param_address(p)))
+        elif p == MOD_TYPE:
+            controls.append(mod_type_menu())
+        else:
+            controls.append(param_control(p, labels.get(p, str(p))))
     return controls
 
 
-def page_devices(params: list[dict], labels: dict[int, str] | None = None) -> dict[str, dict]:
+def page_devices(params: list[dict], labels: dict[int, str] | None = None,
+                 all_params: dict[int, dict] | None = None) -> dict[str, dict]:
     devices = {}
     for page, (stem, name, slot) in PAGES.items():
         if page == "DSTR" and labels is not None:
-            controls = dstr_controls(params, labels)
+            controls = dstr_controls(params, labels, all_params)
         elif page.startswith("LFO") and labels is not None:
             lfo = [p for p in params if p["page"] == page]
             controls = [lfo_target_switch(lfo[LFO_DEST]["cc"], labels)]
@@ -257,7 +337,10 @@ def page_devices(params: list[dict], labels: dict[int, str] | None = None) -> di
 
 def build(describe: dict) -> dict[str, dict]:
     labels = {p["param"]: p["label"] for p in describe["params_all"]} if "params_all" in describe else None
-    files = page_devices(describe["params"], labels)
+    all_params = {p["param"]: p for p in describe.get("params_all", [])}
+    ADDRESS_OF.clear()
+    ADDRESS_OF.update({p["id"]: cc_address(p["cc"]) for p in describe["params"] if "id" in p})
+    files = page_devices(describe["params"], labels, all_params)
     ccs = cc_by_param(describe) if "kit" in describe["machines"][0] else None
     ptch = next((p["param"] for p in describe["params"] if p["cc"] == PTCH_CC), None)
     for m in describe["machines"]:

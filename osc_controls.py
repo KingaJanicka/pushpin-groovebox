@@ -67,11 +67,43 @@ class OSCControl(object):
         # Optional: show the value as an offset from this centre, signed
         # (mono2k's LFO depth: 64 is none, below it the other way round)
         self.display_center: float | None = config.get("display_center", None)
+        # Optional: what to show for each whole value (mono2k's own words for
+        # its values: "1/16 NOTE", "2.3 KHZ"). With "value_labels_by", the
+        # table follows another parameter's value: {"address", "choices",
+        # "tables"}, table (v * choices) >> 7 for that parameter's v (DIGI-WAV's
+        # waves follow its BANK, an LFO's SPD its MULT).
+        self.value_labels: list[str] | None = config.get("value_labels", None)
+        self.value_labels_by: ConfigDict | None = config.get("value_labels_by", None)
+        self.labels_source_value: float = 0.0
+        self.labels_address: str | None = self.value_labels_by["address"] if self.value_labels_by else None
 
     def query(self) -> None:
         self.send_osc_func("/q" + self.address, None)
 
+    def set_labels_source(self, address: str, *args: Any) -> None:
+        """The parameter the labels follow has a new value."""
+        if args:
+            try:
+                self.labels_source_value = float(args[0])
+            except (TypeError, ValueError):
+                pass
+
+    def labels_table(self) -> list[str] | None:
+        if self.value_labels_by:
+            tables = self.value_labels_by["tables"]
+            n = int(self.value_labels_by.get("choices", len(tables)))
+            v = min(max(int(self.labels_source_value), 0), 127)
+            return tables[min((v * n) >> 7, len(tables) - 1)]
+        return self.value_labels
+
+    @property
+    def has_value_labels(self) -> bool:
+        return bool(self.value_labels or self.value_labels_by)
+
     def display_text(self, value: float) -> str:
+        table = self.labels_table()
+        if table:
+            return table[min(max(int(float(value)), 0), len(table) - 1)]
         if self.display_center is not None:
             offset = round(float(value) - float(self.display_center), 2)
             return "0" if offset == 0 else f"{offset:+g}"
@@ -141,6 +173,8 @@ class OSCControl(object):
                 # str(self.string),
                 height=val_height,
                 font_color=color,
+                # (words don't fit where a number rides along with the knob)
+                center_horizontally=self.has_value_labels,
                 margin_left=int(self.fraction(value) * 80 + 10),
             )
 
@@ -221,6 +255,8 @@ class OSCControl(object):
                 # str(self.string),
                 height=val_height,
                 font_color=color,
+                # (words don't fit where a number rides along with the knob)
+                center_horizontally=self.has_value_labels,
                 margin_left=int(self.fraction(value) * 80 + 10),
             )
 
@@ -1045,6 +1081,14 @@ class OSCControlMenu(object):
         return None
 
     def get_closest_idx(self, value: float) -> int | None:
+        try:
+            whole = int(float(value))
+        except (TypeError, ValueError):
+            whole = None
+        if whole is not None:
+            for idx, item in enumerate(self.items):
+                if item.range is not None and item.range[0] <= whole <= item.range[1]:
+                    return idx
         closest_value = closest([float(item.value) for item in self.items if item.value is not None], value)
         for idx, item in enumerate(self.items):
             if item.value == closest_value:
@@ -1208,6 +1252,9 @@ class OSCMenuItem(object):
         self.modmatrix: bool = config.get("modmatrix", True)
         self.address: str | None = self.message["address"] if self.message else None
         self.value: float | int | None = self.message["value"] if self.message else None
+        # Optional: [lo, hi], every whole value that means this item (mono2k's
+        # choices are runs of values, not all the same length)
+        self.range: list[int] | None = config.get("range", None)
         self.send_osc_func: OscSendFunc = send_osc_func or (lambda addr, val: None)
         # Optional: {"slot": s, "control": k}: the item names the k-th control of
         # the device slot s shows (mono2k's LFO destinations on the machine page).

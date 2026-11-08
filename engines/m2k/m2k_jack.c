@@ -267,14 +267,71 @@ static void pp_json_str(const char *s)
     putchar('"');
 }
 
+static void pp_json_values(const pi_t *pi);
+
 static void pp_json_param(const pi_t *pi)
 {
     printf("{\"label\": ");
     pp_json_str(pi->s4);
     printf(", \"name\": ");
     pp_json_str(pi->name);
-    printf(", \"max\": %d, \"bipolar\": %s, \"choices\": %d}", kind_max(pi->kind),
+    printf(", \"max\": %d, \"bipolar\": %s, \"choices\": %d", kind_max(pi->kind),
            pi->kind == K_BI || pi->kind == K_PAN || pi->kind == K_SEMI ? "true" : "false", kind_choices(pi->kind));
+    pp_json_values(pi);
+    putchar('}');
+}
+
+/* one table of what the screen shows for each value 0-127: "text" and "unit" as fmt() writes them */
+static void pp_json_text_table(const pi_t *pi)
+{
+    char out[24];
+    const char *unit;
+    printf("{\"text\": [");
+    for (int v = 0; v < 128; v++) {
+        fmt(pi, 0, v, out, &unit);
+        if (v) putchar(',');
+        pp_json_str(out);
+    }
+    printf("], \"unit\": [");
+    for (int v = 0; v < 128; v++) {
+        fmt(pi, 0, v, out, &unit);
+        if (v) putchar(',');
+        pp_json_str(unit);
+    }
+    printf("]}");
+}
+
+/* the screen's names for a parameter's values: its choice for each value (where it's a choice), and
+ * the text; WAVE's and an LFO's SPD hang on another parameter (the bank, its MULT): a table for each */
+static void pp_json_values(const pi_t *pi)
+{
+    const int k = pi->kind;
+    /* these pushpin shows its own way (TRCK, DEST), or that hang on the tempo (HOLD) */
+    if (k == K_TRK || k == K_DEST || k == K_AHLD || k == K_SSEL) return;
+    uint8_t *kit = PAT(cur_pat)->kit[0];
+    printf(", \"kind\": %d", k);
+    if (kind_choices(k)) {
+        printf(", \"choice\": [");
+        for (int v = 0; v < 128; v++) printf("%s%d", v ? "," : "", choice_of(k, v));
+        putchar(']');
+    }
+    int by = -1, n = 0, step = 0;
+    if (k == K_WAVE) { by = P_WBNK; n = 2; step = 64; }
+    else if (k == K_LSPD) { by = P_LFO + 8 * ((int)(pi - PI_LFO) >> 3) + L_MULT; n = kind_choices(K_MULT); step = 128 / n; }
+    if (by < 0) {
+        printf(", \"values\": ");
+        pp_json_text_table(pi);
+        return;
+    }
+    const uint8_t keep = kit[by];
+    printf(", \"values_by\": {\"param\": %d, \"tables\": [", by);
+    for (int c = 0; c < n; c++) {
+        kit[by] = (uint8_t)(c * step + step / 2);         /* the middle of choice c */
+        if (c) putchar(',');
+        pp_json_text_table(pi);
+    }
+    printf("]}");
+    kit[by] = keep;
 }
 
 /* the data pushpin's device pages are generated from: no audio, nothing but the core's own tables */
@@ -316,6 +373,7 @@ static void pp_describe(void)
         pp_json_str(pi->s4);
         printf(", \"name\": ");
         pp_json_str(pi->name);
+        if (p >= 8) pp_json_values(pi);                  /* (the machines' own are with them) */
         printf("}%s\n", p + 1 < P_COUNT ? "," : "");
     }
     /* MONO2K's factory sound library (m2k_lib.c): each sound its machine and every parameter */

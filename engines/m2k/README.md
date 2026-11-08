@@ -197,6 +197,16 @@ engines/m2k/build.sh && python engines/m2k/gen_definitions.py
   never exports as on), and LEVL, left to PipeWire for volume. Every machine's
   INIT and every sound still sets LEVL (CC 7), so a track always starts at its
   sound's own level.
+- **Values in MONO2K's own words**: `m2k-jack --describe` exports what the
+  FM-1's screen shows for every value of every parameter (m2k_ui.c's `fmt()`),
+  and the generator uses it. A choice (the waves, LFO TRIG and MULT, SID MOD and
+  MSRC, the on/off switches, FM+'s 24 ratios, VOX-6's CONS, CLAP, MOD TYPE) or a
+  parameter with few distinct values (BITS) is a menu; each item owns its run of
+  values, so a value from a sound or a p-lock shows the right item. A quantity
+  (SRR, DTIM, EQF, DBAS, envelope times, BASE and WDTH in octaves, TUNE in
+  cents, PAN, LFO DPTH in %, MOD RATE in Hz) stays a knob that shows the words.
+  DIGI-WAV's WAVE names follow its BANK and an LFO's SPD (bars, beats, a note)
+  its MULT. AMP's HOLD stays a number: MONO2K shows it in ms at the tempo.
 
 Every control's address is `/cc/<n>`. On a mono2k track the instrument's
 `MidiCCClient` (`cc_client.py`) turns those into MIDI CCs on the track's MIDI

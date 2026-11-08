@@ -370,21 +370,307 @@
 			"label": "VOC1",
 			"address": "/cc/48",
 			"min": 0,
-			"max": 127
+			"max": 127,
+			"value_labels": [
+				"199 HZ F1",
+				"202 HZ F1",
+				"204 HZ F1",
+				"207 HZ F1",
+				"210 HZ F1",
+				"212 HZ F1",
+				"215 HZ F1",
+				"217 HZ F1",
+				"220 HZ F1",
+				"222 HZ F1",
+				"225 HZ F1",
+				"227 HZ F1",
+				"230 HZ F1",
+				"231 HZ F1",
+				"233 HZ F1",
+				"234 HZ F1",
+				"236 HZ F1",
+				"237 HZ F1",
+				"239 HZ F1",
+				"240 HZ F1",
+				"242 HZ F1",
+				"245 HZ F1",
+				"248 HZ F1",
+				"252 HZ F1",
+				"255 HZ F1",
+				"257 HZ F1",
+				"260 HZ F1",
+				"262 HZ F1",
+				"265 HZ F1",
+				"267 HZ F1",
+				"269 HZ F1",
+				"272 HZ F1",
+				"274 HZ F1",
+				"276 HZ F1",
+				"279 HZ F1",
+				"281 HZ F1",
+				"284 HZ F1",
+				"286 HZ F1",
+				"288 HZ F1",
+				"290 HZ F1",
+				"292 HZ F1",
+				"293 HZ F1",
+				"295 HZ F1",
+				"296 HZ F1",
+				"298 HZ F1",
+				"301 HZ F1",
+				"304 HZ F1",
+				"307 HZ F1",
+				"310 HZ F1",
+				"312 HZ F1",
+				"314 HZ F1",
+				"317 HZ F1",
+				"319 HZ F1",
+				"322 HZ F1",
+				"324 HZ F1",
+				"327 HZ F1",
+				"330 HZ F1",
+				"336 HZ F1",
+				"342 HZ F1",
+				"349 HZ F1",
+				"355 HZ F1",
+				"358 HZ F1",
+				"361 HZ F1",
+				"365 HZ F1",
+				"368 HZ F1",
+				"376 HZ F1",
+				"384 HZ F1",
+				"392 HZ F1",
+				"400 HZ F1",
+				"404 HZ F1",
+				"407 HZ F1",
+				"411 HZ F1",
+				"415 HZ F1",
+				"418 HZ F1",
+				"420 HZ F1",
+				"423 HZ F1",
+				"426 HZ F1",
+				"431 HZ F1",
+				"436 HZ F1",
+				"442 HZ F1",
+				"447 HZ F1",
+				"452 HZ F1",
+				"457 HZ F1",
+				"463 HZ F1",
+				"468 HZ F1",
+				"472 HZ F1",
+				"475 HZ F1",
+				"479 HZ F1",
+				"483 HZ F1",
+				"488 HZ F1",
+				"494 HZ F1",
+				"499 HZ F1",
+				"505 HZ F1",
+				"511 HZ F1",
+				"518 HZ F1",
+				"524 HZ F1",
+				"531 HZ F1",
+				"534 HZ F1",
+				"537 HZ F1",
+				"540 HZ F1",
+				"543 HZ F1",
+				"547 HZ F1",
+				"551 HZ F1",
+				"556 HZ F1",
+				"560 HZ F1",
+				"563 HZ F1",
+				"566 HZ F1",
+				"570 HZ F1",
+				"573 HZ F1",
+				"578 HZ F1",
+				"583 HZ F1",
+				"589 HZ F1",
+				"594 HZ F1",
+				"601 HZ F1",
+				"608 HZ F1",
+				"615 HZ F1",
+				"622 HZ F1",
+				"629 HZ F1",
+				"636 HZ F1",
+				"644 HZ F1",
+				"651 HZ F1",
+				"655 HZ F1",
+				"659 HZ F1",
+				"664 HZ F1",
+				"668 HZ F1",
+				"679 HZ F1",
+				"690 HZ F1",
+				"702 HZ F1"
+			]
 		},
 		{
 			"$type": "control-range",
 			"label": "VOC2",
 			"address": "/cc/49",
 			"min": 0,
-			"max": 127
+			"max": 127,
+			"value_labels": [
+				"457 HZ F2",
+				"461 HZ F2",
+				"464 HZ F2",
+				"468 HZ F2",
+				"472 HZ F2",
+				"477 HZ F2",
+				"482 HZ F2",
+				"488 HZ F2",
+				"493 HZ F2",
+				"473 HZ F2",
+				"453 HZ F2",
+				"434 HZ F2",
+				"416 HZ F2",
+				"416 HZ F2",
+				"416 HZ F2",
+				"416 HZ F2",
+				"416 HZ F2",
+				"416 HZ F2",
+				"416 HZ F2",
+				"417 HZ F2",
+				"417 HZ F2",
+				"417 HZ F2",
+				"417 HZ F2",
+				"418 HZ F2",
+				"418 HZ F2",
+				"417 HZ F2",
+				"417 HZ F2",
+				"416 HZ F2",
+				"416 HZ F2",
+				"486 HZ F2",
+				"568 HZ F2",
+				"664 HZ F2",
+				"776 HZ F2",
+				"782 HZ F2",
+				"788 HZ F2",
+				"795 HZ F2",
+				"801 HZ F2",
+				"812 HZ F2",
+				"824 HZ F2",
+				"835 HZ F2",
+				"847 HZ F2",
+				"856 HZ F2",
+				"865 HZ F2",
+				"875 HZ F2",
+				"884 HZ F2",
+				"901 HZ F2",
+				"919 HZ F2",
+				"937 HZ F2",
+				"955 HZ F2",
+				"965 HZ F2",
+				"976 HZ F2",
+				"986 HZ F2",
+				"997 HZ F2",
+				"1009 HZ F2",
+				"1021 HZ F2",
+				"1033 HZ F2",
+				"1045 HZ F2",
+				"1065 HZ F2",
+				"1085 HZ F2",
+				"1105 HZ F2",
+				"1126 HZ F2",
+				"1135 HZ F2",
+				"1145 HZ F2",
+				"1154 HZ F2",
+				"1164 HZ F2",
+				"1179 HZ F2",
+				"1195 HZ F2",
+				"1210 HZ F2",
+				"1226 HZ F2",
+				"1243 HZ F2",
+				"1261 HZ F2",
+				"1279 HZ F2",
+				"1297 HZ F2",
+				"1318 HZ F2",
+				"1338 HZ F2",
+				"1360 HZ F2",
+				"1381 HZ F2",
+				"1394 HZ F2",
+				"1408 HZ F2",
+				"1421 HZ F2",
+				"1435 HZ F2",
+				"1457 HZ F2",
+				"1478 HZ F2",
+				"1501 HZ F2",
+				"1523 HZ F2",
+				"1543 HZ F2",
+				"1563 HZ F2",
+				"1584 HZ F2",
+				"1605 HZ F2",
+				"1626 HZ F2",
+				"1647 HZ F2",
+				"1669 HZ F2",
+				"1691 HZ F2",
+				"1713 HZ F2",
+				"1734 HZ F2",
+				"1757 HZ F2",
+				"1779 HZ F2",
+				"1799 HZ F2",
+				"1819 HZ F2",
+				"1839 HZ F2",
+				"1859 HZ F2",
+				"1890 HZ F2",
+				"1921 HZ F2",
+				"1953 HZ F2",
+				"1985 HZ F2",
+				"2013 HZ F2",
+				"2042 HZ F2",
+				"2071 HZ F2",
+				"2100 HZ F2",
+				"2123 HZ F2",
+				"2147 HZ F2",
+				"2171 HZ F2",
+				"2195 HZ F2",
+				"2221 HZ F2",
+				"2247 HZ F2",
+				"2273 HZ F2",
+				"2300 HZ F2",
+				"2344 HZ F2",
+				"2389 HZ F2",
+				"2434 HZ F2",
+				"2481 HZ F2",
+				"2519 HZ F2",
+				"2557 HZ F2",
+				"2596 HZ F2",
+				"2635 HZ F2",
+				"2675 HZ F2",
+				"2716 HZ F2",
+				"2757 HZ F2"
+			]
 		},
 		{
-			"$type": "control-range",
-			"label": "V-STW",
-			"address": "/cc/50",
-			"min": 0,
-			"max": 127
+			"$type": "control-menu",
+			"menu_label": "V-STW",
+			"step": 0.25,
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "OFF",
+					"range": [
+						0,
+						63
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/50",
+						"value": 32
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "ON",
+					"range": [
+						64,
+						127
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/50",
+						"value": 96
+					}
+				}
+			]
 		},
 		{
 			"$type": "control-range",
@@ -394,11 +680,284 @@
 			"max": 127
 		},
 		{
-			"$type": "control-range",
-			"label": "CONS",
-			"address": "/cc/52",
-			"min": 0,
-			"max": 127
+			"$type": "control-menu",
+			"menu_label": "CONS",
+			"step": 0.5,
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "-",
+					"range": [
+						0,
+						6
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/52",
+						"value": 3
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "B",
+					"range": [
+						7,
+						12
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/52",
+						"value": 10
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "D",
+					"range": [
+						13,
+						18
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/52",
+						"value": 16
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "F",
+					"range": [
+						19,
+						24
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/52",
+						"value": 22
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "G",
+					"range": [
+						25,
+						30
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/52",
+						"value": 28
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "H",
+					"range": [
+						31,
+						36
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/52",
+						"value": 34
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "J",
+					"range": [
+						37,
+						42
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/52",
+						"value": 40
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "K",
+					"range": [
+						43,
+						48
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/52",
+						"value": 46
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "L",
+					"range": [
+						49,
+						54
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/52",
+						"value": 52
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "M",
+					"range": [
+						55,
+						60
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/52",
+						"value": 58
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "N",
+					"range": [
+						61,
+						67
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/52",
+						"value": 64
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "P",
+					"range": [
+						68,
+						73
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/52",
+						"value": 71
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "R",
+					"range": [
+						74,
+						79
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/52",
+						"value": 77
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "RR",
+					"range": [
+						80,
+						85
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/52",
+						"value": 83
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "S",
+					"range": [
+						86,
+						91
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/52",
+						"value": 89
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "SJ",
+					"range": [
+						92,
+						97
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/52",
+						"value": 95
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "T",
+					"range": [
+						98,
+						103
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/52",
+						"value": 101
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "TH",
+					"range": [
+						104,
+						109
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/52",
+						"value": 107
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "TJ",
+					"range": [
+						110,
+						115
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/52",
+						"value": 113
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "V",
+					"range": [
+						116,
+						121
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/52",
+						"value": 119
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Z",
+					"range": [
+						122,
+						127
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/52",
+						"value": 125
+					}
+				}
+			]
 		},
 		{
 			"$type": "control-range",
@@ -419,7 +978,137 @@
 			"label": "TUNE",
 			"address": "/cc/55",
 			"min": 0,
-			"max": 127
+			"max": 127,
+			"value_labels": [
+				"-200 CENT",
+				"-196 CENT",
+				"-193 CENT",
+				"-190 CENT",
+				"-187 CENT",
+				"-184 CENT",
+				"-181 CENT",
+				"-178 CENT",
+				"-175 CENT",
+				"-171 CENT",
+				"-168 CENT",
+				"-165 CENT",
+				"-162 CENT",
+				"-159 CENT",
+				"-156 CENT",
+				"-153 CENT",
+				"-150 CENT",
+				"-146 CENT",
+				"-143 CENT",
+				"-140 CENT",
+				"-137 CENT",
+				"-134 CENT",
+				"-131 CENT",
+				"-128 CENT",
+				"-125 CENT",
+				"-121 CENT",
+				"-118 CENT",
+				"-115 CENT",
+				"-112 CENT",
+				"-109 CENT",
+				"-106 CENT",
+				"-103 CENT",
+				"-100 CENT",
+				"-96 CENT",
+				"-93 CENT",
+				"-90 CENT",
+				"-87 CENT",
+				"-84 CENT",
+				"-81 CENT",
+				"-78 CENT",
+				"-75 CENT",
+				"-71 CENT",
+				"-68 CENT",
+				"-65 CENT",
+				"-62 CENT",
+				"-59 CENT",
+				"-56 CENT",
+				"-53 CENT",
+				"-50 CENT",
+				"-46 CENT",
+				"-43 CENT",
+				"-40 CENT",
+				"-37 CENT",
+				"-34 CENT",
+				"-31 CENT",
+				"-28 CENT",
+				"-25 CENT",
+				"-21 CENT",
+				"-18 CENT",
+				"-15 CENT",
+				"-12 CENT",
+				"-9 CENT",
+				"-6 CENT",
+				"-3 CENT",
+				"0 CENT",
+				"3 CENT",
+				"6 CENT",
+				"9 CENT",
+				"12 CENT",
+				"15 CENT",
+				"18 CENT",
+				"21 CENT",
+				"25 CENT",
+				"28 CENT",
+				"31 CENT",
+				"34 CENT",
+				"37 CENT",
+				"40 CENT",
+				"43 CENT",
+				"46 CENT",
+				"50 CENT",
+				"53 CENT",
+				"56 CENT",
+				"59 CENT",
+				"62 CENT",
+				"65 CENT",
+				"68 CENT",
+				"71 CENT",
+				"75 CENT",
+				"78 CENT",
+				"81 CENT",
+				"84 CENT",
+				"87 CENT",
+				"90 CENT",
+				"93 CENT",
+				"96 CENT",
+				"100 CENT",
+				"103 CENT",
+				"106 CENT",
+				"109 CENT",
+				"112 CENT",
+				"115 CENT",
+				"118 CENT",
+				"121 CENT",
+				"125 CENT",
+				"128 CENT",
+				"131 CENT",
+				"134 CENT",
+				"137 CENT",
+				"140 CENT",
+				"143 CENT",
+				"146 CENT",
+				"150 CENT",
+				"153 CENT",
+				"156 CENT",
+				"159 CENT",
+				"162 CENT",
+				"165 CENT",
+				"168 CENT",
+				"171 CENT",
+				"175 CENT",
+				"178 CENT",
+				"181 CENT",
+				"184 CENT",
+				"187 CENT",
+				"190 CENT",
+				"193 CENT",
+				"196 CENT"
+			]
 		},
 		{
 			"$type": "control-spacer"
@@ -431,7 +1120,136 @@
 			"min": 0,
 			"max": 127,
 			"bipolar": 1,
-			"display_center": 64
+			"value_labels": [
+				"-64 SEMI",
+				"-63 SEMI",
+				"-62 SEMI",
+				"-61 SEMI",
+				"-60 SEMI",
+				"-59 SEMI",
+				"-58 SEMI",
+				"-57 SEMI",
+				"-56 SEMI",
+				"-55 SEMI",
+				"-54 SEMI",
+				"-53 SEMI",
+				"-52 SEMI",
+				"-51 SEMI",
+				"-50 SEMI",
+				"-49 SEMI",
+				"-48 SEMI",
+				"-47 SEMI",
+				"-46 SEMI",
+				"-45 SEMI",
+				"-44 SEMI",
+				"-43 SEMI",
+				"-42 SEMI",
+				"-41 SEMI",
+				"-40 SEMI",
+				"-39 SEMI",
+				"-38 SEMI",
+				"-37 SEMI",
+				"-36 SEMI",
+				"-35 SEMI",
+				"-34 SEMI",
+				"-33 SEMI",
+				"-32 SEMI",
+				"-31 SEMI",
+				"-30 SEMI",
+				"-29 SEMI",
+				"-28 SEMI",
+				"-27 SEMI",
+				"-26 SEMI",
+				"-25 SEMI",
+				"-24 SEMI",
+				"-23 SEMI",
+				"-22 SEMI",
+				"-21 SEMI",
+				"-20 SEMI",
+				"-19 SEMI",
+				"-18 SEMI",
+				"-17 SEMI",
+				"-16 SEMI",
+				"-15 SEMI",
+				"-14 SEMI",
+				"-13 SEMI",
+				"-12 SEMI",
+				"-11 SEMI",
+				"-10 SEMI",
+				"-9 SEMI",
+				"-8 SEMI",
+				"-7 SEMI",
+				"-6 SEMI",
+				"-5 SEMI",
+				"-4 SEMI",
+				"-3 SEMI",
+				"-2 SEMI",
+				"-1 SEMI",
+				"0 SEMI",
+				"1 SEMI",
+				"2 SEMI",
+				"3 SEMI",
+				"4 SEMI",
+				"5 SEMI",
+				"6 SEMI",
+				"7 SEMI",
+				"8 SEMI",
+				"9 SEMI",
+				"10 SEMI",
+				"11 SEMI",
+				"12 SEMI",
+				"13 SEMI",
+				"14 SEMI",
+				"15 SEMI",
+				"16 SEMI",
+				"17 SEMI",
+				"18 SEMI",
+				"19 SEMI",
+				"20 SEMI",
+				"21 SEMI",
+				"22 SEMI",
+				"23 SEMI",
+				"24 SEMI",
+				"25 SEMI",
+				"26 SEMI",
+				"27 SEMI",
+				"28 SEMI",
+				"29 SEMI",
+				"30 SEMI",
+				"31 SEMI",
+				"32 SEMI",
+				"33 SEMI",
+				"34 SEMI",
+				"35 SEMI",
+				"36 SEMI",
+				"37 SEMI",
+				"38 SEMI",
+				"39 SEMI",
+				"40 SEMI",
+				"41 SEMI",
+				"42 SEMI",
+				"43 SEMI",
+				"44 SEMI",
+				"45 SEMI",
+				"46 SEMI",
+				"47 SEMI",
+				"48 SEMI",
+				"49 SEMI",
+				"50 SEMI",
+				"51 SEMI",
+				"52 SEMI",
+				"53 SEMI",
+				"54 SEMI",
+				"55 SEMI",
+				"56 SEMI",
+				"57 SEMI",
+				"58 SEMI",
+				"59 SEMI",
+				"60 SEMI",
+				"61 SEMI",
+				"62 SEMI",
+				"63 SEMI"
+			]
 		}
 	]
 }
