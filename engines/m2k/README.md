@@ -47,7 +47,8 @@ One process plays one MONO2K track. All MIDI channels are folded onto it.
 | CC 80–87 | FX: EQF EQG SRR DTIM DSND DFB DBAS DWID |
 | CC 88/104/112 +0..7 | LFO 1/2/3: TRCK DEST WAVE TRIG MULT SPD PHAS DPTH |
 | CC 7 / CC 3 | level / mute |
-| **CC 14** | machine, value = number from `--list-machines` (pushpin's addition) |
+| **CC 14** | machine, value = number from `--list-machines`; loads that machine's INIT sound (pushpin's addition) |
+| **CC 16–20** | DSTR: BITS FOLD XOR, reverb send, track pitch (pushpin's addition) |
 | CC 120, 123 | all sound off / all notes off |
 | clock, start, stop | ignored (pushpin sequences; MONO2K's sequencer stays stopped) |
 
@@ -58,13 +59,15 @@ One process plays one MONO2K track. All MIDI channels are folded onto it.
 - MIDI is applied with sample accuracy, but the core only reads parameters every
   16 samples.
 - MONO2K's lofi bus (reverb, tape) runs inside every process with the factory
-  defaults; there is no CC for it yet.
+  defaults. Only the track's reverb send has a CC (19); the bus itself has none.
 - Not yet tested: the JACK path on the Pi. It builds only where JACK headers
   exist; on macOS it was checked against stub headers only.
-- The Push's device pages for an m2k track still show Surge's controls, and
-  they do nothing (they send OSC, which m2k-jack doesn't listen to). Notes and
-  the sequencer work, because they go over MIDI. Sending CCs from the pages is
-  the next step.
+- Presets don't work on m2k tracks: pushpin's preset code sends Surge's
+  `/patch/...` commands, which the CC client ignores.
+- Choosing a machine always loads its INIT sound (AMP, FILT, FX and LFOs too),
+  because pushpin can't read values back from m2k-jack and needs to know them.
+- Parameters with a few discrete choices (LFO WAVE, SID WAVE, ...) are plain
+  0–127 knobs, not menus.
 
 ## Using it for a pushpin track
 
@@ -86,3 +89,27 @@ in place of `surge-xt-cli` and routes its outputs through the volume node, the
 same way it routes Surge. The binary path defaults to
 `engines/m2k/build/m2k-jack`; set `PUSHPIN_M2K_BIN` to override it. The log
 goes to `m2k-3.log` in pushpin's log directory.
+
+## Device pages
+
+The Push's pages for an m2k track come from `engines/m2k/definitions/`, which
+`gen_definitions.py` generates from `m2k-jack --describe` (the labels and INIT
+sounds are MONO2K's own, so the generated files stay in this GPL directory).
+Regenerate them after updating the pinned MONO2K commit:
+
+```bash
+engines/m2k/build.sh && python engines/m2k/gen_definitions.py
+```
+
+- **Machine device** (first upper-row button): one per machine, picked from the
+  device menu like Surge's oscillator types. Shows SYN A–H with that machine's
+  own labels. Selecting one sends CC 14 and the machine's whole INIT sound.
+- **AMP, FILT, FX, DSTR**: always shown.
+- **LFO 1–3**: on the modulation page (Right arrow). TRCK is hidden, because a
+  process plays only one track.
+
+Every control's address is `/cc/<n>`. On a mono2k track the instrument's
+`MidiCCClient` (`cc_client.py`) turns those into MIDI CCs on the track's MIDI
+port, and sends each value back through the instrument's OSC dispatcher, the
+way Surge echoes values. That way the display, the device slot that selects
+the machine, and sequencer p-locks work as they do for Surge.

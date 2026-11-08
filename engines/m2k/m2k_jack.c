@@ -7,7 +7,7 @@
  * into itself. It is a separate program that pushpin talks to over MIDI only, so
  * pushpin (MIT) never links against it.
  *
- * One pp_process plays one MONO2K track (track 1). Every MIDI channel is folded
+ * One process plays one MONO2K track (track 1). Every MIDI channel is folded
  * onto that track, so pushpin can send on whatever channel its instrument uses.
  *
  *   Notes        note on / note off (velocity is ignored, as on the Monomachine)
@@ -18,7 +18,9 @@
  *   CC 72-79     FILT: BASE WDTH HPQ LPQ FATK FDEC BOF WOF
  *   CC 80-87     FX: EQF EQG SRR DTIM DSND DFB DBAS DWID
  *   CC 88/104/112 + 0..7  LFO 1/2/3: TRCK DEST WAVE TRIG MULT SPD PHAS DPTH
- *   CC 14        (pushpin's own) machine: the value is the machine's number (--list-machines)
+ *   pushpin's own additions:
+ *   CC 14        machine (its number from --list-machines); loads the machine's INIT sound
+ *   CC 16-20     DSTR: BITS FOLD XOR, reverb send (VERB), track pitch (PTCH)
  *   CC 120, 123  all sound off / all notes off
  *   Clock, start, stop and other system messages are dropped: pushpin sequences,
  *   MONO2K's own sequencer stays stopped.
@@ -29,6 +31,8 @@
  *   m2k-jack [--name NAME] [--machine N] [--midi-connect SUBSTR] [--no-audio-connect]
  *   m2k-jack --render OUT.wav [--rate HZ] [--machine N] [--script FILE]
  *   m2k-jack --list-machines
+ *   m2k-jack --describe          every machine's parameters and INIT sound as JSON
+ *                                (engines/m2k/gen_definitions.py builds pushpin's pages from it)
  *
  * --render plays a short phrase (or the --script: lines "seconds status d1 d2",
  * decimal) through the same MIDI handling and resampler and writes a 16-bit WAV.
@@ -50,7 +54,31 @@
 #define TRACK 0
 #define CC_MACHINE 14
 
-/* ------------------------------------------------------------------ the core */
+/* every CC that sets a track parameter: the Monomachine's map, then pushpin's additions */
+typedef struct { uint8_t cc, param; const char *page; } pp_ccmap_t;
+static const pp_ccmap_t PP_CC[] = {
+#define PP_ROW(cc0, p0, pg) {cc0, p0, pg}, {cc0 + 1, p0 + 1, pg}, {cc0 + 2, p0 + 2, pg}, {cc0 + 3, p0 + 3, pg}, \
+                            {cc0 + 4, p0 + 4, pg}, {cc0 + 5, p0 + 5, pg}, {cc0 + 6, p0 + 6, pg}, {cc0 + 7, p0 + 7, pg}
+    PP_ROW(48, P_SYN, "SYN"), PP_ROW(56, P_ATK, "AMP"), PP_ROW(72, P_BASE, "FILT"), PP_ROW(80, P_EQF, "FX"),
+    PP_ROW(88, P_LFO, "LFO1"), PP_ROW(104, P_LFO + 8, "LFO2"), PP_ROW(112, P_LFO + 16, "LFO3"),
+#undef PP_ROW
+    {16, P_BITS, "DSTR"}, {17, P_FOLD, "DSTR"}, {18, P_XOR, "DSTR"}, {19, P_SPU, "DSTR"}, {20, P_PTCH, "DSTR"},
+    {7, P_LEVL, "DSTR"},
+};
+#define PP_NCC ((int)(sizeof PP_CC / sizeof PP_CC[0]))
+
+/* machine m on the track with its whole INIT sound: the same sound whatever was there before, so pushpin,
+ * which hears nothing back, knows every parameter's value after a machine change */
+static void pp_set_machine(int m)
+{
+    if (m < 0 || m >= M_COUNT) return;
+    m2k_pattern_t *p = PAT(cur_pat);
+    kit_init(&pat_tmp, TRACK, m);
+    m_cpy(p->kit[TRACK], pat_tmp.kit[TRACK], P_COUNT);
+    p->machine[TRACK] = (uint8_t)m;
+    m_cpy(trk[TRACK].eff, p->kit[TRACK], P_COUNT);
+    track_home(TRACK, mach_home(m));
+}
 
 static void pp_engine_init(int machine)
 {
@@ -61,7 +89,59 @@ static void pp_engine_init(int machine)
     lockmap_build();
     for (int t = 0; t < M2K_TRACKS; t++) m_cpy(trk[t].eff, p->kit[t], P_COUNT);
     seq_tempo();
-    if (machine >= 0 && machine < M_COUNT) machine_to(TRACK, machine);
+    pp_set_machine(machine < 0 ? 0 : machine);
+}
+
+static void pp_json_str(const char *s)
+{
+    putchar('"');
+    for (; *s; s++) {
+        if (*s == '"' || *s == '\\') putchar('\\');
+        putchar(*s);
+    }
+    putchar('"');
+}
+
+static void pp_json_param(const pi_t *pi)
+{
+    printf("{\"label\": ");
+    pp_json_str(pi->s4);
+    printf(", \"name\": ");
+    pp_json_str(pi->name);
+    printf(", \"max\": %d, \"bipolar\": %s, \"choices\": %d}", kind_max(pi->kind),
+           pi->kind == K_BI || pi->kind == K_PAN || pi->kind == K_SEMI ? "true" : "false", kind_choices(pi->kind));
+}
+
+/* the data pushpin's device pages are generated from: no audio, nothing but the core's own tables */
+static void pp_describe(void)
+{
+    printf("{\n  \"machine_cc\": %d,\n  \"params\": [\n", CC_MACHINE);
+    int first = 1;
+    for (int i = 0; i < PP_NCC; i++) {
+        if (PP_CC[i].param < 8) continue;                  /* SYN: the machines' own, below */
+        printf("%s    {\"cc\": %d, \"page\": \"%s\", \"param\": ", first ? "" : ",\n", PP_CC[i].cc, PP_CC[i].page);
+        pp_json_param(pinfo(TRACK, PP_CC[i].param));
+        putchar('}');
+        first = 0;
+    }
+    printf("\n  ],\n  \"machines\": [\n");
+    for (int m = 0; m < M_COUNT; m++) {
+        kit_init(&pat_tmp, TRACK, m);
+        printf("    {\"index\": %d, \"name\": ", m);
+        pp_json_str(MI[m].name);
+        printf(", \"syn\": [");
+        for (int k = 0; k < 8; k++) {
+            if (k) printf(", ");
+            printf("{\"cc\": %d, \"param\": ", 48 + k);
+            pp_json_param(&MI[m].syn[k]);
+            putchar('}');
+        }
+        printf("],\n     \"init\": {");
+        for (int i = 0; i < PP_NCC; i++)
+            printf("%s\"%d\": %d", i ? ", " : "", PP_CC[i].cc, pat_tmp.kit[TRACK][PP_CC[i].param]);
+        printf("}}%s\n", m + 1 < M_COUNT ? "," : "");
+    }
+    printf("  ]\n}\n");
 }
 
 static void pp_all_notes_off(void)
@@ -79,11 +159,16 @@ static void pp_handle_midi(const uint8_t *m, size_t n)
     const int cmd = status & 0xF0;
     const int d1 = n > 1 ? m[1] & 127 : 0, d2 = n > 2 ? m[2] & 127 : 0;
     if (cmd == 0xB0) {
-        if (d1 == CC_MACHINE) {
-            if (d2 < M_COUNT) machine_to(TRACK, d2);
+        if (d1 == CC_MACHINE) { pp_set_machine(d2); return; }
+        if (d1 == 120 || d1 == 123) { pp_all_notes_off(); return; }
+        if (d1 >= 16 && d1 <= 20) {                     /* pushpin's: parameters the Monomachine's map leaves out */
+            for (int i = 0; i < PP_NCC; i++)
+                if (PP_CC[i].cc == d1) {
+                    PAT(cur_pat)->kit[TRACK][PP_CC[i].param] = (uint8_t)d2;
+                    trk[TRACK].eff[PP_CC[i].param] = (uint8_t)d2;
+                }
             return;
         }
-        if (d1 == 120 || d1 == 123) { pp_all_notes_off(); return; }
     }
     if (cmd == 0x80 || cmd == 0x90 || cmd == 0xB0)
         m2k_midi(cmd | ((midi_ch() + TRACK) & 15), d1, d2);
@@ -279,7 +364,7 @@ static void pp_usage(void)
     fprintf(stderr,
             "usage: m2k-jack [--name NAME] [--machine N] [--midi-connect SUBSTR] [--no-audio-connect]\n"
             "       m2k-jack --render OUT.wav [--rate HZ] [--seconds S] [--machine N] [--script FILE]\n"
-            "       m2k-jack --list-machines\n");
+            "       m2k-jack --list-machines | --describe\n");
 }
 
 int main(int argc, char **argv)
@@ -293,6 +378,10 @@ int main(int argc, char **argv)
         const int more = i + 1 < argc;
         if (!strcmp(a, "--list-machines")) {
             for (int m = 0; m < M_COUNT; m++) printf("%d\t%s\n", m, MI[m].name);
+            return 0;
+        } else if (!strcmp(a, "--describe")) {
+            pp_engine_init(0);
+            pp_describe();
             return 0;
         } else if (!strcmp(a, "--name") && more) name = argv[++i];
         else if (!strcmp(a, "--machine") && more) machine = atoi(argv[++i]);

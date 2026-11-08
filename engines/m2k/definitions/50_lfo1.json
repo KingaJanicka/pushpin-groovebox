@@ -1,0 +1,59 @@
+{
+	"name": "LFO 1",
+	"slot": 8,
+	"init": [],
+	"controls": [
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-range",
+			"label": "DEST",
+			"address": "/cc/89",
+			"min": 0,
+			"max": 71
+		},
+		{
+			"$type": "control-range",
+			"label": "WAVE",
+			"address": "/cc/90",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "TRIG",
+			"address": "/cc/91",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "MULT",
+			"address": "/cc/92",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "SPD",
+			"address": "/cc/93",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "PHAS",
+			"address": "/cc/94",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "DPTH",
+			"address": "/cc/95",
+			"min": 0,
+			"max": 127
+		}
+	]
+}

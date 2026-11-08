@@ -411,6 +411,8 @@ class SurgeXTEngine(Engine):
 
     # JACK client name; PipeWire reports its ports as "<client>:output_0" etc.
     jack_client_name: str = "Surge XT"
+    # How device pages reach the synth: "osc" (UDP to osc_in_port) or "midi-cc"
+    control_transport: str = "osc"
     puredata_process_id: int | None = None
     puredata_client_id: Any = None
     # Magic number is defined in the puradata patch
@@ -507,6 +509,29 @@ class SurgeXTEngine(Engine):
         # Which is why we're disconencting last
         for link in init_links:
             await disconnectPipewireLink(link['id'])
+
+    def initial_slots(self) -> list[dict[str, Any] | None]:
+        """The instrument's 16 device slots: the OSC address that says which
+        device each slot shows (Surge's oscillator and FX types) and its value
+        until Surge reports it. None: the slot's devices are always shown."""
+        return [
+            {"address": "/param/a/osc/1/type", "value": 0.0},
+            {"address": "/param/a/osc/2/type", "value": 0.0},
+            None,
+            None,
+            None,
+            {"address": "/param/fx/a/1/type", "value": 0.0},
+            {"address": "/param/fx/a/2/type", "value": 0.0},
+            {"address": "/param/fx/global/1/type", "value": 0.0},
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+        ]
 
     async def configure_duplex_node(self):
         self.get_duplex_client()
@@ -894,9 +919,9 @@ class M2KEngine(SurgeXTEngine):
 
     It plugs into the same PipeWire routing as Surge (through the volume
     node), so only the launch differs: m2k-jack is told its JACK client name
-    and links itself to the instrument's virtual MIDI port by name. It has no
-    OSC: Surge's OSC sends to this instrument go nowhere until the device
-    pages learn to send MIDI CC.
+    and links itself to the instrument's virtual MIDI port by name. Its device
+    pages (engines/m2k/definitions) send MIDI CC through the instrument's
+    MidiCCClient instead of OSC.
     """
 
     def __init__(
@@ -917,6 +942,17 @@ class M2KEngine(SurgeXTEngine):
         assert self.instrument is not None
         self.jack_client_name = f"M2K {self.instrument_index}"
         self.machine = self.instrument.get("m2k_machine", None)
+
+    control_transport = "midi-cc"
+    # m2k-jack's machine-select CC; engines/m2k/definitions' slot-0 devices select on it
+    MACHINE_ADDRESS = "/cc/14"
+
+    def initial_slots(self) -> list[dict[str, Any] | None]:
+        """Slot 0 holds one device per MONO2K machine, chosen by the machine CC.
+        Every other page (AMP, FILT, FX, DSTR, the LFOs) is always shown."""
+        slots: list[dict[str, Any] | None] = [None] * 16
+        slots[0] = {"address": self.MACHINE_ADDRESS, "value": float(self.machine or 0)}
+        return slots
 
     async def start(self) -> None:
         assert self.instrument is not None

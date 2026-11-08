@@ -1,0 +1,381 @@
+{
+	"name": "FX-CHORS",
+	"slot": 0,
+	"init": [
+		{
+			"$type": "message",
+			"$comment": "machine",
+			"address": "/cc/14",
+			"value": 11
+		},
+		{
+			"$type": "message",
+			"address": "/cc/48",
+			"value": 40
+		},
+		{
+			"$type": "message",
+			"address": "/cc/49",
+			"value": 60
+		},
+		{
+			"$type": "message",
+			"address": "/cc/50",
+			"value": 30
+		},
+		{
+			"$type": "message",
+			"address": "/cc/51",
+			"value": 127
+		},
+		{
+			"$type": "message",
+			"address": "/cc/52",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/cc/53",
+			"value": 127
+		},
+		{
+			"$type": "message",
+			"address": "/cc/54",
+			"value": 100
+		},
+		{
+			"$type": "message",
+			"address": "/cc/55",
+			"value": 127
+		},
+		{
+			"$type": "message",
+			"address": "/cc/56",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/57",
+			"value": 127
+		},
+		{
+			"$type": "message",
+			"address": "/cc/58",
+			"value": 127
+		},
+		{
+			"$type": "message",
+			"address": "/cc/59",
+			"value": 100
+		},
+		{
+			"$type": "message",
+			"address": "/cc/60",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/cc/61",
+			"value": 127
+		},
+		{
+			"$type": "message",
+			"address": "/cc/62",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/cc/63",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/72",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/73",
+			"value": 127
+		},
+		{
+			"$type": "message",
+			"address": "/cc/74",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/75",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/76",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/77",
+			"value": 32
+		},
+		{
+			"$type": "message",
+			"address": "/cc/78",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/cc/79",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/cc/80",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/cc/81",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/cc/82",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/83",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/cc/84",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/cc/85",
+			"value": 32
+		},
+		{
+			"$type": "message",
+			"address": "/cc/86",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/87",
+			"value": 127
+		},
+		{
+			"$type": "message",
+			"address": "/cc/88",
+			"value": 10
+		},
+		{
+			"$type": "message",
+			"address": "/cc/89",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/90",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/91",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/92",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/93",
+			"value": 48
+		},
+		{
+			"$type": "message",
+			"address": "/cc/94",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/95",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/cc/104",
+			"value": 10
+		},
+		{
+			"$type": "message",
+			"address": "/cc/105",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/106",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/107",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/108",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/109",
+			"value": 48
+		},
+		{
+			"$type": "message",
+			"address": "/cc/110",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/111",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/cc/112",
+			"value": 10
+		},
+		{
+			"$type": "message",
+			"address": "/cc/113",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/114",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/115",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/116",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/117",
+			"value": 48
+		},
+		{
+			"$type": "message",
+			"address": "/cc/118",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/119",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/cc/16",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/17",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/18",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/19",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/cc/20",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/cc/7",
+			"value": 127
+		}
+	],
+	"controls": [
+		{
+			"$type": "control-range",
+			"label": "DEL",
+			"address": "/cc/48",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "DEP",
+			"address": "/cc/49",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "SPD",
+			"address": "/cc/50",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "MIX",
+			"address": "/cc/51",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "FB",
+			"address": "/cc/52",
+			"min": 0,
+			"max": 127,
+			"bipolar": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "WID",
+			"address": "/cc/53",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "LP",
+			"address": "/cc/54",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "INP",
+			"address": "/cc/55",
+			"min": 0,
+			"max": 127
+		}
+	]
+}

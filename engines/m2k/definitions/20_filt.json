@@ -1,0 +1,65 @@
+{
+	"name": "FILT",
+	"slot": 3,
+	"init": [],
+	"controls": [
+		{
+			"$type": "control-range",
+			"label": "BASE",
+			"address": "/cc/72",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "WDTH",
+			"address": "/cc/73",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "HPQ",
+			"address": "/cc/74",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "LPQ",
+			"address": "/cc/75",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "ATCK",
+			"address": "/cc/76",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "DEC",
+			"address": "/cc/77",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "B-OF",
+			"address": "/cc/78",
+			"min": 0,
+			"max": 127,
+			"bipolar": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "W-OF",
+			"address": "/cc/79",
+			"min": 0,
+			"max": 127,
+			"bipolar": 1
+		}
+	]
+}

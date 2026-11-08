@@ -1,0 +1,65 @@
+{
+	"name": "AMP",
+	"slot": 2,
+	"init": [],
+	"controls": [
+		{
+			"$type": "control-range",
+			"label": "ATCK",
+			"address": "/cc/56",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "HOLD",
+			"address": "/cc/57",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "DEC",
+			"address": "/cc/58",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "REL",
+			"address": "/cc/59",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "DIST",
+			"address": "/cc/60",
+			"min": 0,
+			"max": 127,
+			"bipolar": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "VOL",
+			"address": "/cc/61",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "PAN",
+			"address": "/cc/62",
+			"min": 0,
+			"max": 127,
+			"bipolar": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "PORT",
+			"address": "/cc/63",
+			"min": 0,
+			"max": 127
+		}
+	]
+}

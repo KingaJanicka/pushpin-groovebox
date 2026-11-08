@@ -34,6 +34,14 @@ from osc_controls import (
 logger = logging.getLogger("osc_mode")
 
 
+def load_device_definitions(folder):
+    """Every ``*.json`` in ``folder`` keyed by file stem, in file-name order (which is page order)."""
+    return {
+        Path(path).stem: json.load(open(path))
+        for path in sorted(glob(os.path.join(folder, "*.json")))
+    }
+
+
 class OSCMode(PyshaMode):
     upper_row_button_names = [
         push2_python.constants.BUTTON_UPPER_ROW_1,
@@ -139,10 +147,19 @@ class OSCMode(PyshaMode):
             self.app.instruments[instrument_short_name] = Instrument(
                 instrument_short_name,
                 instrument_definition,
-                device_definitions,
+                self.device_definitions_for(instrument_definition, device_definitions),
                 get_current_instrument_color_helper=self.get_current_instrument_color_helper,
                 app=self.app,
             )
+
+    @staticmethod
+    def device_definitions_for(instrument_definition, surge_device_definitions):
+        """The device pages for an instrument: Surge's, unless its engine has its own folder."""
+        engine_name = instrument_definition.get("engine", None)
+        folder = definitions.ENGINE_DEVICE_DEFINITION_FOLDERS.get(engine_name, None)
+        if folder is None:
+            return surge_device_definitions
+        return load_device_definitions(folder)
 
     def load_state(self):
         try:

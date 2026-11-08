@@ -233,3 +233,26 @@ def test_configure_pipewire_routes_by_client_name(app, engine_name, client):
 
     assert [c.args for c in connect.call_args_list] == [(101, 201), (102, 202), (203, 901), (204, 902)]
     assert [c.args for c in disconnect.call_args_list] == [(301,), (302,)]
+
+
+def test_surge_initial_slots_are_surges_type_addresses(app):
+    eng = engine.create_engine(app, m2k_definition(engine="surge-xt-cli"), midi_device_idx=0)
+    slots = eng.initial_slots()
+    assert len(slots) == 16
+    assert [s["address"] for s in slots if s] == [
+        "/param/a/osc/1/type",
+        "/param/a/osc/2/type",
+        "/param/fx/a/1/type",
+        "/param/fx/a/2/type",
+        "/param/fx/global/1/type",
+    ]
+    assert eng.control_transport == "osc"
+    assert eng.initial_slots() is not slots  # each instrument gets its own list
+
+
+def test_m2k_initial_slots_select_machine_by_cc(app):
+    eng = engine.create_engine(app, m2k_definition(m2k_machine=7), midi_device_idx=0)
+    slots = eng.initial_slots()
+    assert slots[0] == {"address": "/cc/14", "value": 7.0}
+    assert slots[1:] == [None] * 15
+    assert eng.control_transport == "midi-cc"

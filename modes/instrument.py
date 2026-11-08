@@ -10,6 +10,7 @@ from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.osc_server import AsyncIOOSCUDPServer
 from pythonosc.dispatcher import Dispatcher
 from modes.osc_device import OSCDevice
+from cc_client import MidiCCClient
 from modes.mod_matrix_device import ModMatrixDevice
 from modes.audio_in_device import AudioInDevice
 from definitions import PyshaMode
@@ -37,24 +38,6 @@ class Instrument(PyshaMode):
         self.instrument_nodes = []
         self.instrument_ports = []
         self.instrument_global_volume = 1.0
-        self.slots = [
-            {"address": "/param/a/osc/1/type", "value": 0.0},
-            {"address": "/param/a/osc/2/type", "value": 0.0},
-            None,
-            None,
-            None,
-            {"address": "/param/fx/a/1/type", "value": 0.0},
-            {"address": "/param/fx/a/2/type", "value": 0.0},
-            {"address": "/param/fx/global/1/type", "value": 0.0},
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-        ]
         self.name = instrument_short_name
         self.osc_in_port = instrument_definition.get("osc_in_port", None)
         self.osc_out_port = instrument_definition.get("osc_out_port", None)
@@ -89,13 +72,22 @@ class Instrument(PyshaMode):
         print("MIDI", midi_out_idx, mido.get_input_names()[midi_out_idx])  # type: ignore[attr-defined]
         # The definition's "engine" key picks the synth ("surge-xt-cli" or "mono2k")
         self.engine = engine.create_engine(app, instrument_definition, midi_device_idx=midi_out_idx)
-                   
+        self.slots = self.engine.initial_slots()
+
         client = None
         server = None
         dispatcher = Dispatcher()
         dispatcher.set_default_handler(lambda *message: self.log_in.debug(message))
 
-        if self.osc_in_port:
+        if self.engine.control_transport == "midi-cc":
+            # Device pages, p-locks and presets send "/cc/<n>" through this
+            # stand-in for the OSC client; it also echoes values as Surge does.
+            client = MidiCCClient(
+                self.midi_out_device,
+                dispatcher,
+                channel=instrument_definition.get("midi_channel", 0),
+            )
+        elif self.osc_in_port:
             client = SimpleUDPClient("127.0.0.1", self.osc_in_port)
 
         self.osc = {"client": client, "server": server, "dispatcher": dispatcher}

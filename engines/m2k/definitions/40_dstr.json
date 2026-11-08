@@ -1,0 +1,50 @@
+{
+	"name": "DSTR",
+	"slot": 4,
+	"init": [],
+	"controls": [
+		{
+			"$type": "control-range",
+			"label": "BITS",
+			"address": "/cc/16",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "FOLD",
+			"address": "/cc/17",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "XOR",
+			"address": "/cc/18",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "VERB",
+			"address": "/cc/19",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "PTCH",
+			"address": "/cc/20",
+			"min": 0,
+			"max": 127,
+			"bipolar": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "LEVL",
+			"address": "/cc/7",
+			"min": 0,
+			"max": 127
+		}
+	]
+}

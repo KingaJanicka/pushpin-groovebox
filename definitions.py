@@ -113,6 +113,9 @@ DEVICE_DEFINITION_FOLDER = DEFINITIONS_FOLDER +"/"+"device_definitions"
 EFFECT_DEFINITION_FOLDER = DEFINITIONS_FOLDER +"/"+"effect_definitions"
 MODULATION_DEFINITIONS_FOLDER = DEFINITIONS_FOLDER +"/"+"modulation_definitions"
 INSTRUMENT_LISTING_PATH = "definitions/instrument_listing.json"
+# Engines whose device pages are not Surge's (see modes/osc_mode.py::device_definitions_for)
+M2K_DEFINITION_FOLDER = "engines/m2k/definitions"
+ENGINE_DEVICE_DEFINITION_FOLDERS = {"mono2k": M2K_DEFINITION_FOLDER}
 SURGE_XT_ROOT = (
     f"{path.expanduser('~')}/.local/share/surge-xt"
     if path.isdir(f"{path.expanduser('~')}/.local/share/surge-xt")

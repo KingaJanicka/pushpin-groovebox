@@ -1,0 +1,65 @@
+{
+	"name": "FX",
+	"slot": 4,
+	"init": [],
+	"controls": [
+		{
+			"$type": "control-range",
+			"label": "EQF",
+			"address": "/cc/80",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "EQG",
+			"address": "/cc/81",
+			"min": 0,
+			"max": 127,
+			"bipolar": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "SRR",
+			"address": "/cc/82",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "DTIM",
+			"address": "/cc/83",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "DSND",
+			"address": "/cc/84",
+			"min": 0,
+			"max": 127,
+			"bipolar": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "DFB",
+			"address": "/cc/85",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "DBAS",
+			"address": "/cc/86",
+			"min": 0,
+			"max": 127
+		},
+		{
+			"$type": "control-range",
+			"label": "DWID",
+			"address": "/cc/87",
+			"min": 0,
+			"max": 127
+		}
+	]
+}
