@@ -5,7 +5,8 @@
 #   M2K_SRC=/path/to/mono2k engines/m2k/build.sh   build against a local checkout
 #
 # JACK is used when pkg-config finds it (the Pi: libjack-jackd2-dev or
-# pipewire-jack's headers); otherwise the binary is built for --render only.
+# pipewire-jack's headers); otherwise the binary is built for --render only,
+# unless M2K_REQUIRE_JACK=1 (the Pi image sets it), which makes that an error.
 set -eu
 
 HERE=$(cd "$(dirname "$0")" && pwd)
@@ -46,6 +47,9 @@ if pkg-config --exists jack 2>/dev/null; then
     CFLAGS="$CFLAGS -DM2K_WITH_JACK $(pkg-config --cflags jack)"
     LIBS="$LIBS $(pkg-config --libs jack)"
     echo "building m2k-jack with JACK"
+elif [ "${M2K_REQUIRE_JACK:-0}" = 1 ]; then
+    echo "error: M2K_REQUIRE_JACK=1 but pkg-config finds no jack (install libjack-dev / libjack-jackd2-dev)" >&2
+    exit 1
 else
     echo "building m2k-jack without JACK (render only): pkg-config found no jack"
 fi

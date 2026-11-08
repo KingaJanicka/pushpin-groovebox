@@ -154,6 +154,27 @@ summary() {
     have pw-dump && ow=$(pw-dump 2>/dev/null | grep -c '"application.name": "overwitch-service"')
     [ "$ow" -gt 0 ] && check OK "overwitch-service is a PipeWire client" \
         || check WARN "overwitch-service not seen in PipeWire (normal with no Elektron device)"
+
+    # mono2k (ADD TRACK's Monomachine engine), when this checkout has it: one
+    # m2k-jack serves every track, each routed through the volume node like Surge.
+    if [ -d "$REPO_DIR/engines/m2k" ]; then
+        if [ ! -x "$REPO_DIR/engines/m2k/build/m2k-jack" ]; then
+            check FAIL "m2k-jack is not built (engines/m2k/build.sh): tracks can't play Monomachine"
+        else
+            n=$(count_procs '[m]2k-jack')
+            case "$n" in
+                1) check OK "m2k-jack is running (one for all tracks)" ;;
+                0) check FAIL "m2k-jack is built but not running" ;;
+                *) check WARN "$n m2k-jack processes (expected 1)" ;;
+            esac
+            if [ "$n" -ge 1 ] && have pw-link; then
+                local routed
+                routed=$(pw-link -l 2>/dev/null | grep -A1 -E '^M2K:track[1-8]_[LR]$' | grep -c 'pure_data:input_')
+                [ "$routed" = 16 ] && check OK "all 8 m2k tracks are routed through the volume node" \
+                    || check WARN "$routed of 16 m2k track outputs are routed through the volume node"
+            fi
+        fi
+    fi
 }
 
 full_report() {
