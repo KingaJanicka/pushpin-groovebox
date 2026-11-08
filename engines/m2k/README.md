@@ -22,7 +22,17 @@ there (so neither `vendor/` nor `M2K_SRC` is changed) and builds with
 `-DM2K_TRACKS=8`. If `pkg-config` finds `jack`, the build includes JACK support
 (on the Pi: `sudo apt install libjack-jackd2-dev`, or pipewire-jack's dev
 package). Otherwise it builds a binary that can only render offline, which is
-enough to test the sound on macOS.
+enough to test the sound on macOS. With `M2K_REQUIRE_JACK=1`, a missing JACK
+is an error instead.
+
+**On the Pi image** this happens automatically: the image setup scripts
+(`scripts/image/setup_full_with_backports.sh`, which CI's release images use,
+and the older variants) run `build.sh` with `M2K_REQUIRE_JACK=1` after installing
+pushpin's Python deps and check the binary runs. A flashed Pi can play
+Monomachine straight away, and an image whose m2k-jack didn't build fails to
+build rather than shipping without it. Build the image from a ref that has
+`engines/m2k` (`PUSHPIN_REF=spike/m2k-jack` until it's merged).
+`pushpin-diag --summary` reports whether m2k-jack is built, running, and routed.
 
 ## Run
 
