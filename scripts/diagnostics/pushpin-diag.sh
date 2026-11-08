@@ -161,7 +161,10 @@ summary() {
         if [ ! -x "$REPO_DIR/engines/m2k/build/m2k-jack" ]; then
             check FAIL "m2k-jack is not built (engines/m2k/build.sh): tracks can't play Monomachine"
         else
-            n=$(count_procs '[m]2k-jack')
+            # By process name: a command line that merely mentions m2k-jack
+            # (an SSH command running this script) must not count.
+            n=$(pgrep -u "$(id -u)" -cx m2k-jack 2>/dev/null)
+            n=${n:-0}
             case "$n" in
                 1) check OK "m2k-jack is running (one for all tracks)" ;;
                 0) check FAIL "m2k-jack is built but not running" ;;
