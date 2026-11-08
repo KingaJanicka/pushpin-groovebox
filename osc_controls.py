@@ -601,9 +601,11 @@ class OSCControlSwitch(object):
             scaled = increment / self.clicks_per_group
         else:
             scaled = scale_value(increment, 0, len(self.groups))
-        if 0 <= (self.value + scaled) <= len(self.groups):
-            self.value += scaled
-            self.knob_value = self.value
+        # Stay within the groups: the value used to reach len(groups), one past
+        # the last, and drawing it raised IndexError (and stopped the app)
+        last = float(max(len(self.groups) - 1, 0))
+        self.value = min(max(self.value + scaled, 0.0), last)
+        self.knob_value = self.value
         if int(self.value) != prev_idx:
             active = self.get_active_group()
             if active:
@@ -742,6 +744,9 @@ class OSCControlSwitch(object):
     
                 
         
+        if not self.groups:
+            return
+        idx = min(max(idx, 0), len(self.groups) - 1)   # (a stray value or lock must not crash the display)
         if len(self.groups) > idx + 1:
             next_label = self.groups[idx + 1].label
 

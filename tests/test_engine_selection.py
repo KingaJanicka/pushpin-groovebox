@@ -587,3 +587,32 @@ def test_a_scaled_lock_is_measured_from_the_knobs_value(app):
     sent.clear()
     play_step(seq, 1)
     assert sent == [("/cc/72", 50.0)]                                # 10 + (90 - 10) / 2, not from 90
+
+
+def test_turning_the_device_switch_past_its_ends_stays_on_them(app):
+    """Turning past LFO 3 put the switch one past its last group and drawing it crashed the app."""
+    instrument, _ = make_instrument(app)
+    app.metro_sequencer_mode.disable_controls = False
+    app.steps_held = []
+    page = lfo_page(instrument)
+    switch = page.get_visible_controls()[0]
+    for _ in range(200):
+        page.on_encoder_rotated(B.ENCODER_TRACK1_ENCODER, 1)
+    assert switch.get_active_group().label == "LFO 3"
+    assert switch.value == switch.knob_value == len(switch.groups) - 1
+    with _patch("osc_controls.show_text"):
+        page.draw(MagicMock())                                       # no IndexError
+    for _ in range(200):
+        page.on_encoder_rotated(B.ENCODER_TRACK1_ENCODER, -1)
+    assert switch.get_active_group().label == "OFF" and switch.value == 0.0
+
+
+def test_switch_draw_survives_an_out_of_range_lock_value():
+    from osc_controls import OSCControlSwitch
+    from pythonosc.dispatcher import Dispatcher
+    groups = [{"$type": "group", "label": l, "controls": []} for l in ("a", "b")]
+    switch = OSCControlSwitch({"$type": "control-switch", "groups": groups}, dispatcher=Dispatcher())
+    with _patch("osc_controls.show_text"):
+        switch.draw(MagicMock(), 0, draw_lock=True, lock_value=7)
+        switch.knob_value = 5
+        switch.draw(MagicMock(), 0)
