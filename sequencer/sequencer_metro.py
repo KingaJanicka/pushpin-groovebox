@@ -375,7 +375,7 @@ class SequencerMetro(object):
                                         lock_value = 0
                 # This elif branch is for slots that have only one device and therefore
                 # don't have the device address/val in the init
-                elif slot_idx == 2 or slot_idx == 3 or slot_idx == 4:
+                elif slot_idx in getattr(instrument.engine, "always_shown_slots", (2, 3, 4)):
                     for device_idx, device in enumerate(instrument.devices[slot_idx]):
                         # we have the right device
                         # Now we just need to enum the controls and send the values 

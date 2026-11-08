@@ -478,6 +478,9 @@ class SurgeXTEngine(Engine):
     jack_client_name: str = "Surge XT"
     # This engine's own JACK ports (an engine may be one track of a shared process)
     output_port_names: tuple[str, str] = ("output_0", "output_1")
+    # Device slots whose devices always show (the rest show the device their
+    # slot's address selects, e.g. Surge's oscillator and FX types)
+    always_shown_slots: tuple[int, ...] = (2, 3, 4)
     input_port_names: tuple[str, ...] = ("input_0", "input_1")
     # How device pages reach the synth: "osc" (UDP to osc_in_port) or "midi-cc"
     control_transport: str = "osc"
@@ -1138,6 +1141,10 @@ class M2KEngine(SurgeXTEngine):
     PLAIN_CCS = frozenset({3, 9, 14, 120, 123})  # mute, track on/off, machine, all sound/notes off
     # m2k-jack's machine-select CC; engines/m2k/definitions' slot-0 devices select on it
     MACHINE_ADDRESS = "/cc/14"
+
+    # A device per slot, all on the first page: 1 AMP, 2 FILT, 3 FX, 4 DSTR,
+    # 5-7 LFO 1-3 (p-locks are stored by slot, so no two devices share one)
+    always_shown_slots = (1, 2, 3, 4, 5, 6, 7)
 
     def initial_slots(self) -> list[dict[str, Any] | None]:
         """Slot 0 holds one device per MONO2K machine, chosen by the machine CC.

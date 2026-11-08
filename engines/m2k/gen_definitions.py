@@ -16,8 +16,7 @@ CC (if any), each machine's INIT sound, and MONO2K's factory library.
   slot 0      one device per machine (SYN A-H). Its init selects the machine
               (CC 14) and sends the machine's whole INIT sound, so every page
               shows the values m2k-jack actually has.
-  slots 2-4   AMP, FILT, FX, DSTR: always shown.
-  slots 8-10  LFO 1-3: the modulation page.
+  slots 1-7   AMP, FILT, FX, DSTR, LFO 1-3: always shown, one per slot.
 
 The labels and INIT values come from MONO2K (GPL-3.0-only), which is why the
 generated files live here and not in pushpin's MIT-licensed definitions/.
@@ -34,15 +33,17 @@ OUT_DIR = os.path.join(HERE, "definitions")
 SOUNDS_PATH = os.path.join(HERE, "sounds.json")
 BINARY = os.path.join(HERE, "build", "m2k-jack")
 
-# page -> (file stem, device name, slot); file stems sort into display order
+# page -> (file stem, device name, slot); file stems sort into display order.
+# One device per slot (p-locks are stored by slot), all on the first page with
+# the machine in slot 0 (engine.M2KEngine.always_shown_slots)
 PAGES = {
-    "AMP": ("10_amp", "AMP", 2),
-    "FILT": ("20_filt", "FILT", 3),
-    "FX": ("30_fx", "FX", 4),
+    "AMP": ("10_amp", "AMP", 1),
+    "FILT": ("20_filt", "FILT", 2),
+    "FX": ("30_fx", "FX", 3),
     "DSTR": ("40_dstr", "DSTR", 4),
-    "LFO1": ("50_lfo1", "LFO 1", 8),
-    "LFO2": ("51_lfo2", "LFO 2", 9),
-    "LFO3": ("52_lfo3", "LFO 3", 10),
+    "LFO1": ("50_lfo1", "LFO 1", 5),
+    "LFO2": ("51_lfo2", "LFO 2", 6),
+    "LFO3": ("52_lfo3", "LFO 3", 7),
 }
 # A process plays one track, so an LFO can only modulate its own: TRCK stays as INIT sets it.
 HIDDEN_LABELS = {"TRCK", "-"}

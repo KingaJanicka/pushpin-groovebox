@@ -284,7 +284,7 @@ def test_generator_builds_pages_from_describe():
         {"$type": "control-spacer"},
         {"$type": "control-range", "label": "DEST", "address": "/cc/89", "min": 0, "max": 71},
     ]
-    assert files["50_lfo1"]["slot"] == 8
+    assert files["50_lfo1"]["slot"] == 5
 
 
 def test_generator_gives_filter_frequencies_half_steps():
@@ -375,8 +375,11 @@ def test_m2k_instrument_uses_cc_client_and_m2k_engine(m2k_instrument):
 
 def test_m2k_instrument_shows_machine_then_pages(m2k_instrument):
     instrument, _ = m2k_instrument
-    assert [d.label for d in instrument.current_devices] == ["GND-SIN", "AMP", "FILT", "FX", "DSTR"]
-    assert [d.label for d in instrument.devices_modulation] == ["LFO 1", "LFO 2", "LFO 3"]
+    # all eight on the first page, one device per slot (p-locks are stored by slot)
+    assert [d.label for d in instrument.current_devices] == [
+        "GND-SIN", "AMP", "FILT", "FX", "DSTR", "LFO 1", "LFO 2", "LFO 3"]
+    assert [d.slot for d in instrument.current_devices] == [0, 1, 2, 3, 4, 5, 6, 7]
+    assert instrument.devices_modulation == []
 
 
 def test_selecting_a_machine_switches_page_and_loads_its_init(m2k_instrument):

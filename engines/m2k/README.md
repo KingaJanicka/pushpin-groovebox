@@ -174,10 +174,13 @@ engines/m2k/build.sh && python engines/m2k/gen_definitions.py
 - **Machine device** (first upper-row button): one per machine, picked from the
   device menu like Surge's oscillator types. Shows SYN A–H with that machine's
   own labels. Selecting one sends CC 14 and the machine's whole INIT sound.
-- **AMP, FILT, FX, DSTR**: always shown.
-- **LFO 1–3**: on the modulation page (Right arrow). TRCK is hidden: in the
-  core a TRCK value reaches only tracks 1–6 from a knob, so cross-track LFOs
-  would need more than a CC.
+- **AMP, FILT, FX, DSTR, LFO 1–3**: the other seven upper-row buttons, all on
+  the first page. Each device has a device slot of its own (machine 0, AMP 1,
+  FILT 2, FX 3, DSTR 4, LFO 1–3 5–7; `M2KEngine.always_shown_slots`), because
+  p-locks are stored by slot: two devices in one slot would share their locks.
+  There's no modulation page, so Right stays on the first. TRCK is hidden on the
+  LFO pages: in the core a TRCK value reaches only tracks 1–6 from a knob, so
+  cross-track LFOs would need more than a CC.
 
 Every control's address is `/cc/<n>`. On a mono2k track the instrument's
 `MidiCCClient` (`cc_client.py`) turns those into MIDI CCs on the track's MIDI

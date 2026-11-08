@@ -62,7 +62,8 @@ def test_instrument_attributes_follow_the_active_voice(app):
     assert instrument.midi_out_device is ports["Pushpin 2 m2k"]
     assert isinstance(instrument.osc["client"], MidiCCClient)
     assert instrument.engine is instrument.voices[M2K].engine
-    assert [d.label for d in instrument.current_devices] == ["GND-SIN", "AMP", "FILT", "FX", "DSTR"]
+    assert [d.label for d in instrument.current_devices] == [
+        "GND-SIN", "AMP", "FILT", "FX", "DSTR", "LFO 1", "LFO 2", "LFO 3"]
     # the clock and Surge always use the track's own port
     assert instrument.surge_midi_out_device is ports["Pushpin 2"]
 
@@ -329,3 +330,55 @@ def test_preset_refresh_leaves_a_mono2k_tracks_pages_alone(app):
     before = len(ports["Pushpin 2 m2k"].control.call_args_list)
     asyncio.run(mode._refresh_devices_after_preset_load("Pushpin 2"))
     assert len(ports["Pushpin 2 m2k"].control.call_args_list) == before   # no machine INIT resent
+
+
+# ------------------------------------------------- mono2k's page layout
+
+
+def test_mono2k_devices_each_have_their_own_slot(app):
+    instrument, _ = make_instrument(app)
+    slots = [d.slot for slot in instrument.devices for d in slot if d.slot != 0]
+    assert sorted(slots) == [1, 2, 3, 4, 5, 6, 7]                # FX and DSTR no longer share one
+    assert [d.label for d in instrument.devices[3]] == ["FX"]
+    assert [d.label for d in instrument.devices[4]] == ["DSTR"]
+
+
+def test_surge_keeps_slots_2_to_4_always_shown(app):
+    instrument, _ = make_instrument(app, initial_engine=SURGE)
+    assert instrument.engine.always_shown_slots == (2, 3, 4)
+    assert instrument.voices[M2K].engine.always_shown_slots == (1, 2, 3, 4, 5, 6, 7)
+
+
+def test_p_locks_on_mono2k_fx_dont_play_on_dstr(app):
+    """A lock on FX's first control (slot 3) must not reach DSTR's first (slot 4)."""
+    from sequencer.sequencer_metro import SequencerMetro
+
+    instrument, _ = make_instrument(app)
+    app.instruments = {"Pushpin 2": instrument}
+    sent = []
+    app.send_osc = lambda address, value, name: sent.append((address, value))
+    seq = SequencerMetro.__new__(SequencerMetro)
+    seq.app = app
+    seq.name = "Pushpin 2"
+    seq.locks = [[[None] * 18 for _ in range(17)] for _ in range(64)]
+    seq.lock_scale = [7] * 64
+    seq.step_index = 0
+    seq.gate = ["Off"] * 64
+    seq.controls_to_reset = []
+    seq.params = MagicMock(gate_track_active=False)
+    seq.locks[0][3][0] = 99.0                                   # FX page, first control (EQF, CC 80)
+    seq.evaluate_and_play_notes()
+    assert sent == [("/cc/80", 99.0)]
+
+
+def test_right_arrow_stays_on_page_1_without_a_modulation_page(app):
+    from modes.osc_mode import OSCMode
+    instrument, _ = make_instrument(app)
+    mode = OSCMode.__new__(OSCMode)
+    mode.app = app
+    mode.instrument_page = 0
+    mode.get_current_instrument = lambda: instrument
+    mode.query_all_instrument_page_params = lambda: None
+    app.is_mode_active.return_value = False
+    mode.update_current_instrument_page(new_instrument_page=1)
+    assert mode.instrument_page == 0

@@ -312,10 +312,12 @@ class Instrument(PyshaMode):
         updated_devices = []
         for slot_idx, slot_devices in enumerate(self.devices):
             for device in slot_devices:
-                if slot_idx == 2 or slot_idx == 3 or slot_idx == 4:
+                if slot_idx in self.engine.always_shown_slots:
                     updated_devices.append(device)
                 else:
                     slot = self.slots[slot_idx]
+                    if slot is None:
+                        continue
                     for init in device.init:
                         if init["address"] == slot["address"] and int(init["value"]) == float(slot["value"]):
                             updated_devices.append(device)
@@ -359,10 +361,12 @@ class Instrument(PyshaMode):
         self.active_voice.initialized = True
         for slot_idx, slot_devices in enumerate(self.devices):
             for device in slot_devices:
-                if slot_idx == 2 or slot_idx == 3 or slot_idx == 4:
+                if slot_idx in self.engine.always_shown_slots:
                     await device.select()
                 else:
                     slot = self.slots[slot_idx]
+                    if slot is None:
+                        continue
                     for init in device.init:
                         if init["address"] == slot["address"] and int(
                             init["value"]
@@ -373,10 +377,12 @@ class Instrument(PyshaMode):
         self.active_voice.initialized = True
         for slot_idx, slot_devices in enumerate(self.devices):
             for device in slot_devices:
-                if slot_idx == 2 or slot_idx == 3 or slot_idx == 4:
+                if slot_idx in self.engine.always_shown_slots:
                     device.select_sync()
                 else:
                     slot = self.slots[slot_idx]
+                    if slot is None:
+                        continue
                     for init in device.init:
                         if init["address"] == slot["address"] and int(
                             init["value"]
@@ -386,10 +392,12 @@ class Instrument(PyshaMode):
     def query_devices(self):
         for slot_idx, slot_devices in enumerate(self.devices):
             for device in slot_devices:
-                if slot_idx == 2 or slot_idx == 3 or slot_idx == 4:
+                if slot_idx in self.engine.always_shown_slots:
                     device.query_visible_controls()
                 else:
                     slot = self.slots[slot_idx]
+                    if slot is None:
+                        continue
                     for init in device.init:
                         if init["address"] == slot["address"] and int(
                             init["value"]
@@ -399,10 +407,12 @@ class Instrument(PyshaMode):
     def query_all_controls(self):
         for slot_idx, slot_devices in enumerate(self.devices):
             for device in slot_devices:
-                if slot_idx == 2 or slot_idx == 3 or slot_idx == 4:
+                if slot_idx in self.engine.always_shown_slots:
                     device.query_all_controls()
                 else:
                     slot = self.slots[slot_idx]
+                    if slot is None:
+                        continue
                     for init in device.init:
                         if init["address"] == slot["address"] and int(
                             init["value"]
