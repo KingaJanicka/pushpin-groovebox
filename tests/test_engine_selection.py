@@ -899,8 +899,8 @@ def test_amp_filter_and_lfo_pages_end_on_their_trig_switch(app, page, label, cc)
     trig = slots[15]                                                  # the second page's last control
     assert trig.menu_label == label
     assert [(i.label, i.address, i.value) for i in trig.items] == [
-        ("On", f"/cc/{cc}", 0), ("Off", f"/cc/{cc}", 127)]
-    assert trig.get_active_menu_item().label == "On"                 # notes trig it until told otherwise
+        (f"{label} On", f"/cc/{cc}", 0), (f"{label} Off", f"/cc/{cc}", 127)]
+    assert trig.get_active_menu_item().label == f"{label} On"        # notes trig it until told otherwise
 
 
 def test_trig_switches_go_out_as_plain_ccs(app):
@@ -910,7 +910,7 @@ def test_trig_switches_go_out_as_plain_ccs(app):
     port.control.reset_mock()
     for _ in range(4):
         amp_trig.update_value(1)                                      # On -> Off
-    assert amp_trig.get_active_menu_item().label == "Off"
+    assert amp_trig.get_active_menu_item().label == "Amp Trig Off"
     assert [c.args[:2] for c in port.control.call_args_list] == [(21, 127)]   # no NRPN: a switch
 
 

@@ -385,7 +385,8 @@ TRIG_SLOT = 15
 
 
 def trig_menu(cc: int, label: str) -> dict:
-    items = [("ON", 0), ("OFF", 127)]
+    # (each item names its switch: on a second page of spacers, "On" alone says nothing of what is on)
+    items = [(f"{label} ON", 0), (f"{label} OFF", 127)]
     return {
         "$type": "control-menu",
         "menu_label": label,

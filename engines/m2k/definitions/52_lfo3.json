@@ -2413,7 +2413,7 @@
 			"items": [
 				{
 					"$type": "menu-item",
-					"label": "On",
+					"label": "LFO Trig On",
 					"onselect": {
 						"$type": "message",
 						"address": "/cc/23",
@@ -2422,7 +2422,7 @@
 				},
 				{
 					"$type": "menu-item",
-					"label": "Off",
+					"label": "LFO Trig Off",
 					"onselect": {
 						"$type": "message",
 						"address": "/cc/23",

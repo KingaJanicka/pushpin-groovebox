@@ -739,7 +739,7 @@
 			"items": [
 				{
 					"$type": "menu-item",
-					"label": "On",
+					"label": "Amp Trig On",
 					"onselect": {
 						"$type": "message",
 						"address": "/cc/21",
@@ -748,7 +748,7 @@
 				},
 				{
 					"$type": "menu-item",
-					"label": "Off",
+					"label": "Amp Trig Off",
 					"onselect": {
 						"$type": "message",
 						"address": "/cc/21",

@@ -871,7 +871,7 @@
 			"items": [
 				{
 					"$type": "menu-item",
-					"label": "On",
+					"label": "Filter Trig On",
 					"onselect": {
 						"$type": "message",
 						"address": "/cc/22",
@@ -880,7 +880,7 @@
 				},
 				{
 					"$type": "menu-item",
-					"label": "Off",
+					"label": "Filter Trig Off",
 					"onselect": {
 						"$type": "message",
 						"address": "/cc/22",
