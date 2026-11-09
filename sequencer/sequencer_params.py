@@ -19,6 +19,10 @@ class SequencerParams:
 
     sequencer_is_playing: bool = False
     gate_track_active: bool = True
+    # Muted pitch track: the note keeps the last played pitch (octave still moves).
+    pitch_track_active: bool = True
+    # Muted octave track: the note keeps the last played octave (pitch still moves).
+    octave_track_active: bool = True
 
     # Gate length in beats (controls[0].value)
     gate_len: float = 1.0

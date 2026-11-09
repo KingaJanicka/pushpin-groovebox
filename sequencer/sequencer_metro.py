@@ -49,6 +49,10 @@ class SequencerMetro(object):
     midi_in_name: str | None = None
     midi_in_device: Any = None
     index: Any = None
+    # The pitch and octave of the last note played: what a muted pitch or
+    # octave track holds the note at.
+    held_pitch: int | None = None
+    held_octave: int | None = None
 
     def __init__(
         self, instrument, tick_callback, playhead, send_osc_func, global_timeline, app
@@ -307,10 +311,8 @@ class SequencerMetro(object):
 
             if self.gate[self.step_index] != "Off" and gate_track_active:
                 gate = 1
-                pitch = self.pitch[self.step_index] if self.pitch[self.step_index] is not None else 0
-                octave = self.octave[self.step_index] * 12 if self.octave[self.step_index] is not None else 0
-
-                pitch_and_octave = pitch + octave
+                pitch, octave = self.pitch_and_octave_for_step(params)
+                pitch_and_octave = pitch + octave * 12
                 velocity = ((self.velocity[self.step_index] + 1) * 16 - 1) if self.velocity[self.step_index] is not None else 1
                 gate = None
 
@@ -348,6 +350,7 @@ class SequencerMetro(object):
                             # every p-lock stick after its step.
                             control.value = unlocked
                             self.app.send_osc(*lock_message(control, float(unlocked)), instrument.name)
+                    self.held_pitch, self.held_octave = pitch, octave
                     self.timeline.schedule(
                         {"note": pitch_and_octave, "gate": gate, "amplitude": velocity}, count=1,
                         # the track's active engine's port (Surge's, or its mono2k port), looked up
@@ -422,6 +425,20 @@ class SequencerMetro(object):
             print("Error in evaluate_and_play_notes")
             traceback.print_exc()
 
+
+    def pitch_and_octave_for_step(self, params):
+        """The (pitch, octave) the current step plays. A muted pitch or octave
+        track holds that part at the last note played; the other part still
+        follows its track. Nothing played yet: the step's own value."""
+        pitch = self.pitch[self.step_index]
+        pitch = pitch if pitch is not None else 0
+        octave = self.octave[self.step_index]
+        octave = octave if octave is not None else 0
+        if not params.pitch_track_active and self.held_pitch is not None:
+            pitch = self.held_pitch
+        if not params.octave_track_active and self.held_octave is not None:
+            octave = self.held_octave
+        return pitch, octave
 
     def update_notes(self):
         for idx, note in enumerate(self.note):

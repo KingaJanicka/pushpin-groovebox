@@ -210,13 +210,13 @@ class MetroSequencerMode(MelodicMode):
                     return int(item.value)
                 return default
 
-            gate_active = (
-                self.app.mute_mode.tracks_active.get(name, {}).get("gate", True)
-            )
+            tracks_active = self.app.mute_mode.tracks_active.get(name, {})
 
             seq.params = SequencerParams(
                 sequencer_is_playing=self.sequencer_is_playing,
-                gate_track_active=bool(gate_active),
+                gate_track_active=bool(tracks_active.get("gate", True)),
+                pitch_track_active=bool(tracks_active.get("pitch", True)),
+                octave_track_active=bool(tracks_active.get("octave", True)),
                 gate_len=float(controls[0].value),
                 seq_time_scale=_menu_int(4, 1),
                 pattern_len=_menu_int(5, 16),
