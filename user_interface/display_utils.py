@@ -32,6 +32,22 @@ def draw_text_at(ctx, x, y, text, font_size = 12, color=[1, 1, 1]):
     ctx.show_text(text)
 
 
+# Column edges kept clear by a label shrunk to fit, and the smallest it shrinks to
+FIT_PADDING = 3
+MIN_FONT_SIZE = 9
+
+
+def fitted_font_size(ctx, lines, font_size, available):
+    """The largest size up to ``font_size`` at which every line fits ``available`` pixels
+    (``ctx`` already at ``font_size``), but not below MIN_FONT_SIZE."""
+    if available <= 0 or font_size <= MIN_FONT_SIZE:
+        return font_size
+    widest = max((ctx.text_extents(line)[2] for line in lines), default=0)
+    if not isinstance(widest, (int, float)) or widest <= available:     # (a mocked context)
+        return font_size
+    return max(MIN_FONT_SIZE, int(font_size * available / widest))
+
+
 def show_text(ctx, x_part, pixels_from_top, text, height=20, font_color=definitions.WHITE, background_color=None, margin_left=4, margin_top=4, font_size_percentage=0.8, center_vertically=True, center_horizontally=False, rectangle_padding=0):
     assert 0 <= x_part < 8
     assert type(x_part) == int
@@ -55,6 +71,11 @@ def show_text(ctx, x_part, pixels_from_top, text, height=20, font_color=definiti
     n_lines = len(text_lines)
     if center_vertically:
         margin_top = (height - font_size * n_lines) // 2
+    ctx.set_font_size(font_size)
+    # A label wider than its column (mono2k's full names: "LFO DESTINATION") shrinks to fit
+    # (only past the whole column: a value riding along with a knob keeps its size)
+    available = part_w - FIT_PADDING * 2
+    font_size = fitted_font_size(ctx, text_lines, font_size, available)
     ctx.set_font_size(font_size)
     for i, line in enumerate(text_lines):
         if center_horizontally:

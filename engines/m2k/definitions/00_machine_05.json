@@ -367,49 +367,49 @@
 	"controls": [
 		{
 			"$type": "control-range",
-			"label": "UNIL",
+			"label": "UNISON LEVEL",
 			"address": "/cc/48",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "UNIW",
+			"label": "UNISON WIDTH",
 			"address": "/cc/49",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "UNIX",
+			"label": "EXTENDED UNISON",
 			"address": "/cc/50",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "DRFT",
+			"label": "DRIFT",
 			"address": "/cc/51",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "SUBX",
+			"label": "SQUARE SUB",
 			"address": "/cc/52",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "SUB1",
+			"label": "SINE SUB -1",
 			"address": "/cc/53",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "SUB2",
+			"label": "SINE SUB -2",
 			"address": "/cc/54",
 			"min": 0,
 			"max": 127
@@ -556,7 +556,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "PTCH",
+			"label": "TRACK PITCH",
 			"address": "/cc/20",
 			"min": 0,
 			"max": 127,

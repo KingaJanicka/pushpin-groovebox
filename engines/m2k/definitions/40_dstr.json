@@ -5,7 +5,7 @@
 	"controls": [
 		{
 			"$type": "control-menu",
-			"menu_label": "BITS",
+			"menu_label": "BIT DEPTH",
 			"step": 0.5,
 			"items": [
 				{
@@ -194,28 +194,28 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "FOLD",
+			"label": "WAVEFOLD",
 			"address": "/cc/17",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "XOR",
+			"label": "XOR MANGLE",
 			"address": "/cc/18",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "VERB",
+			"label": "REVERB SEND",
 			"address": "/cc/19",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-menu",
-			"menu_label": "TYPE",
+			"menu_label": "MOD TYPE",
 			"step": 0.25,
 			"items": [
 				{
@@ -261,7 +261,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "RATE",
+			"label": "MOD RATE",
 			"address": "/m2k/param/67",
 			"min": 0,
 			"max": 127,
@@ -398,14 +398,14 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "DPTH",
+			"label": "MOD DEPTH",
 			"address": "/m2k/param/68",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "MIX",
+			"label": "MOD MIX",
 			"address": "/m2k/param/69",
 			"min": 0,
 			"max": 127

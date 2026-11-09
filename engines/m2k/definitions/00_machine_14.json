@@ -367,21 +367,21 @@
 	"controls": [
 		{
 			"$type": "control-range",
-			"label": "ST",
+			"label": "STEREO",
 			"address": "/cc/48",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "RED",
+			"label": "REDNESS",
 			"address": "/cc/49",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-menu",
-			"menu_label": "STON",
+			"menu_label": "STEREO ON",
 			"step": 0.25,
 			"items": [
 				{
@@ -566,7 +566,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "PTCH",
+			"label": "TRACK PITCH",
 			"address": "/cc/20",
 			"min": 0,
 			"max": 127,

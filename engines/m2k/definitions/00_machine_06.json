@@ -367,7 +367,7 @@
 	"controls": [
 		{
 			"$type": "control-range",
-			"label": "PCH2",
+			"label": "PITCH 2",
 			"address": "/cc/48",
 			"min": 0,
 			"max": 127,
@@ -504,7 +504,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "PCH3",
+			"label": "PITCH 3",
 			"address": "/cc/49",
 			"min": 0,
 			"max": 127,
@@ -641,7 +641,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "PCH4",
+			"label": "PITCH 4",
 			"address": "/cc/50",
 			"min": 0,
 			"max": 127,
@@ -778,28 +778,28 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "WAVE",
+			"label": "SAW TO PULSE",
 			"address": "/cc/51",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "PW",
+			"label": "PULSE WIDTH",
 			"address": "/cc/52",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "CHRL",
+			"label": "CHORUS LEVEL",
 			"address": "/cc/53",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "CHRW",
+			"label": "CHORUS WIDTH",
 			"address": "/cc/54",
 			"min": 0,
 			"max": 127
@@ -946,7 +946,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "PTCH",
+			"label": "TRACK PITCH",
 			"address": "/cc/20",
 			"min": 0,
 			"max": 127,

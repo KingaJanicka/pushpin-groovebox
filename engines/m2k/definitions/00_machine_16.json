@@ -367,7 +367,7 @@
 	"controls": [
 		{
 			"$type": "control-menu",
-			"menu_label": "TONE",
+			"menu_label": "TONE WAVE",
 			"step": 0.25,
 			"items": [
 				{
@@ -426,7 +426,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "PDEP",
+			"label": "PITCH SWEEP",
 			"address": "/cc/49",
 			"min": 0,
 			"max": 127,
@@ -563,7 +563,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "PDEC",
+			"label": "SWEEP TIME",
 			"address": "/cc/50",
 			"min": 0,
 			"max": 127,
@@ -700,7 +700,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "NOIS",
+			"label": "NOISE RATE",
 			"address": "/cc/51",
 			"min": 0,
 			"max": 127,
@@ -837,14 +837,14 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "MIX",
+			"label": "TONE TO NOISE",
 			"address": "/cc/52",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "NFLT",
+			"label": "NOISE FILTER",
 			"address": "/cc/53",
 			"min": 0,
 			"max": 127,
@@ -852,7 +852,7 @@
 		},
 		{
 			"$type": "control-menu",
-			"menu_label": "CLAP",
+			"menu_label": "CLAP HITS",
 			"step": 0.5,
 			"items": [
 				{
@@ -1067,7 +1067,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "CSPC",
+			"label": "CLAP SPACING",
 			"address": "/cc/55",
 			"min": 0,
 			"max": 127,
@@ -1207,7 +1207,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "PTCH",
+			"label": "TRACK PITCH",
 			"address": "/cc/20",
 			"min": 0,
 			"max": 127,

@@ -5,7 +5,7 @@
 	"controls": [
 		{
 			"$type": "control-range",
-			"label": "EQF",
+			"label": "EQ FREQUENCY",
 			"address": "/cc/80",
 			"min": 0,
 			"max": 127,
@@ -143,7 +143,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "EQG",
+			"label": "EQ GAIN",
 			"address": "/cc/81",
 			"min": 0,
 			"max": 127,
@@ -151,7 +151,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "SRR",
+			"label": "RATE REDUCTION",
 			"address": "/cc/82",
 			"min": 0,
 			"max": 127,
@@ -288,7 +288,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "DTIM",
+			"label": "DELAY TIME",
 			"address": "/cc/83",
 			"min": 0,
 			"max": 127,
@@ -425,7 +425,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "DSND",
+			"label": "DELAY SEND",
 			"address": "/cc/84",
 			"min": 0,
 			"max": 127,
@@ -433,14 +433,14 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "DFB",
+			"label": "DELAY FEEDBACK",
 			"address": "/cc/85",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "DBAS",
+			"label": "DELAY BASE",
 			"address": "/cc/86",
 			"min": 0,
 			"max": 127,
@@ -578,7 +578,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "DWID",
+			"label": "DELAY WIDTH",
 			"address": "/cc/87",
 			"min": 0,
 			"max": 127

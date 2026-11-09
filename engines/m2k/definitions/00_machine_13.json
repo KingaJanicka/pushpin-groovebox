@@ -367,21 +367,21 @@
 	"controls": [
 		{
 			"$type": "control-range",
-			"label": "ATK",
+			"label": "ATTACK",
 			"address": "/cc/48",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "REL",
+			"label": "RELEASE",
 			"address": "/cc/49",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "THRS",
+			"label": "THRESHOLD",
 			"address": "/cc/50",
 			"min": 0,
 			"max": 127
@@ -395,28 +395,28 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "RAT",
+			"label": "RATIO",
 			"address": "/cc/52",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "GAIN",
+			"label": "MAKE-UP GAIN",
 			"address": "/cc/53",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "RMS",
+			"label": "RMS / PEAK",
 			"address": "/cc/54",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "INP",
+			"label": "INPUT",
 			"address": "/cc/55",
 			"min": 0,
 			"max": 127
@@ -426,7 +426,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "PTCH",
+			"label": "TRACK PITCH",
 			"address": "/cc/20",
 			"min": 0,
 			"max": 127,

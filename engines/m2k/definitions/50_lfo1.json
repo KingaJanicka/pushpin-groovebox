@@ -15,7 +15,7 @@
 					"controls": [
 						{
 							"$type": "control-menu",
-							"menu_label": "DEST",
+							"menu_label": "LFO DESTINATION",
 							"step": 0.25,
 							"items": [
 								{
@@ -37,7 +37,7 @@
 					"controls": [
 						{
 							"$type": "control-menu",
-							"menu_label": "DEST",
+							"menu_label": "LFO DESTINATION",
 							"step": 0.25,
 							"items": [
 								{
@@ -154,12 +154,12 @@
 					"controls": [
 						{
 							"$type": "control-menu",
-							"menu_label": "DEST",
+							"menu_label": "LFO DESTINATION",
 							"step": 0.25,
 							"items": [
 								{
 									"$type": "menu-item",
-									"label": "ATCK",
+									"label": "ATTACK",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -177,7 +177,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "DEC",
+									"label": "DECAY",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -186,7 +186,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "REL",
+									"label": "RELEASE",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -195,7 +195,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "DIST",
+									"label": "DISTORTION",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -204,7 +204,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "VOL",
+									"label": "VOLUME",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -222,7 +222,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "PORT",
+									"label": "PORTAMENTO",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -239,12 +239,12 @@
 					"controls": [
 						{
 							"$type": "control-menu",
-							"menu_label": "DEST",
+							"menu_label": "LFO DESTINATION",
 							"step": 0.25,
 							"items": [
 								{
 									"$type": "menu-item",
-									"label": "BASE",
+									"label": "FILTER BASE",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -253,7 +253,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "WDTH",
+									"label": "FILTER WIDTH",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -262,7 +262,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "HPQ",
+									"label": "HP RESONANCE",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -271,7 +271,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "LPQ",
+									"label": "LP RESONANCE",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -280,7 +280,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "ATCK",
+									"label": "FILTER ATTACK",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -289,7 +289,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "DEC",
+									"label": "FILTER DECAY",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -298,7 +298,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "B-OF",
+									"label": "BASE BY ENV",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -307,7 +307,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "W-OF",
+									"label": "WIDTH BY ENV",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -324,12 +324,12 @@
 					"controls": [
 						{
 							"$type": "control-menu",
-							"menu_label": "DEST",
+							"menu_label": "LFO DESTINATION",
 							"step": 0.25,
 							"items": [
 								{
 									"$type": "menu-item",
-									"label": "EQF",
+									"label": "EQ FREQUENCY",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -338,7 +338,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "EQG",
+									"label": "EQ GAIN",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -347,7 +347,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "SRR",
+									"label": "RATE REDUCTION",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -356,7 +356,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "DTIM",
+									"label": "DELAY TIME",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -365,7 +365,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "DSND",
+									"label": "DELAY SEND",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -374,7 +374,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "DFB",
+									"label": "DELAY FEEDBACK",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -383,7 +383,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "DBAS",
+									"label": "DELAY BASE",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -392,7 +392,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "DWID",
+									"label": "DELAY WIDTH",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -409,12 +409,12 @@
 					"controls": [
 						{
 							"$type": "control-menu",
-							"menu_label": "DEST",
+							"menu_label": "LFO DESTINATION",
 							"step": 0.25,
 							"items": [
 								{
 									"$type": "menu-item",
-									"label": "BITS",
+									"label": "BIT DEPTH",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -423,7 +423,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "FOLD",
+									"label": "WAVEFOLD",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -432,7 +432,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "XOR",
+									"label": "XOR MANGLE",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -441,7 +441,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "VERB",
+									"label": "REVERB SEND",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -450,7 +450,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "TYPE",
+									"label": "MOD TYPE",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -459,7 +459,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "RATE",
+									"label": "MOD RATE",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -468,7 +468,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "DPTH",
+									"label": "MOD DEPTH",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -477,7 +477,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "MIX",
+									"label": "MOD MIX",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -494,12 +494,12 @@
 					"controls": [
 						{
 							"$type": "control-menu",
-							"menu_label": "DEST",
+							"menu_label": "LFO DESTINATION",
 							"step": 0.25,
 							"items": [
 								{
 									"$type": "menu-item",
-									"label": "WAVE",
+									"label": "LFO WAVE",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -508,7 +508,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "TRIG",
+									"label": "LFO TRIG MODE",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -517,7 +517,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "MULT",
+									"label": "LFO MULTIPLIER",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -526,7 +526,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "SPD",
+									"label": "LFO CYCLE",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -535,7 +535,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "PHAS",
+									"label": "START PHASE",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -544,7 +544,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "DPTH",
+									"label": "LFO DEPTH",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -561,12 +561,12 @@
 					"controls": [
 						{
 							"$type": "control-menu",
-							"menu_label": "DEST",
+							"menu_label": "LFO DESTINATION",
 							"step": 0.25,
 							"items": [
 								{
 									"$type": "menu-item",
-									"label": "WAVE",
+									"label": "LFO WAVE",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -575,7 +575,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "TRIG",
+									"label": "LFO TRIG MODE",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -584,7 +584,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "MULT",
+									"label": "LFO MULTIPLIER",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -593,7 +593,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "SPD",
+									"label": "LFO CYCLE",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -602,7 +602,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "PHAS",
+									"label": "START PHASE",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -611,7 +611,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "DPTH",
+									"label": "LFO DEPTH",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -628,12 +628,12 @@
 					"controls": [
 						{
 							"$type": "control-menu",
-							"menu_label": "DEST",
+							"menu_label": "LFO DESTINATION",
 							"step": 0.25,
 							"items": [
 								{
 									"$type": "menu-item",
-									"label": "WAVE",
+									"label": "LFO WAVE",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -642,7 +642,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "TRIG",
+									"label": "LFO TRIG MODE",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -651,7 +651,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "MULT",
+									"label": "LFO MULTIPLIER",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -660,7 +660,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "SPD",
+									"label": "LFO CYCLE",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -669,7 +669,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "PHAS",
+									"label": "START PHASE",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -678,7 +678,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "DPTH",
+									"label": "LFO DEPTH",
 									"onselect": {
 										"$type": "message",
 										"address": "/cc/89",
@@ -693,7 +693,7 @@
 		},
 		{
 			"$type": "control-menu",
-			"menu_label": "WAVE",
+			"menu_label": "LFO WAVE",
 			"step": 0.25,
 			"items": [
 				{
@@ -791,7 +791,7 @@
 		},
 		{
 			"$type": "control-menu",
-			"menu_label": "TRIG",
+			"menu_label": "LFO TRIG MODE",
 			"step": 0.25,
 			"items": [
 				{
@@ -863,7 +863,7 @@
 		},
 		{
 			"$type": "control-menu",
-			"menu_label": "MULT",
+			"menu_label": "LFO MULTIPLIER",
 			"step": 0.25,
 			"items": [
 				{
@@ -974,7 +974,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "SPD",
+			"label": "LFO CYCLE",
 			"address": "/cc/93",
 			"min": 0,
 			"max": 127,
@@ -2027,14 +2027,144 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "PHAS",
+			"label": "START PHASE",
 			"address": "/cc/94",
 			"min": 0,
-			"max": 127
+			"max": 127,
+			"value_labels": [
+				"0\u00b0",
+				"3\u00b0",
+				"6\u00b0",
+				"8\u00b0",
+				"11\u00b0",
+				"14\u00b0",
+				"17\u00b0",
+				"20\u00b0",
+				"22\u00b0",
+				"25\u00b0",
+				"28\u00b0",
+				"31\u00b0",
+				"34\u00b0",
+				"37\u00b0",
+				"39\u00b0",
+				"42\u00b0",
+				"45\u00b0",
+				"48\u00b0",
+				"51\u00b0",
+				"53\u00b0",
+				"56\u00b0",
+				"59\u00b0",
+				"62\u00b0",
+				"65\u00b0",
+				"68\u00b0",
+				"70\u00b0",
+				"73\u00b0",
+				"76\u00b0",
+				"79\u00b0",
+				"82\u00b0",
+				"84\u00b0",
+				"87\u00b0",
+				"90\u00b0",
+				"93\u00b0",
+				"96\u00b0",
+				"98\u00b0",
+				"101\u00b0",
+				"104\u00b0",
+				"107\u00b0",
+				"110\u00b0",
+				"112\u00b0",
+				"115\u00b0",
+				"118\u00b0",
+				"121\u00b0",
+				"124\u00b0",
+				"127\u00b0",
+				"129\u00b0",
+				"132\u00b0",
+				"135\u00b0",
+				"138\u00b0",
+				"141\u00b0",
+				"143\u00b0",
+				"146\u00b0",
+				"149\u00b0",
+				"152\u00b0",
+				"155\u00b0",
+				"158\u00b0",
+				"160\u00b0",
+				"163\u00b0",
+				"166\u00b0",
+				"169\u00b0",
+				"172\u00b0",
+				"174\u00b0",
+				"177\u00b0",
+				"180\u00b0",
+				"183\u00b0",
+				"186\u00b0",
+				"188\u00b0",
+				"191\u00b0",
+				"194\u00b0",
+				"197\u00b0",
+				"200\u00b0",
+				"202\u00b0",
+				"205\u00b0",
+				"208\u00b0",
+				"211\u00b0",
+				"214\u00b0",
+				"217\u00b0",
+				"219\u00b0",
+				"222\u00b0",
+				"225\u00b0",
+				"228\u00b0",
+				"231\u00b0",
+				"233\u00b0",
+				"236\u00b0",
+				"239\u00b0",
+				"242\u00b0",
+				"245\u00b0",
+				"248\u00b0",
+				"250\u00b0",
+				"253\u00b0",
+				"256\u00b0",
+				"259\u00b0",
+				"262\u00b0",
+				"264\u00b0",
+				"267\u00b0",
+				"270\u00b0",
+				"273\u00b0",
+				"276\u00b0",
+				"278\u00b0",
+				"281\u00b0",
+				"284\u00b0",
+				"287\u00b0",
+				"290\u00b0",
+				"292\u00b0",
+				"295\u00b0",
+				"298\u00b0",
+				"301\u00b0",
+				"304\u00b0",
+				"307\u00b0",
+				"309\u00b0",
+				"312\u00b0",
+				"315\u00b0",
+				"318\u00b0",
+				"321\u00b0",
+				"323\u00b0",
+				"326\u00b0",
+				"329\u00b0",
+				"332\u00b0",
+				"335\u00b0",
+				"338\u00b0",
+				"340\u00b0",
+				"343\u00b0",
+				"346\u00b0",
+				"349\u00b0",
+				"352\u00b0",
+				"354\u00b0",
+				"357\u00b0"
+			]
 		},
 		{
 			"$type": "control-range",
-			"label": "DPTH",
+			"label": "LFO DEPTH",
 			"address": "/cc/95",
 			"min": 0,
 			"max": 127,
@@ -2172,7 +2302,7 @@
 		},
 		{
 			"$type": "control-menu",
-			"menu_label": "TRCK",
+			"menu_label": "LFO TRACK",
 			"step": 0.25,
 			"items": [
 				{

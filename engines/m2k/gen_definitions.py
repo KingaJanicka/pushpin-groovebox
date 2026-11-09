@@ -92,7 +92,7 @@ def lfo_target_switch(dest_cc: int, labels: dict[int, str]) -> dict:
 
     def group(label: str, items: list[dict]) -> dict:
         return {"$type": "group", "label": label, "controls": [
-            {"$type": "control-menu", "menu_label": "DEST", "step": 1 / CLICKS_PER_ITEM, "items": items}]}
+            {"$type": "control-menu", "menu_label": "LFO DESTINATION", "step": 1 / CLICKS_PER_ITEM, "items": items}]}
 
     groups = [group("OFF", [item("OFF", 0)])]
     for device, params in LFO_TARGETS:
@@ -110,7 +110,7 @@ def lfo_track_menu(trck_cc: int) -> dict:
     items = [("OWN", 0)] + [(f"TRK {n}", n) for n in range(1, 9)]
     return {
         "$type": "control-menu",
-        "menu_label": "TRCK",
+        "menu_label": "LFO TRACK",
         "step": 1 / CLICKS_PER_ITEM,
         "items": [{"$type": "menu-item", "label": label,
                    "onselect": {"$type": "message", "address": address, "value": value}} for label, value in items],
@@ -209,12 +209,60 @@ def described(c: dict, param: dict) -> dict:
     return c
 
 
+def display_name(param: dict) -> str:
+    """MONO2K's full name for a parameter (ATCK -> ATTACK), its four letters where it has none."""
+    name = param.get("name") or ""
+    return name if name and name != "-" else param["label"]
+
+
+# ------------------------------------------------ units MONO2K's screen leaves out
+#
+# MONO2K shows some parameters as bare 0-127 though the DSP gives them a unit
+# (m2k_dsp.c). These get their words here, from the same formulas.
+
+# AMP's HOLD: v / 32 of a beat (m2k_ui.c's K_AHLD), 127 holding until the note ends. Its time
+# depends on the tempo, so the control works it out as it draws (osc_controls.OSCControl)
+HOLD_BEATS_PER_VALUE = 1 / 32
+INF = 127
+
+
+def octaves_by_env(v: int) -> str:
+    """BASE/WIDTH BY ENV: the envelope at full moves the cutoff 7 d|d| / 256 filter steps of
+    1/8 octave, d = v - 64 (m2k_dsp.c)."""
+    d = v - 64
+    octs = 7 * d * abs(d) / 256 / 8
+    return "0 OCT" if d == 0 else f"{octs:+.1f} OCT" if abs(octs) < 10 else f"{octs:+.0f} OCT"
+
+
+def start_phase(v: int) -> str:
+    """An LFO's PHAS: v << 25 of the 2^32 cycle, so 360 / 128 degrees a step."""
+    return f"{round(v * 360 / 128)}°"
+
+
+UNIT_LABELS = {
+    ("FILT", "B-OF"): octaves_by_env,
+    ("FILT", "W-OF"): octaves_by_env,
+    **{(f"LFO{n}", "PHAS"): start_phase for n in (1, 2, 3)},
+}
+
+
+def with_units(c: dict, page: str | None, label: str) -> dict:
+    if c.get("$type") != "control-range":
+        return c
+    if (page, label) == ("AMP", "HOLD"):
+        c["tempo_time"] = {"beats_per_value": HOLD_BEATS_PER_VALUE, "inf_value": INF}
+    elif (page, label) in UNIT_LABELS:
+        c["value_labels"] = [UNIT_LABELS[page, label](v) for v in range(128)]
+        c.pop("display_center", None)
+    return c
+
+
 def control(cc: int, param: dict, page: str | None = None, address: str | None = None) -> dict:
     if param["label"] in HIDDEN_LABELS:
         return {"$type": "control-spacer"}
     c = {
         "$type": "control-range",
-        "label": param["label"],
+        "label": display_name(param),
         "address": address or cc_address(cc),
         "min": 0,
         "max": param["max"],
@@ -226,7 +274,7 @@ def control(cc: int, param: dict, page: str | None = None, address: str | None =
     if page and page.startswith("LFO") and param["label"] == "DPTH":
         c["bipolar"] = 1                          # MONO2K's LFO depth is signed about 64
         c["display_center"] = 64                  # (shown -64..+63 where the words aren't known)
-    return described(c, param)
+    return with_units(described(c, param), page, param["label"])
 
 
 # A machine page's second page: BANK (DIGI-WAV only, MONO2K's own wave bank
@@ -240,7 +288,7 @@ PTCH_CC = 20
 def wave_bank_menu() -> dict:
     return {
         "$type": "control-menu",
-        "menu_label": "BANK",
+        "menu_label": "WAVE BANK",
         "step": 1 / CLICKS_PER_ITEM,
         "items": [
             {"$type": "menu-item", "label": name,
@@ -267,7 +315,7 @@ UNIPOLAR = {("FM+STAT", "1ENV"), ("FM+DYN", "2ENV"), ("FM+PAR", "1ENV"), ("FM+PA
 
 def machine_control(machine: dict, syn: dict) -> dict:
     c = control(syn["cc"], syn["param"])
-    if (machine["name"], c.get("label")) in UNIPOLAR:
+    if (machine["name"], syn["param"]["label"]) in UNIPOLAR:
         c.pop("bipolar", None)
     return c
 
@@ -302,7 +350,7 @@ def param_control(param: int, label: str, mx: int = 127) -> dict:
 def mod_type_menu() -> dict:
     return {
         "$type": "control-menu",
-        "menu_label": "TYPE",
+        "menu_label": "MOD TYPE",
         "step": 1 / MENU_CLICKS_PER_ITEM,
         "items": [
             {
@@ -348,7 +396,8 @@ def page_devices(params: list[dict], labels: dict[int, str] | None = None,
 
 
 def build(describe: dict) -> dict[str, dict]:
-    labels = {p["param"]: p["label"] for p in describe["params_all"]} if "params_all" in describe else None
+    # (the LFOs' destination menus name their targets in full too)
+    labels = {p["param"]: display_name(p) for p in describe["params_all"]} if "params_all" in describe else None
     all_params = {p["param"]: p for p in describe.get("params_all", [])}
     ADDRESS_OF.clear()
     ADDRESS_OF.update({p["id"]: cc_address(p["cc"]) for p in describe["params"] if "id" in p})

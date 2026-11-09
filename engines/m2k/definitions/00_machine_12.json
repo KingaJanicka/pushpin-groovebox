@@ -367,14 +367,14 @@
 	"controls": [
 		{
 			"$type": "control-range",
-			"label": "WAVE",
+			"label": "CARRIER WAVE",
 			"address": "/cc/48",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "EXT",
+			"label": "TRACK CARRIER",
 			"address": "/cc/49",
 			"min": 0,
 			"max": 127
@@ -400,7 +400,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "INP",
+			"label": "INPUT",
 			"address": "/cc/55",
 			"min": 0,
 			"max": 127
@@ -410,7 +410,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "PTCH",
+			"label": "TRACK PITCH",
 			"address": "/cc/20",
 			"min": 0,
 			"max": 127,

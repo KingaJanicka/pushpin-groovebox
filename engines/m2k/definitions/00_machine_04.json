@@ -367,7 +367,7 @@
 	"controls": [
 		{
 			"$type": "control-range",
-			"label": "1FRQ",
+			"label": "RATIO 1",
 			"address": "/cc/48",
 			"min": 0,
 			"max": 127,
@@ -504,7 +504,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "1FEN",
+			"label": "RATIO 1 BY ENV",
 			"address": "/cc/49",
 			"min": 0,
 			"max": 127,
@@ -512,14 +512,14 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "1VOL",
+			"label": "DEPTH 1",
 			"address": "/cc/50",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "1VEN",
+			"label": "DEPTH 1 BY ENV",
 			"address": "/cc/51",
 			"min": 0,
 			"max": 127,
@@ -527,7 +527,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "2FRQ",
+			"label": "RATIO 2",
 			"address": "/cc/52",
 			"min": 0,
 			"max": 127,
@@ -664,14 +664,14 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "2ENV",
+			"label": "DEPTH / DECAY 2",
 			"address": "/cc/53",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "2FB",
+			"label": "FEEDBACK 2",
 			"address": "/cc/54",
 			"min": 0,
 			"max": 127
@@ -818,7 +818,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "PTCH",
+			"label": "TRACK PITCH",
 			"address": "/cc/20",
 			"min": 0,
 			"max": 127,

@@ -367,35 +367,35 @@
 	"controls": [
 		{
 			"$type": "control-range",
-			"label": "FOLD",
+			"label": "SINE FOLD",
 			"address": "/cc/48",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "SUB",
+			"label": "SUB LEVEL",
 			"address": "/cc/49",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "NOIS",
+			"label": "NOISE",
 			"address": "/cc/50",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "PDEP",
+			"label": "PITCH DROP",
 			"address": "/cc/51",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "PDEC",
+			"label": "DROP TIME",
 			"address": "/cc/52",
 			"min": 0,
 			"max": 127,
@@ -532,14 +532,14 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "CLIK",
+			"label": "CLICK",
 			"address": "/cc/53",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "HARM",
+			"label": "2ND HARMONIC",
 			"address": "/cc/54",
 			"min": 0,
 			"max": 127
@@ -686,7 +686,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "PTCH",
+			"label": "TRACK PITCH",
 			"address": "/cc/20",
 			"min": 0,
 			"max": 127,

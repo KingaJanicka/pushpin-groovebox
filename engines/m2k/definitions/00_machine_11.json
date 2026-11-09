@@ -367,21 +367,21 @@
 	"controls": [
 		{
 			"$type": "control-range",
-			"label": "DEL",
+			"label": "DELAY",
 			"address": "/cc/48",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "DEP",
+			"label": "DEPTH",
 			"address": "/cc/49",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "SPD",
+			"label": "SPEED",
 			"address": "/cc/50",
 			"min": 0,
 			"max": 127
@@ -395,7 +395,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "FB",
+			"label": "FEEDBACK",
 			"address": "/cc/52",
 			"min": 0,
 			"max": 127,
@@ -403,21 +403,21 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "WID",
+			"label": "WIDTH",
 			"address": "/cc/53",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "LP",
+			"label": "LOWPASS",
 			"address": "/cc/54",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "INP",
+			"label": "INPUT",
 			"address": "/cc/55",
 			"min": 0,
 			"max": 127
@@ -427,7 +427,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "PTCH",
+			"label": "TRACK PITCH",
 			"address": "/cc/20",
 			"min": 0,
 			"max": 127,

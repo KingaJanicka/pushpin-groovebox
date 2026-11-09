@@ -367,7 +367,7 @@
 	"controls": [
 		{
 			"$type": "control-menu",
-			"menu_label": "WAVE",
+			"menu_label": "CARRIER WAVE",
 			"step": 0.25,
 			"items": [
 				{
@@ -426,7 +426,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "PDEP",
+			"label": "PITCH SWEEP",
 			"address": "/cc/49",
 			"min": 0,
 			"max": 127,
@@ -563,7 +563,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "PDEC",
+			"label": "SWEEP TIME",
 			"address": "/cc/50",
 			"min": 0,
 			"max": 127,
@@ -700,21 +700,21 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "PCRV",
+			"label": "SWEEP CURVE",
 			"address": "/cc/51",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "FM",
+			"label": "FM DEPTH",
 			"address": "/cc/52",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "FMFR",
+			"label": "FM PITCH",
 			"address": "/cc/53",
 			"min": 0,
 			"max": 127,
@@ -859,7 +859,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "CLIK",
+			"label": "CLICK",
 			"address": "/cc/55",
 			"min": 0,
 			"max": 127
@@ -869,7 +869,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "PTCH",
+			"label": "TRACK PITCH",
 			"address": "/cc/20",
 			"min": 0,
 			"max": 127,

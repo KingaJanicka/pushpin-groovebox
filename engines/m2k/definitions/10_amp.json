@@ -5,7 +5,7 @@
 	"controls": [
 		{
 			"$type": "control-range",
-			"label": "ATCK",
+			"label": "ATTACK",
 			"address": "/cc/56",
 			"min": 0,
 			"max": 127,
@@ -145,11 +145,15 @@
 			"label": "HOLD",
 			"address": "/cc/57",
 			"min": 0,
-			"max": 127
+			"max": 127,
+			"tempo_time": {
+				"beats_per_value": 0.03125,
+				"inf_value": 127
+			}
 		},
 		{
 			"$type": "control-range",
-			"label": "DEC",
+			"label": "DECAY",
 			"address": "/cc/58",
 			"min": 0,
 			"max": 127,
@@ -286,7 +290,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "REL",
+			"label": "RELEASE",
 			"address": "/cc/59",
 			"min": 0,
 			"max": 127,
@@ -423,7 +427,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "DIST",
+			"label": "DISTORTION",
 			"address": "/cc/60",
 			"min": 0,
 			"max": 127,
@@ -431,7 +435,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "VOL",
+			"label": "VOLUME",
 			"address": "/cc/61",
 			"min": 0,
 			"max": 127
@@ -576,7 +580,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "PORT",
+			"label": "PORTAMENTO",
 			"address": "/cc/63",
 			"min": 0,
 			"max": 127

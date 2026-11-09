@@ -367,7 +367,7 @@
 	"controls": [
 		{
 			"$type": "control-range",
-			"label": "CARR",
+			"label": "CARRIER PITCH",
 			"address": "/cc/48",
 			"min": 0,
 			"max": 127,
@@ -505,7 +505,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "M1FR",
+			"label": "MOD 1 PITCH",
 			"address": "/cc/49",
 			"min": 0,
 			"max": 127,
@@ -643,14 +643,14 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "M1",
+			"label": "MOD 1 DEPTH",
 			"address": "/cc/50",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "M2FR",
+			"label": "NOISE PITCH",
 			"address": "/cc/51",
 			"min": 0,
 			"max": 127,
@@ -788,14 +788,14 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "M2",
+			"label": "NOISE DEPTH",
 			"address": "/cc/52",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-menu",
-			"menu_label": "WAVE",
+			"menu_label": "CARRIER WAVE",
 			"step": 0.25,
 			"items": [
 				{
@@ -867,7 +867,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "CDEC",
+			"label": "CLOSED DECAY",
 			"address": "/cc/54",
 			"min": 0,
 			"max": 127,
@@ -1004,7 +1004,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "OPEN",
+			"label": "OPEN DECAY",
 			"address": "/cc/55",
 			"min": 0,
 			"max": 127,
@@ -1144,7 +1144,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "PTCH",
+			"label": "TRACK PITCH",
 			"address": "/cc/20",
 			"min": 0,
 			"max": 127,

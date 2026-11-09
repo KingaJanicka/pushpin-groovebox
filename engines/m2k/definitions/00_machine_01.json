@@ -367,7 +367,7 @@
 	"controls": [
 		{
 			"$type": "control-range",
-			"label": "COLR",
+			"label": "COLOUR",
 			"address": "/cc/48",
 			"min": 0,
 			"max": 127,
@@ -375,35 +375,35 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "S&H",
+			"label": "PITCHED HOLD",
 			"address": "/cc/49",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "META",
+			"label": "METAL MIX",
 			"address": "/cc/50",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "MSPR",
+			"label": "METAL SPREAD",
 			"address": "/cc/51",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "PDEP",
+			"label": "PITCH DROP",
 			"address": "/cc/52",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "PDEC",
+			"label": "DROP TIME",
 			"address": "/cc/53",
 			"min": 0,
 			"max": 127,
@@ -540,7 +540,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "GRIT",
+			"label": "8-BIT GRIT",
 			"address": "/cc/54",
 			"min": 0,
 			"max": 127
@@ -553,7 +553,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "PTCH",
+			"label": "TRACK PITCH",
 			"address": "/cc/20",
 			"min": 0,
 			"max": 127,

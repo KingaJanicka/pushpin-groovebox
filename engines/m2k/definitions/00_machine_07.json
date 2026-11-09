@@ -640,7 +640,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "SCAN",
+			"label": "SCAN BY ENV",
 			"address": "/cc/49",
 			"min": 0,
 			"max": 127,
@@ -648,7 +648,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "STIM",
+			"label": "SCAN TIME",
 			"address": "/cc/50",
 			"min": 0,
 			"max": 127,
@@ -785,21 +785,21 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "SYNC",
+			"label": "HARD SYNC",
 			"address": "/cc/51",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "BITS",
+			"label": "WAVE BITS",
 			"address": "/cc/52",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "DTUN",
+			"label": "OSC 2 DETUNE",
 			"address": "/cc/53",
 			"min": 0,
 			"max": 127,
@@ -807,21 +807,21 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "MIX2",
+			"label": "OSC 2 LEVEL",
 			"address": "/cc/54",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "STEP",
+			"label": "PHASE STEPS",
 			"address": "/cc/55",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-menu",
-			"menu_label": "BANK",
+			"menu_label": "WAVE BANK",
 			"step": 0.25,
 			"items": [
 				{
@@ -846,7 +846,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "PTCH",
+			"label": "TRACK PITCH",
 			"address": "/cc/20",
 			"min": 0,
 			"max": 127,

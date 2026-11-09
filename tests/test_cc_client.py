@@ -308,7 +308,7 @@ def test_generator_gives_filter_frequencies_half_steps():
 def test_generated_filter_page_has_fine_steps():
     filt = json.load(open(os.path.join(M2K_DIR, "20_filt.json")))
     steps = {c["label"]: c.get("step") for c in filt["controls"] if c["$type"] == "control-range"}
-    assert steps["BASE"] == 0.5 and steps["WDTH"] == 0.5 and steps["LPQ"] is None
+    assert steps["FILTER BASE"] == 0.5 and steps["FILTER WIDTH"] == 0.5 and steps["LP RESONANCE"] is None
 
 
 # ------------------------------------------------------------- osc_mode choice

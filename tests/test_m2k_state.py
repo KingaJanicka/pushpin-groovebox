@@ -411,8 +411,8 @@ def test_lfo_and_mod_params_are_saved_and_recalled_with_the_slot(browser):
 
     lfo1, lfo2, lfo3 = page(instrument, "LFO 1"), page(instrument, "LFO 2"), page(instrument, "LFO 3")
     # ...and the pages show them: the DEVICE switch, its DEST menu and TRCK
-    for lfo, device, dest, trck in ((lfo1, "FILT", "WDTH", "TRK 3"), (lfo2, "LFO 2", "TRIG", "TRK 8"),
-                                     (lfo3, "SYN", "SUB", "OWN")):
+    for lfo, device, dest, trck in ((lfo1, "FILT", "FILTER WIDTH", "TRK 3"),
+                                     (lfo2, "LFO 2", "LFO TRIG MODE", "TRK 8"), (lfo3, "SYN", "SUB LEVEL", "OWN")):
         switch = lfo.controls[0]
         assert switch.get_active_group().label == device, lfo.label
         assert switch.get_active_group().controls[0].get_active_menu_item().label == dest, lfo.label

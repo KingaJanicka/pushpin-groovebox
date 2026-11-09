@@ -367,7 +367,7 @@
 	"controls": [
 		{
 			"$type": "control-range",
-			"label": "VOC1",
+			"label": "VOWEL F1",
 			"address": "/cc/48",
 			"min": 0,
 			"max": 127,
@@ -504,7 +504,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "VOC2",
+			"label": "VOWEL F2",
 			"address": "/cc/49",
 			"min": 0,
 			"max": 127,
@@ -641,7 +641,7 @@
 		},
 		{
 			"$type": "control-menu",
-			"menu_label": "V-STW",
+			"menu_label": "VOWEL SWITCH",
 			"step": 0.25,
 			"items": [
 				{
@@ -674,14 +674,14 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "VOIC",
+			"label": "WHISPER",
 			"address": "/cc/51",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-menu",
-			"menu_label": "CONS",
+			"menu_label": "CONSONANT",
 			"step": 0.5,
 			"items": [
 				{
@@ -961,14 +961,14 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "CLEN",
+			"label": "CONS LENGTH",
 			"address": "/cc/53",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "CVOL",
+			"label": "CONS VOLUME",
 			"address": "/cc/54",
 			"min": 0,
 			"max": 127
@@ -1115,7 +1115,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "PTCH",
+			"label": "TRACK PITCH",
 			"address": "/cc/20",
 			"min": 0,
 			"max": 127,

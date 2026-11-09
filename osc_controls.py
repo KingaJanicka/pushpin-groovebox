@@ -9,6 +9,30 @@ import time
 from typing import Any, Callable
 
 logger = logging.getLogger("osc_controls")
+
+
+# The app's tempo, for controls that show a time in beats (OSCControl.tempo_time).
+# PyshaApp points this at its own tempo; 120 BPM until it does.
+tempo_source: Callable[[], float] = lambda: 120.0
+
+
+def tempo_time_text(value: int, spec: ConfigDict) -> str:
+    """``value`` x beats_per_value beats in ms or s at the current tempo, as MONO2K's
+    screen writes times (1 decimal under 10 ms, whole ms under 1 s, then seconds)."""
+    if spec.get("inf_value") is not None and value >= spec["inf_value"]:
+        return "INF"
+    try:
+        bpm = float(tempo_source())
+    except Exception:
+        bpm = 120.0
+    if bpm <= 0:
+        bpm = 120.0
+    ms = max(value, 0) * float(spec["beats_per_value"]) * 60000.0 / bpm
+    if ms < 10:
+        return f"{ms:.1f} MS"
+    if ms < 1000:
+        return f"{round(ms)} MS"
+    return f"{ms / 1000:.1f} S" if ms < 100000 else f"{round(ms / 1000)} S"
 # logger.setLevel(level=logging.DEBUG)
 
 OscSendFunc = Callable[[str, float | None], None]
@@ -80,6 +104,9 @@ class OSCControl(object):
         self.value_labels_by: ConfigDict | None = config.get("value_labels_by", None)
         self.labels_source_value: float = 0.0
         self.labels_address: str | None = self.value_labels_by["address"] if self.value_labels_by else None
+        # Optional: a time that is a fraction of a beat (mono2k's HOLD, v / 32 beat),
+        # shown in ms or s at the current tempo: {"beats_per_value", "inf_value"}
+        self.tempo_time: ConfigDict | None = config.get("tempo_time", None)
 
     def query(self) -> None:
         self.send_osc_func("/q" + self.address, None)
@@ -102,12 +129,14 @@ class OSCControl(object):
 
     @property
     def has_value_labels(self) -> bool:
-        return bool(self.value_labels or self.value_labels_by)
+        return bool(self.value_labels or self.value_labels_by or self.tempo_time)
 
     def display_text(self, value: float) -> str:
         table = self.labels_table()
         if table:
             return table[min(max(int(float(value)), 0), len(table) - 1)]
+        if self.tempo_time:
+            return tempo_time_text(int(float(value)), self.tempo_time)
         if self.display_center is not None:
             offset = round(float(value) - float(self.display_center), 2)
             return "0" if offset == 0 else f"{offset:+g}"

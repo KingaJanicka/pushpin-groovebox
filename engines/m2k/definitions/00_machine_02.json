@@ -367,21 +367,21 @@
 	"controls": [
 		{
 			"$type": "control-range",
-			"label": "PW",
+			"label": "PULSE WIDTH",
 			"address": "/cc/48",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-range",
-			"label": "PWAD",
+			"label": "PW SWEEP",
 			"address": "/cc/49",
 			"min": 0,
 			"max": 127
 		},
 		{
 			"$type": "control-menu",
-			"menu_label": "PWRS",
+			"menu_label": "SWEEP RESET",
 			"step": 0.25,
 			"items": [
 				{
@@ -486,7 +486,7 @@
 		},
 		{
 			"$type": "control-menu",
-			"menu_label": "MOD",
+			"menu_label": "RING / SYNC",
 			"step": 0.25,
 			"items": [
 				{
@@ -545,7 +545,7 @@
 		},
 		{
 			"$type": "control-menu",
-			"menu_label": "MSRC",
+			"menu_label": "MOD SOURCE",
 			"step": 0.25,
 			"items": [
 				{
@@ -578,7 +578,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "MFRQ",
+			"label": "MOD FREQUENCY",
 			"address": "/cc/54",
 			"min": 0,
 			"max": 127,
@@ -855,7 +855,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "PTCH",
+			"label": "TRACK PITCH",
 			"address": "/cc/20",
 			"min": 0,
 			"max": 127,
