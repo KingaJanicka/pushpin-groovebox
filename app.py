@@ -1001,7 +1001,13 @@ class PyshaApp(object):
             self.preset_selection_mode.autosave_m2k()
         except Exception as e:
             logger.warning("mono2k autosave failed: %s", e)
-    
+
+        # The SCALE page, saved when it changes
+        try:
+            self.metro_sequencer_mode.autosave_scale_state()
+        except Exception as e:
+            logger.warning("SCALE page autosave failed: %s", e)
+
     async def queue_tasks(self):
         # Take tasks off the front one at a time. Removing from the list while a
         # for loop walked it skipped every other task (they waited a frame), and
@@ -1405,6 +1411,11 @@ if __name__ == "__main__":
         asyncio.run(main())
     except KeyboardInterrupt:
         print("Exiting Pysha...")
+        # Keep each track's sequence (in the clip it's on) and the SCALE page
+        try:
+            app.metro_sequencer_mode.save_state()
+        except Exception as e:
+            print("Could not save state on exit:", e)
         try:
             app._display_process.stop()
             app.push.f_stop.set()

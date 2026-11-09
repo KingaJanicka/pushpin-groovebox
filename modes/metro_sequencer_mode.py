@@ -18,8 +18,14 @@ from osc_controls import (
     OSCControlMenu,
 )
 from definitions import TRACK_NAMES_METRO
+import logging
+
+log = logging.getLogger("metro_sequencer_mode")
 
 EMPTY_PATTERN = []
+
+# The SCALE page is saved this often (seconds) at most while it's being changed
+SCALE_AUTOSAVE_SECONDS = 2.0
 
 TRACK_COLORS = {
     TRACK_NAMES_METRO[0]: definitions.GREEN,
@@ -132,6 +138,9 @@ class MetroSequencerMode(MelodicMode):
     encoder_short_press_time = 400000000
     major_scale = [0, 2, 4, 5, 7, 9, 11, 12]
     scale_menu_filename = "scale_menu_metro.json"
+    # SCALE page changed since it was last saved; when it was last autosaved
+    scale_state_dirty = False
+    _scale_autosave_at = 0.0
 
     def initialize(self, settings):
         # -- instance-level mutable state (was class-level, caused cross-test bleed) --
@@ -346,77 +355,90 @@ class MetroSequencerMode(MelodicMode):
             self.update_pads()
             self.app.pads_need_update = True
     
+    def current_clip(self, instrument_short_name):
+        """The clip the track is playing (the last pad pressed in its column on
+        the clip page); 0 until one is picked."""
+        try:
+            pressed = self.app.clip_selection_mode.last_pad_in_column_pressed
+            return int(pressed[instrument_short_name][0])
+        except (AttributeError, KeyError, IndexError, TypeError, ValueError):
+            return 0
+
     def load_state(self):
-        # pass
-        # Loads seq state
+        # Each track's sequence, from the clip it's on
         for (
             instrument_short_name
         ) in self.get_all_distinct_instrument_short_names_helper():
-            self.instrument_sequencers[instrument_short_name].load_state()
+            self.instrument_sequencers[instrument_short_name].load_state(
+                clip=self.current_clip(instrument_short_name)
+            )
+        self.load_scale_state()
 
-        # # Loads Osc mode state
-        # self.app.osc_mode.load_state()
-
-        # Loads scale edit menu
+    def load_scale_state(self):
+        """The SCALE page's settings (global, not per clip). A track missing
+        from the file keeps its defaults; the others still load."""
+        if not os.path.exists(self.scale_menu_filename):
+            return
         try:
-            dump = None
-            if os.path.exists(self.scale_menu_filename):
-                dump = json.load(open(self.scale_menu_filename))
-            for (
-                instrument_short_name
-            ) in self.get_all_distinct_instrument_short_names_helper():
-                for track_name in TRACK_NAMES_METRO:
-                    for idx, control in enumerate(
-                        self.instrument_scale_edit_controls[instrument_short_name]
-                    ):
-                        try:
-                            control.value = dump[instrument_short_name][idx]
-                        except:
-                            print(e)
-        except Exception as e:
-            print("Exception in trig_edit load_state")
-            traceback.print_exc()
+            with open(self.scale_menu_filename) as f:
+                dump = json.load(f)
+        except (OSError, ValueError) as e:
+            log.warning("could not load %s: %s", self.scale_menu_filename, e)
+            return
+        if not isinstance(dump, dict):
+            return
+        for instrument_short_name, controls in self.instrument_scale_edit_controls.items():
+            saved = dump.get(instrument_short_name)
+            if not isinstance(saved, list):
+                continue
+            for control, value in zip(controls, saved):
+                if isinstance(control, ControlSpacer) or value is None:
+                    continue
+                control.value = value
+        self.scale_state_dirty = False
+
+    def get_scale_state(self):
+        """Each track's SCALE page values, by control position (None for spacers)."""
+        return {
+            instrument_short_name: [
+                None if isinstance(control, ControlSpacer) else control.value
+                for control in controls
+            ]
+            for instrument_short_name, controls in self.instrument_scale_edit_controls.items()
+        }
+
+    def save_scale_state(self):
+        tmp = self.scale_menu_filename + ".tmp"
+        try:
+            with open(tmp, "w") as f:
+                json.dump(self.get_scale_state(), f)
+            os.replace(tmp, self.scale_menu_filename)  # a crash mid-save leaves the old file
+            self.scale_state_dirty = False
+        except (OSError, TypeError, ValueError) as e:
+            log.warning("could not save %s: %s", self.scale_menu_filename, e)
+
+    def autosave_scale_state(self, now=None):
+        """Save the SCALE page when it changed (at most every SCALE_AUTOSAVE_SECONDS)."""
+        if not self.scale_state_dirty:
+            return
+        now = time.monotonic() if now is None else now
+        if now - self._scale_autosave_at < SCALE_AUTOSAVE_SECONDS:
+            return
+        self._scale_autosave_at = now
+        self.save_scale_state()
+
+    def save_sequences(self):
+        """Each track's sequence, into the clip it's on."""
+        for (
+            instrument_short_name
+        ) in self.get_all_distinct_instrument_short_names_helper():
+            self.instrument_sequencers[instrument_short_name].save_state(
+                clip=self.current_clip(instrument_short_name)
+            )
 
     def save_state(self):
-        # pass
-        # Saves seq state
-        scale_edit_state = {}
-        try:
-            for (
-                instrument_short_name
-            ) in self.get_all_distinct_instrument_short_names_helper():
-
-                self.instrument_sequencers[instrument_short_name].save_state()
-                scale_edit_state[instrument_short_name] = {}
-                # Populates the temp scale_edit_state array with current state
-                scale_edit_state[instrument_short_name] = [
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                ]
-                for index, control in enumerate(
-                    self.instrument_scale_edit_controls[instrument_short_name]
-                ):
-                    scale_edit_state[instrument_short_name][index] = control.value
-        except Exception as e:
-            print("Error in saving scale_edit state")
-            traceback.print_exc()
-        # Saves scale edit menu
-        try:
-            json.dump(
-                scale_edit_state, open(self.scale_menu_filename, "w")
-            )  # Save to file
-        except Exception as e:
-            print("Exception in trig_edit save_state")
-            traceback.print_exc()
-
-        # # Saves Osc mode state
-        # self.app.osc_mode.save_state()
+        self.save_sequences()
+        self.save_scale_state()
 
     def start_timeline(self):
         self.global_timeline.background()
@@ -1186,6 +1208,7 @@ class MetroSequencerMode(MelodicMode):
                         if max < (control.value + incr):
                             control.value = max
 
+                    self.scale_state_dirty = True  # autosaved by the app loop
                     self.update_pads()
                 # elif len(self.app.steps_held) == 0 and self.show_scale_menu == False:
                 #     current_device = self.app.instrument_selection_mode.get_current_instrument_device()

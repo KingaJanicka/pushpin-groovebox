@@ -10,6 +10,22 @@ from pythonosc.udp_client import SimpleUDPClient
 from definitions import TRACK_NAMES_METRO
 from sequencer.sequencer_params import SequencerParams
 
+# An empty clip: what a clip with no file of its own loads.
+INIT_STATE_FILENAME = "init_state.json"
+
+_init_state_cache: dict = {}
+
+
+def init_state(path: str = INIT_STATE_FILENAME) -> dict | None:
+    """The empty-clip state from ``path`` (read once), or None when missing."""
+    if path not in _init_state_cache:
+        try:
+            with open(path) as f:
+                _init_state_cache[path] = json.load(f)
+        except (OSError, ValueError):
+            return None
+    return _init_state_cache[path]
+
 
 def lockable_controls(device):
     """(lock index, control) for every control a p-lock can be on, across all
@@ -178,51 +194,66 @@ class SequencerMetro(object):
         seq_filename = self.get_state_filename(clip=clip)
         try:
             if os.path.exists(seq_filename):
-                dump = json.load(open(seq_filename))
-            elif os.path.exists(f"init_state.json"):
-                dump = json.load(open("init_state.json"))
+                with open(seq_filename) as f:
+                    dump = json.load(f)
+            else:
+                dump = init_state()
+                if dump is None:
+                    return
             self.locks = dump["locks"]
             self.note = dump["note"]
             self.pitch = dump[TRACK_NAMES_METRO[0]]
             self.octave = dump[TRACK_NAMES_METRO[1]]
-            self.aux_4 = dump[TRACK_NAMES_METRO[2]]
+            self.velocity = dump[TRACK_NAMES_METRO[2]]
             self.gate = dump[TRACK_NAMES_METRO[3]]
             self.mutes_skips = dump[TRACK_NAMES_METRO[4]]
             self.lock_scale = dump[TRACK_NAMES_METRO[5]]
             self.aux_2 = dump[TRACK_NAMES_METRO[6]]
             self.aux_3 = dump[TRACK_NAMES_METRO[7]]
-            
+
             self.app.metro_sequencer_mode.update_pads_to_seq_state()
         except Exception as e:
             print("Exception in seq load_state")
             traceback.print_exc()
 
+    def get_state(self):
+        return {
+            "locks": self.locks,
+            "note": self.note,
+            TRACK_NAMES_METRO[0]: self.pitch,
+            TRACK_NAMES_METRO[1]: self.octave,
+            TRACK_NAMES_METRO[2]: self.velocity,
+            TRACK_NAMES_METRO[3]: self.gate,
+            TRACK_NAMES_METRO[4]: self.mutes_skips,
+            TRACK_NAMES_METRO[5]: self.lock_scale,
+            TRACK_NAMES_METRO[6]: self.aux_2,
+            TRACK_NAMES_METRO[7]: self.aux_3,
+        }
+
     def save_state(self, clip=0):
+        """Write the sequence to its clip's file. A clip with no file that is
+        still empty (the init state) gets none, so browsing or deleting clips
+        doesn't leave empty clip files behind."""
         seq_filename = self.get_state_filename(clip=clip)
         try:
-            # pass
-            sequencer_state = {
-                "locks": self.locks,
-                "note": self.note,
-                TRACK_NAMES_METRO[0]: self.pitch,
-                TRACK_NAMES_METRO[1]: self.octave,
-                TRACK_NAMES_METRO[2]: self.velocity,
-                TRACK_NAMES_METRO[3]: self.gate,
-                TRACK_NAMES_METRO[4]: self.mutes_skips,
-                TRACK_NAMES_METRO[5]: self.lock_scale,
-                TRACK_NAMES_METRO[6]: self.aux_2,
-                TRACK_NAMES_METRO[7]: self.aux_3,
-            }
-            json.dump(
-                sequencer_state, open(seq_filename, "w")
-            )  # Save to file
+            sequencer_state = self.get_state()
+            if not os.path.exists(seq_filename) and sequencer_state == init_state():
+                return
+            tmp = seq_filename + ".tmp"
+            with open(tmp, "w") as f:
+                json.dump(sequencer_state, f)
+            os.replace(tmp, seq_filename)  # a crash mid-save leaves the old file
         except Exception as e:
             print("Exception in seq save_state")
             traceback.print_exc()
 
     def delete_state(self, clip):
+        """Delete the clip's file and empty the sequence playing it, so the
+        deleted pattern isn't saved back when you switch clips."""
         seq_filename = self.get_state_filename(clip=clip)
-        os.remove(seq_filename)
+        if os.path.exists(seq_filename):
+            os.remove(seq_filename)
+        self.load_state(clip=clip)
         
     def advance_and_evaluate_main_tick(self):
         # Counts down ticks down to zero from length of main reset
