@@ -577,8 +577,11 @@ class SurgeXTEngine(Engine):
         volume_L_output = [port for port in volume_ports if port['info']['props']['object.path'] == f"pure_data:output_{volume_input_port_index_L}"].pop()
         volume_R_output = [port for port in volume_ports if port['info']['props']['object.path'] == f"pure_data:output_{volume_input_port_index_R}"].pop()
 
-        interface_L_port = [link['info']['input-port-id'] for link in init_links if link['info']['output-port-id'] == surge_L['id']].pop()
-        interface_R_port = [link['info']['input-port-id'] for link in init_links if link['info']['output-port-id'] == surge_R['id']].pop()
+        # Where the engine's sound went before: the hardware output it was
+        # linked to, never another client's input (Pd and Surge may have
+        # linked themselves to its ports)
+        interface_L_port = self.sink_port_of(init_links, surge_L['id'])
+        interface_R_port = self.sink_port_of(init_links, surge_R['id'])
 
         await connectPipewireSourceToPipewireDest(volume_L_output['id'], interface_L_port)
         await connectPipewireSourceToPipewireDest(volume_R_output['id'], interface_R_port)
@@ -587,6 +590,20 @@ class SurgeXTEngine(Engine):
         # Which is why we're disconencting last
         for link in init_links:
             await disconnectPipewireLink(link['id'])
+
+    def sink_port_of(self, links, output_port_id):
+        """The input port of a hardware output (an Audio/Sink node) that one of
+        ``links`` takes ``output_port_id`` to. Raises LookupError if none does."""
+        sinks = {
+            obj['id'] for obj in self.app.pipewire
+            if obj['type'] == 'PipeWire:Interface:Node'
+            and obj.get('info', {}).get('props', {}).get('media.class') == 'Audio/Sink'
+        }
+        for link in links:
+            info = link['info']
+            if info['output-port-id'] == output_port_id and info['input-node-id'] in sinks:
+                return info['input-port-id']
+        raise LookupError(f"port {output_port_id} isn't linked to a hardware output")
 
     def port_is(self, port, names) -> bool:
         """Whether a PipeWire port is one of this engine's JACK ports called ``names``.
@@ -679,6 +696,9 @@ class SurgeXTEngine(Engine):
             f"{self.buffer_size}",
             "puredata",
             "-jack",
+            # pushpin makes every link itself (Pd would take the first JACK
+            # client with outputs, e.g. m2k-jack, for its inputs)
+            "-nojackconnect",
             "-nogui",
             "-rt",
             "-channels",
@@ -1135,6 +1155,10 @@ class M2KEngine(SurgeXTEngine):
         m2k_shared().register(self.track, self.midi_port_name)
 
     control_transport = "midi-cc"
+    # Started after every Surge has opened its audio devices: Surge's
+    # --audio-input-interface=1.0 is the first JACK client with outputs by name,
+    # and "M2K" sorts ahead of the volume node ("pure_data") that 1.0 means
+    start_late = True
     # m2k-jack takes parameter values as 14-bit NRPN (its core keeps 1/256 of a
     # step); these CCs are switches and stay plain 7-bit
     nrpn = True

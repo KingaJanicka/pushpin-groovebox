@@ -489,9 +489,17 @@ class Instrument(PyshaMode):
             self.query_slots()
             self.query_devices()
 
-            # This starts the Surge-XT instances (and the shared m2k-jack)
+            # This starts the Surge-XT instances; the shared m2k-jack waits for
+            # start_late_engines (see M2KEngine.start_late)
             for voice in self.voices.values():
-                asyncio.create_task(voice.engine.start())
+                if not getattr(voice.engine, "start_late", False):
+                    asyncio.create_task(voice.engine.start())
+
+    async def start_late_engines(self) -> None:
+        """Start the engines that must come up after every Surge (mono2k)."""
+        for voice in self.voices.values():
+            if getattr(voice.engine, "start_late", False):
+                await voice.engine.start()
 
     def query_all_params(self):
         # TODO: this is broken

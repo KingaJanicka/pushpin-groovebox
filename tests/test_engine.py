@@ -225,6 +225,16 @@ def _port(node_id, path, port_id, alias=None):
     return {"id": port_id, "type": "PipeWire:Interface:Port", "info": {"props": props}}
 
 
+# The hardware output (PipeWire's Audio/Sink node) an engine's ports start out on
+SINK = {"id": 90, "type": "PipeWire:Interface:Node", "info": {"props": {"media.class": "Audio/Sink"}}}
+
+
+def _link(link_id, out_port, in_port, in_node=90, out_node=10):
+    return {"id": link_id, "type": "PipeWire:Interface:Link",
+            "info": {"output-node-id": out_node, "output-port-id": out_port,
+                     "input-node-id": in_node, "input-port-id": in_port}}
+
+
 def _m2k_port(node_id, index, jack_name, port_id):
     """An m2k-jack port as PipeWire reports it on the Pi: object.path by direction
     and index, the JACK name only in port.alias."""
@@ -252,10 +262,9 @@ def test_configure_pipewire_routes_by_port_name(app, engine_name, out_L, out_R):
         _port(20, "pure_data:input_1", 202),
         _port(20, "pure_data:output_0", 203),
         _port(20, "pure_data:output_1", 204),
-        {"id": 301, "type": "PipeWire:Interface:Link",
-         "info": {"output-node-id": 10, "output-port-id": 101, "input-port-id": 901}},
-        {"id": 302, "type": "PipeWire:Interface:Link",
-         "info": {"output-node-id": 10, "output-port-id": 102, "input-port-id": 902}},
+        SINK,
+        _link(301, 101, 901),
+        _link(302, 102, 902),
     ]
     app.get_volume_node.return_value = volume_node
     connect = AsyncMock()
@@ -273,11 +282,9 @@ def test_configure_pipewire_routes_by_port_name(app, engine_name, out_L, out_R):
 def test_m2k_track_routing_leaves_the_other_tracks_alone(app):
     """In the shared process, track 2's routing must not touch track 1's or the return's links."""
     eng = engine.create_engine(app, m2k_definition(index=1), midi_device_idx=0)
-    link = lambda lid, out_port, in_port: {
-        "id": lid, "type": "PipeWire:Interface:Link",
-        "info": {"output-node-id": 10, "output-port-id": out_port, "input-port-id": in_port},
-    }
+    link = _link
     app.pipewire = [
+        SINK,
         _m2k_port(10, 0, "track1_L", 101), _m2k_port(10, 1, "track1_R", 102),
         _m2k_port(10, 2, "track2_L", 103), _m2k_port(10, 3, "track2_R", 104),
         _m2k_port(10, 16, "fx_L", 105), _m2k_port(10, 17, "fx_R", 106),
@@ -297,6 +304,57 @@ def test_m2k_track_routing_leaves_the_other_tracks_alone(app):
 
     assert [c.args for c in connect.call_args_list] == [(103, 202), (104, 203), (212, 901), (213, 902)]
     assert [c.args for c in disconnect.call_args_list] == [(303,), (304,)]
+
+
+def test_routing_follows_the_hardware_output_not_a_stray_link(app):
+    """On the Pi, Surge and Pd took m2k-jack for their input device and linked
+    track 1 to themselves too. The volume node's track 1 out must go to the
+    hardware output, not to one of those (or the track is silent or feeds back)."""
+    eng = engine.create_engine(app, m2k_definition(index=0), midi_device_idx=0)
+    app.pipewire = [
+        SINK,
+        _m2k_port(10, 0, "track1_L", 101), _m2k_port(10, 1, "track1_R", 102),
+        _port(20, "pure_data:input_0", 200), _port(20, "pure_data:input_1", 201),
+        _port(20, "pure_data:output_0", 210), _port(20, "pure_data:output_1", 211),
+        _link(301, 101, 901), _link(302, 102, 902),
+        # Pd's autoconnect and a Surge's input, listed after the hardware link
+        _link(303, 101, 200, in_node=20), _link(304, 102, 201, in_node=20),
+        _link(305, 101, 701, in_node=70), _link(306, 102, 702, in_node=70),
+    ]
+    app.get_volume_node.return_value = {"id": 20}
+    connect, disconnect = AsyncMock(), AsyncMock()
+    with patch.object(engine.Engine, "configure_pipewire", AsyncMock()), patch(
+        "engine.connectPipewireSourceToPipewireDest", connect
+    ), patch("engine.disconnectPipewireLink", disconnect):
+        eng.instrument_nodes = [{"id": 10}]
+        asyncio.run(eng.configure_pipewire())
+
+    assert [c.args for c in connect.call_args_list] == [(101, 200), (102, 201), (210, 901), (211, 902)]
+
+
+def test_routing_without_a_hardware_link_fails_loudly(app):
+    eng = engine.create_engine(app, m2k_definition(index=0), midi_device_idx=0)
+    app.pipewire = [
+        SINK,
+        _m2k_port(10, 0, "track1_L", 101), _m2k_port(10, 1, "track1_R", 102),
+        _port(20, "pure_data:input_0", 200), _port(20, "pure_data:input_1", 201),
+        _port(20, "pure_data:output_0", 210), _port(20, "pure_data:output_1", 211),
+        _link(303, 101, 200, in_node=20), _link(304, 102, 201, in_node=20),
+    ]
+    app.get_volume_node.return_value = {"id": 20}
+    with patch.object(engine.Engine, "configure_pipewire", AsyncMock()), patch(
+        "engine.connectPipewireSourceToPipewireDest", AsyncMock()
+    ), patch("engine.disconnectPipewireLink", AsyncMock()):
+        eng.instrument_nodes = [{"id": 10}]
+        with pytest.raises(LookupError, match="hardware output"):
+            asyncio.run(eng.configure_pipewire())
+
+
+def test_mono2k_starts_after_the_surges(app):
+    """Surge's --audio-input-interface=1.0 is the first JACK client by name, and
+    "M2K" sorts ahead of the volume node: m2k-jack must not be up yet."""
+    assert engine.M2KEngine.start_late is True
+    assert getattr(SurgeXTEngine, "start_late", False) is False
 
 
 def test_surge_initial_slots_are_surges_type_addresses(app):
