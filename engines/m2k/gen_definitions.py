@@ -308,18 +308,6 @@ def machine_page_two(machine: dict, ptch: dict | None) -> list[dict]:
     return [first, pitch]
 
 
-# Machine controls MONO2K counts about 64 (K_BI) that read better as a plain
-# 0-127 slider: the FM+ machines' envelope amounts
-UNIPOLAR = {("FM+STAT", "1ENV"), ("FM+DYN", "2ENV"), ("FM+PAR", "1ENV"), ("FM+PAR", "2ENV"), ("FM+PAR", "3ENV")}
-
-
-def machine_control(machine: dict, syn: dict) -> dict:
-    c = control(syn["cc"], syn["param"])
-    if (machine["name"], syn["param"]["label"]) in UNIPOLAR:
-        c.pop("bipolar", None)
-    return c
-
-
 def machine_device(machine: dict, machine_cc: int, ccs: dict[int, int] | None = None,
                    ptch: dict | None = None) -> dict:
     init = [{"$type": "message", "$comment": "machine", "address": cc_address(machine_cc), "value": machine["index"]}]
@@ -339,7 +327,7 @@ def machine_device(machine: dict, machine_cc: int, ccs: dict[int, int] | None = 
         "name": machine["name"],
         "slot": 0,
         "init": init,
-        "controls": [machine_control(machine, s) for s in machine["syn"]] + machine_page_two(machine, ptch),
+        "controls": [control(s["cc"], s["param"]) for s in machine["syn"]] + machine_page_two(machine, ptch),
     }
 
 

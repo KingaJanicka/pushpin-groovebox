@@ -689,7 +689,8 @@
 			"label": "DEPTH / DECAY 1",
 			"address": "/cc/49",
 			"min": 0,
-			"max": 127
+			"max": 127,
+			"bipolar": 1
 		},
 		{
 			"$type": "control-menu",
@@ -1015,7 +1016,8 @@
 			"label": "DEPTH / DECAY 2",
 			"address": "/cc/51",
 			"min": 0,
-			"max": 127
+			"max": 127,
+			"bipolar": 1
 		},
 		{
 			"$type": "control-menu",
@@ -1341,7 +1343,8 @@
 			"label": "DEPTH / DECAY 3",
 			"address": "/cc/53",
 			"min": 0,
-			"max": 127
+			"max": 127,
+			"bipolar": 1
 		},
 		{
 			"$type": "control-range",

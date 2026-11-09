@@ -697,7 +697,8 @@
 			"label": "DEPTH / DECAY 1",
 			"address": "/cc/50",
 			"min": 0,
-			"max": 127
+			"max": 127,
+			"bipolar": 1
 		},
 		{
 			"$type": "control-range",

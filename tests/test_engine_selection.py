@@ -831,13 +831,14 @@ def test_the_clock_goes_to_one_mono2k_port_the_first_tracks(app):
     assert mono2k_clock_port({"Pushpin 1": surge_only}) is None
 
 
-def test_fm_envelope_amounts_are_plain_sliders(app):
+def test_fm_envelope_amounts_are_bipolar(app):
+    """MONO2K counts them about 64: below it the depth falls, above it rises (DEPTH / DECAY)."""
     instrument, _ = make_instrument(app)
     for machine, labels in (("FM+STAT", ["DEPTH / DECAY 1"]), ("FM+DYN", ["DEPTH / DECAY 2"]),
                             ("FM+PAR", ["DEPTH / DECAY 1", "DEPTH / DECAY 2", "DEPTH / DECAY 3"])):
         controls = {c.label: c for c in machine_page(instrument, machine).controls if hasattr(c, "bipolar")}
-        assert all(not controls[label].bipolar for label in labels), machine
-    assert machine_page(instrument, "FM+STAT").controls[1].bipolar            # 1FIN: a fine tune, still about 0
+        assert all(controls[label].bipolar for label in labels), machine
+    assert machine_page(instrument, "FM+STAT").controls[1].bipolar            # 1FIN: a fine tune, about 0 too
 
 
 # ------------------------------- full names, and units MONO2K's screen leaves out
