@@ -17,7 +17,9 @@
  * core plays, as long as the bus's tape, crunch and drive are off (they work on the whole mix there).
  *
  * MIDI, per track:
- *   Notes        note on / note off (velocity is ignored, as on the Monomachine)
+ *   Notes        note on / note off. Velocity is MONO2K's accent: over 100 the note plays accented (VOL
+ *                raised by the pattern's ACNT, 60: about +3.3 dB), any other at the same level (pushpin's
+ *                addition: the core's MIDI path plays every note at 100, its sequencer an accent at 127)
  *   CC 3         mute (0 = heard)
  *   CC 7         level
  *   CC 48-55     SYN A-H (the machine's own page)
@@ -433,11 +435,11 @@ static void pp_set_skip(int t, int cc, int on)
 /* a note with no amp trig, as MONO2K's sequencer plays a step of that trig type (play_track_step): the note moves
  * the pitch, the step's locks are heard, the filter and LFOs restart unless masked too; the amp, the machine and the
  * gate go on as they were. Not the core's MIDI path: that is a note played, which always trigs the amp */
-static void pp_trigless_on(int t, int note)
+static void pp_trigless_on(int t, int note, int vel)
 {
     ready_go();
     m_cpy(trk[t].eff, PAT(cur_pat)->kit[t], P_COUNT);
-    voice_trig(t, note, 100, 0, pp_skip[t]);
+    voice_trig(t, note, vel, 0, pp_skip[t]);    /* (its accent too, as MONO2K's sequencer plays one) */
     pp_trigless[t][note] = 1;
 }
 
@@ -568,12 +570,13 @@ static void pp_handle_midi(int t, const uint8_t *m, size_t n)
     const int ch_status = cmd | ((midi_ch() + t) & 15);
     if (cmd == 0x90 && d2) {
         pp_note_on(t);
-        if (pp_skip[t] & ST_NOAMP) pp_trigless_on(t, d1);
+        if (pp_skip[t] & ST_NOAMP) pp_trigless_on(t, d1, d2);
         else {
             pp_trigless[t][d1] = 0;
             pp_amp_note[t] = d1;
             if (pp_skip[t]) pp_masked_note_on(t, ch_status, d1, d2);
             else m2k_midi(ch_status, d1, d2);
+            if (trk[t].note == d1) trk[t].vel = (uint8_t)d2;   /* the accent: the core's note-on played it at 100 */
         }
         for (int p = 0; p < P_COUNT; p++) pp_apply(t, p);              /* (the note copied the kit into eff) */
         return;

@@ -80,7 +80,7 @@ a pushpin track that plays Surge can stay connected to its MONO2K track.
 
 | Message | Effect |
 |---|---|
-| Note on/off | plays the track (velocity ignored, as on the Monomachine) |
+| Note on/off | plays the track. Velocity is MONO2K's **accent**: over 100 the note plays accented (VOL raised by the pattern's ACNT, 60: about +3.3 dB), any other velocity at the same level. On pushpin's metro sequencer that's the top two velocity rows (111, 127). MONO2K's own MIDI path plays every note at 100; pushpin's addition passes the velocity on, to notes with no amp trig too (they accent the sounding note, as MONO2K's sequencer does) |
 | CC 48–55 | SYN A–H (the machine's page) |
 | CC 56–63 | AMP: ATK HOLD DEC REL DIST VOL PAN PORT |
 | CC 72–79 | FILT: BASE (high-pass) WDTH HPQ LPQ FATK FDEC BOF WOF |
