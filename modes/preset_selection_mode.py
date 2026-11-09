@@ -1054,7 +1054,7 @@ class PresetSelectionMode(definitions.PyshaMode):
                 self.app.add_display_notification(f"Saved {sound_id.split('/')[-1]}")
             return True
 
-        elif button_name in push2_python.constants.BUTTON_UPPER_ROW_1:
+        elif button_name == push2_python.constants.BUTTON_UPPER_ROW_1:
             instrument_short_name = (
                 self.app.instrument_selection_mode.get_current_instrument_short_name()
             )
@@ -1079,7 +1079,7 @@ class PresetSelectionMode(definitions.PyshaMode):
                 self.save_m2k_presets()
             return True
 
-        elif button_name in push2_python.constants.BUTTON_UPPER_ROW_7:
+        elif button_name == push2_python.constants.BUTTON_UPPER_ROW_7:
             instrument_short_name = (
                 self.app.instrument_selection_mode.get_current_instrument_short_name()
             )
