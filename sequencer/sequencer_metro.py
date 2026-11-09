@@ -11,6 +11,23 @@ from definitions import TRACK_NAMES_METRO
 from sequencer.sequencer_params import SequencerParams
 
 
+def lockable_controls(device):
+    """(lock index, control) for every control a p-lock can be on, across all
+    of the device's pages. Locks are recorded and shown at page * 8 + position
+    on the page; playing only the page on screen (indexed 0..7) dropped every
+    other page's locks and put page 1's on whichever page was showing."""
+    pages = getattr(device, "pages", None)
+    if not pages:
+        yield from enumerate(device.get_visible_controls())
+        return
+    for page_idx, page in enumerate(pages):
+        for position, control in enumerate(page):
+            index = page_idx * 8 + position
+            if index >= LOCKS_PER_DEVICE:
+                return
+            yield index, control
+
+
 def lock_message(control, value):
     """The (address, value) a p-lock of ``value`` on ``control`` plays. A menu's
     locks are item positions: play the item's own message, not the position
@@ -26,6 +43,7 @@ def lock_message(control, value):
 
 
 default_number_of_steps = 64
+LOCKS_PER_DEVICE = 18          # the length of each device's list in self.locks
 
 from typing import Any
 
@@ -66,7 +84,7 @@ class SequencerMetro(object):
             self.locks.append([])
             for device_idx in range(17):
                 self.locks[step_idx].append(
-                    [None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+                    [None] * LOCKS_PER_DEVICE
                 )
         
         self.app = app
@@ -326,12 +344,14 @@ class SequencerMetro(object):
                         if control.name == "Switch":
                             control.reset_group()
                         else:
-                            # Back to the value it had before the lock. Not
-                            # control.value: the synth's echo of the lock has
-                            # overwritten that with the locked value, which made
-                            # every p-lock stick after its step.
-                            control.value = unlocked
-                            self.app.send_osc(*lock_message(control, float(unlocked)), instrument.name)
+                            # Back to the knob's value now. play_lock() keeps the
+                            # lock's echo off control.value, so it is the knob's
+                            # live position; the value remembered when the lock
+                            # played is stale if the knob was turned since, and
+                            # resetting to it snapped a swept knob back. Through
+                            # play_lock() so Surge's late echo of the reset can't
+                            # pull the knob back either.
+                            self.play_lock(control, float(control.value), instrument)
                     self.held_pitch, self.held_octave, self.held_velocity = pitch, octave, velocity
                     self.timeline.schedule(
                         {"note": pitch_and_octave, "gate": gate, "amplitude": velocity}, count=1,
@@ -354,7 +374,7 @@ class SequencerMetro(object):
                                 # we have the right device
                                 # Now we just need to enum the controls and send the values 
                                 # This needs to go through VISIBLE controls, so that groups don't get shafted
-                                for control_idx, control in enumerate(device.get_visible_controls()):
+                                for control_idx, control in lockable_controls(device):
                                     lock_address = control.address
                                     lock_value = None
                                     if self.locks[self.step_index][slot_idx][control_idx] != None:
@@ -365,7 +385,7 @@ class SequencerMetro(object):
                                             value_after_scale = lock_offset * lock_scale_value + unlocked
                                             
                                             if lock_value != None and lock_address != None:
-                                                self.app.send_osc(*lock_message(control, value_after_scale), instrument.name)
+                                                self.play_lock(control, value_after_scale, instrument)
                                             elif lock_value != None and control.name == "Switch":
                                                     control.update_value_lock(value_after_scale)
                                             
@@ -379,7 +399,7 @@ class SequencerMetro(object):
                         # we have the right device
                         # Now we just need to enum the controls and send the values 
                         # Visible controls so we don't ommit groups
-                        for control_idx, control in enumerate(device.get_visible_controls()):
+                        for control_idx, control in lockable_controls(device):
                             lock_address = control.address
                             lock_value = None
                             if self.locks[self.step_index][slot_idx][control_idx] != None:
@@ -390,7 +410,7 @@ class SequencerMetro(object):
                                     value_after_scale = lock_offset * lock_scale_value + unlocked
                                     
                                     if lock_value != None and lock_address != None:
-                                        self.app.send_osc(*lock_message(control, value_after_scale), instrument.name)
+                                        self.play_lock(control, value_after_scale, instrument)
                                     elif lock_value != None and control.name == "Switch":
                                             control.update_value_lock(value_after_scale)
                                     
@@ -527,13 +547,25 @@ class SequencerMetro(object):
         selected_track = self.app.metro_sequencer_mode.selected_track
         return self.locks[index * 8][device_idx][parameter_idx]
 
+    def play_lock(self, control, value, instrument):
+        """Send a p-lock without moving the control's display: it keeps the
+        knob's position, and the lock shows only while its pad is held. The
+        synth's echo of the lock is ignored, whether it comes back at once
+        (mono2k's MIDI-CC client) or later (Surge over OSC)."""
+        knob = control.value
+        address, sent = lock_message(control, value)
+        echoes = getattr(control, "lock_echoes", None) or getattr(control, "recent_sends", None)
+        if echoes is not None:
+            echoes.add(sent)
+        self.app.send_osc(address, sent, instrument.name)
+        control.value = knob
+
     def remember_unlocked(self, control):
-        """A lock is about to be sent to ``control``: keep the value it goes back
-        to (its own, from before any lock still waiting to be undone), and
-        return it: the base a scaled lock is measured from."""
-        for c, unlocked in self.controls_to_reset:
-            if c is control:
-                return unlocked
+        """A lock is about to be sent to ``control``: note that it needs a reset
+        after its step, and return the knob's value now (play_lock() keeps
+        lock echoes off control.value): the base a scaled lock is measured
+        from, and what saving a sound keeps instead of the lock."""
+        self.controls_to_reset = [(c, v) for c, v in self.controls_to_reset if c is not control]
         self.controls_to_reset.append((control, control.value))
         return control.value
 

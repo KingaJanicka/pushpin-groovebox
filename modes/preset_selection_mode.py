@@ -798,7 +798,8 @@ class PresetSelectionMode(definitions.PyshaMode):
 
         self.update_pads()
         idx_j = pad_ij[1]
-        self.app.steps_held.remove(idx_j)
+        if idx_j in self.app.steps_held:            # (a mode switch clears it)
+            self.app.steps_held.remove(idx_j)
         self.browser_active = False
         self._pad_down_at = None
         self._opened_by_long_press = False
@@ -1054,7 +1055,7 @@ class PresetSelectionMode(definitions.PyshaMode):
                 self.app.add_display_notification(f"Saved {sound_id.split('/')[-1]}")
             return True
 
-        elif button_name in push2_python.constants.BUTTON_UPPER_ROW_1:
+        elif button_name == push2_python.constants.BUTTON_UPPER_ROW_1:
             instrument_short_name = (
                 self.app.instrument_selection_mode.get_current_instrument_short_name()
             )
@@ -1079,7 +1080,7 @@ class PresetSelectionMode(definitions.PyshaMode):
                 self.save_m2k_presets()
             return True
 
-        elif button_name in push2_python.constants.BUTTON_UPPER_ROW_7:
+        elif button_name == push2_python.constants.BUTTON_UPPER_ROW_7:
             instrument_short_name = (
                 self.app.instrument_selection_mode.get_current_instrument_short_name()
             )
