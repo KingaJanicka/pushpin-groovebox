@@ -1126,6 +1126,8 @@ class PyshaApp(object):
             "128",
             "puredata",
             "-jack",
+            # pushpin makes the volume node's links itself
+            "-nojackconnect",
             "-nogui",
             "-rt",
             "-channels",
@@ -1355,8 +1357,13 @@ async def main():
     # for instrument in app.external_instruments:
     #     await instrument.start(loop)
         
+    # mono2k after the Surges have picked their audio devices (M2KEngine.start_late)
+    await asyncio.sleep(3)
+    for instrument in app.instruments:
+        await app.instruments[instrument].start_late_engines()
+
     print("Initialising Pipewire support...")
-    await asyncio.sleep(5)
+    await asyncio.sleep(2)
     await app.get_pipewire_config()
     
     app.get_volume_client()
