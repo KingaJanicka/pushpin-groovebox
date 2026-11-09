@@ -851,20 +851,14 @@ def test_controls_are_named_in_full(app):
         "ATTACK", "HOLD", "DECAY", "RELEASE", "DISTORTION", "VOLUME", "PAN", "PORTAMENTO"]
 
 
-def test_hold_is_a_time_at_the_current_tempo(app, monkeypatch):
-    import osc_controls
+def test_hold_is_a_fraction_of_a_note_like_delay_time(app):
     instrument, _ = make_instrument(app)
     hold = next(d for d in instrument.current_devices if d.label == "AMP").controls[1]
     assert hold.has_value_labels
-    tempo = [120.0]
-    monkeypatch.setattr(osc_controls, "tempo_source", lambda: tempo[0])
-    # v / 32 beat: at 120 BPM a beat is 500 ms
-    assert [hold.display_text(v) for v in (0, 1, 32, 64, 126, 127)] == [
-        "0.0 MS", "16 MS", "500 MS", "1.0 S", "2.0 S", "INF"]
-    tempo[0] = 60.0
-    assert hold.display_text(32) == "1.0 S"
-    tempo[0] = 0                                                     # (never a division by zero)
-    assert hold.display_text(32) == "500 MS"
+    # v / 32 beat = v / 128 note, simplified as DELAY TIME's 256ths are
+    assert [hold.display_text(v) for v in (0, 1, 2, 4, 8, 32, 48, 64, 96, 126, 127)] == [
+        "0", "1/128", "1/64 NOTE", "1/32 NOTE", "1/16 NOTE", "1/4 NOTE", "3/8 NOTE", "1/2 NOTE",
+        "3/4 NOTE", "63/64 NOTE", "INF"]
 
 
 def test_filter_envelope_amounts_are_in_octaves_and_lfo_phase_in_degrees(app):

@@ -220,10 +220,19 @@ def display_name(param: dict) -> str:
 # MONO2K shows some parameters as bare 0-127 though the DSP gives them a unit
 # (m2k_dsp.c). These get their words here, from the same formulas.
 
-# AMP's HOLD: v / 32 of a beat (m2k_ui.c's K_AHLD), 127 holding until the note ends. Its time
-# depends on the tempo, so the control works it out as it draws (osc_controls.OSCControl)
-HOLD_BEATS_PER_VALUE = 1 / 32
-INF = 127
+def hold_note(v: int) -> str:
+    """AMP's HOLD: v / 32 of a beat (m2k_ui.c's K_AHLD), so v / 128 of a note, 127 holding until
+    the note ends. Written as DTIM's note fractions are: simplified, NOTE where the cell has room."""
+    if v == 0:
+        return "0"
+    if v == 127:
+        return "INF"
+    num, den = v, 128
+    while num % 2 == 0 and den > 1:
+        num, den = num // 2, den // 2
+    if den == 128:
+        return f"{num}/128"
+    return f"{num}/{den} NOTE" if den > 1 else f"{num} NOTE"
 
 
 def octaves_by_env(v: int) -> str:
@@ -240,6 +249,7 @@ def start_phase(v: int) -> str:
 
 
 UNIT_LABELS = {
+    ("AMP", "HOLD"): hold_note,
     ("FILT", "B-OF"): octaves_by_env,
     ("FILT", "W-OF"): octaves_by_env,
     **{(f"LFO{n}", "PHAS"): start_phase for n in (1, 2, 3)},
@@ -249,9 +259,7 @@ UNIT_LABELS = {
 def with_units(c: dict, page: str | None, label: str) -> dict:
     if c.get("$type") != "control-range":
         return c
-    if (page, label) == ("AMP", "HOLD"):
-        c["tempo_time"] = {"beats_per_value": HOLD_BEATS_PER_VALUE, "inf_value": INF}
-    elif (page, label) in UNIT_LABELS:
+    if (page, label) in UNIT_LABELS:
         c["value_labels"] = [UNIT_LABELS[page, label](v) for v in range(128)]
         c.pop("display_center", None)
     return c

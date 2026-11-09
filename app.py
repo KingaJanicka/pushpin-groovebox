@@ -9,7 +9,6 @@ import traceback
 from typing import Any
 import cairo
 import definitions
-import osc_controls
 import mido
 import numpy
 import push2_python
@@ -119,8 +118,6 @@ class PyshaApp(object):
     log_in: logging.Logger | None = None
     
     def __init__(self):
-        # Controls that show a time in beats (mono2k's HOLD) read the tempo as they draw
-        osc_controls.tempo_source = lambda: self.tempo
         if os.path.exists("settings.json"):
             settings = json.load(open("settings.json"))
         else:
