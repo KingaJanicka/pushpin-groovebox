@@ -4,6 +4,7 @@ its wiring into instruments, device pages and the generated m2k definitions."""
 import importlib.util
 import json
 import os
+import re
 from glob import glob
 from unittest.mock import MagicMock, patch
 
@@ -268,32 +269,33 @@ def load_generator():
 
 def test_generator_builds_pages_from_describe():
     gen = load_generator()
-    param = lambda label, bipolar=False, mx=127: {"label": label, "name": label, "max": mx, "bipolar": bipolar, "choices": 0}
+    param = lambda label, bipolar=False, mx=127, name=None: {
+        "label": label, "name": name or label, "max": mx, "bipolar": bipolar, "choices": 0}
     describe = {
         "machine_cc": 14,
         "params": [
-            {"cc": 56, "page": "AMP", "param": param("ATCK")},
+            {"cc": 56, "page": "AMP", "param": param("ATCK", name="ATTACK")},
             {"cc": 62, "page": "AMP", "param": param("PAN", bipolar=True)},
             {"cc": 88, "page": "LFO1", "param": param("TRCK")},
-            {"cc": 89, "page": "LFO1", "param": param("DEST", mx=71)},
+            {"cc": 89, "page": "LFO1", "param": param("DEST", mx=71, name="LFO DESTINATION")},
         ],
         "machines": [
-            {"index": 3, "name": "FM+STAT", "syn": [{"cc": 48, "param": param("1FRQ")}, {"cc": 49, "param": param("-")}],
+            {"index": 3, "name": "FM+STAT", "syn": [{"cc": 48, "param": param("1FRQ", name="RATIO 1")}, {"cc": 49, "param": param("-")}],
              "init": {"48": 61, "56": 0}},
         ],
     }
     files = gen.build(describe)
     machine = files["00_machine_03"]
-    assert machine["name"] == "FM+STAT" and machine["slot"] == 0
+    assert machine["name"] == "FM+Stat" and machine["slot"] == 0
     assert machine["controls"] == [
-        {"$type": "control-range", "label": "1FRQ", "address": "/cc/48", "min": 0, "max": 127},
+        {"$type": "control-range", "label": "Ratio 1", "address": "/cc/48", "min": 0, "max": 127},
         {"$type": "control-spacer"},
     ]
     assert [(m["address"], m["value"]) for m in machine["init"]] == [("/cc/14", 3), ("/cc/48", 61), ("/cc/56", 0)]
     assert files["10_amp"]["controls"][1]["bipolar"] == 1
     assert files["50_lfo1"]["controls"] == [
         {"$type": "control-spacer"},
-        {"$type": "control-range", "label": "DEST", "address": "/cc/89", "min": 0, "max": 71},
+        {"$type": "control-range", "label": "LFO Destination", "address": "/cc/89", "min": 0, "max": 71},
     ]
     assert files["50_lfo1"]["slot"] == 5
 
@@ -305,10 +307,49 @@ def test_generator_gives_filter_frequencies_half_steps():
     assert "step" not in gen.control(74, dict(param, label="HPQ"), "FILT")
 
 
+def test_generator_writes_mono2ks_words_in_title_case():
+    gen = load_generator()
+    cases = {
+        "FILTER BASE": "Filter Base", "DEPTH / DECAY 1": "Depth / Decay 1", "2ND HARMONIC": "2nd Harmonic",
+        "GND-SIN": "Gnd-Sin", "FM+STAT": "FM+Stat", "SID-6581": "SID-6581", "LFO 1": "LFO 1",
+        "XOR MANGLE": "XOR Mangle", "OSC 2 DETUNE": "OSC 2 Detune", "1/16 NOTE": "1/16 Note",
+        "6.6 S": "6.6 s", "84 MS": "84 ms", "808 HZ": "808 Hz", "20.5 KHZ": "20.5 kHz",
+        "S": "S",                                                          # VOX-6's consonant, not seconds
+        "INF": "Inf", "-": "-", "+0.2 OCT": "+0.2 Oct", "M2K": "M2K",
+    }
+    assert {k: gen.title_case(k) for k in cases} == cases
+
+
+def test_generated_pages_have_no_capitalised_words():
+    """Every word the mono2k pages show, cased: nothing of MONO2K's all-caps left but acronyms."""
+    gen = load_generator()
+    words = set()
+    for name in os.listdir(M2K_DIR):
+        def walk(node):
+            if isinstance(node, dict):
+                for key, value in node.items():
+                    if key in gen.CASED_KEYS and isinstance(value, str):
+                        words.add(value)
+                    elif key == "value_labels":
+                        words.update(value)
+                    elif key == "tables":
+                        for table in value:
+                            words.update(table)
+                    else:
+                        walk(value)
+            elif isinstance(node, list):
+                for n in node:
+                    walk(n)
+        walk(json.load(open(os.path.join(M2K_DIR, name))))
+    shouting = {w for w in words for part in re.split(r"[ \-+/&]", w)
+                if len(part) > 1 and part.isalpha() and part.isupper() and part not in gen.ACRONYMS}
+    assert not shouting
+
+
 def test_generated_filter_page_has_fine_steps():
     filt = json.load(open(os.path.join(M2K_DIR, "20_filt.json")))
     steps = {c["label"]: c.get("step") for c in filt["controls"] if c["$type"] == "control-range"}
-    assert steps["FILTER BASE"] == 0.5 and steps["FILTER WIDTH"] == 0.5 and steps["LP RESONANCE"] is None
+    assert steps["Filter Base"] == 0.5 and steps["Filter Width"] == 0.5 and steps["LP Resonance"] is None
 
 
 # ------------------------------------------------------------- osc_mode choice
@@ -388,14 +429,14 @@ def test_m2k_instrument_shows_machine_then_pages(m2k_instrument):
     instrument, _ = m2k_instrument
     # all eight on the first page, one device per slot (p-locks are stored by slot)
     assert [d.label for d in instrument.current_devices] == [
-        "GND-SIN", "AMP", "FILT", "FX", "DSTR", "LFO 1", "LFO 2", "LFO 3"]
+        "Gnd-Sin", "Amp", "Filt", "FX", "Dstr", "LFO 1", "LFO 2", "LFO 3"]
     assert [d.slot for d in instrument.current_devices] == [0, 1, 2, 3, 4, 5, 6, 7]
     assert instrument.devices_modulation == []
 
 
 def test_selecting_a_machine_switches_page_and_loads_its_init(m2k_instrument):
     instrument, midi_out = m2k_instrument
-    kick = device(instrument, "DRM-KICK")
+    kick = device(instrument, "Drm-Kick")
     kick.select_sync()
 
     assert midi_out.control.call_args_list[0].args == (14, 15, 2)
@@ -404,7 +445,7 @@ def test_selecting_a_machine_switches_page_and_loads_its_init(m2k_instrument):
 
     # The INIT values reach the other pages' controls through the echo
     expected = {m["address"]: m["value"] for m in kick.init}
-    amp = device(instrument, "AMP")
+    amp = device(instrument, "Amp")
     for control in amp.controls:
         assert control.value == expected[control.address], control.label
 
@@ -421,5 +462,5 @@ def test_p_lock_style_send_reaches_synth_and_display(m2k_instrument):
     instrument, midi_out = m2k_instrument
     instrument.send_message("/cc/72", 90.5)
     assert [c.args for c in midi_out.control.call_args_list] == [(99, 0, 2), (98, 72, 2), (6, 90, 2), (38, 64, 2)]
-    base = next(c for c in device(instrument, "FILT").controls if c.address == "/cc/72")
+    base = next(c for c in device(instrument, "Filt").controls if c.address == "/cc/72")
     assert base.value == 90.5

@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 import sys
 
@@ -391,6 +392,53 @@ def page_devices(params: list[dict], labels: dict[int, str] | None = None,
     return devices
 
 
+# ------------------------------------------------------- the pages' words, cased
+#
+# MONO2K writes everything in capitals (its pixel font has no lower case). The
+# Push shows its words in title case instead, words still apart: "FILTER BASE"
+# -> "Filter Base", "GND-SIN" -> "Gnd-Sin", "1/16 NOTE" -> "1/16 Note". Units
+# take their usual spelling, and acronyms stay capitals.
+
+UNIT_CASE = {"MS": "ms", "S": "s", "HZ": "Hz", "KHZ": "kHz"}
+ACRONYMS = {"LFO", "EQ", "HP", "LP", "FM", "FX", "XOR", "SID", "OSC", "PW", "RMS", "M2K", "M64"}
+PART_SEPARATORS = re.compile(r"([-+/&])")
+
+
+def title_word(word: str, after_number: bool = False) -> str:
+    if after_number and word in UNIT_CASE:                       # (VOX-6's consonant S is no second)
+        return UNIT_CASE[word]
+    parts = PART_SEPARATORS.split(word)
+    return "".join(p if p in ACRONYMS or not p else p[0] + p[1:].lower() for p in parts)
+
+
+def title_case(text: str) -> str:
+    """MONO2K's capitals in title case, spaces kept: "DEPTH / DECAY 1" -> "Depth / Decay 1"."""
+    words = text.split(" ")
+    return " ".join(title_word(w, i > 0 and any(c.isdigit() for c in words[i - 1])) for i, w in enumerate(words))
+
+
+CASED_KEYS = ("label", "menu_label", "name")
+
+
+def cased(node):
+    """A device (or any part of one) with every word it shows in title case."""
+    if isinstance(node, list):
+        return [cased(n) for n in node]
+    if not isinstance(node, dict):
+        return node
+    out = {}
+    for key, value in node.items():
+        if key in CASED_KEYS and isinstance(value, str):
+            out[key] = title_case(value)
+        elif key == "value_labels":
+            out[key] = [title_case(v) for v in value]
+        elif key == "tables":                                     # value_labels_by's
+            out[key] = [[title_case(v) for v in table] for table in value]
+        else:
+            out[key] = cased(value)
+    return out
+
+
 def build(describe: dict) -> dict[str, dict]:
     # (the LFOs' destination menus name their targets in full too)
     labels = {p["param"]: display_name(p) for p in describe["params_all"]} if "params_all" in describe else None
@@ -402,7 +450,7 @@ def build(describe: dict) -> dict[str, dict]:
     ptch = next((p["param"] for p in describe["params"] if p["cc"] == PTCH_CC), None)
     for m in describe["machines"]:
         files[f"00_machine_{m['index']:02d}"] = machine_device(m, describe["machine_cc"], ccs, ptch)
-    return files
+    return {stem: cased(device) for stem, device in files.items()}
 
 
 def build_sounds(describe: dict) -> dict:
