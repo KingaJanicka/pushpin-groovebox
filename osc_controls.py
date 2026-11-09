@@ -501,6 +501,7 @@ class OSCControlMacro(object):
         self.min: float = 0.0
         self.max: float = 1.0
         self.value: float = 0.0
+        self.lock_echoes: RecentSends = RecentSends()   # (see OSCControl)
         self.modmatrix: bool = config.get("modmatrix", True)
         self.get_color_func: ColorFunc = get_color_func or (lambda: definitions.GRAY_LIGHT)
         self.params: list[ConfigDict] = config["params"]
@@ -530,6 +531,8 @@ class OSCControlMacro(object):
     def set_state(self, address: str, *args: Any) -> None:
         value, *rest = args
         self.log.debug((address, value))
+        if self.lock_echoes.contains(value):
+            return  # a p-lock coming back: the knob stays where it was
         self.value = scale_value(value, self.min, self.max)
         # Find by index
 

@@ -291,3 +291,54 @@ def test_values_that_are_not_lock_echoes_still_reach_the_display(seq, app):
     play_step_with_lock(seq, app, knob, 0.8, echo_now=False)
     knob.set_state("/param/a/osc/1/pitch", 0.6)             # e.g. a preset load
     assert knob.value == 0.6
+
+
+# --- sweeping a knob that has locks playing ----------------------------------
+
+def sweep_then_next_note(seq, app, knob, echo_now):
+    """A lock plays on step 0, the knob is swept, then step 1's note plays and
+    resets the lock. Returns what the reset sent."""
+    from unittest.mock import patch
+    seq.gate = ["On"] * 64
+    seq.pitch, seq.octave, seq.velocity = [0] * 64, [4] * 64, [7] * 64
+    with patch("sequencer.sequencer_metro.random.randint", return_value=1):
+        play_step_with_lock(seq, app, knob, 0.9, echo_now=echo_now)
+        knob.send_osc_func = MagicMock()
+        for _ in range(4):
+            knob.update_value(10)                           # the sweep
+        swept = knob.value
+        seq.locks[1][2] = [None] * LOCKS_PER_DEVICE          # step 1: no lock
+        seq.step_index, seq.next_step_index = 1, 2
+        app.send_osc.reset_mock()
+        if echo_now:
+            app.send_osc.side_effect = lambda address, value, *a: knob.set_state(address, value)
+        seq.evaluate_and_play_notes()
+        app.send_osc.side_effect = None
+    return swept, app.send_osc.call_args_list
+
+
+def test_the_reset_after_a_lock_keeps_a_swept_knob_where_it_was_put(seq, app):
+    knob = real_control("/cc/48", 0.25)
+    swept, sent = sweep_then_next_note(seq, app, knob, echo_now=True)
+    assert swept > 0.25
+    assert [c.args[:2] for c in sent] == [("/cc/48", pytest.approx(swept))]
+    assert knob.value == pytest.approx(swept)
+
+
+def test_a_late_echo_of_the_reset_does_not_pull_the_knob_back(seq, app):
+    knob = real_control("/param/a/osc/1/pitch", 0.25)
+    swept, sent = sweep_then_next_note(seq, app, knob, echo_now=False)
+    reset_value = sent[0].args[1]
+    knob.update_value(10)                                   # still sweeping
+    knob.set_state("/param/a/osc/1/pitch", reset_value)     # Surge's echo of the reset
+    assert knob.value > swept
+
+
+def test_a_lock_scales_from_the_knobs_value_now(seq, app):
+    knob = real_control("/cc/48", 0.2)
+    seq.lock_scale = [3] * 64                                # 3/7 of the lock
+    play_step_with_lock(seq, app, knob, 0.9, echo_now=True)
+    knob.value = 0.6                                         # turned since
+    app.send_osc.reset_mock()
+    seq.evaluate_and_play_notes()                            # same locked step again
+    assert app.send_osc.call_args[0][1] == pytest.approx(0.6 + (0.9 - 0.6) * 3 / 7)

@@ -344,12 +344,14 @@ class SequencerMetro(object):
                         if control.name == "Switch":
                             control.reset_group()
                         else:
-                            # Back to the value it had before the lock. Not
-                            # control.value: the synth's echo of the lock has
-                            # overwritten that with the locked value, which made
-                            # every p-lock stick after its step.
-                            control.value = unlocked
-                            self.app.send_osc(*lock_message(control, float(unlocked)), instrument.name)
+                            # Back to the knob's value now. play_lock() keeps the
+                            # lock's echo off control.value, so it is the knob's
+                            # live position; the value remembered when the lock
+                            # played is stale if the knob was turned since, and
+                            # resetting to it snapped a swept knob back. Through
+                            # play_lock() so Surge's late echo of the reset can't
+                            # pull the knob back either.
+                            self.play_lock(control, float(control.value), instrument)
                     self.held_pitch, self.held_octave, self.held_velocity = pitch, octave, velocity
                     self.timeline.schedule(
                         {"note": pitch_and_octave, "gate": gate, "amplitude": velocity}, count=1,
@@ -559,12 +561,11 @@ class SequencerMetro(object):
         control.value = knob
 
     def remember_unlocked(self, control):
-        """A lock is about to be sent to ``control``: keep the value it goes back
-        to (its own, from before any lock still waiting to be undone), and
-        return it: the base a scaled lock is measured from."""
-        for c, unlocked in self.controls_to_reset:
-            if c is control:
-                return unlocked
+        """A lock is about to be sent to ``control``: note that it needs a reset
+        after its step, and return the knob's value now (play_lock() keeps
+        lock echoes off control.value): the base a scaled lock is measured
+        from, and what saving a sound keeps instead of the lock."""
+        self.controls_to_reset = [(c, v) for c, v in self.controls_to_reset if c is not control]
         self.controls_to_reset.append((control, control.value))
         return control.value
 
