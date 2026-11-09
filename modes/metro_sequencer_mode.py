@@ -2,6 +2,7 @@ import definitions
 from controllers import push2_constants
 import push2_python
 from sequencer.sequencer_metro import SequencerMetro
+from sequencer.sequencer_params import INF_STEPS
 from modes.melodic_mode import MelodicMode
 import isobar as iso
 import os
@@ -65,7 +66,8 @@ _SCALE_ITEMS = [
     for n in range(1, 33)
 ]
 
-# Seq Steps / Main Steps: 2/32 .. 32/32, then 1+1/32 .. 1+32/32.
+# Seq Steps / Main Steps: 2/32 .. 32/32, then 1+1/32 .. 1+32/32, then INF
+# (never reset). INF is last so saved SCALE pages keep their positions.
 _STEP_ITEMS = [
     {
         "$type": "menu-item",
@@ -80,6 +82,12 @@ _STEP_ITEMS = [
         "onselect": {"$type": "message", "address": "/", "value": 32 + n},
     }
     for n in range(1, 33)
+] + [
+    {
+        "$type": "menu-item",
+        "label": "INF",
+        "onselect": {"$type": "message", "address": "/", "value": INF_STEPS},
+    }
 ]
 
 
@@ -90,9 +98,9 @@ def _make_track_controls(color_func):
       0 = Gate Len (OSCControl range 0-1)
       1-3 = spacers
       4 = Seq Time Scale (menu, 1-32 steps)
-      5 = Seq Steps     (menu, 2-64 steps)
+      5 = Seq Steps     (menu, 2-64 steps or INF)
       6 = Main Time Scale (menu, 1-32 steps), default value 2
-      7 = Main Steps    (menu, 2-64 steps), default value 64
+      7 = Main Steps    (menu, 2-64 steps or INF), default value 64
     """
     gate_len = OSCControl(
         {"$type": "control-range", "label": "Gate Len", "address": "/", "min": 0, "max": 1},

@@ -8,6 +8,7 @@ import pytest
 from unittest.mock import MagicMock, patch
 
 from definitions import TRACK_NAMES_METRO
+from sequencer.sequencer_params import INF_STEPS
 from modes.metro_sequencer_mode import (
     MetroSequencerMode,
     TRACK_COLORS,
@@ -94,7 +95,7 @@ def test_scale_items_count_and_range():
 
 
 def test_step_items_count_and_range():
-    assert len(_STEP_ITEMS) == 63
+    assert len(_STEP_ITEMS) == 64
     # First chunk: 2/32 .. 32/32 (31 items)
     assert _STEP_ITEMS[0]["label"] == "2/32"
     assert _STEP_ITEMS[0]["onselect"]["value"] == 2
@@ -103,8 +104,11 @@ def test_step_items_count_and_range():
     # Second chunk: 1+1/32 .. 1+32/32 (32 items)
     assert _STEP_ITEMS[31]["label"] == "1+1/32"
     assert _STEP_ITEMS[31]["onselect"]["value"] == 33
-    assert _STEP_ITEMS[-1]["label"] == "1+32/32"
-    assert _STEP_ITEMS[-1]["onselect"]["value"] == 64
+    assert _STEP_ITEMS[62]["label"] == "1+32/32"
+    assert _STEP_ITEMS[62]["onselect"]["value"] == 64
+    # Last: INF (never reset), after the others so saved positions still match
+    assert _STEP_ITEMS[-1]["label"] == "INF"
+    assert _STEP_ITEMS[-1]["onselect"]["value"] == INF_STEPS
 
 
 # ---------------------------------------------------------------------------
@@ -339,3 +343,22 @@ def test_refresh_sequencer_params_propagates_other_track_mutes(app, mocker, trac
     app.mute_mode.tracks_active["INST1"][track] = False
     mode.refresh_sequencer_params()
     assert getattr(seq_mock.params, field) is False
+
+
+def test_refresh_sequencer_params_passes_inf_steps(app, mocker):
+    """Turning Seq Steps / Main Steps all the way up reaches INF."""
+    mocker.patch.object(MetroSequencerMode, "initialize")
+    mode = MetroSequencerMode(app, settings=None, send_osc_func=app.send_osc)
+    mode.sequencer_is_playing = True
+    controls = _make_track_controls(lambda: "cyan")
+    mode.instrument_scale_edit_controls = {"INST1": controls}
+    seq_mock = MagicMock()
+    mode.instrument_sequencers = {"INST1": seq_mock}
+    app.mute_mode.tracks_active = {"INST1": {}}
+
+    controls[5].update_value(10000)
+    controls[7].update_value(10000)
+    mode.refresh_sequencer_params()
+
+    assert seq_mock.params.pattern_len == INF_STEPS
+    assert seq_mock.params.main_pattern_len == INF_STEPS

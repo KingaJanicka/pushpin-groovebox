@@ -8,7 +8,7 @@ import os
 import traceback
 from pythonosc.udp_client import SimpleUDPClient
 from definitions import TRACK_NAMES_METRO
-from sequencer.sequencer_params import SequencerParams
+from sequencer.sequencer_params import INF_STEPS, SequencerParams
 
 # An empty clip: what a clip with no file of its own loads.
 INIT_STATE_FILENAME = "init_state.json"
@@ -257,7 +257,11 @@ class SequencerMetro(object):
         
     def advance_and_evaluate_main_tick(self):
         # Counts down ticks down to zero from length of main reset
-        
+
+        # Main Steps on INF: the main pattern never resets the track
+        if self.params.main_pattern_len == INF_STEPS:
+            return
+
         if self.main_ticks_to_reset <= 0:
             self.main_ticks_to_reset = self.params.main_pattern_len * self.params.main_seq_time_scale
             # Sets this to zero so it resets in the fuction below
@@ -269,8 +273,12 @@ class SequencerMetro(object):
         pattern_was_reset = False
         
         # This first branch for when we reset, so we don't skip over the first step
+        # Seq Steps on INF: the track keeps stepping and never goes back to
+        # its first step (only a main-pattern reset or stop/start does that)
+        infinite = self.params.pattern_len == INF_STEPS
         if self.seq_ticks_to_reset == 0:
-            self.seq_ticks_to_reset = self.params.seq_time_scale * self.params.pattern_len
+            pattern_len = 1 if infinite else self.params.pattern_len
+            self.seq_ticks_to_reset = self.params.seq_time_scale * pattern_len
             self.reset_index()
             self.evaluate_and_play_notes()
 
@@ -280,6 +288,9 @@ class SequencerMetro(object):
             self.evaluate_and_play_notes()
 
         self.seq_ticks_to_reset -= 1
+        if infinite and self.seq_ticks_to_reset == 0:
+            # Count down one more step instead of reaching the reset
+            self.seq_ticks_to_reset = self.params.seq_time_scale
                 
 
     def seq_playhead_update(self):

@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+# Seq Steps / Main Steps value meaning "INF": that loop never resets.
+INF_STEPS = 0
+
 
 @dataclass(frozen=True)
 class SequencerParams:
@@ -36,11 +39,13 @@ class SequencerParams:
     # Sequencer time subdivision (controls[4] menu value)
     seq_time_scale: int = 1
 
-    # Number of active steps in this instrument's pattern (controls[5])
+    # Number of active steps in this instrument's pattern (controls[5]);
+    # INF_STEPS = the track never jumps back to its first step
     pattern_len: int = 16
 
     # Global pattern time subdivision (controls[6])
     main_seq_time_scale: int = 1
 
-    # Global pattern length in steps (controls[7])
+    # Global pattern length in steps (controls[7]); INF_STEPS = the main
+    # pattern never resets the track
     main_pattern_len: int = 64
