@@ -54,6 +54,7 @@ minimal state each method needs.
 | OSCMode | test_osc_mode.py |
 | SequencerMode | test_sequencer_mode.py |
 | MetroSequencerMode | test_metro_sequencer_mode.py |
+| Saving sequences (per clip) and the SCALE page | test_seq_state_saving.py |
 
 ## Open issues found while writing tests
 

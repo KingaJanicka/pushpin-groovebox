@@ -191,17 +191,11 @@ class ClipSelectionMode(definitions.PyshaMode):
             print(e)
 
     def activate(self):
+        # Every track's sequence into its clip first, so the grid shows it
+        self.app.metro_sequencer_mode.save_sequences()
         self.list_clips()
         self.update_pads()
-        instrument_short_name = (
-            self.app.instrument_selection_mode.get_current_instrument_short_name()
-        )
-        sequencer = self.app.metro_sequencer_mode.instrument_sequencers[
-            instrument_short_name
-        ]
-        sequencer.save_state(clip=self.last_pad_in_column_pressed[instrument_short_name][0])
-    
-        
+
         self.push.buttons.set_button_color(
             push2_constants.BUTTON_DELETE, definitions.GRAY_DARK
         )
@@ -295,11 +289,11 @@ class ClipSelectionMode(definitions.PyshaMode):
             selected_pad_instrument_shortname
         ]
         last_pad_pressed = self.last_pad_in_column_pressed[selected_pad_instrument_shortname]
-        if last_pad_pressed == pad_ij:
-            # print("save clip", last_pad_pressed[0])
-            sequencer.save_state(clip=last_pad_pressed[0])
+        # Keep the clip being left: switching used to drop its unsaved edits
+        sequencer.save_state(clip=last_pad_pressed[0])
 
         self.last_pad_in_column_pressed[selected_pad_instrument_shortname] = pad_ij
+        self.list_clips()
         self.update_pads()
 
         sequencer.load_state(clip=pad_ij[0])
