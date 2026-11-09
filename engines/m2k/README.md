@@ -90,6 +90,7 @@ a pushpin track that plays Surge can stay connected to its MONO2K track.
 | **CC 9** | track on (64–127) / off (pushpin's addition) |
 | **CC 14** | machine, value = number from `--list-machines`; loads that machine's INIT sound (pushpin's addition) |
 | **CC 16–20** | DSTR: BITS FOLD XOR, reverb send, track pitch (pushpin's addition) |
+| **CC 21 / 22 / 23** | trig types: 64–127 keeps the next notes from restarting the amp / the filter's envelope / the LFOs, 0–63 lets them again (MONO2K's step trig types; pushpin p-locks them on a step). A note with no amp trig moves the pitch and hears the step's locks, the sounding note's amp and gate go on, and its own note-off is ignored (pushpin's addition) |
 | CC 120, 123 | all sound off / all notes off |
 | NRPN 0:*n* | the parameter on CC *n* at 14 bits: CC 99 = 0, CC 98 = *n*, CC 6 = whole value, CC 38 = fraction × 128 (pushpin sends this) |
 | NRPN 1:*p* | any of MONO2K's 71 track parameters by number *p*, including the 9 no CC reaches (arp, gate, MOD effect, wave bank); pushpin saves and loads whole sounds with it |

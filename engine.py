@@ -1138,7 +1138,8 @@ class M2KEngine(SurgeXTEngine):
     # m2k-jack takes parameter values as 14-bit NRPN (its core keeps 1/256 of a
     # step); these CCs are switches and stay plain 7-bit
     nrpn = True
-    PLAIN_CCS = frozenset({3, 9, 14, 120, 123})  # mute, track on/off, machine, all sound/notes off
+    # mute, track on/off, machine, the trig types (amp, filter, LFOs), all sound/notes off
+    PLAIN_CCS = frozenset({3, 9, 14, 21, 22, 23, 120, 123})
     # m2k-jack's machine-select CC; engines/m2k/definitions' slot-0 devices select on it
     MACHINE_ADDRESS = "/cc/14"
 

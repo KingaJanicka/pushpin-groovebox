@@ -204,7 +204,7 @@ def test_picking_a_factory_sound_loads_it_into_the_slot(browser):
     assert mode.set_pad_preset_slot((0, 0)) is True
     captured = m2k_state.capture(instrument.osc["client"], mode.m2k_sounds)
     assert captured.machine == 15
-    assert instrument.current_devices[0].label == "DRM-KICK"         # the machine page followed
+    assert instrument.current_devices[0].label == "Drm-Kick"         # the machine page followed
     assert json.load(open(slot_file(mode, 0)))["machine"] == 15
     assert mode.m2k_presets["Pushpin 2"][0] == "Factory/KICK/BOOM808"
     assert json.load(open(tmp_path / "m2k_presets.json"))["Pushpin 2"][0] == "Factory/KICK/BOOM808"
@@ -411,15 +411,16 @@ def test_lfo_and_mod_params_are_saved_and_recalled_with_the_slot(browser):
 
     lfo1, lfo2, lfo3 = page(instrument, "LFO 1"), page(instrument, "LFO 2"), page(instrument, "LFO 3")
     # ...and the pages show them: the DEVICE switch, its DEST menu and TRCK
-    for lfo, device, dest, trck in ((lfo1, "FILT", "WDTH", "TRK 3"), (lfo2, "LFO 2", "TRIG", "TRK 8"),
-                                     (lfo3, "SYN", "SUB", "OWN")):
+    for lfo, device, dest, trck in ((lfo1, "Filt", "Filter Width", "Trk 3"),
+                                     (lfo2, "LFO 2", "LFO Trig Mode", "Trk 8"), (lfo3, "Syn", "Sub Level", "Own")):
         switch = lfo.controls[0]
         assert switch.get_active_group().label == device, lfo.label
         assert switch.get_active_group().controls[0].get_active_menu_item().label == dest, lfo.label
-        assert lfo.controls[-1].get_active_menu_item().label == trck, lfo.label
+        trck_menu = next(c for c in lfo.controls if getattr(c, "menu_label", None) == "LFO Track")
+        assert trck_menu.get_active_menu_item().label == trck, lfo.label
     assert lfo1.controls[6].value == 20.0 and lfo2.controls[4].value == 12.0   # DPTH, SPD
-    dstr = page(instrument, "DSTR")
-    assert dstr.controls[4].get_active_menu_item().label == "PHAS"
+    dstr = page(instrument, "Dstr")
+    assert dstr.controls[4].get_active_menu_item().label == "Phas"
     assert [c.value for c in dstr.controls[5:]] == [40.0, 90.0, 70.0]
 
 
@@ -428,7 +429,7 @@ def test_a_p_lock_playing_while_saving_isnt_saved(browser):
     mode, instrument, port, _ = browser
     seq = MagicMock()
     mode.app.metro_sequencer_mode.instrument_sequencers = {"Pushpin 2": seq}
-    lfo1, dstr = page(instrument, "LFO 1"), page(instrument, "DSTR")
+    lfo1, dstr = page(instrument, "LFO 1"), page(instrument, "Dstr")
     depth, mod_type = lfo1.controls[6], dstr.controls[4]
     client = instrument.osc["client"]
     client.send_message("/cc/95", 20.0)

@@ -63,7 +63,7 @@ def test_instrument_attributes_follow_the_active_voice(app):
     assert isinstance(instrument.osc["client"], MidiCCClient)
     assert instrument.engine is instrument.voices[M2K].engine
     assert [d.label for d in instrument.current_devices] == [
-        "GND-SIN", "AMP", "FILT", "FX", "DSTR", "LFO 1", "LFO 2", "LFO 3"]
+        "Gnd-Sin", "Amp", "Filt", "FX", "Dstr", "LFO 1", "LFO 2", "LFO 3"]
     # the clock and Surge always use the track's own port
     assert instrument.surge_midi_out_device is ports["Pushpin 2"]
 
@@ -340,7 +340,7 @@ def test_mono2k_devices_each_have_their_own_slot(app):
     slots = [d.slot for slot in instrument.devices for d in slot if d.slot != 0]
     assert sorted(slots) == [1, 2, 3, 4, 5, 6, 7]                # FX and DSTR no longer share one
     assert [d.label for d in instrument.devices[3]] == ["FX"]
-    assert [d.label for d in instrument.devices[4]] == ["DSTR"]
+    assert [d.label for d in instrument.devices[4]] == ["Dstr"]
 
 
 def test_surge_keeps_slots_2_to_4_always_shown(app):
@@ -389,20 +389,21 @@ def test_right_arrow_stays_on_page_1_without_a_modulation_page(app):
 
 def test_dstr_page_is_bits_fold_xor_verb_then_the_mod_effect(app):
     instrument, _ = make_instrument(app)
-    dstr = next(d for d in instrument.current_devices if d.label == "DSTR")
+    dstr = next(d for d in instrument.current_devices if d.label == "Dstr")
     labels = [getattr(c, "menu_label", None) or c.label for c in dstr.controls]
-    assert labels == ["BITS", "FOLD", "XOR", "VERB", "TYPE", "RATE", "DPTH", "MIX"]
+    assert labels == ["Bit Depth", "Wavefold", "XOR Mangle", "Reverb Send", "Mod Type", "Mod Rate", "Mod Depth",
+                      "Mod Mix"]
     menu = dstr.controls[4]
     assert [(i.label, i.address, i.value, i.range) for i in menu.items] == [
-        ("CHOR", "/m2k/param/66", 21, [0, 42]), ("FLNG", "/m2k/param/66", 64, [43, 85]),
-        ("PHAS", "/m2k/param/66", 107, [86, 127])]
+        ("Chor", "/m2k/param/66", 21, [0, 42]), ("Flng", "/m2k/param/66", 64, [43, 85]),
+        ("Phas", "/m2k/param/66", 107, [86, 127])]
     assert [c.address for c in dstr.controls[5:]] == ["/m2k/param/67", "/m2k/param/68", "/m2k/param/69"]
 
 
 def test_mod_type_menu_moves_an_item_every_4_clicks_and_sends_nrpn(app):
     instrument, ports = make_instrument(app)
     port = ports["Pushpin 2 m2k"]
-    dstr = next(d for d in instrument.current_devices if d.label == "DSTR")
+    dstr = next(d for d in instrument.current_devices if d.label == "Dstr")
     menu = dstr.controls[4]
     port.control.reset_mock()
     for _ in range(3):
@@ -415,9 +416,9 @@ def test_mod_type_menu_moves_an_item_every_4_clicks_and_sends_nrpn(app):
 
 def test_machine_init_sets_the_mod_menu_from_its_value(app):
     instrument, _ = make_instrument(app)
-    dstr = next(d for d in instrument.current_devices if d.label == "DSTR")
+    dstr = next(d for d in instrument.current_devices if d.label == "Dstr")
     instrument.osc["client"].send_message("/m2k/param/66", 106.0)   # as a machine's INIT or a loaded sound does
-    assert dstr.controls[4].get_active_menu_item().label == "PHAS"
+    assert dstr.controls[4].get_active_menu_item().label == "Phas"
 
 
 def test_menu_p_locks_play_the_items_message():
@@ -456,10 +457,10 @@ def test_lfo_page_starts_with_device_and_destination(app):
     assert len(visible) == 8
     assert visible[0].name == "Switch" and visible[1].name == "Menu"
     assert [getattr(c, "menu_label", None) or c.label for c in visible[2:]] == [
-        "WAVE", "TRIG", "MULT", "SPD", "PHAS", "DPTH"]
+        "LFO Wave", "LFO Trig Mode", "LFO Multiplier", "LFO Cycle", "Start Phase", "LFO Depth"]
     assert [g.label for g in visible[0].groups] == [
-        "OFF", "SYN", "AMP", "FILT", "FX", "DSTR", "LFO 1", "LFO 2", "LFO 3"]
-    assert visible[0].menu_label == "DEVICE"
+        "Off", "Syn", "Amp", "Filt", "FX", "Dstr", "LFO 1", "LFO 2", "LFO 3"]
+    assert visible[0].menu_label == "Device"
 
 
 def nrpn_values(port, lsb):
@@ -477,12 +478,12 @@ def test_picking_a_device_then_a_parameter_sets_dest(app):
     port.control.reset_mock()
     for _ in range(4):
         page.on_encoder_rotated(B.ENCODER_TRACK1_ENCODER, 1)        # OFF -> SYN
-    assert switch.get_active_group().label == "SYN"
+    assert switch.get_active_group().label == "Syn"
     assert nrpn_values(port, 105) == [1]                            # SYN A: parameter 0, DEST 1
     for _ in range(4):
         page.on_encoder_rotated(B.ENCODER_TRACK2_ENCODER, 1)        # SYN A -> SYN B
     assert nrpn_values(port, 105) == [1, 2]
-    assert page.get_visible_controls()[1].get_active_menu_item().label == "SUB"   # GND-SIN's SYN B
+    assert page.get_visible_controls()[1].get_active_menu_item().label == "Sub Level"   # GND-SIN's SYN B
 
 
 def test_a_dest_value_coming_back_selects_its_device_and_parameter(app):
@@ -490,10 +491,10 @@ def test_a_dest_value_coming_back_selects_its_device_and_parameter(app):
     page = lfo_page(instrument)
     instrument.osc["client"].send_message("/cc/105", 19.0)          # FILT HPQ (parameter 18) + 1
     visible = page.get_visible_controls()
-    assert visible[0].get_active_group().label == "FILT"
-    assert visible[1].get_active_menu_item().label == "HPQ"
+    assert visible[0].get_active_group().label == "Filt"
+    assert visible[1].get_active_menu_item().label == "HP Resonance"
     instrument.osc["client"].send_message("/cc/105", 0.0)
-    assert page.get_visible_controls()[0].get_active_group().label == "OFF"
+    assert page.get_visible_controls()[0].get_active_group().label == "Off"
 
 
 def test_switch_set_state_takes_a_value_without_a_label():
@@ -557,7 +558,7 @@ def test_a_p_lock_lets_go_after_its_step(app):
         sent.append((address, value))
         instrument.send_message(address, value)                     # (and its echo, as the app does)
     app.send_osc = send_osc
-    base = next(d for d in instrument.current_devices if d.label == "FILT").controls[0]
+    base = next(d for d in instrument.current_devices if d.label == "Filt").controls[0]
     instrument.osc["client"].send_message("/cc/72", 10.0)           # the knob's own value
     seq = sequencer_for(app, instrument)
     seq.locks[0][2][0] = 99.0                                       # step 0: FILT BASE locked
@@ -607,7 +608,7 @@ def test_turning_the_device_switch_past_its_ends_stays_on_them(app):
         page.draw(MagicMock())                                       # no IndexError
     for _ in range(200):
         page.on_encoder_rotated(B.ENCODER_TRACK1_ENCODER, -1)
-    assert switch.get_active_group().label == "OFF" and switch.value == 0.0
+    assert switch.get_active_group().label == "Off" and switch.value == 0.0
 
 
 def test_switch_draw_survives_an_out_of_range_lock_value():
@@ -624,13 +625,15 @@ def test_switch_draw_survives_an_out_of_range_lock_value():
 
 def test_syn_destinations_name_the_current_machines_controls(app):
     instrument, _ = make_instrument(app)
-    syn = next(g for g in lfo_page(instrument).get_visible_controls()[0].groups if g.label == "SYN")
+    syn = next(g for g in lfo_page(instrument).get_visible_controls()[0].groups if g.label == "Syn")
     labels = lambda: [i.label for i in syn.controls[0].items]
-    assert labels() == ["FOLD", "SUB", "NOIS", "PDEP", "PDEC", "CLIK", "HARM", "TUNE"]     # GND-SIN
-    kick = next(d for d in instrument.devices[0] if d.label == "DRM-KICK")
+    assert labels() == ["Sine Fold", "Sub Level", "Noise", "Pitch Drop", "Drop Time", "Click", "2nd Harmonic",
+                        "Tune"]                                         # GND-SIN
+    kick = next(d for d in instrument.devices[0] if d.label == "Drm-Kick")
     kick.select_sync()
-    assert labels() == ["WAVE", "PDEP", "PDEC", "PCRV", "FM", "FMFR", "SNAP", "CLIK"]
-    perc = next(d for d in instrument.devices[0] if d.label == "GND-PERC")
+    assert labels() == ["Carrier Wave", "Pitch Sweep", "Sweep Time", "Sweep Curve", "FM Depth", "FM Pitch", "Snap",
+                        "Click"]
+    perc = next(d for d in instrument.devices[0] if d.label == "Gnd-Perc")
     perc.select_sync()
     assert labels()[-1] == "-"                                       # its SYN H is unused
 
@@ -649,9 +652,9 @@ def test_lfo_depth_is_bipolar_and_shown_signed(app):
     """In MONO2K's own words: its swing against full, in %."""
     instrument, _ = make_instrument(app)
     dpth = lfo_page(instrument).get_visible_controls()[-1]
-    assert dpth.label == "DPTH" and dpth.bipolar
+    assert dpth.label == "LFO Depth" and dpth.bipolar
     assert [dpth.display_text(v) for v in (64, 96, 0, 64.5)] == ["0 %", "+25 %", "-100 %", "0 %"]
-    amp_vol = next(d for d in instrument.current_devices if d.label == "AMP").controls[5]
+    amp_vol = next(d for d in instrument.current_devices if d.label == "Amp").controls[5]
     assert amp_vol.display_text(64) == "64"                          # other controls unchanged
 
 
@@ -684,22 +687,22 @@ def machine_page(instrument, name):
 
 def test_machine_pages_have_ptch_on_their_second_page(app):
     instrument, _ = make_instrument(app)
-    sine = machine_page(instrument, "GND-SIN")
+    sine = machine_page(instrument, "Gnd-Sin")
     assert len(sine.pages) == 2
     second = sine.pages[1]
-    assert second[0].__class__.__name__ == "ControlSpacer" and second[1].label == "PTCH"
-    assert second[1].address == "/cc/20" and second[1].bipolar and second[1].display_text(70) == "6 SEMI"
+    assert second[0].__class__.__name__ == "ControlSpacer" and second[1].label == "Track Pitch"
+    assert second[1].address == "/cc/20" and second[1].bipolar and second[1].display_text(70) == "6 Semi"
 
 
 def test_only_digi_wav_has_bank(app):
     instrument, _ = make_instrument(app)
-    second = machine_page(instrument, "DIGI-WAV").pages[1]
+    second = machine_page(instrument, "Digi-Wav").pages[1]
     bank = second[0]
-    assert bank.menu_label == "BANK"
+    assert bank.menu_label == "Wave Bank"
     assert [(i.label, i.address, i.value) for i in bank.items] == [
         ("M2K", "/m2k/param/70", 32), ("M64", "/m2k/param/70", 96)]
-    assert second[1].label == "PTCH"
-    others = [d for d in instrument.devices[0] if d.label != "DIGI-WAV"]
+    assert second[1].label == "Track Pitch"
+    others = [d for d in instrument.devices[0] if d.label != "Digi-Wav"]
     assert all(not hasattr(d.pages[1][0], "items") for d in others)
 
 
@@ -707,8 +710,8 @@ def test_lfo_trck_is_on_the_lfos_second_page(app):
     instrument, ports = make_instrument(app)
     lfo = lfo_page(instrument, "LFO 1")
     trck = lfo.pages[1][0]
-    assert trck.menu_label == "TRCK"
-    assert [(i.label, i.value) for i in trck.items] == [("OWN", 0)] + [(f"TRK {n}", n) for n in range(1, 9)]
+    assert trck.menu_label == "LFO Track"
+    assert [(i.label, i.value) for i in trck.items] == [("Own", 0)] + [(f"Trk {n}", n) for n in range(1, 9)]
     assert all(i.address == "/cc/88" for i in trck.items)
 
 
@@ -754,22 +757,22 @@ def test_choices_are_menus_in_mono2ks_own_words(app):
     instrument, _ = make_instrument(app)
     lfo = lfo_page(instrument, "LFO 1")
     wave, trig, mult = lfo.controls[1:4]
-    assert (wave.menu_label, menu_labels(wave)) == ("WAVE", ["TRI", "SIN", "SQR", "SAW", "EXP", "RMP", "RND"])
-    assert menu_labels(trig) == ["FREE", "TRIG", "HOLD", "ONE", "HALF"]
+    assert (wave.menu_label, menu_labels(wave)) == ("LFO Wave", ["Tri", "Sin", "Sqr", "Saw", "Exp", "Rmp", "Rnd"])
+    assert menu_labels(trig) == ["Free", "Trig", "Hold", "One", "Half"]
     assert menu_labels(mult) == ["X1", "X2", "X4", "X8", "X16", "X32", "X64", "X128"]
-    assert menu_labels(machine_page(instrument, "DRM-KICK").controls[0]) == ["SIN", "TRI", "SAW", "SQR"]
-    assert menu_labels(machine_page(instrument, "SID-6581").controls[3]) == ["TRI", "SAW", "PULS", "MIX", "NOIS"]
-    ratios = menu_labels(machine_page(instrument, "FM+STAT").controls[0])
-    assert len(ratios) == 24 and ratios[0] == "1/64" and "RATIO" not in " ".join(ratios)
-    bits = next(d for d in instrument.current_devices if d.label == "DSTR").controls[0]
-    assert bits.menu_label == "BITS" and bits.items[0].label == "16 BIT" and len(bits.items) == 14
+    assert menu_labels(machine_page(instrument, "Drm-Kick").controls[0]) == ["Sin", "Tri", "Saw", "Sqr"]
+    assert menu_labels(machine_page(instrument, "SID-6581").controls[3]) == ["Tri", "Saw", "Puls", "Mix", "Nois"]
+    ratios = menu_labels(machine_page(instrument, "FM+Stat").controls[0])
+    assert len(ratios) == 24 and ratios[0] == "1/64" and "Ratio" not in " ".join(ratios)
+    bits = next(d for d in instrument.current_devices if d.label == "Dstr").controls[0]
+    assert bits.menu_label == "Bit Depth" and bits.items[0].label == "16 Bit" and len(bits.items) == 14
 
 
 def test_a_value_from_a_sound_shows_the_item_whose_range_holds_it(app):
     instrument, _ = make_instrument(app)
     client = instrument.osc["client"]
     wave = lfo_page(instrument, "LFO 1").controls[1]
-    for value, label in ((0, "TRI"), (18, "TRI"), (19, "SIN"), (36.9, "SIN"), (37.2, "SQR"), (127, "RND")):
+    for value, label in ((0, "Tri"), (18, "Tri"), (19, "Sin"), (36.9, "Sin"), (37.2, "Sqr"), (127, "Rnd")):
         client.send_message("/cc/90", float(value))
         assert wave.get_active_menu_item().label == label, value
 
@@ -781,7 +784,7 @@ def test_turning_a_menu_sends_its_items_value(app):
     client.send_message("/cc/90", 0.0)
     for _ in range(4):                                                # four clicks an item
         wave.update_value(1)
-    assert wave.get_active_menu_item().label == "SIN"
+    assert wave.get_active_menu_item().label == "Sin"
     assert client.values["/cc/90"] == wave.get_active_menu_item().value
 
 
@@ -789,16 +792,16 @@ def test_quantities_show_mono2ks_words_and_center_them(app):
     instrument, _ = make_instrument(app)
     fx = next(d for d in instrument.current_devices if d.label == "FX")
     srr, dtim = fx.controls[2], fx.controls[3]
-    assert srr.display_text(0) == "OFF" and srr.display_text(16).endswith("KHZ")
-    assert dtim.display_text(0) == "COMB" and dtim.display_text(16) == "1/16 NOTE" and dtim.display_text(37) == "37/256"
+    assert srr.display_text(0) == "Off" and srr.display_text(16).endswith("kHz")
+    assert dtim.display_text(0) == "Comb" and dtim.display_text(16) == "1/16 Note" and dtim.display_text(37) == "37/256"
     assert srr.has_value_labels
-    vol = next(d for d in instrument.current_devices if d.label == "AMP").controls[5]
+    vol = next(d for d in instrument.current_devices if d.label == "Amp").controls[5]
     assert not vol.has_value_labels and vol.display_text(64) == "64"     # plain numbers stay numbers
 
 
 def test_digi_wav_waves_follow_its_bank(app):
     instrument, _ = make_instrument(app)
-    wave = machine_page(instrument, "DIGI-WAV").controls[0]
+    wave = machine_page(instrument, "Digi-Wav").controls[0]
     client = instrument.osc["client"]
     client.send_message("/m2k/param/70", 0.0)                         # M2K: MONO2K's 32
     m2k = [wave.display_text(v) for v in range(0, 128, 4)]
@@ -815,7 +818,7 @@ def test_lfo_speed_reads_with_its_own_mult(app):
     client.send_message("/cc/108", 0.0)                               # LFO 2's MULT X1
     slow = spd.display_text(64)
     client.send_message("/cc/108", 127.0)                             # X128
-    assert spd.display_text(64) != slow and spd.display_text(0).startswith("STOP")
+    assert spd.display_text(64) != slow and spd.display_text(0).startswith("Stop")
 
 
 # ------------------------------------------------------------- mono2k's clock
@@ -828,9 +831,100 @@ def test_the_clock_goes_to_one_mono2k_port_the_first_tracks(app):
     assert mono2k_clock_port({"Pushpin 1": surge_only}) is None
 
 
-def test_fm_envelope_amounts_are_plain_sliders(app):
+def test_fm_envelope_amounts_are_bipolar(app):
+    """MONO2K counts them about 64: below it the depth falls, above it rises (DEPTH / DECAY)."""
     instrument, _ = make_instrument(app)
-    for machine, labels in (("FM+STAT", ["1ENV"]), ("FM+DYN", ["2ENV"]), ("FM+PAR", ["1ENV", "2ENV", "3ENV"])):
+    for machine, labels in (("FM+Stat", ["Depth / Decay 1"]), ("FM+Dyn", ["Depth / Decay 2"]),
+                            ("FM+Par", ["Depth / Decay 1", "Depth / Decay 2", "Depth / Decay 3"])):
         controls = {c.label: c for c in machine_page(instrument, machine).controls if hasattr(c, "bipolar")}
-        assert all(not controls[label].bipolar for label in labels), machine
-    assert machine_page(instrument, "FM+STAT").controls[1].bipolar            # 1FIN: a fine tune, still about 0
+        assert all(controls[label].bipolar for label in labels), machine
+    assert machine_page(instrument, "FM+Stat").controls[1].bipolar            # 1FIN: a fine tune, about 0 too
+
+
+# ------------------------------- full names, and units MONO2K's screen leaves out
+
+
+def test_controls_are_named_in_full(app):
+    instrument, _ = make_instrument(app)
+    amp = next(d for d in instrument.current_devices if d.label == "Amp")
+    assert [c.label for c in amp.controls[:8]] == [
+        "Attack", "Hold", "Decay", "Release", "Distortion", "Volume", "Pan", "Portamento"]
+
+
+def test_hold_is_a_fraction_of_a_note_like_delay_time(app):
+    instrument, _ = make_instrument(app)
+    hold = next(d for d in instrument.current_devices if d.label == "Amp").controls[1]
+    assert hold.has_value_labels
+    # v / 32 beat = v / 128 note, simplified as DELAY TIME's 256ths are
+    assert [hold.display_text(v) for v in (0, 1, 2, 4, 8, 32, 48, 64, 96, 126, 127)] == [
+        "0", "1/128", "1/64 Note", "1/32 Note", "1/16 Note", "1/4 Note", "3/8 Note", "1/2 Note",
+        "3/4 Note", "63/64 Note", "Inf"]
+
+
+def test_filter_envelope_amounts_are_in_octaves_and_lfo_phase_in_degrees(app):
+    instrument, _ = make_instrument(app)
+    filt = next(d for d in instrument.current_devices if d.label == "Filt")
+    base_by_env = filt.controls[6]
+    assert base_by_env.label == "Base By Env" and base_by_env.bipolar
+    assert [base_by_env.display_text(v) for v in (64, 72, 0, 127)] == ["0 Oct", "+0.2 Oct", "-14 Oct", "+14 Oct"]
+    phase = next(c for c in lfo_page(instrument).controls if getattr(c, "label", None) == "Start Phase")
+    assert [phase.display_text(v) for v in (0, 32, 64, 127)] == ["0°", "90°", "180°", "357°"]
+
+
+def test_a_label_wider_than_its_column_shrinks_to_fit():
+    from user_interface.display_utils import MIN_FONT_SIZE, fitted_font_size
+    ctx = MagicMock()
+    ctx.text_extents.side_effect = lambda line: (0, 0, len(line) * 10, 0, 0, 0)   # 10 px a letter at 16
+    assert fitted_font_size(ctx, ["Hold"], 16, 114) == 16                          # fits: unchanged
+    assert fitted_font_size(ctx, ["LFO Destination"], 16, 114) == 12              # 150 px -> 114
+    assert fitted_font_size(ctx, ["X" * 100], 16, 114) == MIN_FONT_SIZE
+    assert fitted_font_size(MagicMock(), ["anything"], 16, 114) == 16             # a mocked context
+
+
+# ------------------------------- trig types: whether a note restarts the amp, the filter, the LFOs
+
+
+def flat_slots(device):
+    return [c for page in device.pages for c in page]
+
+
+@pytest.mark.parametrize("page, label, cc", [
+    ("Amp", "Amp Trig", 21), ("Filt", "Filter Trig", 22),
+    ("LFO 1", "LFO Trig", 23), ("LFO 2", "LFO Trig", 23), ("LFO 3", "LFO Trig", 23)])
+def test_amp_filter_and_lfo_pages_end_on_their_trig_switch(app, page, label, cc):
+    instrument, _ = make_instrument(app)
+    device = next(d for d in instrument.current_devices if d.label == page)
+    slots = flat_slots(device)
+    assert len(slots) == 16
+    trig = slots[15]                                                  # the second page's last control
+    assert trig.menu_label == label
+    assert [(i.label, i.address, i.value) for i in trig.items] == [
+        (f"{label} On", f"/cc/{cc}", 0), (f"{label} Off", f"/cc/{cc}", 127)]
+    assert trig.get_active_menu_item().label == f"{label} On"        # notes trig it until told otherwise
+
+
+def test_trig_switches_go_out_as_plain_ccs(app):
+    instrument, ports = make_instrument(app)
+    port = ports["Pushpin 2 m2k"]
+    amp_trig = flat_slots(next(d for d in instrument.current_devices if d.label == "Amp"))[15]
+    port.control.reset_mock()
+    for _ in range(4):
+        amp_trig.update_value(1)                                      # On -> Off
+    assert amp_trig.get_active_menu_item().label == "Amp Trig Off"
+    assert [c.args[:2] for c in port.control.call_args_list] == [(21, 127)]   # no NRPN: a switch
+
+
+def test_a_locked_trig_switch_lets_go_after_its_step(app):
+    instrument, _ = make_instrument(app)
+    app.instruments = {instrument.name: instrument}
+    sent = []
+    app.send_osc = lambda address, value, name: (sent.append((address, value)), instrument.send_message(address, value))
+    amp = next(d for d in instrument.current_devices if d.label == "Amp")
+    slot = amp.slot if hasattr(amp, "slot") else 1
+    seq = sequencer_for(app, instrument)
+    seq.locks[0][slot][15] = 127.0                                    # step 0: a trigless amp
+    play_step(seq, 0)
+    assert ("/cc/21", 127.0) in sent
+    sent.clear()
+    play_step(seq, 1)
+    assert sent == [("/cc/21", 0.0)]                                  # the next step trigs it again

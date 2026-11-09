@@ -87,6 +87,12 @@ _Static_assert(M2K_TRACKS == 8, "m2k-jack is built with -DM2K_TRACKS=8: a track 
 #define NCH (2 * NT + 2)                 /* the tracks' pairs, then the return's */
 #define CC_MACHINE 14
 #define CC_ENABLE 9
+/* the Monomachine's trig types (MONO2K's ST_NOAMP / ST_NOFLT / ST_NOLFO), a note at a time: 64-127 on one of these
+ * keeps the next notes from restarting the amp, the filter's envelope or the LFOs, 0-63 lets them again. pushpin
+ * p-locks them on a step and lets go after it, as MONO2K's own sequencer keeps them in its steps */
+#define CC_TRIG_AMP 21
+#define CC_TRIG_FLT 22
+#define CC_TRIG_LFO 23
 
 /* every CC that sets a track parameter: the Monomachine's map, then pushpin's additions */
 typedef struct { uint8_t cc, param; const char *page; } pp_ccmap_t;
@@ -403,10 +409,58 @@ static void pp_describe(void)
 
 /* ----------------------------------------------------------------------- MIDI */
 
+/* trig types (CC_TRIG_*): what the next notes leave alone, and the notes that left the amp alone */
+static unsigned pp_skip[NT];                 /* ST_NOAMP | ST_NOFLT | ST_NOLFO for the track's next notes */
+static uint8_t pp_trigless[NT][128];         /* notes played with no amp trig: their note-offs are nobody's */
+static int pp_amp_note[NT];                  /* the note the amp was last trigged by (-1: none) */
+
 static void pp_all_notes_off(int t)
 {
     for (int i = 0; i < 8 && sq.nkeys[t]; i++) live_off_t(t, sq.keys[t][0]);
     voice_off(t);
+    m_set(pp_trigless[t], 0, sizeof pp_trigless[t]);
+    pp_amp_note[t] = -1;
+}
+
+/* ------------------------------------------------------------- trig types */
+
+static void pp_set_skip(int t, int cc, int on)
+{
+    const unsigned bit = cc == CC_TRIG_AMP ? ST_NOAMP : cc == CC_TRIG_FLT ? ST_NOFLT : ST_NOLFO;
+    pp_skip[t] = on ? pp_skip[t] | bit : pp_skip[t] & ~bit;
+}
+
+/* a note with no amp trig, as MONO2K's sequencer plays a step of that trig type (play_track_step): the note moves
+ * the pitch, the step's locks are heard, the filter and LFOs restart unless masked too; the amp, the machine and the
+ * gate go on as they were. Not the core's MIDI path: that is a note played, which always trigs the amp */
+static void pp_trigless_on(int t, int note)
+{
+    ready_go();
+    m_cpy(trk[t].eff, PAT(cur_pat)->kit[t], P_COUNT);
+    voice_trig(t, note, 100, 0, pp_skip[t]);
+    pp_trigless[t][note] = 1;
+}
+
+/* the core's MIDI note-on with the filter's envelope and the LFOs kept as they were where masked: the same as not
+ * restarting them (voice_trig sets fstage / fenv, lfo_trig the phases, holds and ends alone) */
+static void pp_masked_note_on(int t, int status, int note, int vel)
+{
+    trk_t *k = &trk[t];
+    const uint8_t fstage = k->fstage;
+    const uint32_t fenv = k->fenv;
+    uint32_t lph[3];
+    int32_t lhold[3];
+    uint8_t ldone[3];
+    m_cpy(lph, k->lph, sizeof lph);
+    m_cpy(lhold, k->lhold, sizeof lhold);
+    m_cpy(ldone, k->ldone, sizeof ldone);
+    m2k_midi(status, note, vel);
+    if (pp_skip[t] & ST_NOFLT) { k->fstage = fstage; k->fenv = fenv; }
+    if (pp_skip[t] & ST_NOLFO) {
+        m_cpy(k->lph, lph, sizeof lph);
+        m_cpy(k->lhold, lhold, sizeof lhold);
+        m_cpy(k->ldone, ldone, sizeof ldone);
+    }
 }
 
 /* NRPN, per track: the parameter chosen (CC 99, CC 98: 0 and a CC number), its value's coarse part (CC 6) */
@@ -503,6 +557,7 @@ static void pp_handle_midi(int t, const uint8_t *m, size_t n)
     const int d1 = n > 1 ? m[1] & 127 : 0, d2 = n > 2 ? m[2] & 127 : 0;
     if (cmd == 0xB0) {
         if (d1 == CC_ENABLE) { pp_set_enabled(t, d2 >= 64); return; }
+        if (d1 == CC_TRIG_AMP || d1 == CC_TRIG_FLT || d1 == CC_TRIG_LFO) { pp_set_skip(t, d1, d2 >= 64); return; }
         if (d1 == CC_MACHINE) { pp_set_machine(t, d2); return; }
         if (d1 == 120 || d1 == 123) { pp_all_notes_off(t); return; }
         if (d1 == 99 || d1 == 98 || d1 == 101 || d1 == 100 || d1 == 6 || d1 == 38) { pp_nrpn_cc(t, d1, d2); return; }
@@ -510,10 +565,29 @@ static void pp_handle_midi(int t, const uint8_t *m, size_t n)
         if (param >= 0) { pp_set_param(t, param, d2 * 256); return; }
     }
     if (!pp_enabled[t] && (cmd == 0x90 || cmd == 0x80)) return;   /* (its notes off went out when it was turned off) */
-    if (cmd == 0x90 && d2) pp_note_on(t);
-    if (cmd == 0x80 || cmd == 0x90 || cmd == 0xB0)
-        m2k_midi(cmd | ((midi_ch() + t) & 15), d1, d2);
-    if (cmd == 0x90) for (int p = 0; p < P_COUNT; p++) pp_apply(t, p);   /* (the note copied the kit into eff) */
+    const int ch_status = cmd | ((midi_ch() + t) & 15);
+    if (cmd == 0x90 && d2) {
+        pp_note_on(t);
+        if (pp_skip[t] & ST_NOAMP) pp_trigless_on(t, d1);
+        else {
+            pp_trigless[t][d1] = 0;
+            pp_amp_note[t] = d1;
+            if (pp_skip[t]) pp_masked_note_on(t, ch_status, d1, d2);
+            else m2k_midi(ch_status, d1, d2);
+        }
+        for (int p = 0; p < P_COUNT; p++) pp_apply(t, p);              /* (the note copied the kit into eff) */
+        return;
+    }
+    if (cmd == 0x80 || cmd == 0x90) {
+        if (pp_trigless[t][d1]) { pp_trigless[t][d1] = 0; return; }  /* (it never opened the amp) */
+        m2k_midi(ch_status, d1, d2);
+        /* a trigless note since moved the core's note away from the one holding the amp: the core no longer knows
+         * this note-off is that one's (with no other key held, as the core's own path would have let go) */
+        if (d1 == pp_amp_note[t] && trk[t].note != d1 && trk[t].gate && !sq.nheld[t]) voice_off(t);
+        if (d1 == pp_amp_note[t]) pp_amp_note[t] = -1;
+        return;
+    }
+    if (cmd == 0xB0) m2k_midi(ch_status, d1, d2);
 }
 
 /* ------------------------------------------------------------- the render */
@@ -849,7 +923,7 @@ int main(int argc, char **argv)
     double seconds = 3.0;
     int machine = -1, audio_connect = 1;
     double glide_ms = 20.0, snap_ms = 10.0;
-    for (int t = 0; t < NT; t++) { pp_enabled[t] = 1; pp_nrpn_param[t] = -1; pp_nrpn_hi[t] = 127; }
+    for (int t = 0; t < NT; t++) { pp_enabled[t] = 1; pp_nrpn_param[t] = -1; pp_nrpn_hi[t] = 127; pp_amp_note[t] = -1; }
     for (int i = 1; i < argc; i++) {
         const char *a = argv[i];
         const int more = i + 1 < argc;

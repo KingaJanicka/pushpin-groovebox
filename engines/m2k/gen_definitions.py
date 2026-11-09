@@ -18,6 +18,7 @@ CC (if any), each machine's INIT sound, and MONO2K's factory library.
               shows the values m2k-jack actually has.
   slots 1-7   AMP, FILT, FX, DSTR, LFO 1-3: always shown, one per slot.
   A machine's second page: BANK (DIGI-WAV only) and PTCH. An LFO's: TRCK.
+  AMP, FILT and the LFOs end on their trig switch (control 15, TRIG_CCS).
 
 The labels and INIT values come from MONO2K (GPL-3.0-only), which is why the
 generated files live here and not in pushpin's MIT-licensed definitions/.
@@ -26,6 +27,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 import sys
 
@@ -92,7 +94,7 @@ def lfo_target_switch(dest_cc: int, labels: dict[int, str]) -> dict:
 
     def group(label: str, items: list[dict]) -> dict:
         return {"$type": "group", "label": label, "controls": [
-            {"$type": "control-menu", "menu_label": "DEST", "step": 1 / CLICKS_PER_ITEM, "items": items}]}
+            {"$type": "control-menu", "menu_label": "LFO DESTINATION", "step": 1 / CLICKS_PER_ITEM, "items": items}]}
 
     groups = [group("OFF", [item("OFF", 0)])]
     for device, params in LFO_TARGETS:
@@ -110,7 +112,7 @@ def lfo_track_menu(trck_cc: int) -> dict:
     items = [("OWN", 0)] + [(f"TRK {n}", n) for n in range(1, 9)]
     return {
         "$type": "control-menu",
-        "menu_label": "TRCK",
+        "menu_label": "LFO TRACK",
         "step": 1 / CLICKS_PER_ITEM,
         "items": [{"$type": "menu-item", "label": label,
                    "onselect": {"$type": "message", "address": address, "value": value}} for label, value in items],
@@ -209,12 +211,68 @@ def described(c: dict, param: dict) -> dict:
     return c
 
 
+def display_name(param: dict) -> str:
+    """MONO2K's full name for a parameter (ATCK -> ATTACK), its four letters where it has none."""
+    name = param.get("name") or ""
+    return name if name and name != "-" else param["label"]
+
+
+# ------------------------------------------------ units MONO2K's screen leaves out
+#
+# MONO2K shows some parameters as bare 0-127 though the DSP gives them a unit
+# (m2k_dsp.c). These get their words here, from the same formulas.
+
+def hold_note(v: int) -> str:
+    """AMP's HOLD: v / 32 of a beat (m2k_ui.c's K_AHLD), so v / 128 of a note, 127 holding until
+    the note ends. Written as DTIM's note fractions are: simplified, NOTE where the cell has room."""
+    if v == 0:
+        return "0"
+    if v == 127:
+        return "INF"
+    num, den = v, 128
+    while num % 2 == 0 and den > 1:
+        num, den = num // 2, den // 2
+    if den == 128:
+        return f"{num}/128"
+    return f"{num}/{den} NOTE" if den > 1 else f"{num} NOTE"
+
+
+def octaves_by_env(v: int) -> str:
+    """BASE/WIDTH BY ENV: the envelope at full moves the cutoff 7 d|d| / 256 filter steps of
+    1/8 octave, d = v - 64 (m2k_dsp.c)."""
+    d = v - 64
+    octs = 7 * d * abs(d) / 256 / 8
+    return "0 OCT" if d == 0 else f"{octs:+.1f} OCT" if abs(octs) < 10 else f"{octs:+.0f} OCT"
+
+
+def start_phase(v: int) -> str:
+    """An LFO's PHAS: v << 25 of the 2^32 cycle, so 360 / 128 degrees a step."""
+    return f"{round(v * 360 / 128)}°"
+
+
+UNIT_LABELS = {
+    ("AMP", "HOLD"): hold_note,
+    ("FILT", "B-OF"): octaves_by_env,
+    ("FILT", "W-OF"): octaves_by_env,
+    **{(f"LFO{n}", "PHAS"): start_phase for n in (1, 2, 3)},
+}
+
+
+def with_units(c: dict, page: str | None, label: str) -> dict:
+    if c.get("$type") != "control-range":
+        return c
+    if (page, label) in UNIT_LABELS:
+        c["value_labels"] = [UNIT_LABELS[page, label](v) for v in range(128)]
+        c.pop("display_center", None)
+    return c
+
+
 def control(cc: int, param: dict, page: str | None = None, address: str | None = None) -> dict:
     if param["label"] in HIDDEN_LABELS:
         return {"$type": "control-spacer"}
     c = {
         "$type": "control-range",
-        "label": param["label"],
+        "label": display_name(param),
         "address": address or cc_address(cc),
         "min": 0,
         "max": param["max"],
@@ -226,7 +284,7 @@ def control(cc: int, param: dict, page: str | None = None, address: str | None =
     if page and page.startswith("LFO") and param["label"] == "DPTH":
         c["bipolar"] = 1                          # MONO2K's LFO depth is signed about 64
         c["display_center"] = 64                  # (shown -64..+63 where the words aren't known)
-    return described(c, param)
+    return with_units(described(c, param), page, param["label"])
 
 
 # A machine page's second page: BANK (DIGI-WAV only, MONO2K's own wave bank
@@ -240,7 +298,7 @@ PTCH_CC = 20
 def wave_bank_menu() -> dict:
     return {
         "$type": "control-menu",
-        "menu_label": "BANK",
+        "menu_label": "WAVE BANK",
         "step": 1 / CLICKS_PER_ITEM,
         "items": [
             {"$type": "menu-item", "label": name,
@@ -258,18 +316,6 @@ def machine_page_two(machine: dict, ptch: dict | None) -> list[dict]:
     if "value_labels" not in pitch:
         pitch["display_center"] = 64              # semitones either way
     return [first, pitch]
-
-
-# Machine controls MONO2K counts about 64 (K_BI) that read better as a plain
-# 0-127 slider: the FM+ machines' envelope amounts
-UNIPOLAR = {("FM+STAT", "1ENV"), ("FM+DYN", "2ENV"), ("FM+PAR", "1ENV"), ("FM+PAR", "2ENV"), ("FM+PAR", "3ENV")}
-
-
-def machine_control(machine: dict, syn: dict) -> dict:
-    c = control(syn["cc"], syn["param"])
-    if (machine["name"], c.get("label")) in UNIPOLAR:
-        c.pop("bipolar", None)
-    return c
 
 
 def machine_device(machine: dict, machine_cc: int, ccs: dict[int, int] | None = None,
@@ -291,7 +337,7 @@ def machine_device(machine: dict, machine_cc: int, ccs: dict[int, int] | None = 
         "name": machine["name"],
         "slot": 0,
         "init": init,
-        "controls": [machine_control(machine, s) for s in machine["syn"]] + machine_page_two(machine, ptch),
+        "controls": [control(s["cc"], s["param"]) for s in machine["syn"]] + machine_page_two(machine, ptch),
     }
 
 
@@ -302,7 +348,7 @@ def param_control(param: int, label: str, mx: int = 127) -> dict:
 def mod_type_menu() -> dict:
     return {
         "$type": "control-menu",
-        "menu_label": "TYPE",
+        "menu_label": "MOD TYPE",
         "step": 1 / MENU_CLICKS_PER_ITEM,
         "items": [
             {
@@ -330,6 +376,37 @@ def dstr_controls(params: list[dict], labels: dict[int, str], all_params: dict[i
     return controls
 
 
+# The Monomachine's trig types, a page's own: each of AMP, FILT and the LFOs ends on a switch (its second page's
+# last control, 15) saying whether a note restarts it. Locked on a step, that step trigs the rest alone (all three
+# off: a trigless lock). m2k-jack's CCs for them (m2k_jack.c, CC_TRIG_*): 0 trigs, 127 leaves it be. One for all
+# three LFOs, as MONO2K's step has one bit for them: the LFO pages share it
+TRIG_CCS = {"AMP": (21, "AMP TRIG"), "FILT": (22, "FILTER TRIG"), "LFO": (23, "LFO TRIG")}
+TRIG_SLOT = 15
+
+
+def trig_menu(cc: int, label: str) -> dict:
+    # (each item names its switch: on a second page of spacers, "On" alone says nothing of what is on)
+    items = [(f"{label} ON", 0), (f"{label} OFF", 127)]
+    return {
+        "$type": "control-menu",
+        "menu_label": label,
+        "step": 1 / CLICKS_PER_ITEM,
+        "items": [{"$type": "menu-item", "label": name,
+                   "onselect": {"$type": "message", "address": cc_address(cc), "value": value}} for name, value in items],
+    }
+
+
+def slots(controls: list[dict]) -> int:
+    """The page positions controls take: a switch shows its group's menu beside it."""
+    return sum(2 if c["$type"] == "control-switch" else 1 for c in controls)
+
+
+def with_trig(controls: list[dict], page: str) -> list[dict]:
+    cc, label = TRIG_CCS["LFO" if page.startswith("LFO") else page]
+    spacers = [{"$type": "control-spacer"}] * (TRIG_SLOT - slots(controls))
+    return controls + spacers + [trig_menu(cc, label)]
+
+
 def page_devices(params: list[dict], labels: dict[int, str] | None = None,
                  all_params: dict[int, dict] | None = None) -> dict[str, dict]:
     devices = {}
@@ -343,12 +420,62 @@ def page_devices(params: list[dict], labels: dict[int, str] | None = None,
             controls.append(lfo_track_menu(lfo[LFO_TRCK]["cc"]))      # control 9: the second page
         else:
             controls = [control(p["cc"], p["param"], page) for p in params if p["page"] == page]
+        if page == "AMP" or page == "FILT" or (page.startswith("LFO") and labels is not None):
+            controls = with_trig(controls, page)
         devices[stem] = {"name": name, "slot": slot, "init": [], "controls": controls}
     return devices
 
 
+# ------------------------------------------------------- the pages' words, cased
+#
+# MONO2K writes everything in capitals (its pixel font has no lower case). The
+# Push shows its words in title case instead, words still apart: "FILTER BASE"
+# -> "Filter Base", "GND-SIN" -> "Gnd-Sin", "1/16 NOTE" -> "1/16 Note". Units
+# take their usual spelling, and acronyms stay capitals.
+
+UNIT_CASE = {"MS": "ms", "S": "s", "HZ": "Hz", "KHZ": "kHz"}
+ACRONYMS = {"LFO", "EQ", "HP", "LP", "FM", "FX", "XOR", "SID", "OSC", "PW", "RMS", "M2K", "M64"}
+PART_SEPARATORS = re.compile(r"([-+/&])")
+
+
+def title_word(word: str, after_number: bool = False) -> str:
+    if after_number and word in UNIT_CASE:                       # (VOX-6's consonant S is no second)
+        return UNIT_CASE[word]
+    parts = PART_SEPARATORS.split(word)
+    return "".join(p if p in ACRONYMS or not p else p[0] + p[1:].lower() for p in parts)
+
+
+def title_case(text: str) -> str:
+    """MONO2K's capitals in title case, spaces kept: "DEPTH / DECAY 1" -> "Depth / Decay 1"."""
+    words = text.split(" ")
+    return " ".join(title_word(w, i > 0 and any(c.isdigit() for c in words[i - 1])) for i, w in enumerate(words))
+
+
+CASED_KEYS = ("label", "menu_label", "name")
+
+
+def cased(node):
+    """A device (or any part of one) with every word it shows in title case."""
+    if isinstance(node, list):
+        return [cased(n) for n in node]
+    if not isinstance(node, dict):
+        return node
+    out = {}
+    for key, value in node.items():
+        if key in CASED_KEYS and isinstance(value, str):
+            out[key] = title_case(value)
+        elif key == "value_labels":
+            out[key] = [title_case(v) for v in value]
+        elif key == "tables":                                     # value_labels_by's
+            out[key] = [[title_case(v) for v in table] for table in value]
+        else:
+            out[key] = cased(value)
+    return out
+
+
 def build(describe: dict) -> dict[str, dict]:
-    labels = {p["param"]: p["label"] for p in describe["params_all"]} if "params_all" in describe else None
+    # (the LFOs' destination menus name their targets in full too)
+    labels = {p["param"]: display_name(p) for p in describe["params_all"]} if "params_all" in describe else None
     all_params = {p["param"]: p for p in describe.get("params_all", [])}
     ADDRESS_OF.clear()
     ADDRESS_OF.update({p["id"]: cc_address(p["cc"]) for p in describe["params"] if "id" in p})
@@ -357,7 +484,7 @@ def build(describe: dict) -> dict[str, dict]:
     ptch = next((p["param"] for p in describe["params"] if p["cc"] == PTCH_CC), None)
     for m in describe["machines"]:
         files[f"00_machine_{m['index']:02d}"] = machine_device(m, describe["machine_cc"], ccs, ptch)
-    return files
+    return {stem: cased(device) for stem, device in files.items()}
 
 
 def build_sounds(describe: dict) -> dict:
