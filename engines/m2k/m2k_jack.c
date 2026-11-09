@@ -19,7 +19,11 @@
  * MIDI, per track:
  *   Notes        note on / note off. Velocity is MONO2K's accent: over 100 the note plays accented (VOL
  *                raised by the pattern's ACNT, 60: about +3.3 dB), any other at the same level (pushpin's
- *                addition: the core's MIDI path plays every note at 100, its sequencer an accent at 127)
+ *                addition: the core's MIDI path plays every note at 100, its sequencer an accent at 127).
+ *                A note on while the track's last note is still held (pushpin's Tie, a legato pad) is
+ *                MONO2K's slide: the pitch glides to it (at PORT; PORT 0, a quick fixed glide), the amp,
+ *                the filter's envelope and the LFOs go on. The slid-from note's note-off is then ignored;
+ *                the same note again, held over itself, is a tie: the note goes on (pushpin's addition)
  *   CC 3         mute (0 = heard)
  *   CC 7         level
  *   CC 48-55     SYN A-H (the machine's own page)
@@ -256,6 +260,10 @@ static void pp_set_machine(int t, int m)
 static void pp_engine_init(int machine)
 {
     m2k_init(0x50555348u);
+    /* no track is the panel keys' (the core's would be track 1): every track's notes take the same path, the
+     * core's voice_on, which pushpin's slides and ties build on (the keys' own path slid only with PORT on, and
+     * kept a note stack of its own) */
+    sq.ktrk = 0xFF;
     /* a blank pattern in place of the factory demo: the default kit, no trigs, no locks */
     m2k_pattern_t *p = PAT(cur_pat);
     pat_init(p, "PUSHPIN");
@@ -415,12 +423,16 @@ static void pp_describe(void)
 static unsigned pp_skip[NT];                 /* ST_NOAMP | ST_NOFLT | ST_NOLFO for the track's next notes */
 static uint8_t pp_trigless[NT][128];         /* notes played with no amp trig: their note-offs are nobody's */
 static int pp_amp_note[NT];                  /* the note the amp was last trigged by (-1: none) */
+static uint8_t pp_held_n[NT][128];           /* each note's note-ons with an amp trig not yet let go: a note on
+                                              * over a held one slides, and a note tied over itself waits for
+                                              * its last note-off */
 
 static void pp_all_notes_off(int t)
 {
     for (int i = 0; i < 8 && sq.nkeys[t]; i++) live_off_t(t, sq.keys[t][0]);
     voice_off(t);
     m_set(pp_trigless[t], 0, sizeof pp_trigless[t]);
+    m_set(pp_held_n[t], 0, sizeof pp_held_n[t]);
     pp_amp_note[t] = -1;
 }
 
@@ -441,6 +453,18 @@ static void pp_trigless_on(int t, int note, int vel)
     m_cpy(trk[t].eff, PAT(cur_pat)->kit[t], P_COUNT);
     voice_trig(t, note, vel, 0, pp_skip[t]);    /* (its accent too, as MONO2K's sequencer plays one) */
     pp_trigless[t][note] = 1;
+}
+
+/* a note over the track's held one: MONO2K's slide, as its sequencer plays a slide step (fire_track). The pitch
+ * glides to the note (at PORT; PORT 0, a quick fixed glide: the DSP's T_GLIDE[40]) and the step's locks are heard;
+ * the amp, the machine, the filter's envelope and the LFOs go on as they were, whatever the trig types say. Not the
+ * core's MIDI path: a note played there always restarts them */
+static void pp_slide_on(int t, int note, int vel)
+{
+    ready_go();
+    m_cpy(trk[t].eff, PAT(cur_pat)->kit[t], P_COUNT);
+    voice_trig(t, note, vel, 1, 0);
+    trk[t].gate_left = -1;             /* (the gate the player's, as the core's note-on leaves it) */
 }
 
 /* the core's MIDI note-on with the filter's envelope and the LFOs kept as they were where masked: the same as not
@@ -572,22 +596,31 @@ static void pp_handle_midi(int t, const uint8_t *m, size_t n)
         pp_note_on(t);
         if (pp_skip[t] & ST_NOAMP) pp_trigless_on(t, d1, d2);
         else {
+            const int held = pp_amp_note[t];
+            const int slide = held >= 0 && pp_held_n[t][held] && trk[t].gate && trk[t].sounding;
             pp_trigless[t][d1] = 0;
             pp_amp_note[t] = d1;
-            if (pp_skip[t]) pp_masked_note_on(t, ch_status, d1, d2);
-            else m2k_midi(ch_status, d1, d2);
-            if (trk[t].note == d1) trk[t].vel = (uint8_t)d2;   /* the accent: the core's note-on played it at 100 */
+            if (pp_held_n[t][d1] < 255) pp_held_n[t][d1]++;
+            if (slide) pp_slide_on(t, d1, d2);
+            else {
+                if (pp_skip[t]) pp_masked_note_on(t, ch_status, d1, d2);
+                else m2k_midi(ch_status, d1, d2);
+                if (trk[t].note == d1) trk[t].vel = (uint8_t)d2;   /* the accent: the core's note-on played it at 100 */
+            }
         }
         for (int p = 0; p < P_COUNT; p++) pp_apply(t, p);              /* (the note copied the kit into eff) */
         return;
     }
     if (cmd == 0x80 || cmd == 0x90) {
         if (pp_trigless[t][d1]) { pp_trigless[t][d1] = 0; return; }  /* (it never opened the amp) */
+        if (pp_held_n[t][d1]) pp_held_n[t][d1]--;
+        if (d1 != pp_amp_note[t]) return;   /* a note since slid from (or one long let go): the amp isn't its */
+        if (pp_held_n[t][d1]) return;       /* tied over itself: its later note-on still holds it */
         m2k_midi(ch_status, d1, d2);
         /* a trigless note since moved the core's note away from the one holding the amp: the core no longer knows
          * this note-off is that one's (with no other key held, as the core's own path would have let go) */
-        if (d1 == pp_amp_note[t] && trk[t].note != d1 && trk[t].gate && !sq.nheld[t]) voice_off(t);
-        if (d1 == pp_amp_note[t]) pp_amp_note[t] = -1;
+        if (trk[t].note != d1 && trk[t].gate && !sq.nheld[t]) voice_off(t);
+        pp_amp_note[t] = -1;
         return;
     }
     if (cmd == 0xB0) m2k_midi(ch_status, d1, d2);

@@ -81,6 +81,7 @@ a pushpin track that plays Surge can stay connected to its MONO2K track.
 | Message | Effect |
 |---|---|
 | Note on/off | plays the track. Velocity is MONO2K's **accent**: over 100 the note plays accented (VOL raised by the pattern's ACNT, 60: about +3.3 dB), any other velocity at the same level. On pushpin's metro sequencer that's the top two velocity rows (111, 127). MONO2K's own MIDI path plays every note at 100; pushpin's addition passes the velocity on, to notes with no amp trig too (they accent the sounding note, as MONO2K's sequencer does) |
+| Note on over a held note | MONO2K's **slide** (pushpin's addition): the pitch glides to the new note at AMP's PORT (PORT 0: a quick fixed glide), and the amp, filter envelope and LFOs go on without restarting. pushpin's gate-track **Tie** overlaps a note with the next one, so a tied step slides; pads played legato slide too. The slid-from note's note-off is ignored. The same note again over itself is a tie: the note goes on to its last note-off. Every track works alike (the core's own path for its keys' track, track 1 by default, isn't used) |
 | CC 48–55 | SYN A–H (the machine's page) |
 | CC 56–63 | AMP: ATK HOLD DEC REL DIST VOL PAN PORT |
 | CC 72–79 | FILT: BASE (high-pass) WDTH HPQ LPQ FATK FDEC BOF WOF |
