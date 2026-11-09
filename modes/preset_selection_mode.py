@@ -798,7 +798,8 @@ class PresetSelectionMode(definitions.PyshaMode):
 
         self.update_pads()
         idx_j = pad_ij[1]
-        self.app.steps_held.remove(idx_j)
+        if idx_j in self.app.steps_held:            # (a mode switch clears it)
+            self.app.steps_held.remove(idx_j)
         self.browser_active = False
         self._pad_down_at = None
         self._opened_by_long_press = False

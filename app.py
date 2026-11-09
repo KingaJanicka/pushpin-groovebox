@@ -1003,13 +1003,15 @@ class PyshaApp(object):
             logger.warning("mono2k autosave failed: %s", e)
     
     async def queue_tasks(self):
-        for task in self.queue:
+        # Take tasks off the front one at a time. Removing from the list while a
+        # for loop walked it skipped every other task (they waited a frame), and
+        # other threads append to it meanwhile.
+        while self.queue:
+            task = self.queue.pop(0)
             if task:
                 t = asyncio.create_task(task)
                 self.tasks.add(t)
                 t.add_done_callback(self.tasks.discard)
-            
-            self.queue.remove(task)
 
 
     async def run_loop(self):

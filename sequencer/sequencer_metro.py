@@ -11,6 +11,23 @@ from definitions import TRACK_NAMES_METRO
 from sequencer.sequencer_params import SequencerParams
 
 
+def lockable_controls(device):
+    """(lock index, control) for every control a p-lock can be on, across all
+    of the device's pages. Locks are recorded and shown at page * 8 + position
+    on the page; playing only the page on screen (indexed 0..7) dropped every
+    other page's locks and put page 1's on whichever page was showing."""
+    pages = getattr(device, "pages", None)
+    if not pages:
+        yield from enumerate(device.get_visible_controls())
+        return
+    for page_idx, page in enumerate(pages):
+        for position, control in enumerate(page):
+            index = page_idx * 8 + position
+            if index >= LOCKS_PER_DEVICE:
+                return
+            yield index, control
+
+
 def lock_message(control, value):
     """The (address, value) a p-lock of ``value`` on ``control`` plays. A menu's
     locks are item positions: play the item's own message, not the position
@@ -26,6 +43,7 @@ def lock_message(control, value):
 
 
 default_number_of_steps = 64
+LOCKS_PER_DEVICE = 18          # the length of each device's list in self.locks
 
 from typing import Any
 
@@ -66,7 +84,7 @@ class SequencerMetro(object):
             self.locks.append([])
             for device_idx in range(17):
                 self.locks[step_idx].append(
-                    [None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+                    [None] * LOCKS_PER_DEVICE
                 )
         
         self.app = app
@@ -354,7 +372,7 @@ class SequencerMetro(object):
                                 # we have the right device
                                 # Now we just need to enum the controls and send the values 
                                 # This needs to go through VISIBLE controls, so that groups don't get shafted
-                                for control_idx, control in enumerate(device.get_visible_controls()):
+                                for control_idx, control in lockable_controls(device):
                                     lock_address = control.address
                                     lock_value = None
                                     if self.locks[self.step_index][slot_idx][control_idx] != None:
@@ -379,7 +397,7 @@ class SequencerMetro(object):
                         # we have the right device
                         # Now we just need to enum the controls and send the values 
                         # Visible controls so we don't ommit groups
-                        for control_idx, control in enumerate(device.get_visible_controls()):
+                        for control_idx, control in lockable_controls(device):
                             lock_address = control.address
                             lock_value = None
                             if self.locks[self.step_index][slot_idx][control_idx] != None:
