@@ -296,3 +296,46 @@ def test_refresh_sequencer_params_active_when_not_muted(app, mocker):
     params = seq_mock.params
     assert params.gate_track_active is True
     assert params.sequencer_is_playing is True
+
+
+def test_refresh_sequencer_params_propagates_pitch_and_octave_mutes(app, mocker):
+    mocker.patch.object(MetroSequencerMode, "initialize")
+    mode = MetroSequencerMode(app, settings=None, send_osc_func=app.send_osc)
+    mode.sequencer_is_playing = True
+    mode.instrument_scale_edit_controls = {"INST1": _make_track_controls(lambda: "cyan")}
+    seq_mock = MagicMock()
+    mode.instrument_sequencers = {"INST1": seq_mock}
+    app.mute_mode.tracks_active = {"INST1": {name: True for name in TRACK_NAMES_METRO}}
+    app.mute_mode.tracks_active["INST1"]["pitch"] = False
+
+    mode.refresh_sequencer_params()
+    assert seq_mock.params.pitch_track_active is False
+    assert seq_mock.params.octave_track_active is True
+
+    app.mute_mode.tracks_active["INST1"]["pitch"] = True
+    app.mute_mode.tracks_active["INST1"]["octave"] = False
+    mode.refresh_sequencer_params()
+    assert seq_mock.params.pitch_track_active is True
+    assert seq_mock.params.octave_track_active is False
+
+
+@pytest.mark.parametrize("track, field", [
+    ("velocity", "velocity_track_active"),
+    ("mutes_skips", "mutes_skips_track_active"),
+    ("lock_scale", "lock_scale_track_active"),
+])
+def test_refresh_sequencer_params_propagates_other_track_mutes(app, mocker, track, field):
+    mocker.patch.object(MetroSequencerMode, "initialize")
+    mode = MetroSequencerMode(app, settings=None, send_osc_func=app.send_osc)
+    mode.sequencer_is_playing = True
+    mode.instrument_scale_edit_controls = {"INST1": _make_track_controls(lambda: "cyan")}
+    seq_mock = MagicMock()
+    mode.instrument_sequencers = {"INST1": seq_mock}
+    app.mute_mode.tracks_active = {"INST1": {name: True for name in TRACK_NAMES_METRO}}
+
+    mode.refresh_sequencer_params()
+    assert getattr(seq_mock.params, field) is True
+
+    app.mute_mode.tracks_active["INST1"][track] = False
+    mode.refresh_sequencer_params()
+    assert getattr(seq_mock.params, field) is False

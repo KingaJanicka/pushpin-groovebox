@@ -49,6 +49,12 @@ class SequencerMetro(object):
     midi_in_name: str | None = None
     midi_in_device: Any = None
     index: Any = None
+    # The pitch, octave and velocity of the last note played, and the last
+    # p-lock scaling used: what a muted track holds them at.
+    held_pitch: int | None = None
+    held_octave: int | None = None
+    held_velocity: int | None = None
+    held_lock_scale: float | None = None
 
     def __init__(
         self, instrument, tick_callback, playhead, send_osc_func, global_timeline, app
@@ -255,10 +261,7 @@ class SequencerMetro(object):
         next_step_index = (current_index + 1) % 64
         
         
-        column = int(next_step_index / 8)
-        skips_idx = column*8
-        
-        if self.gate[next_step_index] != False and self.mutes_skips[skips_idx] != True:
+        if self.gate[next_step_index] != False and not self.step_is_skipped(next_step_index):
             self.step_index = next_step_index
             # Signal the asyncio thread to update pads — calling update_pads()
             # directly here runs push2_python USB code from the MIDI clock thread,
@@ -272,10 +275,7 @@ class SequencerMetro(object):
         current_index = index if index != None else self.step_index
         next_step_index = (current_index + 1) % 64
         
-        column = int(next_step_index / 8)
-        skips_idx = column*8
-        
-        if self.gate[next_step_index] != False and self.mutes_skips[skips_idx] != True:
+        if self.gate[next_step_index] != False and not self.step_is_skipped(next_step_index):
             self.next_step_index = next_step_index
             return 
         
@@ -285,11 +285,7 @@ class SequencerMetro(object):
     def increment_previous_step_index(self, index = None):
         current_index = index if index != None else self.step_index
         prev_step_index = (current_index - 1) % 64
-        column = int(prev_step_index / 8)
-        skips_idx = column*8
-        
-    
-        if self.gate[prev_step_index] != False and self.mutes_skips[skips_idx] != True:
+        if self.gate[prev_step_index] != False and not self.step_is_skipped(prev_step_index):
             self.prev_step_index = prev_step_index
             return 
         
@@ -307,26 +303,14 @@ class SequencerMetro(object):
 
             if self.gate[self.step_index] != "Off" and gate_track_active:
                 gate = 1
-                pitch = self.pitch[self.step_index] if self.pitch[self.step_index] is not None else 0
-                octave = self.octave[self.step_index] * 12 if self.octave[self.step_index] is not None else 0
-
-                pitch_and_octave = pitch + octave
-                velocity = ((self.velocity[self.step_index] + 1) * 16 - 1) if self.velocity[self.step_index] is not None else 1
+                pitch, octave, velocity = self.note_for_step(params)
+                pitch_and_octave = pitch + octave * 12
                 gate = None
 
                 gate_len = params.gate_len
                 
-                column = int(self.step_index / 8)
-                mutes_idx = column*8+1
-                
-                
-                prob = 1
-                
-                # checking columns for the True statement
-                for x in range(7):
-                    if self.mutes_skips[mutes_idx + x] == True:
-                        prob = x
-                        
+                prob = self.probability_for_step(params)
+
                 next_step_index = self.next_step_index
                 
                 if self.gate[next_step_index] == "Tie":
@@ -348,6 +332,7 @@ class SequencerMetro(object):
                             # every p-lock stick after its step.
                             control.value = unlocked
                             self.app.send_osc(*lock_message(control, float(unlocked)), instrument.name)
+                    self.held_pitch, self.held_octave, self.held_velocity = pitch, octave, velocity
                     self.timeline.schedule(
                         {"note": pitch_and_octave, "gate": gate, "amplitude": velocity}, count=1,
                         # the track's active engine's port (Surge's, or its mono2k port), looked up
@@ -359,13 +344,8 @@ class SequencerMetro(object):
             
             # This sends the param locks, out of the prev if statement
             # so it triggers even if the gate is off
+            lock_scale_value = self.lock_scale_for_step(params)
             for slot_idx, slot in enumerate(instrument.slots):
-                # get lock_scale value, mult by lock_val
-                lock_scale_value = None
-                if self.lock_scale[self.step_index] == 0:
-                    lock_scale_value = 0
-                else:
-                    lock_scale_value = self.lock_scale[self.step_index] / 7
                 if slot != None:
                     for device_idx, device in enumerate(instrument.devices[slot_idx]):
                         for command in enumerate(device.init):
@@ -422,6 +402,55 @@ class SequencerMetro(object):
             print("Error in evaluate_and_play_notes")
             traceback.print_exc()
 
+
+    def note_for_step(self, params):
+        """The (pitch, octave, velocity) the current step plays. A muted pitch,
+        octave or velocity track holds that part at the last note played; the
+        other parts still follow their tracks. Nothing played yet: the step's
+        own value."""
+        pitch = self.pitch[self.step_index]
+        pitch = pitch if pitch is not None else 0
+        octave = self.octave[self.step_index]
+        octave = octave if octave is not None else 0
+        velocity = self.velocity[self.step_index]
+        velocity = (velocity + 1) * 16 - 1 if velocity is not None else 1
+        if not params.pitch_track_active and self.held_pitch is not None:
+            pitch = self.held_pitch
+        if not params.octave_track_active and self.held_octave is not None:
+            octave = self.held_octave
+        if not params.velocity_track_active and self.held_velocity is not None:
+            velocity = self.held_velocity
+        return pitch, octave, velocity
+
+    def probability_for_step(self, params):
+        """The current step's chance to play, out of 6 (it plays when this is
+        at least a roll of 1-6). Rows 1-7 of the step's mutes/skips column
+        pick it; a muted mutes/skips track always plays."""
+        if not params.mutes_skips_track_active:
+            return 6
+        mutes_idx = int(self.step_index / 8) * 8 + 1
+        prob = 1
+        for x in range(7):
+            if self.mutes_skips[mutes_idx + x] == True:
+                prob = x
+        return prob
+
+    def step_is_skipped(self, index):
+        """Whether the step at ``index`` is skipped: row 0 of its mutes/skips
+        column. Nothing is skipped while the mutes/skips track is muted."""
+        if not self.params.mutes_skips_track_active:
+            return False
+        return self.mutes_skips[int(index / 8) * 8] == True
+
+    def lock_scale_for_step(self, params):
+        """How much of each p-lock the current step applies, 0-1. A muted
+        lock-scale track keeps the last scaling used. Nothing used yet: the
+        step's own value."""
+        if not params.lock_scale_track_active and self.held_lock_scale is not None:
+            return self.held_lock_scale
+        scale = self.lock_scale[self.step_index]
+        self.held_lock_scale = 0 if scale == 0 else scale / 7
+        return self.held_lock_scale
 
     def update_notes(self):
         for idx, note in enumerate(self.note):
