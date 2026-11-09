@@ -55,6 +55,7 @@ minimal state each method needs.
 | SequencerMode | test_sequencer_mode.py |
 | MetroSequencerMode | test_metro_sequencer_mode.py |
 | Saving sequences (per clip) and the SCALE page | test_seq_state_saving.py |
+| Saving on SIGTERM (systemd stop) | test_shutdown.py |
 
 ## Open issues found while writing tests
 

@@ -17,6 +17,7 @@ import logging
 import jack
 import isobar as iso
 import re
+import shutdown
 from ratelimit import limits
 from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.osc_server import AsyncIOOSCUDPServer
@@ -1401,6 +1402,8 @@ async def main():
 
 # Run app main loop
 if __name__ == "__main__":
+    # systemd stops the service with SIGTERM: exit through the same path as Ctrl-C
+    shutdown.install_sigterm_handler()
     try:
         app = PyshaApp()
         if midi_connected_received_before_app:
@@ -1412,10 +1415,8 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("Exiting Pysha...")
         # Keep each track's sequence (in the clip it's on) and the SCALE page
-        try:
-            app.metro_sequencer_mode.save_state()
-        except Exception as e:
-            print("Could not save state on exit:", e)
+        if "app" in globals():
+            shutdown.save_on_exit(app)
         try:
             app._display_process.stop()
             app.push.f_stop.set()
