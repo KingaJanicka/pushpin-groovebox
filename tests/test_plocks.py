@@ -243,3 +243,51 @@ def test_queue_tasks_starts_every_queued_task_in_one_frame():
 
     assert asyncio.run(frame()) == []
     assert sorted(ran) == [0, 1, 2, 3, 4]
+
+
+# --- the display while locks play --------------------------------------------
+
+def real_control(address, value):
+    from osc_controls import OSCControl
+    c = OSCControl({"$type": "control-range", "label": "X", "address": address,
+                    "min": 0.0, "max": 1.0})
+    c.value = value
+    return c
+
+
+def play_step_with_lock(seq, app, control, lock, echo_now):
+    """Play step 0 with ``lock`` on ``control`` (slot 2, first position). With
+    ``echo_now`` the synth echoes inside the send, as mono2k's MIDI-CC client
+    does; otherwise the echo is left for the caller (Surge's comes later)."""
+    device = paged_device([[control] + [ControlSpacer() for _ in range(7)]])
+    instrument = MagicMock(slots=[None, None, None])
+    instrument.devices = {2: [device]}
+    instrument.engine = MagicMock(always_shown_slots=(2,))
+    app.instruments = {"INST1": instrument}
+    seq.locks[0][2] = [None] * LOCKS_PER_DEVICE
+    seq.locks[0][2][0] = lock
+    if echo_now:
+        app.send_osc.side_effect = lambda address, value, *a: control.set_state(address, value)
+    seq.evaluate_and_play_notes()
+    app.send_osc.side_effect = None
+
+
+def test_a_played_lock_leaves_the_display_at_the_knob_with_an_instant_echo(seq, app):
+    knob = real_control("/cc/48", 0.25)
+    play_step_with_lock(seq, app, knob, 0.8, echo_now=True)
+    assert app.send_osc.call_args[0][:2] == ("/cc/48", pytest.approx(0.8))
+    assert knob.value == 0.25
+
+
+def test_a_played_lock_leaves_the_display_at_the_knob_with_a_late_echo(seq, app):
+    knob = real_control("/param/a/osc/1/pitch", 0.25)
+    play_step_with_lock(seq, app, knob, 0.8, echo_now=False)
+    knob.set_state("/param/a/osc/1/pitch", 0.8)             # Surge's echo, after
+    assert knob.value == 0.25
+
+
+def test_values_that_are_not_lock_echoes_still_reach_the_display(seq, app):
+    knob = real_control("/param/a/osc/1/pitch", 0.25)
+    play_step_with_lock(seq, app, knob, 0.8, echo_now=False)
+    knob.set_state("/param/a/osc/1/pitch", 0.6)             # e.g. a preset load
+    assert knob.value == 0.6

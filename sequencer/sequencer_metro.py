@@ -383,7 +383,7 @@ class SequencerMetro(object):
                                             value_after_scale = lock_offset * lock_scale_value + unlocked
                                             
                                             if lock_value != None and lock_address != None:
-                                                self.app.send_osc(*lock_message(control, value_after_scale), instrument.name)
+                                                self.play_lock(control, value_after_scale, instrument)
                                             elif lock_value != None and control.name == "Switch":
                                                     control.update_value_lock(value_after_scale)
                                             
@@ -408,7 +408,7 @@ class SequencerMetro(object):
                                     value_after_scale = lock_offset * lock_scale_value + unlocked
                                     
                                     if lock_value != None and lock_address != None:
-                                        self.app.send_osc(*lock_message(control, value_after_scale), instrument.name)
+                                        self.play_lock(control, value_after_scale, instrument)
                                     elif lock_value != None and control.name == "Switch":
                                             control.update_value_lock(value_after_scale)
                                     
@@ -544,6 +544,19 @@ class SequencerMetro(object):
             
         selected_track = self.app.metro_sequencer_mode.selected_track
         return self.locks[index * 8][device_idx][parameter_idx]
+
+    def play_lock(self, control, value, instrument):
+        """Send a p-lock without moving the control's display: it keeps the
+        knob's position, and the lock shows only while its pad is held. The
+        synth's echo of the lock is ignored, whether it comes back at once
+        (mono2k's MIDI-CC client) or later (Surge over OSC)."""
+        knob = control.value
+        address, sent = lock_message(control, value)
+        echoes = getattr(control, "lock_echoes", None) or getattr(control, "recent_sends", None)
+        if echoes is not None:
+            echoes.add(sent)
+        self.app.send_osc(address, sent, instrument.name)
+        control.value = knob
 
     def remember_unlocked(self, control):
         """A lock is about to be sent to ``control``: keep the value it goes back

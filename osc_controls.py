@@ -55,6 +55,10 @@ class OSCControl(object):
         self.min: float = config["min"]
         self.max: float = config["max"]
         self.value: float = 0.0
+        # Values the sequencer just played as p-locks. The synth echoes them
+        # back (mono2k at once, Surge later); applying that echo moved the
+        # display to the lock, which should only show while its pad is held.
+        self.lock_echoes: RecentSends = RecentSends()
         self.modmatrix: bool = config.get("modmatrix", True)
         self.string: str = ""
         self.get_color_func: ColorFunc = get_color_func or (lambda: definitions.GRAY_LIGHT)
@@ -395,6 +399,8 @@ class OSCControl(object):
     def set_state(self, address: str, *args: Any) -> None:
         value, *rest = args
         self.log.debug((address, value))
+        if self.lock_echoes.contains(value):
+            return  # a p-lock coming back: the knob stays where it was
         self.value = value
         # this human readable string doesn't change with knob movements, querry fixes it but makes it glitchy
         # self.string = string
