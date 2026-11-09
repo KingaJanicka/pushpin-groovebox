@@ -446,7 +446,7 @@ def test_selecting_a_machine_switches_page_and_loads_its_init(m2k_instrument):
     # The INIT values reach the other pages' controls through the echo
     expected = {m["address"]: m["value"] for m in kick.init}
     amp = device(instrument, "Amp")
-    for control in amp.controls:
+    for control in amp.controls[:8]:                                 # (its knobs; then AMP TRIG, no INIT value)
         assert control.value == expected[control.address], control.label
 
 

@@ -710,6 +710,52 @@
 			"address": "/cc/63",
 			"min": 0,
 			"max": 127
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-menu",
+			"menu_label": "Amp Trig",
+			"step": 0.25,
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "On",
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/21",
+						"value": 0
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Off",
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/21",
+						"value": 127
+					}
+				}
+			]
 		}
 	]
 }

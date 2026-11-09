@@ -18,6 +18,7 @@ CC (if any), each machine's INIT sound, and MONO2K's factory library.
               shows the values m2k-jack actually has.
   slots 1-7   AMP, FILT, FX, DSTR, LFO 1-3: always shown, one per slot.
   A machine's second page: BANK (DIGI-WAV only) and PTCH. An LFO's: TRCK.
+  AMP, FILT and the LFOs end on their trig switch (control 15, TRIG_CCS).
 
 The labels and INIT values come from MONO2K (GPL-3.0-only), which is why the
 generated files live here and not in pushpin's MIT-licensed definitions/.
@@ -375,6 +376,36 @@ def dstr_controls(params: list[dict], labels: dict[int, str], all_params: dict[i
     return controls
 
 
+# The Monomachine's trig types, a page's own: each of AMP, FILT and the LFOs ends on a switch (its second page's
+# last control, 15) saying whether a note restarts it. Locked on a step, that step trigs the rest alone (all three
+# off: a trigless lock). m2k-jack's CCs for them (m2k_jack.c, CC_TRIG_*): 0 trigs, 127 leaves it be. One for all
+# three LFOs, as MONO2K's step has one bit for them: the LFO pages share it
+TRIG_CCS = {"AMP": (21, "AMP TRIG"), "FILT": (22, "FILTER TRIG"), "LFO": (23, "LFO TRIG")}
+TRIG_SLOT = 15
+
+
+def trig_menu(cc: int, label: str) -> dict:
+    items = [("ON", 0), ("OFF", 127)]
+    return {
+        "$type": "control-menu",
+        "menu_label": label,
+        "step": 1 / CLICKS_PER_ITEM,
+        "items": [{"$type": "menu-item", "label": name,
+                   "onselect": {"$type": "message", "address": cc_address(cc), "value": value}} for name, value in items],
+    }
+
+
+def slots(controls: list[dict]) -> int:
+    """The page positions controls take: a switch shows its group's menu beside it."""
+    return sum(2 if c["$type"] == "control-switch" else 1 for c in controls)
+
+
+def with_trig(controls: list[dict], page: str) -> list[dict]:
+    cc, label = TRIG_CCS["LFO" if page.startswith("LFO") else page]
+    spacers = [{"$type": "control-spacer"}] * (TRIG_SLOT - slots(controls))
+    return controls + spacers + [trig_menu(cc, label)]
+
+
 def page_devices(params: list[dict], labels: dict[int, str] | None = None,
                  all_params: dict[int, dict] | None = None) -> dict[str, dict]:
     devices = {}
@@ -388,6 +419,8 @@ def page_devices(params: list[dict], labels: dict[int, str] | None = None,
             controls.append(lfo_track_menu(lfo[LFO_TRCK]["cc"]))      # control 9: the second page
         else:
             controls = [control(p["cc"], p["param"], page) for p in params if p["page"] == page]
+        if page == "AMP" or page == "FILT" or (page.startswith("LFO") and labels is not None):
+            controls = with_trig(controls, page)
         devices[stem] = {"name": name, "slot": slot, "init": [], "controls": controls}
     return devices
 

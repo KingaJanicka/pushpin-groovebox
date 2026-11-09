@@ -842,6 +842,52 @@
 				"+13 Oct",
 				"+14 Oct"
 			]
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-menu",
+			"menu_label": "Filter Trig",
+			"step": 0.25,
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "On",
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/22",
+						"value": 0
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Off",
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/22",
+						"value": 127
+					}
+				}
+			]
 		}
 	]
 }

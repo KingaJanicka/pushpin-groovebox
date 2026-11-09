@@ -416,7 +416,8 @@ def test_lfo_and_mod_params_are_saved_and_recalled_with_the_slot(browser):
         switch = lfo.controls[0]
         assert switch.get_active_group().label == device, lfo.label
         assert switch.get_active_group().controls[0].get_active_menu_item().label == dest, lfo.label
-        assert lfo.controls[-1].get_active_menu_item().label == trck, lfo.label
+        trck_menu = next(c for c in lfo.controls if getattr(c, "menu_label", None) == "LFO Track")
+        assert trck_menu.get_active_menu_item().label == trck, lfo.label
     assert lfo1.controls[6].value == 20.0 and lfo2.controls[4].value == 12.0   # DPTH, SPD
     dstr = page(instrument, "Dstr")
     assert dstr.controls[4].get_active_menu_item().label == "Phas"

@@ -2387,6 +2387,49 @@
 					}
 				}
 			]
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-menu",
+			"menu_label": "LFO Trig",
+			"step": 0.25,
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "On",
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/23",
+						"value": 0
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Off",
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/23",
+						"value": 127
+					}
+				}
+			]
 		}
 	]
 }

@@ -847,7 +847,7 @@ def test_fm_envelope_amounts_are_bipolar(app):
 def test_controls_are_named_in_full(app):
     instrument, _ = make_instrument(app)
     amp = next(d for d in instrument.current_devices if d.label == "Amp")
-    assert [c.label for c in amp.controls] == [
+    assert [c.label for c in amp.controls[:8]] == [
         "Attack", "Hold", "Decay", "Release", "Distortion", "Volume", "Pan", "Portamento"]
 
 
@@ -879,3 +879,52 @@ def test_a_label_wider_than_its_column_shrinks_to_fit():
     assert fitted_font_size(ctx, ["LFO Destination"], 16, 114) == 12              # 150 px -> 114
     assert fitted_font_size(ctx, ["X" * 100], 16, 114) == MIN_FONT_SIZE
     assert fitted_font_size(MagicMock(), ["anything"], 16, 114) == 16             # a mocked context
+
+
+# ------------------------------- trig types: whether a note restarts the amp, the filter, the LFOs
+
+
+def flat_slots(device):
+    return [c for page in device.pages for c in page]
+
+
+@pytest.mark.parametrize("page, label, cc", [
+    ("Amp", "Amp Trig", 21), ("Filt", "Filter Trig", 22),
+    ("LFO 1", "LFO Trig", 23), ("LFO 2", "LFO Trig", 23), ("LFO 3", "LFO Trig", 23)])
+def test_amp_filter_and_lfo_pages_end_on_their_trig_switch(app, page, label, cc):
+    instrument, _ = make_instrument(app)
+    device = next(d for d in instrument.current_devices if d.label == page)
+    slots = flat_slots(device)
+    assert len(slots) == 16
+    trig = slots[15]                                                  # the second page's last control
+    assert trig.menu_label == label
+    assert [(i.label, i.address, i.value) for i in trig.items] == [
+        ("On", f"/cc/{cc}", 0), ("Off", f"/cc/{cc}", 127)]
+    assert trig.get_active_menu_item().label == "On"                 # notes trig it until told otherwise
+
+
+def test_trig_switches_go_out_as_plain_ccs(app):
+    instrument, ports = make_instrument(app)
+    port = ports["Pushpin 2 m2k"]
+    amp_trig = flat_slots(next(d for d in instrument.current_devices if d.label == "Amp"))[15]
+    port.control.reset_mock()
+    for _ in range(4):
+        amp_trig.update_value(1)                                      # On -> Off
+    assert amp_trig.get_active_menu_item().label == "Off"
+    assert [c.args[:2] for c in port.control.call_args_list] == [(21, 127)]   # no NRPN: a switch
+
+
+def test_a_locked_trig_switch_lets_go_after_its_step(app):
+    instrument, _ = make_instrument(app)
+    app.instruments = {instrument.name: instrument}
+    sent = []
+    app.send_osc = lambda address, value, name: (sent.append((address, value)), instrument.send_message(address, value))
+    amp = next(d for d in instrument.current_devices if d.label == "Amp")
+    slot = amp.slot if hasattr(amp, "slot") else 1
+    seq = sequencer_for(app, instrument)
+    seq.locks[0][slot][15] = 127.0                                    # step 0: a trigless amp
+    play_step(seq, 0)
+    assert ("/cc/21", 127.0) in sent
+    sent.clear()
+    play_step(seq, 1)
+    assert sent == [("/cc/21", 0.0)]                                  # the next step trigs it again
