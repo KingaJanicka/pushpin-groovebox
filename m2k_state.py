@@ -31,6 +31,9 @@ logger = logging.getLogger("m2k_state")
 
 SOUNDS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "engines", "m2k", "sounds.json")
 MACHINE_ADDRESS = "/cc/14"
+# LEVL, the track's output level. MONO2K's gain for it is square-law
+# (T_VOL[n] ~ (n / 127)^2), so a gain g scales the CC value by sqrt(g).
+LEVEL_ADDRESS = "/cc/7"
 FORMAT = 1
 LFO_TRACKS = 8                             # TRCK: 0 the LFO's own track, 1-8 track 1-8
 
@@ -202,6 +205,12 @@ class M2KSounds:
 
 
 # ---------------------------------------------------------------- the voice
+
+
+def scaled_level(levl: float, gain: float) -> float:
+    """The LEVL that plays a sound whose own LEVL is ``levl`` at ``gain`` x its
+    level (``gain`` linear, 0..1)."""
+    return min(max(float(levl), 0.0), 127.0) * min(max(gain, 0.0), 1.0) ** 0.5
 
 
 def capture(client: Any, catalogue: M2KSounds, unlocked: dict[str, float] | None = None) -> Sound | None:

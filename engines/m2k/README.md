@@ -198,9 +198,11 @@ engines/m2k/build.sh && python engines/m2k/gen_definitions.py
   -64..+63) at knob 2 of its second page; DIGI-WAV also has BANK (M2K or M64,
   NRPN 1:70) at knob 1.
 - **Not on any page**: the arp, which m2k-jack keeps OFF whatever arrives (and
-  never exports as on), and LEVL, left to PipeWire for volume. Every machine's
-  INIT and every sound still sets LEVL (CC 7), so a track always starts at its
-  sound's own level.
+  never exports as on), and LEVL. Every machine's INIT and every sound sets
+  LEVL (CC 7), so a track always starts at its sound's own level; the track's
+  **Master** encoder scales it on the way out (dB taper, MONO2K's LEVL is
+  square-law), so loading a sound keeps the Master setting and saving one
+  keeps the sound's own LEVL. The Swing encoder's post-synth fader is PipeWire's.
 - **Values in MONO2K's own words**: `m2k-jack --describe` exports what the
   FM-1's screen shows for every value of every parameter (m2k_ui.c's `fmt()`),
   and the generator uses it. A choice (the waves, LFO TRIG and MULT, SID MOD and

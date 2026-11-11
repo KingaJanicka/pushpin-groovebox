@@ -23,13 +23,18 @@ same behaviour:
   OSC notes, which the Push's pads send (``MelodicMode``), become note-on and
   note-off on the same port. The sequencer plays through that port already.
 * Any other address (Surge's ``/patch/...``, ``/q/param/...``) is ignored.
+
+``set_transform(address, fn)`` changes what goes out for a CC without changing
+what the client caches and echoes: the pages, a saved sound and ``/q`` replies
+keep the value that was asked for, the synth hears ``fn(value)``. The track's
+Master volume uses it to scale a mono2k sound's own LEVL.
 """
 from __future__ import annotations
 
 import logging
 import re
 import threading
-from typing import Any, Iterable
+from typing import Any, Callable, Iterable
 
 logger = logging.getLogger("cc_client")
 
@@ -96,6 +101,7 @@ class MidiCCClient:
         self.nrpn = nrpn
         self.plain_ccs = frozenset(plain_ccs)
         self.values: dict[str, float] = {}
+        self.transforms: dict[int, Callable[[float], float]] = {}
         # An NRPN is four messages; the encoders and the sequencer send from
         # different threads, and interleaved halves would set the wrong parameter.
         self._send_lock = threading.Lock()
@@ -118,11 +124,28 @@ class MidiCCClient:
         if value is None:
             return
         if cc is not None:
-            self._send(cc, value)
+            self._send(cc, self._transformed(cc, value))
         else:
             self._send_nrpn(NRPN_PARAM, param, value)
         self.values[address] = float(value)
         self._echo(address, float(value))
+
+    def set_transform(self, address: str, transform: Callable[[float], float] | None) -> None:
+        """Send ``transform(value)`` for the CC ``address`` from now on (None:
+        the value itself), and resend its last value through it at once."""
+        cc = cc_number(address)
+        if cc is None:
+            raise ValueError(f"not a CC address: {address}")
+        if transform is None:
+            self.transforms.pop(cc, None)
+        else:
+            self.transforms[cc] = transform
+        if address in self.values:
+            self._send(cc, self._transformed(cc, self.values[address]))
+
+    def _transformed(self, cc: int, value: Any) -> Any:
+        transform = self.transforms.get(cc)
+        return value if transform is None else transform(float(value))
 
     def _send_note(self, on: bool, value: Any) -> None:
         try:

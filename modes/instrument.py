@@ -14,6 +14,8 @@ from pythonosc.dispatcher import Dispatcher
 import definitions
 from modes.osc_device import OSCDevice
 from cc_client import MidiCCClient
+import m2k_state
+from utilities.volume_taper import fader_to_gain
 from modes.device_definitions import load_device_definitions
 from modes.mod_matrix_device import ModMatrixDevice
 from modes.audio_in_device import AudioInDevice
@@ -534,6 +536,25 @@ class Instrument(PyshaMode):
         # for transport in self.transports:
         #     transport.close()
         pass
+
+    def set_global_volume(self, position: float) -> None:
+        """The track's Master volume (0..1), on every voice it has: Surge's
+        global volume, and a scale on the mono2k sound's own LEVL (the sound
+        keeps its LEVL, so loading one doesn't undo the Master, and saving
+        one doesn't save it)."""
+        position = min(max(float(position), 0.0), 1.0)
+        self.instrument_global_volume = position
+        surge = self.voices.get(engine.DEFAULT_ENGINE)
+        if surge is not None and surge.osc.get("client") is not None:
+            surge.osc["client"].send_message("/param/global/volume", position)
+        m2k = self.voices.get(engine.MONO2K_ENGINE)
+        client = m2k.osc.get("client") if m2k is not None else None
+        if isinstance(client, MidiCCClient):
+            gain = fader_to_gain(position)
+            client.set_transform(
+                m2k_state.LEVEL_ADDRESS,
+                None if gain >= 1.0 else lambda levl: m2k_state.scaled_level(levl, gain),
+            )
 
     def client_for(self, address: str) -> Any:
         """The client a message goes to: the active voice's, except Surge's patch
