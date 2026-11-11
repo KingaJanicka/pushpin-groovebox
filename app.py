@@ -19,6 +19,7 @@ import isobar as iso
 import re
 import shutdown
 from push_connection import PushConnection
+from utilities.volume_taper import DEFAULT_TRACK_FADER, fader_to_gain, step_fader
 from ratelimit import limits
 from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.osc_server import AsyncIOOSCUDPServer
@@ -104,7 +105,8 @@ class PyshaApp(object):
     # Pipewire-related
     external_instruments: list[Any] = []
     pipewire: list[Any] | None = None
-    volumes: list[float] = [0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6]
+    # Fader positions (0..1) per channel; set_main_volumes() maps them to gain.
+    volumes: list[float] = [DEFAULT_TRACK_FADER] * 16
     volume_client: Any = None
     volume_node: Any = None
     iso_midi_in: Any = None
@@ -1203,9 +1205,17 @@ class PyshaApp(object):
             left_channel_idx = idx * 2
             right_channel_idx = left_channel_idx + 1
             # Value only from left because we want to have it center
-            volume_value = self.volumes[left_channel_idx]
+            volume_value = fader_to_gain(self.volumes[left_channel_idx])
             self.volume_node_osc_client.send_message(f"/vol_{left_channel_idx}", float(volume_value))
             self.volume_node_osc_client.send_message(f"/vol_{right_channel_idx}", float(volume_value))
+
+    def adjust_track_volume(self, instrument: Any, increment: int) -> None:
+        """Move a track's post-synth fader by ``increment`` encoder clicks."""
+        instrument_idx = instrument.osc_in_port % 10
+        position = step_fader(self.volumes[instrument_idx * 2], increment)
+        self.volumes[instrument_idx * 2] = position
+        self.volumes[instrument_idx * 2 + 1] = position
+        self.set_main_volumes()
         
   
 
