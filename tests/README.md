@@ -56,6 +56,7 @@ minimal state each method needs.
 | MetroSequencerMode | test_metro_sequencer_mode.py |
 | Saving sequences (per clip) and the SCALE page | test_seq_state_saving.py |
 | Saving on SIGTERM (systemd stop) | test_shutdown.py |
+| Push 2 late plug-in / replug (MIDI reconnect on the main loop) | test_push_connection.py |
 
 ## Open issues found while writing tests
 

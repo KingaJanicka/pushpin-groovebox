@@ -18,6 +18,7 @@ import jack
 import isobar as iso
 import re
 import shutdown
+from push_connection import PushConnection
 from ratelimit import limits
 from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.osc_server import AsyncIOOSCUDPServer
@@ -913,6 +914,10 @@ class PyshaApp(object):
             # "ALSA lib seq_hw.c:466:(snd_seq_hw_open) open /dev/snd/seq failed: Cannot allocate memory" issues.
             # A work around is make the reconnection time bigger, but a better solution should probably be found.
             self.push.set_push2_reconnect_call_interval(2)
+        # Late plug-in, unplug and replug: handled on the main loop
+        self.push_connection = PushConnection(
+            self.push, self.on_midi_push_connection_established
+        )
             
         # for y in range(0, 8):
         #     for x in range(0, 8):
@@ -970,9 +975,9 @@ class PyshaApp(object):
             )
 
     def check_for_delayed_actions(self):
-        # If MIDI not configured, make sure we try sending messages so it gets configured
-        if not self.push.midi_is_configured():
-            self.push.configure_midi()
+        # Open the Push's MIDI ports if they're closed, and set the Push up
+        # once it has been heard from (also after a late plug-in or a replug)
+        self.push_connection.poll()
 
         # Call dalyed actions in active modes
         for mode in self.active_modes:
@@ -1077,30 +1082,30 @@ class PyshaApp(object):
         print("Doing initial Push config...")
 
         # Force configure MIDI out (in case it wasn't...)
-        app.push.configure_midi_out()
+        self.push.configure_midi_out()
 
         # Configure custom color palette
-        app.push.color_palette = {}
+        self.push.color_palette = {}
         for count, color_name in enumerate(definitions.COLORS_NAMES):
-            app.push.set_color_palette_entry(
+            self.push.set_color_palette_entry(
                 count,
                 [color_name, color_name],
                 rgb=definitions.get_color_rgb_float(color_name),
                 allow_overwrite=True,
             )
-        app.push.reapply_color_palette()
+        self.push.reapply_color_palette()
 
         # Initialize all buttons to black, initialize all pads to off
-        app.push.buttons.set_all_buttons_color(color=definitions.BLACK)
-        app.push.pads.set_all_pads_to_color(color=definitions.BLACK)
+        self.push.buttons.set_all_buttons_color(color=definitions.BLACK)
+        self.push.pads.set_all_pads_to_color(color=definitions.BLACK)
 
         # Iterate over modes and (re-)activate them
         for mode in self.active_modes:
             mode.activate()
 
         # Update buttons and pads (just in case something was missing!)
-        app.update_push2_buttons()
-        app.update_push2_pads()
+        self.update_push2_buttons()
+        self.update_push2_pads()
 
     async def get_pipewire_config(self):
         try:
@@ -1330,8 +1335,10 @@ midi_connected_received_before_app = False
 
 @push2_python.on_midi_connected()
 def on_midi_connected(_):
+    # push2_python calls this on its MIDI input thread: hand the setup to the
+    # main loop instead of drawing pads/buttons from here
     try:
-        app.on_midi_push_connection_established()
+        app.push_connection.notify_connected()
     except NameError as e:
         global midi_connected_received_before_app
         midi_connected_received_before_app = True
