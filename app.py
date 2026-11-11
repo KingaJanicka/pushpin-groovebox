@@ -16,6 +16,7 @@ import asyncio
 import logging
 import jack
 import isobar as iso
+import sequencer.isobar_threads  # noqa: F401  (before any Track exists: stops a thread leak per note)
 import re
 import shutdown
 from push_connection import PushConnection
