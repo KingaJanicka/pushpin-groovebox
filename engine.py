@@ -170,43 +170,21 @@ class Engine(ABC):
         self.midi_device_idx = midi_device_idx
         self.instrument = instrument_definition
 
-        self.duplex_node = None
-        self.duplex_ports = {
-            "inputs": {
-                "Input 0": {"L": None, "R": None},
-                "Input 1": {"L": None, "R": None},
-                "Input 2": {"L": None, "R": None},
-                "Input 3": {"L": None, "R": None},
-                "Input 4": {"L": None, "R": None},
-                "Input 5": {"L": None, "R": None},
-                "Input 6": {"L": None, "R": None},
-                "Input 7": {"L": None, "R": None},
-            },
-            "outputs": {
-                "Output 0": {"L": None, "R": None},
-                "Output 1": {"L": None, "R": None},
-                "Output 2": {"L": None, "R": None},
-                "Output 3": {"L": None, "R": None},
-                "Output 4": {"L": None, "R": None},
-                "Output 5": {"L": None, "R": None},
-                "Output 6": {"L": None, "R": None},
-                "Output 7": {"L": None, "R": None},
-            },
-        }
         self.pw_ports = {"input": [], "output": []}
-        # This needs to be spelled out like that because otherwise they all behave as one and you can't assign different values to dicts
-        self.connections = [
-            {"L": None, "R": None},
-            {"L": None, "R": None},
-            {"L": None, "R": None},
-            {"L": None, "R": None},
-            {"L": None, "R": None},
-            {"L": None, "R": None},
-            {"L": None, "R": None},
-            {"L": None, "R": None},
-        ]
+        self.reset_duplex_state()
         if self.midi_device_idx == None:
             raise Exception("Midi not init")
+
+    def reset_duplex_state(self) -> None:
+        """Forget the duplex (Audio In) node: its ports, and which source
+        feeds each of its 8 stereo columns. A new node has new port ids."""
+        self.duplex_node = None
+        self.duplex_ports = {
+            "inputs": {f"Input {c}": {"L": None, "R": None} for c in range(8)},
+            "outputs": {f"Output {c}": {"L": None, "R": None} for c in range(8)},
+        }
+        # One dict per column ("L"/"R": the source port ids linked into it)
+        self.connections = [{"L": None, "R": None} for _ in range(8)]
 
     async def start(self):
         # TODO: We should prob init all the isobar timeline and midi in/out right here
@@ -722,7 +700,12 @@ class SurgeXTEngine(Engine):
     async def kill_pd_node(self) -> None:
         if self.pd_process is not None:
             self.pd_process.kill()
+        self.pd_process = None
         self.puredata_process_id = None
+        self.puredata_client_id = None
+        self.duplex_client = None
+        # The next node's ports are new: links to this one's are gone with it
+        self.reset_duplex_state()
     
     def get_duplex_client(self):
         for item in self.app.pipewire:
