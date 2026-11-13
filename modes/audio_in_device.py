@@ -16,6 +16,12 @@ logger = logging.getLogger("osc_device")
 # logger.setLevel(level=logging.DEBUG)
 from ratelimit import limits
 
+# Page 2's source switches: a group per source, its onselect value the
+# source's index in AudioInDevice.sources
+SOURCE_ADDRESS = "/route"
+NO_SOURCE_ADDRESS = "/"
+NO_SOURCE_LABEL = "None sel."
+
 
 class AudioInDevice(PyshaMode):
     @property
@@ -79,6 +85,8 @@ class AudioInDevice(PyshaMode):
         self.label = config.get("name", "Device")
         self.dispatcher = osc.get("dispatcher", None)
         self.instrument_ports = []
+        self.switches = []
+        self.sources = []
         self.slot = config.get("slot", None)
         self.log_in = logger.getChild(f"in-{kwargs['osc_in_port']}")
         self.log_out = logger.getChild(f"out-{kwargs['osc_out_port']}")
@@ -206,12 +214,15 @@ class AudioInDevice(PyshaMode):
         self.dispatcher.map(high_cut_control.address, high_cut_control.set_state)
         self.controls.append(high_cut_control)
         self.page_one_controls.append(high_cut_control)
+        self.gain_controls = [in_1_gain, in_2_gain, in_3_gain, in_4_gain]
         for control in self.get_visible_controls():
             if hasattr(control, "select"):
                 control.select()
         # self.update()
 
     def update(self):
+        """Rebuild page 2: a source switch (and its menu) for each of this
+        device's 4 duplex columns, each showing what the column is linked to."""
         self.controls.clear()
         for control in self.page_one_controls:
             self.controls.append(control)
@@ -221,12 +232,12 @@ class AudioInDevice(PyshaMode):
             "label": name,
             "groups": [{
                 "$type": "group",
-                "label": "None sel.",
+                "label": NO_SOURCE_LABEL,
                 "onselect": {
                     "$type": "message",
-                    "$comment": "",
-                    "address": "/",
-                    "value": None,
+                    "$comment": "Disconnect the column",
+                    "address": NO_SOURCE_ADDRESS,
+                    "value": 0,
                 },
                 "controls": [
                     {
@@ -237,8 +248,8 @@ class AudioInDevice(PyshaMode):
                                 "label": "None",
                                 "onselect": {
                                     "$type": "message",
-                                    "$comment": "RingMod",
-                                    "address": "/",
+                                    "$comment": "Disconnect the column",
+                                    "address": NO_SOURCE_ADDRESS,
                                     "value": 0,
                                 },
                             },
@@ -248,20 +259,18 @@ class AudioInDevice(PyshaMode):
             }],
         }
 
-        for instrument in self.app.instruments.values():
-            # print(client["info"]["props"]["object.serial"])
-            # dest_instrument = self.get_instrument_for_pid(
-            #     client["info"]["props"]["object.serial"]
-            # )
-            dest = {
+        # A source is named by its place in self.sources, not its engine's PID:
+        # every mono2k track plays in the same m2k-jack process.
+        self.sources = list(self.app.instruments.values())
+        for index, instrument in enumerate(self.sources):
+            control_def["groups"].append({
                 "$type": "group",
                 "label": f'{instrument.name}',
-                "pid": f'{instrument.engine.PID}',
                 "onselect": {
                     "$type": "message",
                     "$comment": "",
-                    "address": "/bla",
-                    "value": instrument.engine.PID,
+                    "address": SOURCE_ADDRESS,
+                    "value": index,
                 },
                 "controls": [
                     {
@@ -272,64 +281,82 @@ class AudioInDevice(PyshaMode):
                                 "label": "L+R",
                                 "onselect": {
                                     "$type": "message",
-                                    "$comment": "RingMod",
-                                    "address": "/bla",
-                                    "value": instrument.engine.PID,
+                                    "$comment": "",
+                                    "address": SOURCE_ADDRESS,
+                                    "value": index,
                                 },
                             },
                         ],
                     }
                 ],
-            }
-            control_def["groups"].append(dest)
+            })
 
-        overwitch = self.app.external_instruments[0]
-        # print("Overwitch engine PID, ", overwitch.engine.PID) 
-        
-        if overwitch.engine.PID != None:
-            overwitch_def = None
-            overwitch_def = {
+        overwitch = self.app.external_instruments[0] if self.app.external_instruments else None
+        if overwitch is not None and overwitch.engine.PID is not None:
+            index = len(self.sources)
+            self.sources.append(overwitch)
+            control_def["groups"].append({
                 "$type": "group",
                 "label": f'{overwitch.name}',
-                "pid": f'{overwitch.engine.PID or 0}',
                 "onselect": {
                     "$type": "message",
                     "$comment": "",
-                    "address": "/bla",
-                    "value": overwitch.engine.PID or 0,
+                    "address": SOURCE_ADDRESS,
+                    "value": index,
                 },
                 "controls": [
                     {
                         "$type": "control-menu",
+                        # Each item is one of Overwitch's (mono) outputs; the
+                        # column takes the item showing on the menu
                         "items": [
-                        ],
-                    }
-                ],
-            }
-            for port in overwitch.engine.pw_ports["output"]:
-                # print(port["info"]["props"]["port.direction"])
-                
-                control = {
+                            {
                                 "$type": "menu-item",
                                 "label": port["info"]["props"]["port.name"],
                                 "onselect": {
                                     "$type": "message",
-                                    "$comment": "RingMod",
-                                    "address": "/bla",
-                                    "value": overwitch.engine.PID or 0,
+                                    "$comment": "",
+                                    "address": SOURCE_ADDRESS,
+                                    "value": index,
                                 },
                             }
-                overwitch_def["controls"][0]["items"].append(control)
-            control_def["groups"].append(overwitch_def)
-        for out in range(1, 5):
+                            for port in overwitch.engine.pw_ports["output"]
+                        ],
+                    }
+                ],
+            })
+
+        self.switches = []
+        for column_offset in range(4):
             try:
-                menu = OSCControlSwitch(
+                switch = OSCControlSwitch(
                     control_def, self.get_color, self.connect_ports_duplex, self.dispatcher
                 )
-                self.controls.append(menu)
-            except Exception as e:
-                print("Exception in update in audio_in_device")
-                traceback.print_exc()
+            except Exception:
+                logger.exception("Audio In: building the source switch failed")
+                continue
+            self.show_routing(switch, self.column_for(column_offset))
+            self.switches.append(switch)
+            self.controls.append(switch)
+
+    def show_routing(self, switch, column):
+        """Point a freshly built switch at what its column is linked to."""
+        connection = self.engine.connections[column]
+        source = connection.get("source")
+        if source is None:
+            return
+        labels = [group.label for group in switch.groups]
+        if source not in labels:
+            return
+        idx = labels.index(source)
+        switch.value = float(idx)
+        switch.knob_value = float(idx)
+        port_label = connection.get("port")
+        if port_label is not None:
+            menu = switch.groups[idx].controls[0]
+            items = [item.label for item in menu.items]
+            if port_label in items:
+                menu.value = items.index(port_label)
 
     def empty_func(self, *args):
         pass
@@ -350,209 +377,123 @@ class AudioInDevice(PyshaMode):
         instrument_name = self.app.instrument_selection_mode.get_current_instrument_short_name()
         await self.app.instruments[instrument_name].engine.kill_pd_node()
 
-    
     def select_sync(self):
         # self.query_visible_controls()
         self.update()
         for cmd in self.init:
             self.send_message(cmd["address"], float(cmd["value"]))
-            
-    
-    def select_sync(self):
-        # self.query_visible_controls()
-        self.update()
-        for cmd in self.init:
-            self.send_message(cmd["address"], float(cmd["value"]))
-            
+
     def send_message(self, *args):
         self.log_out.debug(args)
         return self.osc["client"].send_message(*args)
-    
-    def set_duplex_volumes(self, *args):
-        duplex_node = self.engine.duplex_node
-        channel_volumes = []
-        for val in self.input_gains:
-            if val == None:
-                val = 0.0
-            channel_volumes.extend([val, val])
-        device_id = duplex_node["id"]
-        # cli_string = f"pw-cli s {device_id} Props '{{monitorVolumes: {channel_volumes}}}'"
-        # self.app.queue.append(asyncio.create_subprocess_shell(cli_string, stdout=asyncio.subprocess.PIPE))
-        
-        
-        for idx in range(8):
-            left_channel_idx = idx * 2
-            right_channel_idx = left_channel_idx + 1
-            # Value only from left because we want to have it center
-            volume_value = channel_volumes[left_channel_idx]
-            self.engine.duplex_node_osc_client.send_message(f"/vol_{left_channel_idx}", float(volume_value))
-            self.engine.duplex_node_osc_client.send_message(f"/vol_{right_channel_idx}", float(volume_value))
 
+    def set_duplex_volumes(self, *args):
+        """An "In N Gain" knob moved: send every column's level to the duplex
+        node (each column is a stereo pair of its channels)."""
+        # The knob has its new value already; the gains must follow it before
+        # they're sent, or the node gets the knob's previous value
+        self.update_input_gains()
+        client = self.engine.duplex_node_osc_client
+        if client is None:
+            return
+        for column, gain in enumerate(self.input_gains):
+            volume_value = float(gain or 0.0)
+            client.send_message(f"/vol_{2 * column}", volume_value)
+            client.send_message(f"/vol_{2 * column + 1}", volume_value)
 
     def update_input_gains(self):
+        """Collect the track's 8 column gains: slot 0's Audio In device has
+        columns 0-3, slot 1's columns 4-7. Both devices share the result."""
         devices = self.app.osc_mode.get_current_instrument_devices()
-        value_1 = None 
-        value_2 = None 
-        value_3 = None 
-        value_4 = None 
-        value_5 = None 
-        value_6 = None 
-        value_7 = None 
-        value_8 = None
-        
-        if devices[0].label == "Audio In":
-            value_1 = devices[0].controls[2].value
-            value_2 = devices[0].controls[3].value
-            value_3 = devices[0].controls[4].value
-            value_4 = devices[0].controls[5].value
-        
-        if devices[1].label == "Audio In":
+        audio_ins = [d for d in devices if isinstance(d, AudioInDevice)]
+        if self not in audio_ins:
+            audio_ins.append(self)
+        gains = [None] * 8
+        for device in audio_ins:
+            base = 4 * (device.slot or 0)
+            for offset, control in enumerate(device.gain_controls):
+                gains[base + offset] = control.value
+        for device in audio_ins:
+            device.input_gains[:] = gains
 
-            value_5 = devices[1].controls[2].value
-            value_6 = devices[1].controls[3].value
-            value_7 = devices[1].controls[4].value
-            value_8 = devices[1].controls[5].value
-        
-        for device in devices:
-            if device.label == "Audio In":
-                device.input_gains[0] = value_1
-                device.input_gains[1] = value_2
-                device.input_gains[2] = value_3
-                device.input_gains[3] = value_4
-                device.input_gains[4] = value_5
-                device.input_gains[5] = value_6
-                device.input_gains[6] = value_7
-                device.input_gains[7] = value_8
+    def column_for(self, column_offset):
+        """Duplex column of this device's ``column_offset``-th switch (0-3)."""
+        return column_offset + 4 * (self.slot or 0)
 
-    def reconnect_all_duplex_ports(self):
-        # Getting all links
-        links = filter(
-            lambda x: x["type"] == "PipeWire:Interface:Link", self.app.pipewire.copy()
-        )
-        # Filter links for ones connected to the duplex
-        old_links_to_duplex = []
-        for link in links:
-            # need to get the ID for the duplex and compare with input_id
-            # if it's the same it means it goes into the duplex
-            print(link["info"]["input-node-id"], link["info"]["input-node-id"])
-        
-        # Determine where the new links would go, based on the position of the knobs
-        
-        # Disconnect links, but only if the new link is different (isn't the same as the old link)
-        # best to avoid disconnecting all as that would cause a dropout in other channels
-        
-        # Connect new links 
-
+    def source_ports(self, source, column):
+        """(L, R) PipeWire port ids that ``source`` feeds a column with, or None."""
+        if source is None:
+            return None
+        if source in self.app.external_instruments:
+            # Overwitch: the mono output its menu shows, to both sides
+            switch = self.switches[column % 4]
+            item = switch.get_active_group().controls[0].get_active_menu_item()
+            if item is None:
+                return None
+            for port in source.engine.pw_ports["output"]:
+                if port["info"]["props"].get("port.name") == item.label:
+                    return port["id"], port["id"]
+            return None
+        eng = source.engine
+        out_L_name, out_R_name = eng.output_port_names
+        source_L = next((p["id"] for p in eng.pw_ports["output"] if eng.port_is(p, (out_L_name,))), None)
+        source_R = next((p["id"] for p in eng.pw_ports["output"] if eng.port_is(p, (out_R_name,))), None)
+        if source_L is None or source_R is None:
+            return None
+        return source_L, source_R
 
     def connect_ports_duplex(self, *args):
-        
-        [addr, val] = args
-        if val != None:
-            column_index = None 
-            if self.slot == 0:
-                column_index = int(self.last_knob_turned / 2 ) 
-            if self.slot == 1:
-                column_index = int(self.last_knob_turned / 2 ) + 4
-           
-            current_instrument_ports = self.engine.pw_ports
-            duplex_ports = self.engine.duplex_ports
+        """A column's source switch or menu changed: link the chosen source's
+        outputs into that column's duplex input (unlinking the old source).
 
-            duplex_in_L = duplex_ports["inputs"][f'Input {column_index}']["L"]['id']
-            duplex_in_R = duplex_ports["inputs"][f'Input {column_index}']["R"]['id']
-            duplex_out_L = duplex_ports["outputs"][f'Output {column_index}']["L"]['id']
-            duplex_out_R = duplex_ports["outputs"][f'Output {column_index}']["R"]['id']
-            dest_L = None
-            dest_R = None
+        The duplex outputs are linked to Surge's input once, when the node
+        starts (SurgeXTEngine.connect_links_to_duplex_node), and stay linked:
+        the app queue runs its tasks concurrently, so unlinking and relinking
+        an output here could leave it unlinked.
+        """
+        addr, val, *rest = args
+        # Switches and menus also ask for "/q..." with no value
+        if val is None or addr not in (SOURCE_ADDRESS, NO_SOURCE_ADDRESS):
+            return
+        column = self.column_for(int(self.last_knob_turned / 2))
 
+        duplex_in = self.engine.duplex_ports["inputs"][f"Input {column}"]
+        if not duplex_in["L"] or not duplex_in["R"]:
+            logger.warning("Audio In: the duplex node isn't up; can't route column %s", column)
+            return
+        duplex_in_L = duplex_in["L"]["id"]
+        duplex_in_R = duplex_in["R"]["id"]
 
-            # This bit handles selecting a None input, just disconnects if something was already connected
-            # TODO: Needs a check so that it doesn't send
-            # When there isn't any connection
-            if addr == "/":
-                disconnect_L = self.engine.connections[column_index]["L"]
-                disconnect_R = self.engine.connections[column_index]["R"]
-                for port in current_instrument_ports['input']:
-                    if port.get("info", []).get("props",[]).get("object.path", None) == "Surge XT:input_0":
-                        dest_L = port['id']
-                    elif port.get("info", []).get("props",[]).get("object.path", None) == "Surge XT:input_1":
-                        dest_R = port['id']
-                if (disconnect_L != None) and (disconnect_R != None):
-                        self.app.queue.append(disconnectPipewireSourceFromPipewireDest(disconnect_L, duplex_in_L))
-                        self.app.queue.append(disconnectPipewireSourceFromPipewireDest(disconnect_R, duplex_in_R))
-                        self.app.queue.append(disconnectPipewireSourceFromPipewireDest(duplex_out_L, dest_L))
-                        self.app.queue.append(disconnectPipewireSourceFromPipewireDest(duplex_out_R, dest_R))
-                self.engine.connections[column_index]["L"] = None
-                self.engine.connections[column_index]["R"] = None
+        source_label = None
+        port_label = None
+        new_L = new_R = None
+        if addr == SOURCE_ADDRESS:
+            idx = int(val)
+            source = self.sources[idx] if 0 <= idx < len(self.sources) else None
+            ports = self.source_ports(source, column)
+            if ports is None:
+                logger.warning("Audio In: no output ports for source %s", getattr(source, "name", val))
                 return
-             
-            try:
-                source_instrument = self.get_instrument_for_pid(val)
-                source_instrument_ports = source_instrument.engine.pw_ports
-                current_instrument_ports = self.engine.pw_ports
-                source_L = None
-                source_R = None
-                dest_L = None
-                dest_R=None
-                #We're getting IDs for left and right ports, input and output
-                # print("inside try block")
-                if source_instrument.name != "Overwitch":
-                    # print("inside if")
-                    # print(source_instrument_ports['output'])
-                    for port in source_instrument_ports['output']:
-                        # print("inside for")
-                        # print("port", port)
-                        if port.get("info", []).get("props",[]).get("object.path", None) == "Surge XT:output_0":
-                            source_L = port['id']
-                        elif port.get("info", []).get("props",[]).get("object.path", None) == "Surge XT:output_1":
-                            source_R = port['id']
-                else:
-                    # TODO: This is prob broken
-                    # print("else")
-                    # gets the selected values for all 8 menus and assigns the right port
-                    control_idx = column_index % 4
-                    control =  self.controls[8 + control_idx].get_active_group()
-                    control_label = control.controls[0].label
-                    for port in source_instrument_ports['output']:
-                        if control_label == port["info"]["props"]["port.name"]:
-                            source_L = port['id']
-                            source_R = port['id']
-                #makes sure we don't send the same command over and over
-                # TODO this check don't work _sometimes_
-                if source_L == self.engine.connections[column_index]["L"] and source_R == self.engine.connections[column_index]["R"]:
-                    return
+            new_L, new_R = ports
+            source_label = source.name
+            if source in self.app.external_instruments:
+                port_label = self.switches[column % 4].get_active_group().controls[0].label
 
-                else:
-                    # This bit disconnects previously conneted synth within a column
-                    for port in current_instrument_ports['input']:
-                        if port['info']['props']['object.path'] == "Surge XT:input_0":
-                            dest_L = port['id']
-                        elif port['info']['props']['object.path'] == "Surge XT:input_1":
-                            dest_R = port['id']
-                    
-                    if self.engine.connections[column_index]["L"] != (source_L or None)  and self.engine.connections[column_index]["R"] != (source_R or None) :
-                        disconnect_L = self.engine.connections[column_index]["L"]
-                        disconnect_R = self.engine.connections[column_index]["R"]
-                        if disconnect_L and disconnect_R is not None:
-                            self.app.queue.append(disconnectPipewireSourceFromPipewireDest(disconnect_L, duplex_in_L))
-                            self.app.queue.append(disconnectPipewireSourceFromPipewireDest(disconnect_R, duplex_in_R))
-                            self.app.queue.append(disconnectPipewireSourceFromPipewireDest(duplex_out_L, dest_L))
-                            self.app.queue.append(disconnectPipewireSourceFromPipewireDest(duplex_out_R, dest_R))
-                    
-                    # Connects to currently selected instance, assigns the port IDs for later reference
-                    for index, connection in enumerate(self.engine.connections):
-                        if index == column_index:
-                            connection["L"] = source_L
-                            connection["R"] = source_R
-                    self.app.queue.append(connectPipewireSourceToPipewireDest(source_L, duplex_in_L))
-                    self.app.queue.append(connectPipewireSourceToPipewireDest(source_R, duplex_in_R))
-                    self.app.queue.append(connectPipewireSourceToPipewireDest(duplex_out_L, dest_L))
-                    self.app.queue.append(connectPipewireSourceToPipewireDest(duplex_out_R, dest_R))
-                    
-            except Exception as e:
-                print("Error in connect_ports_duplex in audio_in_device")
-                traceback.print_exc()
-            # connectPipewireSourceToPipewireDest()
-      
+        connection = self.engine.connections[column]
+        old_L, old_R = connection["L"], connection["R"]
+        if (old_L, old_R) == (new_L, new_R):
+            return
+
+        if old_L is not None and old_R is not None:
+            self.app.queue.append(disconnectPipewireSourceFromPipewireDest(old_L, duplex_in_L))
+            self.app.queue.append(disconnectPipewireSourceFromPipewireDest(old_R, duplex_in_R))
+
+        connection["L"], connection["R"] = new_L, new_R
+        connection["source"] = source_label
+        connection["port"] = port_label
+        if new_L is not None and new_R is not None:
+            self.app.queue.append(connectPipewireSourceToPipewireDest(new_L, duplex_in_L))
+            self.app.queue.append(connectPipewireSourceToPipewireDest(new_R, duplex_in_R))
 
 
     def query(self):
@@ -660,12 +601,10 @@ class AudioInDevice(PyshaMode):
             if self.app.metro_sequencer_mode.disable_controls == False:
                 visible_controls = self.get_visible_controls()
                 control = visible_controls[encoder_idx]
-                control.update_value(increment)
+                # Before update_value: a source switch's callback routes the
+                # column of the knob being turned
                 self.last_knob_turned = encoder_idx
-                match encoder_idx:
-                    case 2 | 3 | 4 | 5:
-                        self.update_input_gains()
-
+                control.update_value(increment)
         
         except ValueError:
             pass  # Encoder not in list
