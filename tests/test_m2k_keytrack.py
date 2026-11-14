@@ -151,11 +151,11 @@ def test_a_machine_turns_tracking_off(tmp_path):
 @built
 def test_describe_exports_key_after_vel():
     d = json.loads(subprocess.run([BINARY, "--describe"], check=True, capture_output=True, text=True).stdout)
-    assert [(p["param"], p["name"]) for p in d["params_all"][75:]] == [
+    assert [(p["param"], p["name"]) for p in d["params_all"][75:81]] == [
         (75, "KEY 1 DEST"), (76, "KEY 1 ADD"), (77, "KEY 2 DEST"), (78, "KEY 2 ADD"),
         (79, "HPF TRACKING"), (80, "LPF TRACKING")]
-    assert all(m["kit"][75:] == [0, 64, 0, 64, 0, 0] for m in d["machines"])
-    assert all(s["kit"][75:] == [0, 64, 0, 64, 0, 0] for s in d["library"])
+    assert all(m["kit"][75:81] == [0, 64, 0, 64, 0, 0] for m in d["machines"])
+    assert all(s["kit"][75:81] == [0, 64, 0, 64, 0, 0] for s in d["library"])
 
 
 # ------------------------------------------------------------ the KEY TRACK page
