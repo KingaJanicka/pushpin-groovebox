@@ -41,7 +41,7 @@
 			"$type": "control-range",
 			"label": "M1 Ratio",
 			"address": "/param/a/osc/1/param2",
-			"min": 0,
+			"min": 1,
 			"max": 32
 		},
 		{
@@ -55,7 +55,7 @@
 			"$type": "control-range",
 			"label": "M2 Ratio",
 			"address": "/param/a/osc/1/param4",
-			"min": 0,
+			"min": 1,
 			"max": 32
 		},
 		{
@@ -82,16 +82,13 @@
 			"bipolar": 1
 		},
 		{
-			"$type": "control-spacer-address",
-			"address": "/wavetable/a/osc/1/id"
+			"$type": "control-spacer"
 		},
 		{
-			"$type": "control-spacer-address",
-			"address": "/wavetable/a/osc/1/id"
+			"$type": "control-spacer"
 		},
 		{
-			"$type": "control-spacer-address",
-			"address": "/wavetable/a/osc/1/id"
+			"$type": "control-spacer"
 		},
 		{
 			"$type": "control-menu",
@@ -162,7 +159,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "To Both Filters",
-						"address": "/param/a/osc/1/retrigger",
+						"address": "/param/a/mixer/osc1/route",
 						"value": 1
 					}
 				},
@@ -172,7 +169,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "To Filter 2",
-						"address": "/param/a/osc/1/retrigger",
+						"address": "/param/a/mixer/osc1/route",
 						"value": 2
 					}
 				}

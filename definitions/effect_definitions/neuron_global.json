@@ -15,7 +15,8 @@
 			"label": "Drive",
 			"address": "/param/fx/global/1/param1",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
 		},
 		{
 			"$type": "control-range",
@@ -57,7 +58,8 @@
 			"label": "Comb. Sep.",
 			"address": "/param/fx/global/1/param7",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
 		},
 		{
 			"$type": "control-spacer"
@@ -155,14 +157,16 @@
 			"label": "Out Width",
 			"address": "/param/fx/global/1/param11",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
 		},
 		{
 			"$type": "control-range",
 			"label": "Gain Out",
 			"address": "/param/fx/global/1/param12",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
 		}
 	]
 }

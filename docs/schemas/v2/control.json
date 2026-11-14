@@ -128,6 +128,10 @@
                         "label": {
                             "type": "string"
                         },
+                        "wavetable": {
+                            "description": "A Surge factory wavetable, \"Category/Name\". Its id is looked up when the device loads (ids depend on the machine) and replaces onselect's value.",
+                            "type": "string"
+                        },
                         "onselect": {
                             "$ref": "/schemas/v2/message.json"
                         }

@@ -57,6 +57,30 @@ minimal state each method needs.
 | Saving sequences (per clip) and the SCALE page | test_seq_state_saving.py |
 | Saving on SIGTERM (systemd stop) | test_shutdown.py |
 | Push 2 late plug-in / replug (MIDI reconnect on the main loop) | test_push_connection.py |
+| Every Surge device definition (`definitions/*_definitions/*.json`) | test_device_definitions.py |
+| Wavetable ids by name (`wavetables.py`) and the wavetable picker | test_wavetables.py |
+
+## Device definitions and the Surge snapshot
+
+`test_device_definitions.py` checks every device/effect/modulation JSON three
+ways: the JSON alone (addresses belong to the device's slot, menus use one
+address, `_1`/`_2`/`_global` twins match), built into a real `OSCDevice`
+(turning each control end to end sends exactly the messages the JSON lists),
+and against `fixtures/surge_snapshot.json`: what a real Surge XT did with each
+definition (every address is Surge's, every value lands, no two items of a
+menu leave Surge in the same state).
+
+The snapshot is captured from a running `surge-xt-cli`; after changing a
+definition, regenerate it (about 15 minutes) or the Surge tests report it stale:
+
+```bash
+"/Applications/Surge XT.app/Contents/MacOS/surge-xt-cli" --osc-in-port=19030 --osc-out-port=19040 --no-stdin &
+python tools/surge_snapshot.py                     # everything, or only what changed:
+python tools/surge_snapshot.py definitions/device_definitions/window_1.json
+```
+
+Labels aren't compared word for word with Surge's names (they're deliberate
+shorthand); the snapshot keeps Surge's names and display strings for reading.
 
 ## Open issues found while writing tests
 

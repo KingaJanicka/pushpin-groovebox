@@ -188,7 +188,7 @@
 		},
 		{
 			"$type": "control-range",
-			"label": "Exciter lvl",
+			"label": "Exciter Level",
 			"address": "/param/a/osc/1/param2",
 			"min": 0,
 			"max": 1
@@ -212,33 +212,33 @@
 			"label": "String 2 Detune",
 			"address": "/param/a/osc/1/param5",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
 		},
 		{
 			"$type": "control-range",
 			"label": "String Balance",
 			"address": "/param/a/osc/1/param6",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
 		},
 		{
 			"$type": "control-range",
 			"label": "Stiffness",
 			"address": "/param/a/osc/1/param7",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
 		},
 		{
-			"$type": "control-spacer-address",
-			"address": "/wavetable/a/osc/1/id"
+			"$type": "control-spacer"
 		},
 		{
-			"$type": "control-spacer-address",
-			"address": "/wavetable/a/osc/1/id"
+			"$type": "control-spacer"
 		},
 		{
-			"$type": "control-spacer-address",
-			"address": "/wavetable/a/osc/1/id"
+			"$type": "control-spacer"
 		},
 		{
 			"$type": "control-menu",
@@ -309,7 +309,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "To Both Filters",
-						"address": "/param/a/osc/1/retrigger",
+						"address": "/param/a/mixer/osc1/route",
 						"value": 1
 					}
 				},
@@ -319,7 +319,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "To Filter 2",
-						"address": "/param/a/osc/1/retrigger",
+						"address": "/param/a/mixer/osc1/route",
 						"value": 2
 					}
 				}

@@ -86,19 +86,19 @@
 		},
 		{
 			"$type": "control-spacer-address",
-			"address": "/param/fx/global/1/param9"
+			"address": "/param/fx/a/1/param9"
 		},
 		{
 			"$type": "control-spacer-address",
-			"address": "/param/fx/global/1/param10"
+			"address": "/param/fx/a/1/param10"
 		},
 		{
 			"$type": "control-spacer-address",
-			"address": "/param/fx/global/1/param11"
+			"address": "/param/fx/a/1/param11"
 		},
 		{
 			"$type": "control-spacer-address",
-			"address": "/param/fx/global/1/param12"
+			"address": "/param/fx/a/1/param12"
 		}
 	]
 }
