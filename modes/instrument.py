@@ -42,6 +42,11 @@ def mono2k_clock_port(instruments: dict[str, Any]) -> Any | None:
     return None
 
 
+# Device slots 8-15 are on the second instrument page (BUTTON_RIGHT): Surge's
+# modulation, mono2k's VEL
+MODULATION_SLOTS = range(8, 16)
+
+
 class Voice:
     """One synth engine on a track: the engine, its device pages, the slots
     that pick which pages show, and how the pages reach the synth (``osc``:
@@ -212,7 +217,7 @@ class Instrument(PyshaMode):
         # gets all the modulation devices
         for slot_idx, slot_devices in enumerate(voice.devices):
             for device in slot_devices:
-                if 8 <= slot_idx <= 15:
+                if slot_idx in MODULATION_SLOTS:
                     voice.devices_modulation.append(device)
         return voice
 
@@ -361,8 +366,12 @@ class Instrument(PyshaMode):
     # ------------------------------------------------------- slots and devices
 
     def update_current_devices(self):
+        """The first instrument page's devices. Slots 8-15 are the second
+        page's (devices_modulation), always shown there or not."""
         updated_devices = []
         for slot_idx, slot_devices in enumerate(self.devices):
+            if slot_idx in MODULATION_SLOTS:
+                continue
             for device in slot_devices:
                 if slot_idx in self.engine.always_shown_slots:
                     updated_devices.append(device)

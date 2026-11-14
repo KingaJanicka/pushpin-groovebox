@@ -45,6 +45,10 @@
  *   NRPN 1:<p>   (CC 99 = 1, CC 98 = MONO2K's parameter number p, 0-70): any track parameter, the ones no CC
  *                reaches too (the MOD effect, the wave bank, the arp, gate). pushpin saves and restores whole
  *                sounds with it.
+ *   NRPN 1:71-74 pushpin's own track parameters past MONO2K's: velocity's two modulations, the Monomachine's
+ *                ASSIGN > VEL. Each a DEST (71, 73: the parameter's number + 1, 0 off, as an LFO's DEST) and an
+ *                ADD (72, 74: bipolar about 64): a note at velocity v adds (ADD - 64) x v / 127 steps to DEST,
+ *                from its note-on to the next. A machine's INIT turns both off.
  *   Clock (on any track's port; the first port it comes on, if several send it) sets the tempo
  *                MONO2K times its LFOs, delays and HOLD by: its sequencer stays stopped, pushpin
  *                sequences. Start / Continue put the LFOs on FREE back to their PHAS, so they line
@@ -80,6 +84,8 @@
 #include <unistd.h>
 #include <math.h>
 
+/* the core's modulation queue: three LFOs a track, and pushpin's velocity rows (PP_VEL_ROWS, below) */
+#define M2K_MODQ_PER_TRACK 5
 #include "m2k_core.c"
 
 #ifdef M2K_WITH_JACK
@@ -112,6 +118,18 @@ static const pp_ccmap_t PP_CC[] = {
     {7, P_LEVL, "DSTR"},
 };
 #define PP_NCC ((int)(sizeof PP_CC / sizeof PP_CC[0]))
+
+/* pushpin's own track parameters, numbered on past MONO2K's (NRPN 1:<p>, saved with a sound): velocity's
+ * modulations, PP_VEL_ROWS of them, each a DEST and an ADD */
+#define PP_VEL_ROWS 2
+enum { X_VDST1 = P_COUNT, X_VADD1, X_VDST2, X_VADD2, X_END };
+#define X_COUNT (X_END - P_COUNT)
+#define PP_PARAMS X_END                      /* every parameter pushpin can set: MONO2K's and its own */
+_Static_assert(X_COUNT == 2 * PP_VEL_ROWS, "a DEST and an ADD a row");
+_Static_assert(M2K_MODQ_PER_TRACK >= 3 + PP_VEL_ROWS, "room in the core's modulation queue for every source");
+static const char *const PP_X_LABEL[X_COUNT] = {"DEST", "ADD", "DEST", "ADD"};
+static const char *const PP_X_NAME[X_COUNT] = {"VEL 1 DEST", "VEL 1 ADD", "VEL 2 DEST", "VEL 2 ADD"};
+static const uint8_t PP_X_INIT[X_COUNT] = {0, 64, 0, 64};    /* off, nothing added */
 
 static int pp_param_of_cc(int cc)
 {
@@ -148,6 +166,36 @@ static void pp_params_reset(int t)
         pp_target[t][p] = pp_cur[t][p] = kit[p] * 256;
         pp_moving[t][p] = 0;
         trk[t].fine[p] = 0;
+    }
+}
+
+/* ------------------------------------------------- velocity's modulations */
+
+static int32_t pp_x[NT][X_COUNT];        /* pushpin's own parameters, Q8 (DEST whole) */
+static uint8_t pp_vel[NT];               /* the velocity of the track's last note-on (0: none yet) */
+
+static void pp_x_reset(int t)
+{
+    for (int i = 0; i < X_COUNT; i++) pp_x[t][i] = PP_X_INIT[i] * 256;
+}
+
+static void pp_set_x(int t, int param, int32_t q8)
+{
+    const int i = param - P_COUNT;
+    if ((i & 1) == 0) q8 = CLAMP(q8, 0, P_COUNT * 256) & ~255;    /* a DEST: a choice, never in between */
+    else q8 = CLAMP(q8, 0, 127 * 256);
+    pp_x[t][i] = q8;
+}
+
+/* every block, with the LFOs': each row adds (ADD - 64) x velocity / 127 steps to its DEST on its own track */
+static void pp_vel_block(int t)
+{
+    if (!pp_vel[t]) return;
+    for (int r = 0; r < PP_VEL_ROWS; r++) {
+        const int dest = pp_x[t][2 * r] >> 8;
+        const int32_t add = pp_x[t][2 * r + 1] - 64 * 256;      /* Q8 steps, -64..63 */
+        if (dest <= 0 || dest > P_COUNT || !add) continue;
+        mod_add(t, dest - 1, add * pp_vel[t] / 127);
     }
 }
 
@@ -191,6 +239,7 @@ static int pp_export(int param, int v)
 
 static void pp_set_param(int t, int param, int32_t q8)
 {
+    if (param >= P_COUNT) { if (param < PP_PARAMS) pp_set_x(t, param, q8); return; }
     if (pp_is_trck(param)) {               /* (its own encoding; not glided) */
         const uint8_t v = pp_trck_value(t, q8 >> 8);
         PAT(cur_pat)->kit[t][param] = v;
@@ -255,6 +304,7 @@ static void pp_set_machine(int t, int m)
     m_cpy(trk[t].eff, p->kit[t], P_COUNT);
     if (t == ui.trk) track_home(t, mach_home(m));
     pp_params_reset(t);
+    pp_x_reset(t);
 }
 
 static void pp_engine_init(int machine)
@@ -352,6 +402,12 @@ static void pp_json_values(const pi_t *pi)
     kit[by] = keep;
 }
 
+/* a kit's tail: pushpin's own parameters as an INIT sets them (MONO2K's sounds know nothing of them) */
+static void pp_json_x_init(void)
+{
+    for (int i = 0; i < X_COUNT; i++) printf(", %d", PP_X_INIT[i]);
+}
+
 /* the data pushpin's device pages are generated from: no audio, nothing but the core's own tables */
 static void pp_describe(void)
 {
@@ -382,9 +438,10 @@ static void pp_describe(void)
             printf("%s\"%d\": %d", i ? ", " : "", PP_CC[i].cc, pp_export(PP_CC[i].param, pat_tmp.kit[0][PP_CC[i].param]));
         printf("},\n     \"kit\": [");                /* every parameter of its INIT sound, by parameter number */
         for (int p = 0; p < P_COUNT; p++) printf("%s%d", p ? ", " : "", pp_export(p, pat_tmp.kit[0][p]));
+        pp_json_x_init();
         printf("]}%s\n", m + 1 < M_COUNT ? "," : "");
     }
-    printf("  ],\n  \"param_count\": %d,\n  \"params_all\": [\n", P_COUNT);
+    printf("  ],\n  \"param_count\": %d,\n  \"params_all\": [\n", PP_PARAMS);
     for (int p = 0; p < P_COUNT; p++) {                  /* (SYN A-H: the first machine's labels) */
         const pi_t *pi = pinfo(0, p);
         printf("    {\"param\": %d, \"label\": ", p);
@@ -392,7 +449,14 @@ static void pp_describe(void)
         printf(", \"name\": ");
         pp_json_str(pi->name);
         if (p >= 8) pp_json_values(pi);                  /* (the machines' own are with them) */
-        printf("}%s\n", p + 1 < P_COUNT ? "," : "");
+        printf("},\n");
+    }
+    for (int i = 0; i < X_COUNT; i++) {                  /* pushpin's own: no values of MONO2K's to name */
+        printf("    {\"param\": %d, \"label\": ", P_COUNT + i);
+        pp_json_str(PP_X_LABEL[i]);
+        printf(", \"name\": ");
+        pp_json_str(PP_X_NAME[i]);
+        printf(", \"pushpin\": true}%s\n", i + 1 < X_COUNT ? "," : "");
     }
     /* MONO2K's factory sound library (m2k_lib.c): each sound its machine and every parameter */
     printf("  ],\n  \"categories\": [");
@@ -412,6 +476,7 @@ static void pp_describe(void)
         pp_json_str(LIB[i].what);
         printf(", \"kit\": [");
         for (int p = 0; p < P_COUNT; p++) printf("%s%d", p ? ", " : "", pp_export(p, d.kit[p]));
+        pp_json_x_init();
         printf("]}%s\n", i + 1 < LIB_N ? "," : "");
     }
     printf("  ]\n}\n");
@@ -497,7 +562,7 @@ static void pp_nrpn_cc(int t, int cc, int v)
     switch (cc) {
     case 99: pp_nrpn_hi[t] = v; pp_nrpn_param[t] = -1; break;
     case 98:
-        pp_nrpn_param[t] = pp_nrpn_hi[t] == 0 ? pp_param_of_cc(v) : pp_nrpn_hi[t] == 1 && v < P_COUNT ? v : -1;
+        pp_nrpn_param[t] = pp_nrpn_hi[t] == 0 ? pp_param_of_cc(v) : pp_nrpn_hi[t] == 1 && v < PP_PARAMS ? v : -1;
         break;
     case 101: case 100: pp_nrpn_param[t] = -1; break;        /* an RPN: not ours */
     case 6:
@@ -594,6 +659,7 @@ static void pp_handle_midi(int t, const uint8_t *m, size_t n)
     const int ch_status = cmd | ((midi_ch() + t) & 15);
     if (cmd == 0x90 && d2) {
         pp_note_on(t);
+        pp_vel[t] = (uint8_t)d2;
         if (pp_skip[t] & ST_NOAMP) pp_trigless_on(t, d1, d2);
         else {
             const int held = pp_amp_note[t];
@@ -644,7 +710,7 @@ static void pp_render_split(void)
     rc->nstep = 0;
     rc->dt = 0;
     seq_block();
-    for (int t = 0; t < NT; t++) lfo_block(t);
+    for (int t = 0; t < NT; t++) { lfo_block(t); pp_vel_block(t); }
     mod_apply();
     brec_take(rc);
     m_set(rc->L, 0, sizeof rc->L);

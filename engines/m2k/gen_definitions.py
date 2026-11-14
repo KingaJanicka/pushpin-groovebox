@@ -17,6 +17,9 @@ CC (if any), each machine's INIT sound, and MONO2K's factory library.
               (CC 14) and sends the machine's whole INIT sound, so every page
               shows the values m2k-jack actually has.
   slots 1-7   AMP, FILT, FX, DSTR, LFO 1-3: always shown, one per slot.
+  slot 8      VEL, on the second instrument page (Right): two rows of a
+              destination and how much a note's velocity adds to it, the
+              Monomachine's ASSIGN > VEL (m2k-jack's own parameters 71-74).
   A machine's second page: BANK (DIGI-WAV only) and PTCH. An LFO's: TRCK.
   AMP, FILT and the LFOs end on their trig switch (control 15, TRIG_CCS).
 
@@ -83,7 +86,13 @@ CLICKS_PER_ITEM = 4
 
 
 def lfo_target_switch(dest_cc: int, labels: dict[int, str]) -> dict:
-    address = cc_address(dest_cc)
+    return target_switch(cc_address(dest_cc), labels, "LFO DESTINATION")
+
+
+def target_switch(address: str, labels: dict[int, str], menu_label: str) -> dict:
+    """A modulation's destination: a device switch whose groups each hold a
+    menu of that device's parameters, every item sending the parameter's number
+    + 1 to ``address`` (0: OFF)."""
 
     def item(label: str, value: int, label_from: dict | None = None) -> dict:
         entry = {"$type": "menu-item", "label": label,
@@ -94,7 +103,7 @@ def lfo_target_switch(dest_cc: int, labels: dict[int, str]) -> dict:
 
     def group(label: str, items: list[dict]) -> dict:
         return {"$type": "group", "label": label, "controls": [
-            {"$type": "control-menu", "menu_label": "LFO DESTINATION", "step": 1 / CLICKS_PER_ITEM, "items": items}]}
+            {"$type": "control-menu", "menu_label": menu_label, "step": 1 / CLICKS_PER_ITEM, "items": items}]}
 
     groups = [group("OFF", [item("OFF", 0)])]
     for device, params in LFO_TARGETS:
@@ -426,6 +435,29 @@ def page_devices(params: list[dict], labels: dict[int, str] | None = None,
     return devices
 
 
+# The Monomachine's ASSIGN > VEL: two rows of a destination (DEVICE and DEST, as an LFO's) and ADD, how far
+# a note at full velocity moves it (bipolar about 64; a softer note moves it in proportion). m2k-jack's own
+# parameters past MONO2K's (m2k_jack.c, X_VDST1..): no CC, NRPN 1:<param>. Its own slot past the first page's
+# eight, so it is on the second instrument page, where Surge's modulation is
+VEL_PAGE = ("60_vel", "VELOCITY", 8)
+VEL_ROWS = ((71, 72), (73, 74))                  # (DEST, ADD) a row
+
+
+def vel_add(param: int, row: int) -> dict:
+    return {"$type": "control-range", "label": f"VEL {row} ADD", "address": param_address(param), "min": 0,
+            "max": 127, "bipolar": 1, "display_center": 64}
+
+
+def vel_device(labels: dict[int, str]) -> dict:
+    """Each row takes four knobs: DEVICE, DEST, ADD and a gap."""
+    stem, name, slot = VEL_PAGE
+    controls: list[dict] = []
+    for row, (dest, add) in enumerate(VEL_ROWS, start=1):
+        controls += [target_switch(param_address(dest), labels, "VEL DESTINATION"), vel_add(add, row),
+                     {"$type": "control-spacer"}]
+    return {"name": name, "slot": slot, "init": [], "controls": controls}
+
+
 # ------------------------------------------------------- the pages' words, cased
 #
 # MONO2K writes everything in capitals (its pixel font has no lower case). The
@@ -480,6 +512,8 @@ def build(describe: dict) -> dict[str, dict]:
     ADDRESS_OF.clear()
     ADDRESS_OF.update({p["id"]: cc_address(p["cc"]) for p in describe["params"] if "id" in p})
     files = page_devices(describe["params"], labels, all_params)
+    if labels is not None and any(p["param"] == VEL_ROWS[-1][1] for p in describe["params_all"]):
+        files[VEL_PAGE[0]] = vel_device(labels)
     ccs = cc_by_param(describe) if "kit" in describe["machines"][0] else None
     ptch = next((p["param"] for p in describe["params"] if p["cc"] == PTCH_CC), None)
     for m in describe["machines"]:

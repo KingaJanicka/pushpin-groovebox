@@ -95,6 +95,7 @@ a pushpin track that plays Surge can stay connected to its MONO2K track.
 | CC 120, 123 | all sound off / all notes off |
 | NRPN 0:*n* | the parameter on CC *n* at 14 bits: CC 99 = 0, CC 98 = *n*, CC 6 = whole value, CC 38 = fraction × 128 (pushpin sends this) |
 | NRPN 1:*p* | any of MONO2K's 71 track parameters by number *p*, including the 9 no CC reaches (arp, gate, MOD effect, wave bank); pushpin saves and loads whole sounds with it |
+| **NRPN 1:71–74** | velocity's two modulations, the Monomachine's ASSIGN > VEL (pushpin's addition): DEST (71, 73: the parameter's number + 1, 0 off, as an LFO's DEST) and ADD (72, 74: bipolar about 64). A note at velocity *v* adds (ADD − 64) × *v* / 127 steps to DEST on its own track, from its note-on to the next one (through the release too). A machine's INIT turns both off |
 | clock | the tempo MONO2K times its LFOs (SPD), delays (DTIM) and AMP HOLD by: averaged over up to four beats, changed only past 0.25 % (pushpin's clock jitters; a moving delay time glides); a jump over 2 % starts the average over from the last beat. On any track's port, the first that sends it. MONO2K's sequencer stays stopped |
 | start, continue | the LFOs on FREE back to their PHAS, so they line up with PLAY (the others restart on notes) |
 | stop | ignored (the last tempo stays) |
@@ -194,6 +195,15 @@ engines/m2k/build.sh && python engines/m2k/gen_definitions.py
   The second page (Right) has TRCK: the track the LFO modulates, OWN (its own
   track, the default) or TRK 1–8. m2k-jack turns that into MONO2K's own TRCK
   encoding, which a CC can't reach for tracks 7–8.
+- **VEL** (the second instrument page: **Right** arrow; **Left** goes back): the
+  Monomachine's ASSIGN > VEL. Two rows of four knobs: DEVICE and DEST pick the
+  parameter to move (the same menus as an LFO's), ADD how far a note at full
+  velocity moves it (bipolar, shown -64..+63); a softer note moves it in
+  proportion. The metro sequencer's velocity rows send 15, 31 … 127, so the
+  lowest row still moves it an eighth of ADD. Its own slot (8), so it p-locks
+  like the other pages. m2k-jack keeps it beside MONO2K's parameters (NRPN
+  1:71–74), and `patches/0002-modulation-queue-room.patch` makes room in the
+  core's modulation queue for it (three LFOs a track before).
 - **Second pages**: every machine has PTCH (pitch in semitones, bipolar, shown
   -64..+63) at knob 2 of its second page; DIGI-WAV also has BANK (M2K or M64,
   NRPN 1:70) at knob 1.
@@ -226,7 +236,7 @@ On a track playing Monomachine, BROWSE works as it does for Surge, with
 mono2k's own sounds:
 
 - **Slots.** Each track has 8 slots (the pad rows). A slot keeps a whole sound:
-  the machine and all 71 parameters, in
+  the machine and all 75 parameters (MONO2K's 71, then VEL's four), in
   `~/.local/share/pushpin/m2k_state/<track>_<slot>.json`. Switching slots saves
   the one being left and plays the new one; an empty slot starts on its
   machine's INIT (the track's `m2k_machine`, else GND-SIN). The current slot is

@@ -362,6 +362,26 @@
 			"$type": "message",
 			"address": "/m2k/param/70",
 			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/71",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/72",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/73",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/74",
+			"value": 64
 		}
 	],
 	"controls": [

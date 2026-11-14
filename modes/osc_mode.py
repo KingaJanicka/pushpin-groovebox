@@ -363,9 +363,14 @@ class OSCMode(PyshaMode):
         if self.app.is_mode_active(self.app.menu_mode) == False:
             instrument = self.get_current_instrument()
             if new_instrument_page and instrument is not None and not instrument.devices_modulation:
-                # (no modulation page: mono2k's LFOs are on the first one)
+                # (no second page: an instrument with no devices in slots 8-15)
                 new_instrument_page = 0
             self.instrument_page = new_instrument_page or 0
+            # The pages hold different numbers of devices (mono2k's second has
+            # one, VEL): a device past the new page's last selects its first
+            devices = self.get_current_instrument_page_devices() if instrument is not None else None
+            if devices is not None and self.current_device_index_and_page[0] >= len(devices):
+                self.current_device_index_and_page = [0, 0]
             self.app.buttons_need_update = True
             self.query_all_instrument_page_params()
 
