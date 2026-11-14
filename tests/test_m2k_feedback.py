@@ -91,6 +91,17 @@ def test_eq_is_flat_at_gain_64_and_shapes_the_feedback_otherwise(tmp_path):
 
 
 @built
+def test_eq_boost_feeds_back_louder_and_a_cut_quieter(tmp_path):
+    """The band at 64 (a saw's body): the level follows the gain one way. (Its depth is half FX's EQ's in
+    dB, m2k_jack.c's pp_fb_eq_gain.)"""
+    def level(gain: int) -> float:
+        return rms(during(render(tmp_path, [*nrpn(0.01, FDBK, 90), *nrpn(0.01, FEQF, 64),
+                                            *nrpn(0.01, FEQG, gain)])))
+    cut, flat, boost = level(0), level(64), level(96)
+    assert cut < flat < boost
+
+
+@built
 def test_eq_does_nothing_without_feedback(tmp_path):
     plain = render(tmp_path, [])
     assert render(tmp_path, [*nrpn(0.01, FEQF, 20), *nrpn(0.01, FEQG, 127)]) == plain

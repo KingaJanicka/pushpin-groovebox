@@ -53,7 +53,7 @@
  *                where note 60 puts them (0-63). A machine's INIT turns the rows and the tracking off.
  *   NRPN 1:81-83 AMP's second page: FDBK, the track's own out (after its chain and its delay) back into its chain
  *                before DIST, a block later, bipolar about 64 (below: inverted), and that feedback's EQ, EQF and
- *                EQG as FX's (64 flat). A machine's INIT turns it off.
+ *                EQG as FX's at half its depth in dB (64 flat). A machine's INIT turns it off.
  *   Clock (on any track's port; the first port it comes on, if several send it) sets the tempo
  *                MONO2K times its LFOs, delays and HOLD by: its sequencer stays stopped, pushpin
  *                sequences. Start / Continue put the LFOs on FREE back to their PHAS, so they line
@@ -267,6 +267,12 @@ static int32_t pp_fb_gain(int t)
     return (int32_t)(((int64_t)d * (d < 0 ? -d : d)) >> 12);
 }
 
+/* the feedback EQ's band gain at EQG (Q8), Q16: FX's EQ's at half its dB */
+static uint32_t pp_fb_eq_gain(int32_t eqv)
+{
+    return (uint32_t)lrint(sqrt((double)tq_u32(T_EQGAIN, eqv) * 65536.0));
+}
+
 /* the track's out this block (its L and R, before pushpin's output gain) into the next block's input */
 static void pp_fb_take(int t, const int32_t *L, const int32_t *R)
 {
@@ -276,11 +282,13 @@ static void pp_fb_take(int t, const int32_t *L, const int32_t *R)
         m_set(pp_fb[t], 0, sizeof pp_fb[t]);
         return;
     }
-    /* the EQ, as the chain's (track_block): a band added to the signal, a cut the inverse of a boost as deep */
+    /* the EQ, as the chain's (track_block): a band added to the signal, a cut the inverse of a boost as deep. Half
+     * FX's EQ's depth in dB at every EQG (the band's gain, T_EQGAIN's Q16, square-rooted): +18 / -15.5 dB at the
+     * ends, since in the loop a band's boost is heard again on every pass */
     const int32_t eqv = pp_x[t][X_FEQG - P_COUNT], eqf = pp_x[t][X_FEQF - P_COUNT];
     const int eq_on = eqv != 64 * 256;
     if (eq_on && (eqv != pp_fb_kg[t] || eqf != pp_fb_kf[t])) {
-        const uint32_t gb = tq_u32(T_EQGAIN, eqv), ef = tq_u32(T_EQG, eqf);
+        const uint32_t gb = pp_fb_eq_gain(eqv), ef = tq_u32(T_EQG, eqf);
         const uint32_t k = eqv > 64 * 256 ? EQ_K : mulu_hi(EQ_K, gb, 16);
         zsvf_set(&pp_fb_eq[t], ef, k);
         const int32_t c = (int32_t)mul_sh((int32_t)(gb - 65536), EQ_K, 16);

@@ -97,7 +97,7 @@ a pushpin track that plays Surge can stay connected to its MONO2K track.
 | NRPN 1:*p* | any of MONO2K's 71 track parameters by number *p*, including the 9 no CC reaches (arp, gate, MOD effect, wave bank); pushpin saves and loads whole sounds with it |
 | **NRPN 1:71–78** | the Monomachine's ASSIGN > VEL (71–74) and KEY (75–78), pushpin's addition: two rows each of DEST (the parameter's number + 1, 0 off, as an LFO's DEST) and ADD (bipolar about 64). A note adds (ADD − 64) × *s* / 127 steps to DEST on its own track, *s* its velocity (VEL) or its note number (KEY), from its note-on to the next one (through the release too). A machine's INIT turns the rows off |
 | **NRPN 1:79 / 80** | KEY's HPF / LPF: 64–127 the high-pass / low-pass follows the note, as MONO2K's always does; 0–63 it stays where note 60 puts it (`patches/0003-filter-tracking-switches.patch`). A machine's INIT turns both off: pushpin's default, so a sound keeps its filter wherever it's played |
-| **NRPN 1:81–83** | AMP's FEEDBACK (81) and its EQ's EQF and EQG (82, 83), pushpin's addition: the track's own output, after everything on it (its chain and its delay), goes back into its chain where the machine's sound goes in, before DIST and the filters, one 16-sample block (0.36 ms) later. FEEDBACK is bipolar about 64: above it the signal goes back in phase, below it inverted; the gain is ((FEEDBACK − 64) / 64)², up to 2 at the ends, so the loop can drive itself into DIST's clip. The EQ is a band like FX's EQ (gain 64: flat). The amp's envelope is inside the loop, so the feedback dies with the note (`patches/0004-track-input-hook.patch`). A machine's INIT turns it off |
+| **NRPN 1:81–83** | AMP's FEEDBACK (81) and its EQ's EQF and EQG (82, 83), pushpin's addition: the track's own output, after everything on it (its chain and its delay), goes back into its chain where the machine's sound goes in, before DIST and the filters, one 16-sample block (0.36 ms) later. FEEDBACK is bipolar about 64: above it the signal goes back in phase, below it inverted; the gain is ((FEEDBACK − 64) / 64)², up to 2 at the ends, so the loop can drive itself into DIST's clip. The EQ is a band like FX's EQ at half its depth in dB (about +18 / −15.5 dB at the ends; gain 64: flat), since a boost in the loop is heard again on every pass. The amp's envelope is inside the loop, so the feedback dies with the note (`patches/0004-track-input-hook.patch`). A machine's INIT turns it off |
 | clock | the tempo MONO2K times its LFOs (SPD), delays (DTIM) and AMP HOLD by: averaged over up to four beats, changed only past 0.25 % (pushpin's clock jitters; a moving delay time glides); a jump over 2 % starts the average over from the last beat. On any track's port, the first that sends it. MONO2K's sequencer stays stopped |
 | start, continue | the LFOs on FREE back to their PHAS, so they line up with PLAY (the others restart on notes) |
 | stop | ignored (the last tempo stays) |
@@ -214,7 +214,8 @@ engines/m2k/build.sh && python engines/m2k/gen_definitions.py
 - **AMP's second page** (Right on AMP): **FEEDBACK**, **FEEDBACK EQ FREQ** and
   **FEEDBACK EQ GAIN** at knobs 1–3, then AMP TRIG as before at knob 8.
   FEEDBACK is bipolar (shown −64..+63, negative goes back inverted); the EQ
-  reads and steps like FX's EQ (half a step a click on the frequency). It's
+  reads and steps like FX's EQ (half a step a click on the frequency),
+  with half its boost and cut in dB. It's
   m2k-jack's own parameters 81–83, on AMP's slot, so it p-locks with AMP.
 - **Second pages**: every machine has PTCH (pitch in semitones, bipolar, shown
   -64..+63) at knob 2 of its second page; DIGI-WAV also has BANK (M2K or M64,
