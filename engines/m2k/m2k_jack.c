@@ -245,8 +245,11 @@ static void pp_assign_block(int t)
 /* AMP's second page: the track's own out, after everything on it (its chain, its delay), back into its chain where
  * the machine's sound goes in, before DIST and the filters, a block (16 samples) later. FDBK is bipolar about 64:
  * below it the feedback goes back inverted; |FDBK - 64| / 64 squared is its gain, up to 2 (so the loop can run away
- * into DIST's clip at the top, with VOL and LEVL in it too), its EQ a band as FX's EQ is (EQF, EQG; 64 flat). The
+ * into DIST's clip at the top, with VOL and LEVL in it too), its EQ a band as FX's EQ is (EQF, EQG; 64 flat). Then a
+ * tanh, the last thing on the way back in (after the gain too, or FDBK's 2 would lift its ceiling back to full
+ * scale): a quiet feedback passes as it was, a loud one is held under PP_FB_SAT, so a loop that screams is tamed. The
  * amp's envelope is in the loop: it dies with the note's release, and a silent track hears none */
+#define PP_FB_SAT 12000.0f                /* the tanh's ceiling, in the machine's 16-bit scale: about -8.7 dB of full */
 static int32_t pp_fb[NT][M2K_SUB];        /* the out of the block before, EQ'd and scaled: the next block's input */
 static int32_t pp_fb_g[NT];               /* the gain the last block ended on, Q15 (signed): the next ramps from it */
 static zsvf_t pp_fb_eq[NT];
@@ -305,7 +308,8 @@ static void pp_fb_take(int t, const int32_t *L, const int32_t *R)
             x = CLAMP(x + (int32_t)mul_sh(b, pp_fb_eqc[t], 24), -(1 << 20), 1 << 20);
         }
         const int32_t g = g0 + (((g1 - g0) * (i + 1)) >> 4);      /* across the block: no zipper */
-        pp_fb[t][i] = (int32_t)(((int64_t)x * g) >> 15);
+        const float y = (float)(((int64_t)x * g) >> 15);
+        pp_fb[t][i] = (int32_t)lrintf(PP_FB_SAT * tanhf(y * (1.0f / PP_FB_SAT)));
     }
     pp_fb_eq[t] = f;
 }

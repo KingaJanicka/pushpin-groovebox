@@ -57,6 +57,25 @@ def test_full_feedback_drives_the_chain_harder(tmp_path):
 
 
 @built
+@pytest.mark.parametrize("setup", [
+    nrpn(0.01, FDBK, 127),
+    [*nrpn(0.01, FDBK, 127), *nrpn(0.01, FEQF, 100), *nrpn(0.01, FEQG, 127)],
+], ids=["full", "full with the EQ boosted"])
+def test_a_screaming_loop_is_held_down_by_the_tanh(tmp_path, setup):
+    """The tanh after the EQ and the gain keeps what goes back in under about -8.7 dB of full scale: the
+    loop's peak stays well clear of the track's ceiling (27.6k before it)."""
+    assert max(abs(v) for v in during(render(tmp_path, setup))) < 20000
+
+
+@built
+def test_gentle_feedback_passes_the_tanh_nearly_as_it_was(tmp_path):
+    plain = during(render(tmp_path, []))
+    gentle = during(render(tmp_path, nrpn(0.01, FDBK, 90)))
+    assert gentle != plain
+    assert abs(rms(gentle) - rms(plain)) < 0.1 * rms(plain)
+
+
+@built
 def test_below_64_feeds_back_inverted(tmp_path):
     up = render(tmp_path, nrpn(0.01, FDBK, 64 + 40))
     down = render(tmp_path, nrpn(0.01, FDBK, 64 - 40))
