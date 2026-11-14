@@ -16,7 +16,7 @@ import engine
 from cc_client import MidiCCClient, cc_number, cc_value, nrpn_value, param_number
 from modes.osc_device import OSCDevice
 from modes.osc_mode import OSCMode, load_device_definitions
-from osc_controls import OSCControl
+from osc_controls import ACCEL_SLOW, EncoderAcceleration, OSCControl
 
 M2K_DIR = definitions.M2K_DEFINITION_FOLDER
 
@@ -178,12 +178,19 @@ def test_nrpn_echo_keeps_the_fraction(midi_out, dispatcher):
     assert seen == [40.5]
 
 
+def slow_turns(control):
+    """Each click a second apart: no knob acceleration."""
+    ticks = iter(range(0, 10_000))
+    control.acceleration = EncoderAcceleration(clock=lambda: float(next(ticks)))
+    return control
+
+
 def test_osc_control_step_sets_click_size():
     sent = []
-    control = OSCControl(
+    control = slow_turns(OSCControl(
         {"$type": "control-range", "label": "WDTH", "address": "/cc/73", "min": 0, "max": 127, "step": 0.5},
         send_osc_func=lambda address, value: sent.append(value),
-    )
+    ))
     control.update_value(1)
     control.update_value(3)
     control.update_value(-1)
@@ -191,16 +198,17 @@ def test_osc_control_step_sets_click_size():
 
 
 def test_osc_control_without_step_keeps_scaling():
-    control = OSCControl({"$type": "control-range", "label": "X", "address": "/x", "min": 0, "max": 1})
+    control = slow_turns(OSCControl({"$type": "control-range", "label": "X", "address": "/x", "min": 0, "max": 1}))
     control.update_value(1)
-    assert control.value == round(1 / 127, 2)
+    # A slow click is a fine step: a fraction of the normal 0.01 click
+    assert control.value == round(ACCEL_SLOW * 0.01, 4)
 
 
 def test_osc_control_turn_sends_cc_and_one_click_is_one_step(client, midi_out, dispatcher):
-    control = OSCControl(
+    control = slow_turns(OSCControl(
         {"$type": "control-range", "label": "BASE", "address": "/cc/72", "min": 0, "max": 127},
         send_osc_func=client.send_message,
-    )
+    ))
     dispatcher.map(control.address, control.set_state)
     control.update_value(1)
     control.update_value(1)

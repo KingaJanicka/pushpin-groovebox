@@ -4,7 +4,7 @@ from typing import Any
 from unittest.mock import MagicMock
 
 from modes.osc_device import OSCDevice
-from osc_controls import scale_value
+from osc_controls import ACCEL_SLOW, scale_value
 from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.dispatcher import Dispatcher
 import push2_python
@@ -167,11 +167,11 @@ def test_OSCDevice(mocker):
         len(device.controls) == 3
     ), "Should spawn 3 controls (1 range, 1 spacer, 1 switch)"
 
-    # First encoder drives the range control. update_value() now adds a *scaled*
-    # increment (scale_value), so the value is fractional, not the raw 1.0.
+    # First encoder drives the range control. A single click from rest is a
+    # fine step (knob acceleration): ACCEL_SLOW of the normal click.
     device.on_encoder_rotated(push2_python.constants.ENCODER_TRACK1_ENCODER, 1)
     client.send_message.assert_any_call(
-        "/param/a/feg/release_shape", scale_value(1, 0, 2)
+        "/param/a/feg/release_shape", round(ACCEL_SLOW * scale_value(1, 0, 2), 4)
     )
 
     # Spacer (encoder 2) shouldn't throw when rotated.

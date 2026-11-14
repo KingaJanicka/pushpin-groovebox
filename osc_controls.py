@@ -45,6 +45,81 @@ def parse_amount(text: str) -> tuple[float, int, str] | None:
     return float(match.group(1)), len(match.group(2) or ""), match.group(3) or ""
 
 
+# Knob acceleration: how fast an encoder turns sets how far each click moves
+# the value. Turning fast moves a normal click (ACCEL_FAST, the click size the
+# knobs always had); turning slowly gives fine steps (ACCEL_SLOW of a normal
+# click). Speeds are in clicks per second; between ACCEL_SLOW_SPEED and
+# ACCEL_FAST_SPEED the factor rises smoothly (log scale).
+ACCEL_SLOW = 0.125
+ACCEL_FAST = 1.0
+ACCEL_SLOW_SPEED = 8.0
+ACCEL_FAST_SPEED = 150.0
+# A pause longer than this starts the next turn slow again.
+ACCEL_IDLE_SECONDS = 0.25
+# Clicks can arrive in bursts a few ms apart; this keeps one burst from
+# reading as an enormous speed.
+ACCEL_MIN_INTERVAL = 0.004
+# How much the newest click's speed counts against the running average.
+ACCEL_SMOOTHING = 0.5
+# Continuous values keep this many decimals, enough for the fine steps.
+FINE_DECIMAL_PLACES = 4
+
+
+def normal_click(min_val: float, max_val: float) -> float:
+    """How far one unaccelerated click moves a continuous value: what
+    scale_value() gave before acceleration (0.01 on a 0..1 Surge control),
+    or the exact 1/127 of the range where that rounds to nothing."""
+    return scale_value(1, min_val, max_val) or (max_val - min_val) / SCALING_FACTOR
+
+
+class EncoderAcceleration(object):
+    """Tracks how fast one knob is being turned and turns that into a factor
+    for the size of each click."""
+
+    def __init__(self, clock: Callable[[], float] = time.monotonic) -> None:
+        self.clock = clock
+        self.speed: float = 0.0  # clicks per second, smoothed
+        self.last_time: float | None = None
+        self.direction: int = 0
+
+    def factor(self, increment: float) -> float:
+        clicks = abs(increment)
+        if clicks == 0:
+            return 1.0
+        now = self.clock()
+        direction = 1 if increment > 0 else -1
+        if (
+            self.last_time is None
+            or now - self.last_time > ACCEL_IDLE_SECONDS
+            or direction != self.direction
+        ):
+            # A fresh turn (or a change of direction) starts slow
+            self.speed = 0.0
+        else:
+            interval = max(now - self.last_time, ACCEL_MIN_INTERVAL)
+            current = clicks / interval
+            self.speed = ACCEL_SMOOTHING * current + (1 - ACCEL_SMOOTHING) * self.speed
+        self.last_time = now
+        self.direction = direction
+        factor = self.curve(self.speed)
+        if clicks > 1:
+            # The encoder only packs several clicks into one message when it
+            # is turned quickly, so such a message moves at the fast rate.
+            factor = ACCEL_FAST
+        return factor
+
+    @staticmethod
+    def curve(speed: float) -> float:
+        if speed <= ACCEL_SLOW_SPEED:
+            return ACCEL_SLOW
+        if speed >= ACCEL_FAST_SPEED:
+            return ACCEL_FAST
+        t = (math.log(speed) - math.log(ACCEL_SLOW_SPEED)) / (
+            math.log(ACCEL_FAST_SPEED) - math.log(ACCEL_SLOW_SPEED)
+        )
+        return math.exp(math.log(ACCEL_SLOW) + t * (math.log(ACCEL_FAST) - math.log(ACCEL_SLOW)))
+
+
 def closest(lst: list[float], K: float) -> float:
     return lst[min(range(len(lst)), key=lambda i: abs(lst[i] - K))]
 
@@ -98,6 +173,7 @@ class OSCControl(object):
         # their number interpolated.
         self.value_table: list[str] | None = config.get("value_table", None)
         self.labels_address: str | None = self.value_labels_by["address"] if self.value_labels_by else None
+        self.acceleration: EncoderAcceleration = EncoderAcceleration()
 
     def query(self) -> None:
         self.send_osc_func("/q" + self.address, None)
@@ -442,17 +518,30 @@ class OSCControl(object):
         # this human readable string doesn't change with knob movements, querry fixes it but makes it glitchy
         # self.string = string
 
+    @property
+    def quantized(self) -> bool:
+        """Whether the value moves in whole steps: an explicit ``step``, or a
+        MIDI-style 0..127 range (mono2k), where a click is already one unit."""
+        return self.step is not None or (self.max - self.min) >= SCALING_FACTOR
+
+    def scaled_increment(self, increment: float) -> float:
+        """How far ``increment`` clicks move the value, with acceleration."""
+        factor = self.acceleration.factor(increment)
+        if self.quantized:
+            # Whole steps only: never less than one step a click (with
+            # ACCEL_FAST at 1.0, always exactly one, as before)
+            unit = self.step if self.step is not None else (self.max - self.min) / SCALING_FACTOR
+            return round(increment * max(1, round(factor)) * unit, DECIMAL_PLACES)
+        return increment * factor * normal_click(self.min, self.max)
+
     def update_value(self, increment: float, **kwargs: Any) -> None:
-        if self.step is not None:
-            scaled = round(increment * self.step, DECIMAL_PLACES)
-        else:
-            scaled = scale_value(increment, self.min, self.max)
+        scaled = self.scaled_increment(increment)
         if self.value + scaled > self.max:
             self.value = self.max
         elif self.value + scaled < self.min:
             self.value = self.min
         else:
-            self.value += scaled
+            self.value = round(self.value + scaled, FINE_DECIMAL_PLACES)
         # print("update value: adress", self.address, "value", self.value)
         # Send cc message, subtract 1 to number because MIDO works from 0 - 127
         # msg = mido.Message('control_change', control=self.address, value=self.value)
@@ -544,15 +633,17 @@ class OSCControlMacro(object):
         self.params: list[ConfigDict] = config["params"]
         self.send_osc_func: OscSendFunc = send_osc_func or (lambda addr, val: None)
         self.log = logger.getChild("Macro")
+        self.acceleration: EncoderAcceleration = EncoderAcceleration()
 
     def update_value(self, increment: float, **kwargs: Any) -> None:
-        scaled = scale_value(increment, self.min, self.max)
+        factor = self.acceleration.factor(increment)
+        scaled = increment * factor * normal_click(self.min, self.max)
         if self.value + scaled > self.max:
             self.value = self.max
         elif self.value + scaled < self.min:
             self.value = self.min
         else:
-            self.value += scaled
+            self.value = round(self.value + scaled, FINE_DECIMAL_PLACES)
         # print("update value: adress", self.address, "value", self.value)
         # Send cc message, subtract 1 to number because MIDO works from 0 - 127
         # msg = mido.Message('control_change', control=self.address, value=self.value)
