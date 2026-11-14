@@ -35,7 +35,7 @@ from osc_controls import (
 logger = logging.getLogger("osc_mode")
 
 
-from modes.device_definitions import load_device_definitions  # noqa: E402  (re-exported)
+from modes.device_definitions import apply_value_tables, load_device_definitions  # noqa: E402  (re-exported)
 from modes.engine_selection_mode import load_track_engines, TRACK_ENGINES_FILENAME  # noqa: E402
 
 
@@ -122,6 +122,9 @@ class OSCMode(PyshaMode):
                 )
             except FileNotFoundError:
                 device_definitions[modulation_name] = {}
+
+        # Surge's own words for knob values ("62.50 ms")
+        apply_value_tables(device_definitions)
 
         # mono2k's pages, shared by every track's mono2k voice
         m2k_device_definitions = load_device_definitions(definitions.M2K_DEFINITION_FOLDER)

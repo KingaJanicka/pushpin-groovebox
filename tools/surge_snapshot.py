@@ -102,6 +102,17 @@ class Surge:
         return self.dump()[0]
 
 
+def check_audio_running(surge: Surge) -> None:
+    """Surge changes an oscillator's parameters (Twist's names) on its audio
+    thread: with no audio running (an output device that went away) types
+    change but nothing else does, and every recording would be wrong."""
+    surge.client.send_message("/patch/load", INIT_PATCH)
+    time.sleep(0.6)
+    surge.send("/param/a/osc/1/type", 10.0, wait=0.3)
+    if surge.params().get("/param/a/osc/1/param6", [None])[0] != "LPG Response":
+        sys.exit("Surge isn't applying changes (is its audio output running? try --audio-interface=0.0)")
+
+
 def value_of(item: dict):
     if "wavetable" in item:
         return wavetables.wavetable_id(item["wavetable"])
@@ -198,6 +209,7 @@ def main() -> None:
     time.sleep(0.2)
     if surge.query("/param/a/osc/1/type") is None:
         sys.exit(f"No reply from surge-xt-cli on port {IN_PORT}: start it first (see this file's docstring)")
+    check_audio_running(surge)
     only = {os.path.normpath(arg) for arg in sys.argv[1:]}
     if only and os.path.exists(OUT):
         with open(OUT) as f:

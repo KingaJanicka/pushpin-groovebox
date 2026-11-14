@@ -59,6 +59,7 @@ minimal state each method needs.
 | Push 2 late plug-in / replug (MIDI reconnect on the main loop) | test_push_connection.py |
 | Every Surge device definition (`definitions/*_definitions/*.json`) | test_device_definitions.py |
 | Wavetable ids by name (`wavetables.py`) and the wavetable picker | test_wavetables.py |
+| Surge's words for knob values (`definitions/surge_value_labels.json`) | test_surge_value_labels.py |
 
 ## Device definitions and the Surge snapshot
 
