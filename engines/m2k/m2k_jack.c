@@ -51,6 +51,9 @@
  *                velocity (VEL) or its note number (KEY), from its note-on to the next. 79, 80: KEY's HPF and
  *                LPF, the high-pass and low-pass following the note (64-127, as MONO2K's always do) or sitting
  *                where note 60 puts them (0-63). A machine's INIT turns the rows and the tracking off.
+ *   NRPN 1:81-83 AMP's second page: FDBK, the track's own out (after its chain and its delay) back into its chain
+ *                before DIST, a block later, bipolar about 64 (below: inverted), and that feedback's EQ, EQF and
+ *                EQG as FX's (64 flat). A machine's INIT turns it off.
  *   Clock (on any track's port; the first port it comes on, if several send it) sets the tempo
  *                MONO2K times its LFOs, delays and HOLD by: its sequencer stays stopped, pushpin
  *                sequences. Start / Continue put the LFOs on FREE back to their PHAS, so they line
@@ -125,7 +128,8 @@ static const pp_ccmap_t PP_CC[] = {
  * Monomachine's ASSIGN page: velocity's and the key's modulations, two rows each of a DEST and an ADD, then
  * KEY's HPF and LPF, whether each filter follows the note (MONO2K's always do) */
 enum { X_VDST1 = P_COUNT, X_VADD1, X_VDST2, X_VADD2,
-       X_KDST1, X_KADD1, X_KDST2, X_KADD2, X_KHPF, X_KLPF, X_END };
+       X_KDST1, X_KADD1, X_KDST2, X_KADD2, X_KHPF, X_KLPF,
+       X_FDBK, X_FEQF, X_FEQG, X_END };
 #define X_COUNT (X_END - P_COUNT)
 #define PP_PARAMS X_END                      /* every parameter pushpin can set: MONO2K's and its own */
 #define PP_ROWS 4                            /* VEL 1, VEL 2, KEY 1, KEY 2: each a DEST, its ADD the one after */
@@ -133,15 +137,20 @@ static const uint8_t PP_ROW_DST[PP_ROWS] = {X_VDST1, X_VDST2, X_KDST1, X_KDST2};
 _Static_assert(M2K_MODQ_PER_TRACK >= 3 + PP_ROWS, "room in the core's modulation queue for every source");
 enum { XK_DEST, XK_ADD, XK_SWITCH };
 static const uint8_t PP_X_KIND[X_COUNT] = {XK_DEST, XK_ADD, XK_DEST, XK_ADD, XK_DEST, XK_ADD, XK_DEST, XK_ADD,
-                                           XK_SWITCH, XK_SWITCH};
+                                           XK_SWITCH, XK_SWITCH, XK_ADD, XK_ADD, XK_ADD};
 static const char *const PP_X_LABEL[X_COUNT] = {"DEST", "ADD", "DEST", "ADD", "DEST", "ADD", "DEST", "ADD",
-                                                "HPF", "LPF"};
+                                                "HPF", "LPF", "FDBK", "FEQF", "FEQG"};
 static const char *const PP_X_NAME[X_COUNT] = {"VEL 1 DEST", "VEL 1 ADD", "VEL 2 DEST", "VEL 2 ADD",
                                                "KEY 1 DEST", "KEY 1 ADD", "KEY 2 DEST", "KEY 2 ADD",
-                                               "HPF TRACKING", "LPF TRACKING"};
+                                               "HPF TRACKING", "LPF TRACKING",
+                                               "FEEDBACK", "FEEDBACK EQ FREQ", "FEEDBACK EQ GAIN"};
 /* off, nothing added; neither filter tracking (a switch: 0-63 off, 64-127 on). pushpin's default, not MONO2K's,
- * whose filters always track: a sound sits where it does at note 60 whatever note plays it */
-static const uint8_t PP_X_INIT[X_COUNT] = {0, 64, 0, 64, 0, 64, 0, 64, 0, 0};
+ * whose filters always track: a sound sits where it does at note 60 whatever note plays it. No feedback (64: none,
+ * bipolar), its EQ flat at FX's EQ's INIT frequency */
+static const uint8_t PP_X_INIT[X_COUNT] = {0, 64, 0, 64, 0, 64, 0, 64, 0, 0, 64, 64, 64};
+/* the MONO2K parameter whose values (what the screen shows) each of pushpin's own takes, -1 none: the feedback's EQ
+ * is FX's EQ's */
+static const int8_t PP_X_LIKE[X_COUNT] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, P_EQF, P_EQG};
 
 static int pp_param_of_cc(int cc)
 {
@@ -194,10 +203,13 @@ static void pp_apply_tracking(int t)
                                 (pp_x[t][X_KLPF - P_COUNT] < 64 * 256 ? 2u : 0u));
 }
 
+static void pp_fb_reset(int t);
+
 static void pp_x_reset(int t)
 {
     for (int i = 0; i < X_COUNT; i++) pp_x[t][i] = PP_X_INIT[i] * 256;
     pp_apply_tracking(t);
+    pp_fb_reset(t);
 }
 
 static void pp_set_x(int t, int param, int32_t q8)
@@ -226,6 +238,77 @@ static void pp_assign_block(int t)
         if (dest <= 0 || dest > P_COUNT || !add || !src) continue;
         mod_add(t, dest - 1, add * src / 127);
     }
+}
+
+/* ---------------------------------------------------------------- feedback */
+
+/* AMP's second page: the track's own out, after everything on it (its chain, its delay), back into its chain where
+ * the machine's sound goes in, before DIST and the filters, a block (16 samples) later. FDBK is bipolar about 64:
+ * below it the feedback goes back inverted; |FDBK - 64| / 64 squared is its gain, up to 2 (so the loop can run away
+ * into DIST's clip at the top, with VOL and LEVL in it too), its EQ a band as FX's EQ is (EQF, EQG; 64 flat). The
+ * amp's envelope is in the loop: it dies with the note's release, and a silent track hears none */
+static int32_t pp_fb[NT][M2K_SUB];        /* the out of the block before, EQ'd and scaled: the next block's input */
+static int32_t pp_fb_g[NT];               /* the gain the last block ended on, Q15 (signed): the next ramps from it */
+static zsvf_t pp_fb_eq[NT];
+static int32_t pp_fb_eqc[NT], pp_fb_kf[NT] = {-1, -1, -1, -1, -1, -1, -1, -1}, pp_fb_kg[NT];
+
+static void pp_fb_reset(int t)
+{
+    m_set(pp_fb[t], 0, sizeof pp_fb[t]);
+    m_set(&pp_fb_eq[t], 0, sizeof pp_fb_eq[t]);
+    pp_fb_g[t] = 0;
+    pp_fb_kf[t] = -1;
+}
+
+/* FDBK's gain, Q15 signed: d |d| / 2^12, d = FDBK - 64 in 1/256 steps (2^16 at the top: 2) */
+static int32_t pp_fb_gain(int t)
+{
+    const int32_t d = pp_x[t][X_FDBK - P_COUNT] - 64 * 256;
+    return (int32_t)(((int64_t)d * (d < 0 ? -d : d)) >> 12);
+}
+
+/* the track's out this block (its L and R, before pushpin's output gain) into the next block's input */
+static void pp_fb_take(int t, const int32_t *L, const int32_t *R)
+{
+    const int32_t g1 = pp_fb_gain(t), g0 = pp_fb_g[t];
+    pp_fb_g[t] = g1;
+    if (!g0 && !g1) {
+        m_set(pp_fb[t], 0, sizeof pp_fb[t]);
+        return;
+    }
+    /* the EQ, as the chain's (track_block): a band added to the signal, a cut the inverse of a boost as deep */
+    const int32_t eqv = pp_x[t][X_FEQG - P_COUNT], eqf = pp_x[t][X_FEQF - P_COUNT];
+    const int eq_on = eqv != 64 * 256;
+    if (eq_on && (eqv != pp_fb_kg[t] || eqf != pp_fb_kf[t])) {
+        const uint32_t gb = tq_u32(T_EQGAIN, eqv), ef = tq_u32(T_EQG, eqf);
+        const uint32_t k = eqv > 64 * 256 ? EQ_K : mulu_hi(EQ_K, gb, 16);
+        zsvf_set(&pp_fb_eq[t], ef, k);
+        const int32_t c = (int32_t)mul_sh((int32_t)(gb - 65536), EQ_K, 16);
+        pp_fb_eqc[t] = eqv > 64 * 256 ? c : -c;
+        pp_fb_kg[t] = eqv;
+        pp_fb_kf[t] = eqf;
+    }
+    zsvf_t f = pp_fb_eq[t];
+    for (int i = 0; i < M2K_SUB; i++) {
+        int32_t x = (L[i] + R[i]) >> 1;
+        if (eq_on) {
+            int32_t b;
+            zsvf_tick(&f, x, 0, &b, 0);
+            x = CLAMP(x + (int32_t)mul_sh(b, pp_fb_eqc[t], 24), -(1 << 20), 1 << 20);
+        }
+        const int32_t g = g0 + (((g1 - g0) * (i + 1)) >> 4);      /* across the block: no zipper */
+        pp_fb[t][i] = (int32_t)(((int64_t)x * g) >> 15);
+    }
+    pp_fb_eq[t] = f;
+}
+
+/* the core's hook (patches/0004): the feedback added to the machine's block, at the headroom the machine's out has
+ * (GND-NOIS's and FX-RING's come out of the machine lower, and the chain takes it back) */
+static void pp_track_in(int t, int m, int16_t *blk)
+{
+    if (!pp_fb_g[t]) return;
+    const int hr = m == M_GNOI ? GN_HR : m == M_FXR ? RG_HR : 0;
+    for (int i = 0; i < M2K_SUB; i++) blk[i] = (int16_t)sat16(blk[i] + (pp_fb[t][i] >> hr));
 }
 
 /* a choice (a wave, a mode, a destination): never through the values between */
@@ -339,6 +422,7 @@ static void pp_set_machine(int t, int m)
 static void pp_engine_init(int machine)
 {
     m2k_init(0x50555348u);
+    m2k_track_in = pp_track_in;
     /* no track is the panel keys' (the core's would be track 1): every track's notes take the same path, the
      * core's voice_on, which pushpin's slides and ties build on (the keys' own path slid only with PORT on, and
      * kept a note stack of its own) */
@@ -485,7 +569,10 @@ static void pp_describe(void)
         pp_json_str(PP_X_LABEL[i]);
         printf(", \"name\": ");
         pp_json_str(PP_X_NAME[i]);
-        printf(", \"pushpin\": true}%s\n", i + 1 < X_COUNT ? "," : "");
+        printf(", \"pushpin\": true");
+        if (PP_X_KIND[i] == XK_ADD) printf(", \"bipolar\": %s", PP_X_LIKE[i] < 0 || PP_X_LIKE[i] == P_EQG ? "true" : "false");
+        if (PP_X_LIKE[i] >= 0) pp_json_values(pinfo(0, PP_X_LIKE[i]));
+        printf("}%s\n", i + 1 < X_COUNT ? "," : "");
     }
     /* MONO2K's factory sound library (m2k_lib.c): each sound its machine and every parameter */
     printf("  ],\n  \"categories\": [");
@@ -757,6 +844,7 @@ static void pp_render_split(void)
         m_set(tL, 0, sizeof tL);
         m_set(tR, 0, sizeof tR);
         run_track(t, tL, tR, rc->rs, ds);       /* (L and R stay empty: the bus gets the sends alone) */
+        pp_fb_take(t, tL, tR);                  /* (its whole out, its delay too: the next block's feedback) */
         for (int i = 0; i < M2K_SUB; i++) {
             pp_tout[pp_tcur][t][0][i] = tL[i] * g;
             pp_tout[pp_tcur][t][1][i] = tR[i] * g;

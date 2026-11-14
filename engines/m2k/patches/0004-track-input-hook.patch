@@ -1,0 +1,20 @@
+--- a/firmware/src/m2k_dsp.c
++++ b/firmware/src/m2k_dsp.c
+@@ -196,6 +196,9 @@
+ static int16_t tvol[M2K_TRACKS][M2K_SUB];     /* and after its VOL, its clip and its LEV, as the Monomachine's FX hear it (FX-RING) */
+ static int16_t eside[M2K_TRACKS][M2K_SUB];    /* SWAV-ENS's and GND-NOIS's side out of the machine, before the chain */
+ static int16_t bside[M2K_TRACKS][M2K_SUB];    /* FX-CHORUS's side (its width), added after the pan */
++/* a host's input into a track's chain, called with the machine's block before DIST and the filters hear it (pushpin's
++ * m2k-jack: the track's feedback, its own out of the block before added in) */
++void (*m2k_track_in)(int ti, int m, int16_t *blk);
+ 
+ /* where a filter with its tracking off sits: as if every note were this one */
+ #ifndef M2K_FIXED_NOTE
+@@ -1747,6 +1750,7 @@
+     if (t->xf) xf_block(ti, m, pitch);
+     else mach_block(ti, m, pitch);
+     PROF_M(m);
++    if (m2k_track_in) m2k_track_in(ti, m, blk[ti]);
+ 
+     /* the filter follows the note (and the tuned pitch): a cutoff 2^((step - 16) / 8) x f0, HP at BASE, LP at BASE + WDTH; the envelope adds
+      * 7 d|d| / 256 steps at full (d: BOFS / WOFS from their centre). Positions in 1/96 octave over note 0, Q8 */
