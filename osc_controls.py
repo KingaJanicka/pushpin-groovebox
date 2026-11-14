@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import definitions
 import math
+import re
 import push2_python
 from user_interface.display_utils import show_text
 import logging
@@ -31,6 +32,17 @@ scale_value() -> float()
 
 def scale_value(value: float, min_val: float, max_val: float, decimals: int = DECIMAL_PLACES) -> float:
     return round(float(value / SCALING_FACTOR * (max_val - min_val)), decimals)
+
+
+AMOUNT = re.compile(r"^(-?\d+(?:\.(\d+))?)((?:\s|%|[^\W\d_]).*)?$")
+
+
+def parse_amount(text: str) -> tuple[float, int, str] | None:
+    """"62.50 ms" -> (62.5, 2, " ms"): the number, its decimals and the rest."""
+    match = AMOUNT.match(text)
+    if not match:
+        return None
+    return float(match.group(1)), len(match.group(2) or ""), match.group(3) or ""
 
 
 def closest(lst: list[float], K: float) -> float:
@@ -80,6 +92,11 @@ class OSCControl(object):
         self.value_labels: list[str] | None = config.get("value_labels", None)
         self.value_labels_by: ConfigDict | None = config.get("value_labels_by", None)
         self.labels_source_value: float = 0.0
+        # Optional: Surge's own words for the value at evenly spaced points from
+        # min to max ("62.50 ms"), recorded by tools/surge_value_labels.py and
+        # added by modes/device_definitions.py. Values between two points get
+        # their number interpolated.
+        self.value_table: list[str] | None = config.get("value_table", None)
         self.labels_address: str | None = self.value_labels_by["address"] if self.value_labels_by else None
 
     def query(self) -> None:
@@ -103,9 +120,27 @@ class OSCControl(object):
 
     @property
     def has_value_labels(self) -> bool:
-        return bool(self.value_labels or self.value_labels_by)
+        return bool(self.value_labels or self.value_labels_by or self.value_table)
+
+    def table_text(self, value: float) -> str:
+        table = self.value_table
+        assert table
+        position = self.fraction(float(value)) * (len(table) - 1)
+        below = int(math.floor(position))
+        above = min(below + 1, len(table) - 1)
+        part = position - below
+        if part < 1e-9 or below == above:
+            return table[below]
+        a, b = parse_amount(table[below]), parse_amount(table[above])
+        if a is None or b is None or a[2] != b[2]:
+            return table[below] if part < 0.5 else table[above]
+        number = a[0] + (b[0] - a[0]) * part
+        decimals = max(a[1], b[1])
+        return f"{number:.{decimals}f}{a[2]}"
 
     def display_text(self, value: float) -> str:
+        if self.value_table:
+            return self.table_text(value)
         table = self.labels_table()
         if table:
             return table[min(max(int(float(value)), 0), len(table) - 1)]
@@ -365,9 +400,10 @@ class OSCControl(object):
             ctx,
             x_part,
             margin_top + name_height,
-            str(round(value, 2)),
+            self.display_text(value),
             height=val_height,
             font_color=color,
+            center_horizontally=self.has_value_labels,
             margin_left=int(self.fraction(value) * line_width * 0.75 + 10),
         )
 
