@@ -50,7 +50,7 @@
  *                DEST) and an ADD (bipolar about 64). A note adds (ADD - 64) x s / 127 steps to DEST, s its
  *                velocity (VEL) or its note number (KEY), from its note-on to the next. 79, 80: KEY's HPF and
  *                LPF, the high-pass and low-pass following the note (64-127, as MONO2K's always do) or sitting
- *                where note 60 puts them (0-63). A machine's INIT turns the rows off and the tracking on.
+ *                where note 60 puts them (0-63). A machine's INIT turns the rows and the tracking off.
  *   Clock (on any track's port; the first port it comes on, if several send it) sets the tempo
  *                MONO2K times its LFOs, delays and HOLD by: its sequencer stays stopped, pushpin
  *                sequences. Start / Continue put the LFOs on FREE back to their PHAS, so they line
@@ -139,8 +139,9 @@ static const char *const PP_X_LABEL[X_COUNT] = {"DEST", "ADD", "DEST", "ADD", "D
 static const char *const PP_X_NAME[X_COUNT] = {"VEL 1 DEST", "VEL 1 ADD", "VEL 2 DEST", "VEL 2 ADD",
                                                "KEY 1 DEST", "KEY 1 ADD", "KEY 2 DEST", "KEY 2 ADD",
                                                "HPF TRACKING", "LPF TRACKING"};
-/* off, nothing added; both filters tracking (a switch: 0-63 off, 64-127 on) */
-static const uint8_t PP_X_INIT[X_COUNT] = {0, 64, 0, 64, 0, 64, 0, 64, 127, 127};
+/* off, nothing added; neither filter tracking (a switch: 0-63 off, 64-127 on). pushpin's default, not MONO2K's,
+ * whose filters always track: a sound sits where it does at note 60 whatever note plays it */
+static const uint8_t PP_X_INIT[X_COUNT] = {0, 64, 0, 64, 0, 64, 0, 64, 0, 0};
 
 static int pp_param_of_cc(int cc)
 {

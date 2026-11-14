@@ -78,18 +78,18 @@ def test_sounds_json_has_every_parameter_machine_and_library_sound():
 
 def test_every_init_and_library_sound_starts_with_vel_and_key_off_and_filters_tracking():
     for kit in [m["kit"] for m in CATALOGUE.machines] + [s["kit"] for s in CATALOGUE.library]:
-        assert kit[71:] == [0, 64, 0, 64, 0, 64, 0, 64, 127, 127]
+        assert kit[71:] == [0, 64, 0, 64, 0, 64, 0, 64, 0, 0]
 
 
 def test_a_sound_saved_before_vel_loads_with_vel_and_key_off():
     sound = CATALOGUE.sound_from_json({"machine": 5, "params": [5.0] * 71})
     assert len(sound.params) == 81
-    assert sound.params[:71] == [5.0] * 71 and sound.params[71:] == [0, 64, 0, 64, 0, 64, 0, 64, 127, 127]
+    assert sound.params[:71] == [5.0] * 71 and sound.params[71:] == [0, 64, 0, 64, 0, 64, 0, 64, 0, 0]
 
 
 def test_a_sound_saved_with_vel_only_loads_with_key_off():
     sound = CATALOGUE.sound_from_json({"machine": 5, "params": [5.0] * 71 + [18, 96, 0, 64]})
-    assert sound.params[71:] == [18, 96, 0, 64, 0, 64, 0, 64, 127, 127]
+    assert sound.params[71:] == [18, 96, 0, 64, 0, 64, 0, 64, 0, 0]
 
 
 def test_every_machine_init_sets_all_81_parameters():

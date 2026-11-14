@@ -707,20 +707,20 @@
 			"items": [
 				{
 					"$type": "menu-item",
-					"label": "HPF On",
-					"onselect": {
-						"$type": "message",
-						"address": "/m2k/param/79",
-						"value": 127
-					}
-				},
-				{
-					"$type": "menu-item",
 					"label": "HPF Off",
 					"onselect": {
 						"$type": "message",
 						"address": "/m2k/param/79",
 						"value": 0
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "HPF On",
+					"onselect": {
+						"$type": "message",
+						"address": "/m2k/param/79",
+						"value": 127
 					}
 				}
 			]
@@ -1429,20 +1429,20 @@
 			"items": [
 				{
 					"$type": "menu-item",
-					"label": "LPF On",
-					"onselect": {
-						"$type": "message",
-						"address": "/m2k/param/80",
-						"value": 127
-					}
-				},
-				{
-					"$type": "menu-item",
 					"label": "LPF Off",
 					"onselect": {
 						"$type": "message",
 						"address": "/m2k/param/80",
 						"value": 0
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "LPF On",
+					"onselect": {
+						"$type": "message",
+						"address": "/m2k/param/80",
+						"value": 127
 					}
 				}
 			]

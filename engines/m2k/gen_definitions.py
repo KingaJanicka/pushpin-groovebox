@@ -440,7 +440,7 @@ def page_devices(params: list[dict], labels: dict[int, str] | None = None,
 # The Monomachine's ASSIGN > VEL and KEY: two rows each of a destination (DEVICE and DEST, as an LFO's) and
 # ADD, how far a note moves it at full velocity (VEL) or at note 127 (KEY); a softer or lower note moves it in
 # proportion (bipolar about 64). KEY's rows end on HPF and LPF: whether the high-pass and the low-pass follow
-# the note, as MONO2K's always do, or stay where note 60 puts them. m2k-jack's own parameters past MONO2K's
+# the note, as MONO2K's always do, or stay where note 60 puts them (off, the INIT's default). m2k-jack's own parameters past MONO2K's
 # (m2k_jack.c, X_VDST1..): no CC, NRPN 1:<param>. Their own slots past the first page's eight, so they are
 # on the second instrument page, where Surge's modulation is
 VEL_PAGE = ("60_vel", "VELOCITY", 8)
@@ -457,14 +457,15 @@ def assign_add(param: int, label: str) -> dict:
 
 
 def tracking_menu(param: int, label: str) -> dict:
-    # (each item names its filter, as the trig switches do)
+    # (each item names its filter, as the trig switches do; OFF first, the default, so a menu that has heard
+    # nothing yet shows it)
     return {
         "$type": "control-menu",
         "menu_label": f"{label} TRACKING",
         "step": 1 / CLICKS_PER_ITEM,
         "items": [{"$type": "menu-item", "label": f"{label} {name}",
                    "onselect": {"$type": "message", "address": param_address(param), "value": value}}
-                  for name, value in (("ON", ON), ("OFF", OFF))],
+                  for name, value in (("OFF", OFF), ("ON", ON))],
     }
 
 

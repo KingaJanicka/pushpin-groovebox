@@ -452,9 +452,9 @@ def test_p_locks_on_mono2k_key_track_play(app):
     seq.gate = ["Off"] * 64
     seq.controls_to_reset = []
     seq.params = MagicMock(gate_track_active=False)
-    seq.locks[0][9][3] = 1.0                                    # HPF tracking's second item: OFF
+    seq.locks[0][9][3] = 1.0                                    # HPF tracking's second item: ON
     seq.evaluate_and_play_notes()
-    assert sent == [("/m2k/param/79", 0.0)]
+    assert sent == [("/m2k/param/79", 127.0)]
 
 
 # --------------------------------------------- the DSTR page: MOD effect
