@@ -574,3 +574,32 @@ def test_encoders_past_a_short_page_do_nothing():
 
     device.on_encoder_rotated(push2_python.constants.ENCODER_TRACK6_ENCODER, 1)
     assert sent == [("/cc/5", 1.0)]
+
+
+def test_macro_control_listens_on_each_of_its_addresses():
+    """A top-level control-macro used to crash OSCDevice (it read param.address
+    off a dict) and mapped the previous control's handler."""
+    from osc_controls import OSCControlMacro
+
+    config = {
+        "name": "Macro", "slot": 8, "init": [],
+        "controls": [{
+            "$type": "control-macro", "label": "Both",
+            "params": [
+                {"$type": "control-range", "address": "/param/a/osc/1/param1", "min": 0, "max": 1},
+                {"$type": "control-range", "address": "/param/a/osc/1/param2", "min": 0, "max": 1},
+            ],
+        }],
+    }
+    dispatcher = Dispatcher()
+    client = MagicMock()
+    device = OSCDevice(config, {"client": client, "dispatcher": dispatcher}, app=MagicMock(),
+                       osc_in_port=1, osc_out_port=2)
+    macro = device.controls[0]
+    assert isinstance(macro, OSCControlMacro)
+    for address in ("/param/a/osc/1/param1", "/param/a/osc/1/param2"):
+        handlers = list(dispatcher.handlers_for_address(address))
+        assert [h.callback for h in handlers] == [macro.set_state]
+    macro.update_value(127)
+    client.send_message.assert_any_call("/param/a/osc/1/param1", 1.0)
+    client.send_message.assert_any_call("/param/a/osc/1/param2", 1.0)

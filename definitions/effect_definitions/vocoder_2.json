@@ -15,7 +15,8 @@
 			"label": "Input Gain",
 			"address": "/param/fx/a/2/param1",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
 		},
 		{
 			"$type": "control-range",
@@ -36,7 +37,8 @@
 			"label": "Filter Q",
 			"address": "/param/fx/a/2/param4",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
 		},
 		{
 			"$type": "control-spacer"
@@ -63,8 +65,8 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "1",
-						"address": "/param/a/osc/1/param6",
-						"value": 0
+						"address": "/param/fx/a/2/param6",
+						"value": 4
 					}
 				},
 				{
@@ -73,8 +75,8 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "2",
-						"address": "/param/a/osc/1/param6",
-						"value": 1
+						"address": "/param/fx/a/2/param6",
+						"value": 8
 					}
 				},
 				{
@@ -83,8 +85,8 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "3",
-						"address": "/param/a/osc/1/param6",
-						"value": 2
+						"address": "/param/fx/a/2/param6",
+						"value": 12
 					}
 				},
 				{
@@ -93,8 +95,8 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "4",
-						"address": "/param/a/osc/1/param6",
-						"value": 3
+						"address": "/param/fx/a/2/param6",
+						"value": 16
 					}
 				},
 				{
@@ -103,8 +105,8 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "4",
-						"address": "/param/a/osc/1/param6",
-						"value": 4
+						"address": "/param/fx/a/2/param6",
+						"value": 20
 					}
 				}
 			]
@@ -114,7 +116,8 @@
 			"label": "Carr. Min Freq.",
 			"address": "/param/fx/a/2/param7",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
 		},
 		{
 			"$type": "control-range",
@@ -132,21 +135,23 @@
 			"label": "Mod. Input",
 			"address": "/param/fx/a/2/param9",
 			"min": 0,
-			"max": 4
+			"max": 3
 		},
 		{
 			"$type": "control-range",
 			"label": "Mod. Range",
 			"address": "/param/fx/a/2/param10",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
 		},
 		{
 			"$type": "control-range",
 			"label": "Mod. Center",
 			"address": "/param/fx/a/2/param11",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
 		}
 	]
 }

@@ -52,7 +52,8 @@
 			"label": "St. Balance",
 			"address": "/param/fx/a/2/param4",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
 		},
 		{
 			"$type": "control-range",

@@ -165,7 +165,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "Keytrack Off",
-						"address": "/param/fx/a/1/param1/tempo_sync+",
+						"address": "/param/fx/a/1/param3/deform+",
 						"value": 1
 					}
 				},
@@ -175,7 +175,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "Keytrack Off",
-						"address": "/param/fx/a/1/param1/tempo_sync+",
+						"address": "/param/fx/a/1/param3/deform+",
 						"value": 2
 					}
 				},
@@ -185,7 +185,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "Keytrack Off",
-						"address": "/param/fx/a/1/param1/tempo_sync+",
+						"address": "/param/fx/a/1/param3/deform+",
 						"value": 3
 					}
 				},
@@ -195,7 +195,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "Keytrack Off",
-						"address": "/param/fx/a/1/param1/tempo_sync+",
+						"address": "/param/fx/a/1/param3/deform+",
 						"value": 4
 					}
 				}
