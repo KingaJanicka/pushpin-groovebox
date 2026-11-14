@@ -248,10 +248,13 @@ def test_queue_tasks_starts_every_queued_task_in_one_frame():
 # --- the display while locks play --------------------------------------------
 
 def real_control(address, value):
-    from osc_controls import OSCControl
+    from osc_controls import EncoderAcceleration, OSCControl
     c = OSCControl({"$type": "control-range", "label": "X", "address": address,
                     "min": 0.0, "max": 1.0})
     c.value = value
+    # Clicks a second apart: the sweeps here are steady, not accelerated
+    ticks = iter(range(10_000))
+    c.acceleration = EncoderAcceleration(clock=lambda: float(next(ticks)))
     return c
 
 
