@@ -1,0 +1,15 @@
+--- a/firmware/src/m2k_dsp.c
++++ b/firmware/src/m2k_dsp.c
+@@ -1416,7 +1416,11 @@
+ 
+ /* the LFOs' modulation: at most three a track, so only what they touch is set, and cleared the block after */
+ typedef struct { uint8_t t, p; int32_t v; } modq_t;
+-static modq_t modq[M2K_TRACKS * 3], modp[M2K_TRACKS * 3];
++/* (a host adding sources of its own through mod_add, pushpin's m2k-jack, makes room for them) */
++#ifndef M2K_MODQ_PER_TRACK
++#define M2K_MODQ_PER_TRACK 3
++#endif
++static modq_t modq[M2K_TRACKS * M2K_MODQ_PER_TRACK], modp[M2K_TRACKS * M2K_MODQ_PER_TRACK];
+ static int modn, modpn;
+ 
+ static void mod_add(int t, int p, int32_t v)

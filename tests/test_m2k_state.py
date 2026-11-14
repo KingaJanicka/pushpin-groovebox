@@ -64,25 +64,44 @@ def test_param_number_parses_only_param_addresses():
 
 def test_sounds_json_has_every_parameter_machine_and_library_sound():
     assert CATALOGUE is not None
-    assert CATALOGUE.param_count == 71
-    assert len(CATALOGUE.machines) == 19 and all(len(m["kit"]) == 71 for m in CATALOGUE.machines)
-    assert len(CATALOGUE.library) == 96 and all(len(s["kit"]) == 71 for s in CATALOGUE.library)
+    assert CATALOGUE.param_count == 81                # MONO2K's 71, then VEL's 4, KEY TRACK's 6
+    assert len(CATALOGUE.machines) == 19 and all(len(m["kit"]) == 81 for m in CATALOGUE.machines)
+    assert len(CATALOGUE.library) == 96 and all(len(s["kit"]) == 81 for s in CATALOGUE.library)
     assert CATALOGUE.categories == ["KICK", "SNARE", "HATS", "PERC", "BASS", "LEAD", "PAD", "FX"]
     assert CATALOGUE.address(0) == "/cc/48"          # SYN A
     assert CATALOGUE.address(17) == "/cc/73"         # WDTH
     assert CATALOGUE.address(69) == "/m2k/param/69"  # MOD mix: no CC
+    assert CATALOGUE.address(72) == "/m2k/param/72"  # VEL 1 ADD: m2k-jack's own
+    assert CATALOGUE.labels[71:] == ["DEST", "ADD"] * 4 + ["HPF", "LPF"]
+    assert CATALOGUE.address(80) == "/m2k/param/80"  # LPF tracking
 
 
-def test_every_machine_init_sets_all_71_parameters():
+def test_every_init_and_library_sound_starts_with_vel_and_key_off_and_filters_tracking():
+    for kit in [m["kit"] for m in CATALOGUE.machines] + [s["kit"] for s in CATALOGUE.library]:
+        assert kit[71:] == [0, 64, 0, 64, 0, 64, 0, 64, 0, 0]
+
+
+def test_a_sound_saved_before_vel_loads_with_vel_and_key_off():
+    sound = CATALOGUE.sound_from_json({"machine": 5, "params": [5.0] * 71})
+    assert len(sound.params) == 81
+    assert sound.params[:71] == [5.0] * 71 and sound.params[71:] == [0, 64, 0, 64, 0, 64, 0, 64, 0, 0]
+
+
+def test_a_sound_saved_with_vel_only_loads_with_key_off():
+    sound = CATALOGUE.sound_from_json({"machine": 5, "params": [5.0] * 71 + [18, 96, 0, 64]})
+    assert sound.params[71:] == [18, 96, 0, 64, 0, 64, 0, 64, 0, 0]
+
+
+def test_every_machine_init_sets_all_81_parameters():
     for path in sorted(glob(os.path.join(M2K_DIR, "00_machine_*.json"))):
         device = json.load(open(path))
         set_params = set()
         for message in device["init"][1:]:
             address = message["address"]
-            matches = [p for p in range(71) if CATALOGUE.address(p) == address]
+            matches = [p for p in range(81) if CATALOGUE.address(p) == address]
             assert matches, (path, address)
             set_params.update(matches)
-        assert set_params == set(range(71)), path
+        assert set_params == set(range(81)), path
 
 
 # ----------------------------------------------------------- capture/apply
@@ -97,7 +116,7 @@ def test_apply_then_capture_round_trips_a_library_sound(client):
     assert sound.machine == 15 and sound.name == "BOOM808"
     m2k_state.apply(sound, client, CATALOGUE)
     assert client.midi_out.control.call_args_list[0].args == (14, 15, 0)     # the machine first
-    assert len(nrpns(client.midi_out)) == 71
+    assert len(nrpns(client.midi_out)) == 81
     captured = m2k_state.capture(client, CATALOGUE)
     assert captured.machine == 15 and captured.params == sound.params
 

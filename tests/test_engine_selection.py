@@ -338,7 +338,7 @@ def test_preset_refresh_leaves_a_mono2k_tracks_pages_alone(app):
 def test_mono2k_devices_each_have_their_own_slot(app):
     instrument, _ = make_instrument(app)
     slots = [d.slot for slot in instrument.devices for d in slot if d.slot != 0]
-    assert sorted(slots) == [1, 2, 3, 4, 5, 6, 7]                # FX and DSTR no longer share one
+    assert sorted(slots) == [1, 2, 3, 4, 5, 6, 7, 8, 9]          # FX and DSTR no longer share one
     assert [d.label for d in instrument.devices[3]] == ["FX"]
     assert [d.label for d in instrument.devices[4]] == ["Dstr"]
 
@@ -346,7 +346,7 @@ def test_mono2k_devices_each_have_their_own_slot(app):
 def test_surge_keeps_slots_2_to_4_always_shown(app):
     instrument, _ = make_instrument(app, initial_engine=SURGE)
     assert instrument.engine.always_shown_slots == (2, 3, 4)
-    assert instrument.voices[M2K].engine.always_shown_slots == (1, 2, 3, 4, 5, 6, 7)
+    assert instrument.voices[M2K].engine.always_shown_slots == (1, 2, 3, 4, 5, 6, 7, 8, 9)
 
 
 def test_p_locks_on_mono2k_fx_dont_play_on_dstr(app):
@@ -371,17 +371,90 @@ def test_p_locks_on_mono2k_fx_dont_play_on_dstr(app):
     assert sent == [("/cc/80", 99.0)]
 
 
-def test_right_arrow_stays_on_page_1_without_a_modulation_page(app):
+def page_mode(app, instrument, device_index=0):
     from modes.osc_mode import OSCMode
-    instrument, _ = make_instrument(app)
     mode = OSCMode.__new__(OSCMode)
     mode.app = app
     mode.instrument_page = 0
+    mode.current_device_index_and_page = [device_index, 0]
     mode.get_current_instrument = lambda: instrument
+    mode.get_current_instrument_short_name_helper = lambda: instrument.name
+    app.instruments = {instrument.name: instrument}
     mode.query_all_instrument_page_params = lambda: None
     app.is_mode_active.return_value = False
+    return mode
+
+
+def test_right_arrow_stays_on_page_1_without_a_modulation_page(app):
+    instrument, _ = make_instrument(app)
+    instrument.active_voice.devices_modulation = []
+    mode = page_mode(app, instrument)
     mode.update_current_instrument_page(new_instrument_page=1)
     assert mode.instrument_page == 0
+
+
+def test_right_arrow_shows_mono2k_vel_and_key_pages(app):
+    instrument, _ = make_instrument(app)
+    mode = page_mode(app, instrument)
+    mode.update_current_instrument_page(new_instrument_page=1)
+    assert mode.instrument_page == 1
+    assert [d.label for d in mode.get_current_instrument_page_devices()] == ["Velocity", "Key Track"]
+    assert mode.get_current_instrument_device().label == "Velocity"
+
+
+def test_a_device_past_the_second_pages_last_selects_its_first(app):
+    """LFO 3 (the eighth device) selected, then Right: the second page has two (VEL, KEY TRACK)."""
+    instrument, _ = make_instrument(app)
+    mode = page_mode(app, instrument, device_index=7)
+    mode.update_current_instrument_page(new_instrument_page=1)
+    assert mode.current_device_index_and_page == [0, 0]
+    assert mode.get_current_instrument_device().label == "Velocity"
+    mode.update_current_instrument_page(new_instrument_page=0)   # (back: index 0 is on both)
+    assert mode.current_device_index_and_page == [0, 0]
+
+
+def test_p_locks_on_mono2k_vel_play(app):
+    """VEL is always shown (slot 8), so its locks play like the first page's."""
+    from sequencer.sequencer_metro import SequencerMetro
+
+    instrument, _ = make_instrument(app)
+    app.instruments = {"Pushpin 2": instrument}
+    sent = []
+    app.send_osc = lambda address, value, name: sent.append((address, value))
+    seq = SequencerMetro.__new__(SequencerMetro)
+    seq.app = app
+    seq.name = "Pushpin 2"
+    seq.locks = [[[None] * 18 for _ in range(17)] for _ in range(64)]
+    seq.lock_scale = [7] * 64
+    seq.step_index = 0
+    seq.gate = ["Off"] * 64
+    seq.controls_to_reset = []
+    seq.params = MagicMock(gate_track_active=False)
+    seq.locks[0][8][2] = 100.0                                  # VEL page, its third position: VEL 1 ADD
+    seq.evaluate_and_play_notes()
+    assert sent == [("/m2k/param/72", 100.0)]
+
+
+def test_p_locks_on_mono2k_key_track_play(app):
+    """KEY TRACK (slot 9): a lock on its HPF switch, the fourth position (a menu's lock is its item)."""
+    from sequencer.sequencer_metro import SequencerMetro
+
+    instrument, _ = make_instrument(app)
+    app.instruments = {"Pushpin 2": instrument}
+    sent = []
+    app.send_osc = lambda address, value, name: sent.append((address, value))
+    seq = SequencerMetro.__new__(SequencerMetro)
+    seq.app = app
+    seq.name = "Pushpin 2"
+    seq.locks = [[[None] * 18 for _ in range(17)] for _ in range(64)]
+    seq.lock_scale = [7] * 64
+    seq.step_index = 0
+    seq.gate = ["Off"] * 64
+    seq.controls_to_reset = []
+    seq.params = MagicMock(gate_track_active=False)
+    seq.locks[0][9][3] = 1.0                                    # HPF tracking's second item: ON
+    seq.evaluate_and_play_notes()
+    assert sent == [("/m2k/param/79", 127.0)]
 
 
 # --------------------------------------------- the DSTR page: MOD effect
