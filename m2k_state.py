@@ -1,7 +1,7 @@
 """Whole mono2k sounds: saving and loading what a track's mono2k voice plays.
 
 A sound is a machine and every one of its track parameters: MONO2K's 71 and
-m2k-jack's own after them (71-80: VEL and KEY TRACK, 81-83: AMP's feedback). pushpin
+m2k-jack's own after them (71-80: VEL and KEY TRACK, 81-83: FILT's feedback). pushpin
 never reads anything back from m2k-jack, but it doesn't need to: the voice's
 MidiCCClient keeps the last value it sent for every address, and a machine's
 init (engines/m2k/definitions) sends all its parameters, so the client's cache

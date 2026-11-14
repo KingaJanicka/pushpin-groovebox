@@ -23,7 +23,7 @@ CC (if any), each machine's INIT sound, and MONO2K's factory library.
               KEY TRACK's rows end on HPF and LPF, whether each filter follows
               the note (m2k-jack's own parameters 71-80).
   A machine's second page: BANK (DIGI-WAV only) and PTCH. An LFO's: TRCK.
-  AMP's: FEEDBACK (bipolar: below the middle inverted), then its EQ's
+  FILT's: FEEDBACK (bipolar: below the middle inverted), then its EQ's
   frequency and gain, as FX's EQ (m2k-jack's own parameters 81-83).
   AMP, FILT and the LFOs end on their trig switch (control 15, TRIG_CCS).
 
@@ -60,7 +60,7 @@ HIDDEN_LABELS = {"TRCK", "-"}
 # Frequencies whose one step is 1/8 octave: half a step per encoder click (m2k-jack takes 14-bit NRPN
 # and glides between values, so the in-between values are heard)
 FINE_STEP = 0.5
-FINE_STEP_LABELS = {("FILT", "BASE"), ("FILT", "WDTH"), ("FX", "EQF"), ("FX", "DBAS"), ("AMP", "FEQF")}
+FINE_STEP_LABELS = {("FILT", "BASE"), ("FILT", "WDTH"), ("FX", "EQF"), ("FX", "DBAS"), ("FILT", "FEQF")}
 
 # DSTR's page: BITS FOLD XOR VERB (their CCs), then MONO2K's MOD effect, which
 # no CC reaches (NRPN 1:<param>): its type as a menu, rate, depth and mix
@@ -420,19 +420,19 @@ def with_trig(controls: list[dict], page: str) -> list[dict]:
     return controls + spacers + [trig_menu(cc, label)]
 
 
-# AMP's second page: the track's out (after its chain and its delay) fed back into its chain before DIST, then that
+# FILT's second page: the track's out (after its chain and its delay) fed back into its chain before DIST, then that
 # feedback's EQ, FX's EQ's frequency and gain. m2k-jack's own parameters (m2k_jack.c, X_FDBK..), NRPN 1:<param>
 FEEDBACK = 81
 FEEDBACK_EQ = (82, 83)
 
 
 def feedback_controls(all_params: dict[int, dict]) -> list[dict]:
-    """FEEDBACK, FEEDBACK EQ FREQ and GAIN: AMP's second page, its first three knobs."""
+    """FEEDBACK, FEEDBACK EQ FREQ and GAIN: FILT's second page, its first three knobs."""
     if FEEDBACK not in all_params:
         return []
     fdbk = {"$type": "control-range", "label": display_name(all_params[FEEDBACK]), "address": param_address(FEEDBACK),
             "min": 0, "max": 127, "bipolar": 1, "display_center": 64}
-    eq = [control(0, dict(all_params[p], max=127), "AMP", param_address(p)) for p in FEEDBACK_EQ]
+    eq = [control(0, dict(all_params[p], max=127), "FILT", param_address(p)) for p in FEEDBACK_EQ]
     return [fdbk, *eq]
 
 
@@ -449,7 +449,7 @@ def page_devices(params: list[dict], labels: dict[int, str] | None = None,
             controls.append(lfo_track_menu(lfo[LFO_TRCK]["cc"]))      # control 9: the second page
         else:
             controls = [control(p["cc"], p["param"], page) for p in params if p["page"] == page]
-        if page == "AMP" and all_params:
+        if page == "FILT" and all_params:
             controls += feedback_controls(all_params)              # (controls 8-10: the second page)
         if page == "AMP" or page == "FILT" or (page.startswith("LFO") and labels is not None):
             controls = with_trig(controls, page)

@@ -51,7 +51,7 @@
  *                velocity (VEL) or its note number (KEY), from its note-on to the next. 79, 80: KEY's HPF and
  *                LPF, the high-pass and low-pass following the note (64-127, as MONO2K's always do) or sitting
  *                where note 60 puts them (0-63). A machine's INIT turns the rows and the tracking off.
- *   NRPN 1:81-83 AMP's second page: FDBK, the track's own out (after its chain and its delay) back into its chain
+ *   NRPN 1:81-83 FILT's second page: FDBK, the track's own out (after its chain and its delay) back into its chain
  *                before DIST, a block later, bipolar about 64 (below: inverted), and that feedback's EQ, EQF and
  *                EQG as FX's at half its depth in dB (64 flat). A machine's INIT turns it off.
  *   Clock (on any track's port; the first port it comes on, if several send it) sets the tempo
@@ -242,7 +242,7 @@ static void pp_assign_block(int t)
 
 /* ---------------------------------------------------------------- feedback */
 
-/* AMP's second page: the track's own out, after everything on it (its chain, its delay), back into its chain where
+/* FILT's second page: the track's own out, after everything on it (its chain, its delay), back into its chain where
  * the machine's sound goes in, before DIST and the filters, a block (16 samples) later. FDBK is bipolar about 64:
  * below it the feedback goes back inverted; |FDBK - 64| / 64 squared is its gain, up to 2 (so the loop can run away
  * into DIST's clip at the top, with VOL and LEVL in it too), its EQ a band as FX's EQ is (EQF, EQG; 64 flat). Then a

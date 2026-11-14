@@ -1,4 +1,5 @@
-"""Feedback on mono2k: m2k-jack's own track parameters 81-83, AMP's second page. FEEDBACK takes the
+"""Feedback on mono2k: m2k-jack's own track parameters 81-83, FILT's second page
+(only the page: the loop still goes in before DIST and the filters). FEEDBACK takes the
 track's own out (after its chain and its delay) back into its chain before DIST, a block later; it is
 bipolar about 64 (below: inverted). Its EQ (82, 83) is a band as FX's EQ is, 64 gain flat.
 
@@ -140,16 +141,20 @@ def test_describe_exports_feedback_after_key():
     assert all(s["kit"][81:] == [64, 64, 64] for s in d["library"])
 
 
-# ------------------------------------------------------------- AMP's second page
+# ------------------------------------------------------------- FILT's second page
 
 
-def amp_page() -> dict:
-    with open(os.path.join(M2K_DIR, "10_amp.json")) as f:
+def page(stem: str) -> dict:
+    with open(os.path.join(M2K_DIR, f"{stem}.json")) as f:
         return json.load(f)
 
 
-def test_amp_second_page_starts_with_feedback_and_its_eq():
-    controls = amp_page()["controls"]
+def filt_page() -> dict:
+    return page("20_filt")
+
+
+def test_filt_second_page_starts_with_feedback_and_its_eq():
+    controls = filt_page()["controls"]
     assert len(controls) == 16
     fdbk, eqf, eqg = controls[8:11]
     assert (fdbk["label"], fdbk["address"]) == ("Feedback", "/m2k/param/81")
@@ -161,24 +166,31 @@ def test_amp_second_page_starts_with_feedback_and_its_eq():
 
 def test_feedback_eq_reads_as_fx_eq():
     fx = json.load(open(os.path.join(M2K_DIR, "30_fx.json")))["controls"]
-    eqf = amp_page()["controls"][9]
+    eqf = filt_page()["controls"][9]
     assert eqf["value_labels"] == fx[0]["value_labels"] and eqf["step"] == fx[0]["step"] == 0.5
 
 
-def test_amp_trig_stays_last_and_the_first_page_is_unchanged():
-    controls = amp_page()["controls"]
+def test_filter_trig_stays_last_and_the_first_page_is_unchanged():
+    controls = filt_page()["controls"]
     assert [c["$type"] for c in controls[11:15]] == ["control-spacer"] * 4
+    assert controls[15]["menu_label"] == "Filter Trig"
+    assert [c["address"] for c in controls[:8]] == [f"/cc/{cc}" for cc in range(72, 80)]
+
+
+def test_amp_second_page_is_the_trig_alone_again():
+    controls = page("10_amp")["controls"]
+    assert [c["$type"] for c in controls[8:15]] == ["control-spacer"] * 7
     assert controls[15]["menu_label"] == "Amp Trig"
-    assert [c["address"] for c in controls[:8]] == [f"/cc/{cc}" for cc in range(56, 64)]
+    assert not any(c.get("address", "").startswith("/m2k/param/8") for c in controls)
 
 
 def test_no_feedback_page_without_its_parameters():
-    """A describe from before feedback (an older binary): AMP's second page is the trig alone."""
+    """A describe from before feedback (an older binary): FILT's second page is the trig alone."""
     assert gen_definitions.feedback_controls({}) == []
 
 
 def test_p_locks_on_mono2k_feedback_play(app):
-    """AMP (slot 1), its ninth position: FEEDBACK."""
+    """FILT (slot 2), its ninth position: FEEDBACK."""
     from sequencer.sequencer_metro import SequencerMetro
     from tests.test_cc_client import make_instrument
 
@@ -195,6 +207,6 @@ def test_p_locks_on_mono2k_feedback_play(app):
     seq.gate = ["Off"] * 64
     seq.controls_to_reset = []
     seq.params = MagicMock(gate_track_active=False)
-    seq.locks[0][1][8] = 20.0
+    seq.locks[0][2][8] = 20.0
     seq.evaluate_and_play_notes()
     assert sent == [("/m2k/param/81", 20.0)]

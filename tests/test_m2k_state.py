@@ -64,7 +64,7 @@ def test_param_number_parses_only_param_addresses():
 
 def test_sounds_json_has_every_parameter_machine_and_library_sound():
     assert CATALOGUE is not None
-    assert CATALOGUE.param_count == 84                # MONO2K's 71, then VEL's 4, KEY TRACK's 6, AMP's feedback 3
+    assert CATALOGUE.param_count == 84                # MONO2K's 71, then VEL's 4, KEY TRACK's 6, FILT's feedback 3
     assert len(CATALOGUE.machines) == 19 and all(len(m["kit"]) == 84 for m in CATALOGUE.machines)
     assert len(CATALOGUE.library) == 96 and all(len(s["kit"]) == 84 for s in CATALOGUE.library)
     assert CATALOGUE.categories == ["KICK", "SNARE", "HATS", "PERC", "BASS", "LEAD", "PAD", "FX"]
