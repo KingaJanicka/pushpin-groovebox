@@ -17,9 +17,11 @@ CC (if any), each machine's INIT sound, and MONO2K's factory library.
               (CC 14) and sends the machine's whole INIT sound, so every page
               shows the values m2k-jack actually has.
   slots 1-7   AMP, FILT, FX, DSTR, LFO 1-3: always shown, one per slot.
-  slot 8      VEL, on the second instrument page (Right): two rows of a
-              destination and how much a note's velocity adds to it, the
-              Monomachine's ASSIGN > VEL (m2k-jack's own parameters 71-74).
+  slots 8-9   VEL and KEY TRACK, on the second instrument page (Right): two
+              rows each of a destination and how much a note's velocity / its
+              note number adds to it, the Monomachine's ASSIGN > VEL and KEY;
+              KEY TRACK's rows end on HPF and LPF, whether each filter follows
+              the note (m2k-jack's own parameters 71-80).
   A machine's second page: BANK (DIGI-WAV only) and PTCH. An LFO's: TRCK.
   AMP, FILT and the LFOs end on their trig switch (control 15, TRIG_CCS).
 
@@ -435,27 +437,55 @@ def page_devices(params: list[dict], labels: dict[int, str] | None = None,
     return devices
 
 
-# The Monomachine's ASSIGN > VEL: two rows of a destination (DEVICE and DEST, as an LFO's) and ADD, how far
-# a note at full velocity moves it (bipolar about 64; a softer note moves it in proportion). m2k-jack's own
-# parameters past MONO2K's (m2k_jack.c, X_VDST1..): no CC, NRPN 1:<param>. Its own slot past the first page's
-# eight, so it is on the second instrument page, where Surge's modulation is
+# The Monomachine's ASSIGN > VEL and KEY: two rows each of a destination (DEVICE and DEST, as an LFO's) and
+# ADD, how far a note moves it at full velocity (VEL) or at note 127 (KEY); a softer or lower note moves it in
+# proportion (bipolar about 64). KEY's rows end on HPF and LPF: whether the high-pass and the low-pass follow
+# the note, as MONO2K's always do, or stay where note 60 puts them. m2k-jack's own parameters past MONO2K's
+# (m2k_jack.c, X_VDST1..): no CC, NRPN 1:<param>. Their own slots past the first page's eight, so they are
+# on the second instrument page, where Surge's modulation is
 VEL_PAGE = ("60_vel", "VELOCITY", 8)
 VEL_ROWS = ((71, 72), (73, 74))                  # (DEST, ADD) a row
+KEY_PAGE = ("61_key", "KEY TRACK", 9)
+KEY_ROWS = ((75, 76), (77, 78))
+KEY_HPF, KEY_LPF = 79, 80
+ON, OFF = 127, 0                                 # (m2k-jack: 64-127 on)
 
 
-def vel_add(param: int, row: int) -> dict:
-    return {"$type": "control-range", "label": f"VEL {row} ADD", "address": param_address(param), "min": 0,
+def assign_add(param: int, label: str) -> dict:
+    return {"$type": "control-range", "label": label, "address": param_address(param), "min": 0,
             "max": 127, "bipolar": 1, "display_center": 64}
 
 
-def vel_device(labels: dict[int, str]) -> dict:
-    """Each row takes four knobs: DEVICE, DEST, ADD and a gap."""
-    stem, name, slot = VEL_PAGE
+def tracking_menu(param: int, label: str) -> dict:
+    # (each item names its filter, as the trig switches do)
+    return {
+        "$type": "control-menu",
+        "menu_label": f"{label} TRACKING",
+        "step": 1 / CLICKS_PER_ITEM,
+        "items": [{"$type": "menu-item", "label": f"{label} {name}",
+                   "onselect": {"$type": "message", "address": param_address(param), "value": value}}
+                  for name, value in (("ON", ON), ("OFF", OFF))],
+    }
+
+
+def assign_device(page: tuple[str, str, int], source: str, rows: tuple, labels: dict[int, str],
+                  row_ends: tuple = ({"$type": "control-spacer"}, {"$type": "control-spacer"})) -> dict:
+    """Each row takes four knobs: DEVICE, DEST, ADD and what ends it (a gap, or a filter's tracking)."""
+    stem, name, slot = page
     controls: list[dict] = []
-    for row, (dest, add) in enumerate(VEL_ROWS, start=1):
-        controls += [target_switch(param_address(dest), labels, "VEL DESTINATION"), vel_add(add, row),
-                     {"$type": "control-spacer"}]
+    for row, ((dest, add), end) in enumerate(zip(rows, row_ends), start=1):
+        controls += [target_switch(param_address(dest), labels, f"{source} DESTINATION"),
+                     assign_add(add, f"{source} {row} ADD"), end]
     return {"name": name, "slot": slot, "init": [], "controls": controls}
+
+
+def vel_device(labels: dict[int, str]) -> dict:
+    return assign_device(VEL_PAGE, "VEL", VEL_ROWS, labels)
+
+
+def key_device(labels: dict[int, str]) -> dict:
+    return assign_device(KEY_PAGE, "KEY", KEY_ROWS, labels,
+                         (tracking_menu(KEY_HPF, "HPF"), tracking_menu(KEY_LPF, "LPF")))
 
 
 # ------------------------------------------------------- the pages' words, cased
@@ -466,7 +496,7 @@ def vel_device(labels: dict[int, str]) -> dict:
 # take their usual spelling, and acronyms stay capitals.
 
 UNIT_CASE = {"MS": "ms", "S": "s", "HZ": "Hz", "KHZ": "kHz"}
-ACRONYMS = {"LFO", "EQ", "HP", "LP", "FM", "FX", "XOR", "SID", "OSC", "PW", "RMS", "M2K", "M64"}
+ACRONYMS = {"LFO", "EQ", "HP", "LP", "FM", "FX", "XOR", "SID", "OSC", "PW", "RMS", "M2K", "M64", "HPF", "LPF"}
 PART_SEPARATORS = re.compile(r"([-+/&])")
 
 
@@ -512,8 +542,11 @@ def build(describe: dict) -> dict[str, dict]:
     ADDRESS_OF.clear()
     ADDRESS_OF.update({p["id"]: cc_address(p["cc"]) for p in describe["params"] if "id" in p})
     files = page_devices(describe["params"], labels, all_params)
-    if labels is not None and any(p["param"] == VEL_ROWS[-1][1] for p in describe["params_all"]):
+    known = {p["param"] for p in describe.get("params_all", [])}
+    if labels is not None and VEL_ROWS[-1][1] in known:
         files[VEL_PAGE[0]] = vel_device(labels)
+    if labels is not None and KEY_LPF in known:
+        files[KEY_PAGE[0]] = key_device(labels)
     ccs = cc_by_param(describe) if "kit" in describe["machines"][0] else None
     ptch = next((p["param"] for p in describe["params"] if p["cc"] == PTCH_CC), None)
     for m in describe["machines"]:

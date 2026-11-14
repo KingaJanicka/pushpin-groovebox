@@ -45,10 +45,12 @@
  *   NRPN 1:<p>   (CC 99 = 1, CC 98 = MONO2K's parameter number p, 0-70): any track parameter, the ones no CC
  *                reaches too (the MOD effect, the wave bank, the arp, gate). pushpin saves and restores whole
  *                sounds with it.
- *   NRPN 1:71-74 pushpin's own track parameters past MONO2K's: velocity's two modulations, the Monomachine's
- *                ASSIGN > VEL. Each a DEST (71, 73: the parameter's number + 1, 0 off, as an LFO's DEST) and an
- *                ADD (72, 74: bipolar about 64): a note at velocity v adds (ADD - 64) x v / 127 steps to DEST,
- *                from its note-on to the next. A machine's INIT turns both off.
+ *   NRPN 1:71-80 pushpin's own track parameters past MONO2K's, the Monomachine's ASSIGN > VEL and KEY:
+ *                71-74 VEL, 75-78 KEY: two rows each of a DEST (the parameter's number + 1, 0 off, as an LFO's
+ *                DEST) and an ADD (bipolar about 64). A note adds (ADD - 64) x s / 127 steps to DEST, s its
+ *                velocity (VEL) or its note number (KEY), from its note-on to the next. 79, 80: KEY's HPF and
+ *                LPF, the high-pass and low-pass following the note (64-127, as MONO2K's always do) or sitting
+ *                where note 60 puts them (0-63). A machine's INIT turns the rows off and the tracking on.
  *   Clock (on any track's port; the first port it comes on, if several send it) sets the tempo
  *                MONO2K times its LFOs, delays and HOLD by: its sequencer stays stopped, pushpin
  *                sequences. Start / Continue put the LFOs on FREE back to their PHAS, so they line
@@ -84,8 +86,8 @@
 #include <unistd.h>
 #include <math.h>
 
-/* the core's modulation queue: three LFOs a track, and pushpin's velocity rows (PP_VEL_ROWS, below) */
-#define M2K_MODQ_PER_TRACK 5
+/* the core's modulation queue: three LFOs a track, and pushpin's velocity and key rows (PP_ROWS, below) */
+#define M2K_MODQ_PER_TRACK 7
 #include "m2k_core.c"
 
 #ifdef M2K_WITH_JACK
@@ -119,17 +121,26 @@ static const pp_ccmap_t PP_CC[] = {
 };
 #define PP_NCC ((int)(sizeof PP_CC / sizeof PP_CC[0]))
 
-/* pushpin's own track parameters, numbered on past MONO2K's (NRPN 1:<p>, saved with a sound): velocity's
- * modulations, PP_VEL_ROWS of them, each a DEST and an ADD */
-#define PP_VEL_ROWS 2
-enum { X_VDST1 = P_COUNT, X_VADD1, X_VDST2, X_VADD2, X_END };
+/* pushpin's own track parameters, numbered on past MONO2K's (NRPN 1:<p>, saved with a sound), the
+ * Monomachine's ASSIGN page: velocity's and the key's modulations, two rows each of a DEST and an ADD, then
+ * KEY's HPF and LPF, whether each filter follows the note (MONO2K's always do) */
+enum { X_VDST1 = P_COUNT, X_VADD1, X_VDST2, X_VADD2,
+       X_KDST1, X_KADD1, X_KDST2, X_KADD2, X_KHPF, X_KLPF, X_END };
 #define X_COUNT (X_END - P_COUNT)
 #define PP_PARAMS X_END                      /* every parameter pushpin can set: MONO2K's and its own */
-_Static_assert(X_COUNT == 2 * PP_VEL_ROWS, "a DEST and an ADD a row");
-_Static_assert(M2K_MODQ_PER_TRACK >= 3 + PP_VEL_ROWS, "room in the core's modulation queue for every source");
-static const char *const PP_X_LABEL[X_COUNT] = {"DEST", "ADD", "DEST", "ADD"};
-static const char *const PP_X_NAME[X_COUNT] = {"VEL 1 DEST", "VEL 1 ADD", "VEL 2 DEST", "VEL 2 ADD"};
-static const uint8_t PP_X_INIT[X_COUNT] = {0, 64, 0, 64};    /* off, nothing added */
+#define PP_ROWS 4                            /* VEL 1, VEL 2, KEY 1, KEY 2: each a DEST, its ADD the one after */
+static const uint8_t PP_ROW_DST[PP_ROWS] = {X_VDST1, X_VDST2, X_KDST1, X_KDST2};
+_Static_assert(M2K_MODQ_PER_TRACK >= 3 + PP_ROWS, "room in the core's modulation queue for every source");
+enum { XK_DEST, XK_ADD, XK_SWITCH };
+static const uint8_t PP_X_KIND[X_COUNT] = {XK_DEST, XK_ADD, XK_DEST, XK_ADD, XK_DEST, XK_ADD, XK_DEST, XK_ADD,
+                                           XK_SWITCH, XK_SWITCH};
+static const char *const PP_X_LABEL[X_COUNT] = {"DEST", "ADD", "DEST", "ADD", "DEST", "ADD", "DEST", "ADD",
+                                                "HPF", "LPF"};
+static const char *const PP_X_NAME[X_COUNT] = {"VEL 1 DEST", "VEL 1 ADD", "VEL 2 DEST", "VEL 2 ADD",
+                                               "KEY 1 DEST", "KEY 1 ADD", "KEY 2 DEST", "KEY 2 ADD",
+                                               "HPF TRACKING", "LPF TRACKING"};
+/* off, nothing added; both filters tracking (a switch: 0-63 off, 64-127 on) */
+static const uint8_t PP_X_INIT[X_COUNT] = {0, 64, 0, 64, 0, 64, 0, 64, 127, 127};
 
 static int pp_param_of_cc(int cc)
 {
@@ -169,33 +180,50 @@ static void pp_params_reset(int t)
     }
 }
 
-/* ------------------------------------------------- velocity's modulations */
+/* ---------------------------------------- velocity's and the key's modulations */
 
 static int32_t pp_x[NT][X_COUNT];        /* pushpin's own parameters, Q8 (DEST whole) */
 static uint8_t pp_vel[NT];               /* the velocity of the track's last note-on (0: none yet) */
+static uint8_t pp_key[NT];               /* and its note (the last key pressed) */
+
+/* KEY's HPF and LPF into the core's switches (its bits: the filter sits at M2K_FIXED_NOTE) */
+static void pp_apply_tracking(int t)
+{
+    trk[t].ktrk_off = (uint8_t)((pp_x[t][X_KHPF - P_COUNT] < 64 * 256 ? 1u : 0u) |
+                                (pp_x[t][X_KLPF - P_COUNT] < 64 * 256 ? 2u : 0u));
+}
 
 static void pp_x_reset(int t)
 {
     for (int i = 0; i < X_COUNT; i++) pp_x[t][i] = PP_X_INIT[i] * 256;
+    pp_apply_tracking(t);
 }
 
 static void pp_set_x(int t, int param, int32_t q8)
 {
     const int i = param - P_COUNT;
-    if ((i & 1) == 0) q8 = CLAMP(q8, 0, P_COUNT * 256) & ~255;    /* a DEST: a choice, never in between */
-    else q8 = CLAMP(q8, 0, 127 * 256);
+    switch (PP_X_KIND[i]) {
+    case XK_DEST: q8 = CLAMP(q8, 0, P_COUNT * 256) & ~255; break;   /* a choice, never in between */
+    case XK_SWITCH: q8 = CLAMP(q8, 0, 127 * 256) & ~255; break;
+    default: q8 = CLAMP(q8, 0, 127 * 256);
+    }
     pp_x[t][i] = q8;
+    if (PP_X_KIND[i] == XK_SWITCH) pp_apply_tracking(t);
 }
 
-/* every block, with the LFOs': each row adds (ADD - 64) x velocity / 127 steps to its DEST on its own track */
-static void pp_vel_block(int t)
+/* every block, with the LFOs': each row adds (ADD - 64) x its source / 127 steps to its DEST on its own track. The
+ * sources hold from a note-on to the next: VEL rows the note's velocity, KEY rows its note number (0-127: C-1 adds
+ * nothing, the top C nearly all of ADD) */
+static void pp_assign_block(int t)
 {
-    if (!pp_vel[t]) return;
-    for (int r = 0; r < PP_VEL_ROWS; r++) {
-        const int dest = pp_x[t][2 * r] >> 8;
-        const int32_t add = pp_x[t][2 * r + 1] - 64 * 256;      /* Q8 steps, -64..63 */
-        if (dest <= 0 || dest > P_COUNT || !add) continue;
-        mod_add(t, dest - 1, add * pp_vel[t] / 127);
+    if (!pp_vel[t]) return;                                      /* (no note yet) */
+    for (int r = 0; r < PP_ROWS; r++) {
+        const int i = PP_ROW_DST[r] - P_COUNT;
+        const int dest = pp_x[t][i] >> 8;
+        const int32_t add = pp_x[t][i + 1] - 64 * 256;           /* Q8 steps, -64..63 */
+        const int32_t src = PP_ROW_DST[r] < X_KDST1 ? pp_vel[t] : pp_key[t];
+        if (dest <= 0 || dest > P_COUNT || !add || !src) continue;
+        mod_add(t, dest - 1, add * src / 127);
     }
 }
 
@@ -660,6 +688,7 @@ static void pp_handle_midi(int t, const uint8_t *m, size_t n)
     if (cmd == 0x90 && d2) {
         pp_note_on(t);
         pp_vel[t] = (uint8_t)d2;
+        pp_key[t] = (uint8_t)d1;
         if (pp_skip[t] & ST_NOAMP) pp_trigless_on(t, d1, d2);
         else {
             const int held = pp_amp_note[t];
@@ -710,7 +739,7 @@ static void pp_render_split(void)
     rc->nstep = 0;
     rc->dt = 0;
     seq_block();
-    for (int t = 0; t < NT; t++) { lfo_block(t); pp_vel_block(t); }
+    for (int t = 0; t < NT; t++) { lfo_block(t); pp_assign_block(t); }
     mod_apply();
     brec_take(rc);
     m_set(rc->L, 0, sizeof rc->L);

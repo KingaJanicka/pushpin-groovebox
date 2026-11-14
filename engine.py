@@ -1152,12 +1152,12 @@ class M2KEngine(SurgeXTEngine):
 
     # A device per slot (p-locks are stored by slot, so no two devices share
     # one). The first page: 1 AMP, 2 FILT, 3 FX, 4 DSTR, 5-7 LFO 1-3. The
-    # second instrument page (slots 8-15): 8 VEL
-    always_shown_slots = (1, 2, 3, 4, 5, 6, 7, 8)
+    # second instrument page (slots 8-15): 8 VEL, 9 KEY TRACK
+    always_shown_slots = (1, 2, 3, 4, 5, 6, 7, 8, 9)
 
     def initial_slots(self) -> list[dict[str, Any] | None]:
         """Slot 0 holds one device per MONO2K machine, chosen by the machine CC.
-        Every other page (AMP, FILT, FX, DSTR, the LFOs, VEL) is always shown."""
+        Every other page (AMP, FILT, FX, DSTR, the LFOs, VEL, KEY TRACK) is always shown."""
         slots: list[dict[str, Any] | None] = [None] * 16
         slots[0] = {"address": self.MACHINE_ADDRESS, "value": float(self.machine or 0)}
         return slots

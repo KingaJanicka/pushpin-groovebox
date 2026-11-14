@@ -382,6 +382,36 @@
 			"$type": "message",
 			"address": "/m2k/param/74",
 			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/75",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/76",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/77",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/78",
+			"value": 64
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/79",
+			"value": 127
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/80",
+			"value": 127
 		}
 	],
 	"controls": [
