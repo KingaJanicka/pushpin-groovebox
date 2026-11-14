@@ -54,6 +54,9 @@
  *   NRPN 1:81-83 FILT's second page: FDBK, the track's own out (after its chain and its delay) back into its chain
  *                before DIST, a block later, bipolar about 64 (below: inverted), and that feedback's EQ, EQF and
  *                EQG as FX's at half its depth in dB (64 flat). A machine's INIT turns it off.
+ *   NRPN 1:84    FX-FM's CARRIER (patches/0005): 0-63 the carrier on the track's own note, 64-127 on the track
+ *                before's pitch (its note, glide and PTCH), so the track's PTCH is its interval to the modulator. A
+ *                machine's INIT sets it to the track's own note.
  *   Clock (on any track's port; the first port it comes on, if several send it) sets the tempo
  *                MONO2K times its LFOs, delays and HOLD by: its sequencer stays stopped, pushpin
  *                sequences. Start / Continue put the LFOs on FREE back to their PHAS, so they line
@@ -129,7 +132,7 @@ static const pp_ccmap_t PP_CC[] = {
  * KEY's HPF and LPF, whether each filter follows the note (MONO2K's always do) */
 enum { X_VDST1 = P_COUNT, X_VADD1, X_VDST2, X_VADD2,
        X_KDST1, X_KADD1, X_KDST2, X_KADD2, X_KHPF, X_KLPF,
-       X_FDBK, X_FEQF, X_FEQG, X_END };
+       X_FDBK, X_FEQF, X_FEQG, X_FMC, X_END };
 #define X_COUNT (X_END - P_COUNT)
 #define PP_PARAMS X_END                      /* every parameter pushpin can set: MONO2K's and its own */
 #define PP_ROWS 4                            /* VEL 1, VEL 2, KEY 1, KEY 2: each a DEST, its ADD the one after */
@@ -137,20 +140,21 @@ static const uint8_t PP_ROW_DST[PP_ROWS] = {X_VDST1, X_VDST2, X_KDST1, X_KDST2};
 _Static_assert(M2K_MODQ_PER_TRACK >= 3 + PP_ROWS, "room in the core's modulation queue for every source");
 enum { XK_DEST, XK_ADD, XK_SWITCH };
 static const uint8_t PP_X_KIND[X_COUNT] = {XK_DEST, XK_ADD, XK_DEST, XK_ADD, XK_DEST, XK_ADD, XK_DEST, XK_ADD,
-                                           XK_SWITCH, XK_SWITCH, XK_ADD, XK_ADD, XK_ADD};
+                                           XK_SWITCH, XK_SWITCH, XK_ADD, XK_ADD, XK_ADD, XK_SWITCH};
 static const char *const PP_X_LABEL[X_COUNT] = {"DEST", "ADD", "DEST", "ADD", "DEST", "ADD", "DEST", "ADD",
-                                                "HPF", "LPF", "FDBK", "FEQF", "FEQG"};
+                                                "HPF", "LPF", "FDBK", "FEQF", "FEQG", "CARR"};
 static const char *const PP_X_NAME[X_COUNT] = {"VEL 1 DEST", "VEL 1 ADD", "VEL 2 DEST", "VEL 2 ADD",
                                                "KEY 1 DEST", "KEY 1 ADD", "KEY 2 DEST", "KEY 2 ADD",
                                                "HPF TRACKING", "LPF TRACKING",
-                                               "FEEDBACK", "FEEDBACK EQ FREQ", "FEEDBACK EQ GAIN"};
+                                               "FEEDBACK", "FEEDBACK EQ FREQ", "FEEDBACK EQ GAIN", "FM CARRIER"};
 /* off, nothing added; neither filter tracking (a switch: 0-63 off, 64-127 on). pushpin's default, not MONO2K's,
  * whose filters always track: a sound sits where it does at note 60 whatever note plays it. No feedback (64: none,
- * bipolar), its EQ flat at FX's EQ's INIT frequency */
-static const uint8_t PP_X_INIT[X_COUNT] = {0, 64, 0, 64, 0, 64, 0, 64, 0, 0, 64, 64, 64};
+ * bipolar), its EQ flat at FX's EQ's INIT frequency. FX-FM's carrier on its own note (0-63; 64-127 the track before's
+ * pitch) */
+static const uint8_t PP_X_INIT[X_COUNT] = {0, 64, 0, 64, 0, 64, 0, 64, 0, 0, 64, 64, 64, 0};
 /* the MONO2K parameter whose values (what the screen shows) each of pushpin's own takes, -1 none: the feedback's EQ
  * is FX's EQ's */
-static const int8_t PP_X_LIKE[X_COUNT] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, P_EQF, P_EQG};
+static const int8_t PP_X_LIKE[X_COUNT] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, P_EQF, P_EQG, -1};
 
 static int pp_param_of_cc(int cc)
 {
@@ -196,11 +200,13 @@ static int32_t pp_x[NT][X_COUNT];        /* pushpin's own parameters, Q8 (DEST w
 static uint8_t pp_vel[NT];               /* the velocity of the track's last note-on (0: none yet) */
 static uint8_t pp_key[NT];               /* and its note (the last key pressed) */
 
-/* KEY's HPF and LPF into the core's switches (its bits: the filter sits at M2K_FIXED_NOTE) */
+/* the switches into the core's: KEY's HPF and LPF (its bits: the filter sits at M2K_FIXED_NOTE), FX-FM's CARRIER
+ * (patches/0005: on, the carrier on the track before's pitch) */
 static void pp_apply_tracking(int t)
 {
     trk[t].ktrk_off = (uint8_t)((pp_x[t][X_KHPF - P_COUNT] < 64 * 256 ? 1u : 0u) |
                                 (pp_x[t][X_KLPF - P_COUNT] < 64 * 256 ? 2u : 0u));
+    trk[t].fm_trk = pp_x[t][X_FMC - P_COUNT] >= 64 * 256;
 }
 
 static void pp_fb_reset(int t);
@@ -323,11 +329,12 @@ static void pp_track_in(int t, int m, int16_t *blk)
     for (int i = 0; i < M2K_SUB; i++) blk[i] = (int16_t)sat16(blk[i] + (pp_fb[t][i] >> hr));
 }
 
-/* a choice (a wave, a mode, a destination): never through the values between */
+/* a choice (a wave, a mode, a destination): never through the values between (FX-FM's WAVE, K_WAVM: a knob on the
+ * Push, but a wave or the next one, so it jumps too) */
 static int pp_discrete(int t, int param)
 {
     const int kind = pinfo(t, param)->kind;
-    return kind_choices(kind) != 0 || kind == K_DEST || kind == K_TRK || kind == K_WBNK;
+    return kind_choices(kind) != 0 || kind == K_DEST || kind == K_TRK || kind == K_WBNK || kind == K_WAVM;
 }
 
 static void pp_apply(int t, int param)

@@ -130,15 +130,15 @@ def test_eq_does_nothing_without_feedback(tmp_path):
 @built
 def test_describe_exports_feedback_after_key():
     d = json.loads(subprocess.run([BINARY, "--describe"], check=True, capture_output=True, text=True).stdout)
-    assert d["param_count"] == 84
-    tail = d["params_all"][81:]
+    assert d["param_count"] == 85
+    tail = d["params_all"][81:84]
     assert [(p["param"], p["label"], p["name"]) for p in tail] == [
         (81, "FDBK", "FEEDBACK"), (82, "FEQF", "FEEDBACK EQ FREQ"), (83, "FEQG", "FEEDBACK EQ GAIN")]
     assert [p["bipolar"] for p in tail] == [True, False, True]
     eqf = next(p for p in d["params_all"] if p["param"] == 24)                # FX's EQF: the same words
     assert tail[1]["values"] == eqf["values"]
-    assert all(m["kit"][81:] == [64, 64, 64] for m in d["machines"])
-    assert all(s["kit"][81:] == [64, 64, 64] for s in d["library"])
+    assert all(m["kit"][81:84] == [64, 64, 64] for m in d["machines"])
+    assert all(s["kit"][81:84] == [64, 64, 64] for s in d["library"])
 
 
 # ------------------------------------------------------------- FILT's second page

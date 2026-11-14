@@ -225,7 +225,7 @@ def m2k_files():
 
 def test_generated_definitions_exist():
     names = [os.path.basename(p) for p in m2k_files()]
-    assert len([n for n in names if n.startswith("00_machine_")]) == 19
+    assert len([n for n in names if n.startswith("00_machine_")]) == 20
     assert {"10_amp.json", "20_filt.json", "30_fx.json", "40_dstr.json"} <= set(names)
 
 

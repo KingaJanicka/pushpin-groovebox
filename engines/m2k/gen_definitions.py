@@ -22,7 +22,8 @@ CC (if any), each machine's INIT sound, and MONO2K's factory library.
               note number adds to it, the Monomachine's ASSIGN > VEL and KEY;
               KEY TRACK's rows end on HPF and LPF, whether each filter follows
               the note (m2k-jack's own parameters 71-80).
-  A machine's second page: BANK (DIGI-WAV only) and PTCH. An LFO's: TRCK.
+  A machine's second page: BANK (DIGI-WAV only) or CARRIER (FX-FM only,
+  m2k-jack's own parameter 84), and PTCH. An LFO's: TRCK.
   FILT's: FEEDBACK (bipolar: below the middle inverted), then its EQ's
   frequency and gain, as FX's EQ (m2k-jack's own parameters 81-83).
   AMP, FILT and the LFOs end on their trig switch (control 15, TRIG_CCS).
@@ -301,8 +302,13 @@ def control(cc: int, param: dict, page: str | None = None, address: str | None =
 
 
 # A machine page's second page: BANK (DIGI-WAV only, MONO2K's own wave bank
-# choice) then PTCH, the track's pitch in semitones
+# choice) or CARRIER (FX-FM only, m2k-jack's own parameter 84: the carrier on
+# the track's own note or on the track before's pitch), then PTCH, the track's
+# pitch in semitones
 WAVE_MACHINE = "DIGI-WAV"
+FM_MACHINE = "FX-FM"
+FM_CARRIER = 84
+CARRIERS = (("OWN NOTE", 0), ("PREV TRK", 127))  # (m2k-jack: 64-127 the track before's; OWN NOTE the INIT's)
 WAVE_BANK = 70
 BANKS = ["M2K", "M64"]                            # MONO2K's 32 waves, the 64 (m2k_ui.c, K_WBNK)
 PTCH_CC = 20
@@ -321,10 +327,25 @@ def wave_bank_menu() -> dict:
     }
 
 
+def fm_carrier_menu() -> dict:
+    return {
+        "$type": "control-menu",
+        "menu_label": "CARRIER",
+        "step": 1 / CLICKS_PER_ITEM,
+        "items": [
+            {"$type": "menu-item", "label": name,
+             "onselect": {"$type": "message", "address": param_address(FM_CARRIER), "value": value}}
+            for name, value in CARRIERS
+        ],
+    }
+
+
 def machine_page_two(machine: dict, ptch: dict | None) -> list[dict]:
     if ptch is None:
         return []
-    first = wave_bank_menu() if machine["name"] == WAVE_MACHINE else {"$type": "control-spacer"}
+    first = (wave_bank_menu() if machine["name"] == WAVE_MACHINE
+             else fm_carrier_menu() if machine["name"] == FM_MACHINE
+             else {"$type": "control-spacer"})
     pitch = control(PTCH_CC, ptch)
     if "value_labels" not in pitch:
         pitch["display_center"] = 64              # semitones either way

@@ -775,8 +775,18 @@ def test_only_digi_wav_has_bank(app):
     assert [(i.label, i.address, i.value) for i in bank.items] == [
         ("M2K", "/m2k/param/70", 32), ("M64", "/m2k/param/70", 96)]
     assert second[1].label == "Track Pitch"
-    others = [d for d in instrument.devices[0] if d.label != "Digi-Wav"]
+    others = [d for d in instrument.devices[0] if d.label not in ("Digi-Wav", "FX-FM")]
     assert all(not hasattr(d.pages[1][0], "items") for d in others)
+
+
+def test_fx_fm_has_its_carrier_switch_where_digi_wav_has_bank(app):
+    instrument, _ = make_instrument(app)
+    second = machine_page(instrument, "FX-FM").pages[1]
+    carrier = second[0]
+    assert carrier.menu_label == "Carrier"
+    assert [(i.label, i.address, i.value) for i in carrier.items] == [
+        ("Own Note", "/m2k/param/84", 0), ("Prev Trk", "/m2k/param/84", 127)]
+    assert second[1].label == "Track Pitch"
 
 
 def test_lfo_trck_is_on_the_lfos_second_page(app):
