@@ -22,7 +22,8 @@
 			"label": "Deform",
 			"address": "/param/a/slfo/6/deform",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
 		},
 		{
 			"$type": "control-range",
@@ -182,7 +183,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "1",
-						"address": "/param/a/slfo/6/tempo_sync+",
+						"address": "/param/a/slfo/6/rate/tempo_sync+",
 						"value": 0
 					}
 				},
@@ -192,7 +193,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "2",
-						"address": "/param/a/slfo/6/tempo_sync+",
+						"address": "/param/a/slfo/6/rate/tempo_sync+",
 						"value": 1
 					}
 				}

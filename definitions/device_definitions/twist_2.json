@@ -49,28 +49,32 @@
 							"label": "Detune",
 							"address": "/param/a/osc/2/param2",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Square Sh.",
 							"address": "/param/a/osc/2/param3",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Saw Sh.",
 							"address": "/param/a/osc/2/param4",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Sync Mix",
 							"address": "/param/a/osc/2/param5",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						}
 					]
 				},
@@ -89,28 +93,32 @@
 							"label": "Waveshaper",
 							"address": "/param/a/osc/2/param2",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Fold",
 							"address": "/param/a/osc/2/param3",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Asymmetry",
 							"address": "/param/a/osc/2/param4",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Var. Mix",
 							"address": "/param/a/osc/2/param5",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						}
 					]
 				},
@@ -129,28 +137,32 @@
 							"label": "Ratio",
 							"address": "/param/a/osc/2/param2",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Amount",
 							"address": "/param/a/osc/2/param3",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Feedback",
 							"address": "/param/a/osc/2/param4",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Sub Mix",
 							"address": "/param/a/osc/2/param5",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						}
 					]
 				},
@@ -169,28 +181,32 @@
 							"label": "Ratio/Type",
 							"address": "/param/a/osc/2/param2",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Formant",
 							"address": "/param/a/osc/2/param3",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Shape",
 							"address": "/param/a/osc/2/param4",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "PD Mix",
 							"address": "/param/a/osc/2/param5",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						}
 					]
 				},
@@ -209,28 +225,32 @@
 							"label": "Bump",
 							"address": "/param/a/osc/2/param2",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Peak",
 							"address": "/param/a/osc/2/param3",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Shape",
 							"address": "/param/a/osc/2/param4",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Organ Mix",
 							"address": "/param/a/osc/2/param5",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						}
 					]
 				},
@@ -249,28 +269,32 @@
 							"label": "Bank",
 							"address": "/param/a/osc/2/param2",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Morph X",
 							"address": "/param/a/osc/2/param3",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Morph Y",
 							"address": "/param/a/osc/2/param4",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Lo-Fi Mix",
 							"address": "/param/a/osc/2/param5",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						}
 					]
 				},
@@ -289,28 +313,32 @@
 							"label": "Type",
 							"address": "/param/a/osc/2/param2",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Inversion",
 							"address": "/param/a/osc/2/param3",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Shape",
 							"address": "/param/a/osc/2/param4",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Root Mix",
 							"address": "/param/a/osc/2/param5",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						}
 					]
 				},
@@ -329,28 +357,32 @@
 							"label": "Speak",
 							"address": "/param/a/osc/2/param2",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Species",
 							"address": "/param/a/osc/2/param3",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Segment",
 							"address": "/param/a/osc/2/param4",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Raw Mix",
 							"address": "/param/a/osc/2/param5",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						}
 					]
 				},
@@ -369,28 +401,32 @@
 							"label": "Pitch Rand",
 							"address": "/param/a/osc/2/param2",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Grain Dens",
 							"address": "/param/a/osc/2/param3",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Grain Dur.",
 							"address": "/param/a/osc/2/param4",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Sine Mix",
 							"address": "/param/a/osc/2/param5",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						}
 					]
 				},
@@ -409,28 +445,32 @@
 							"label": "Type",
 							"address": "/param/a/osc/2/param2",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Clock Freq",
 							"address": "/param/a/osc/2/param3",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Res",
 							"address": "/param/a/osc/2/param4",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Peak Mix",
 							"address": "/param/a/osc/2/param5",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						}
 					]
 				},
@@ -449,28 +489,32 @@
 							"label": "Freq Rand",
 							"address": "/param/a/osc/2/param2",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Dens",
 							"address": "/param/a/osc/2/param3",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Filt Type",
 							"address": "/param/a/osc/2/param4",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Raw Mix",
 							"address": "/param/a/osc/2/param5",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						}
 					]
 				},
@@ -489,28 +533,32 @@
 							"label": "Inharm.",
 							"address": "/param/a/osc/2/param2",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Bright",
 							"address": "/param/a/osc/2/param3",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Decay",
 							"address": "/param/a/osc/2/param4",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Exct. Mix",
 							"address": "/param/a/osc/2/param5",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						}
 					]
 				},
@@ -529,28 +577,32 @@
 							"label": "Material.",
 							"address": "/param/a/osc/2/param2",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Bright",
 							"address": "/param/a/osc/2/param3",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Decay",
 							"address": "/param/a/osc/2/param4",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Exct. Mix",
 							"address": "/param/a/osc/2/param5",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						}
 					]
 				},
@@ -569,28 +621,32 @@
 							"label": "Sharp",
 							"address": "/param/a/osc/2/param2",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Bright",
 							"address": "/param/a/osc/2/param3",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Decay",
 							"address": "/param/a/osc/2/param4",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Var Mix",
 							"address": "/param/a/osc/2/param5",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						}
 					]
 				},
@@ -609,28 +665,32 @@
 							"label": "Tone/Noise",
 							"address": "/param/a/osc/2/param2",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Model",
 							"address": "/param/a/osc/2/param3",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Decay",
 							"address": "/param/a/osc/2/param4",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Var Mix",
 							"address": "/param/a/osc/2/param5",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						}
 					]
 				},
@@ -649,28 +709,32 @@
 							"label": "Tone/Noise",
 							"address": "/param/a/osc/2/param2",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Low Cut",
 							"address": "/param/a/osc/2/param3",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Decay",
 							"address": "/param/a/osc/2/param4",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						},
 						{
 							"$type": "control-range",
 							"label": "Var Mix",
 							"address": "/param/a/osc/2/param5",
 							"min": 0,
-							"max": 1
+							"max": 1,
+							"bipolar": 1
 						}
 					]
 				}
@@ -691,16 +755,13 @@
 			"max": 1
 		},
 		{
-			"$type": "control-spacer-address",
-			"address": "/wavetable/a/osc/2/id"
+			"$type": "control-spacer"
 		},
 		{
-			"$type": "control-spacer-address",
-			"address": "/wavetable/a/osc/2/id"
+			"$type": "control-spacer"
 		},
 		{
-			"$type": "control-spacer-address",
-			"address": "/wavetable/a/osc/2/id"
+			"$type": "control-spacer"
 		},
 		{
 			"$type": "control-menu",
@@ -761,7 +822,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "Filter 1",
-						"address": "/param/a/mixer/osc1/route",
+						"address": "/param/a/mixer/osc2/route",
 						"value": 0
 					}
 				},
@@ -771,7 +832,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "To Both Filters",
-						"address": "/param/a/osc/2/retrigger",
+						"address": "/param/a/mixer/osc2/route",
 						"value": 1
 					}
 				},
@@ -781,7 +842,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "To Filter 2",
-						"address": "/param/a/osc/2/retrigger",
+						"address": "/param/a/mixer/osc2/route",
 						"value": 2
 					}
 				}

@@ -6,6 +6,7 @@ import push2_python
 from user_interface.display_utils import show_text
 import logging
 import time
+import wavetables
 from typing import Any, Callable
 
 logger = logging.getLogger("osc_controls")
@@ -767,7 +768,8 @@ class OSCControlSwitch(object):
                     if (
                         isinstance(first, OSCControlMenu)
                         and first.items
-                        and int(first.items[0].message["value"]) == int(value)
+                        and first.items[0].value is not None
+                        and int(first.items[0].value) == int(value)
                         and first.items[0].address == address
                     ):
                         self._move_to_group(idx)
@@ -1047,6 +1049,8 @@ class OSCControlMenu(object):
         if self.recent_sends.contains(value):
             return  # our own selection coming back, possibly after a newer one
         idx = self.get_closest_idx(value)
+        if idx is None:
+            return  # nothing here means that value (e.g. wavetables not found)
         # Surge echoes back every value we send. If the echo names the item
         # that's already selected, keep our fractional position: snapping to
         # the integer index on every echo threw away the encoder's progress
@@ -1098,7 +1102,10 @@ class OSCControlMenu(object):
             for idx, item in enumerate(self.items):
                 if item.range is not None and item.range[0] <= whole <= item.range[1]:
                     return idx
-        closest_value = closest([float(item.value) for item in self.items if item.value is not None], value)
+        values = [float(item.value) for item in self.items if item.value is not None]
+        if not values:
+            return None
+        closest_value = closest(values, value)
         for idx, item in enumerate(self.items):
             if item.value == closest_value:
                 return idx
@@ -1261,6 +1268,12 @@ class OSCMenuItem(object):
         self.modmatrix: bool = config.get("modmatrix", True)
         self.address: str | None = self.message["address"] if self.message else None
         self.value: float | int | None = self.message["value"] if self.message else None
+        # Optional: a Surge factory wavetable, "Category/Name". Its id depends on
+        # the machine Surge runs on, so it's looked up here (see wavetables.py);
+        # an unknown name leaves the item inert rather than picking another table.
+        self.wavetable: str | None = config.get("wavetable", None)
+        if self.wavetable is not None:
+            self.value = wavetables.wavetable_id(self.wavetable)
         # Optional: [lo, hi], every whole value that means this item (mono2k's
         # choices are runs of values, not all the same length)
         self.range: list[int] | None = config.get("range", None)

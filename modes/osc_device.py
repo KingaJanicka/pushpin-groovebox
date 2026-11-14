@@ -82,11 +82,10 @@ class OSCDevice(PyshaMode):
                 case "control-spacer":
                     self.controls.append(ControlSpacer())
                 case "control-macro":
-                    self.controls.append(
-                        OSCControlMacro(control_def, get_color, self.send_message)
-                    )
+                    control = OSCControlMacro(control_def, get_color, self.send_message)
                     for param in control_def["params"]:
-                        self.dispatcher.map(param.address, control.set_state)
+                        self.dispatcher.map(param["address"], control.set_state)
+                    self.controls.append(control)
                 case "control-range":
                     control = OSCControl(control_def, get_color, self.send_message)
                     self.dispatcher.map(control.address, control.set_state)
