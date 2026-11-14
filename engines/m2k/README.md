@@ -98,6 +98,7 @@ a pushpin track that plays Surge can stay connected to its MONO2K track.
 | **NRPN 1:71–78** | the Monomachine's ASSIGN > VEL (71–74) and KEY (75–78), pushpin's addition: two rows each of DEST (the parameter's number + 1, 0 off, as an LFO's DEST) and ADD (bipolar about 64). A note adds (ADD − 64) × *s* / 127 steps to DEST on its own track, *s* its velocity (VEL) or its note number (KEY), from its note-on to the next one (through the release too). A machine's INIT turns the rows off |
 | **NRPN 1:79 / 80** | KEY's HPF / LPF: 64–127 the high-pass / low-pass follows the note, as MONO2K's always does; 0–63 it stays where note 60 puts it (`patches/0003-filter-tracking-switches.patch`). A machine's INIT turns both off: pushpin's default, so a sound keeps its filter wherever it's played |
 | **NRPN 1:81–83** | FILT's FEEDBACK (81) and its EQ's EQF and EQG (82, 83), pushpin's addition: the track's own output, after everything on it (its chain and its delay), goes back into its chain where the machine's sound goes in, before DIST and the filters, one 16-sample block (0.36 ms) later. FEEDBACK is bipolar about 64: above it the signal goes back in phase, below it inverted; the gain is ((FEEDBACK − 64) / 64)², up to 2 at the ends, so the loop can drive itself into DIST's clip. The EQ is a band like FX's EQ at half its depth in dB (about +18 / −15.5 dB at the ends; gain 64: flat), since a boost in the loop is heard again on every pass. Last on the way back in, after the EQ and the gain, a fixed tanh soft-clips the feedback at about −8.7 dB of full scale: gentle feedback passes almost unchanged, and a screaming loop is held down (not a control). The amp's envelope is inside the loop, so the feedback dies with the note (`patches/0004-track-input-hook.patch`). A machine's INIT turns it off |
+| **NRPN 1:84** | FX-FM's CARRIER, pushpin's addition (`patches/0005-fx-fm-machine.patch`): 0–63 the carrier on the track's own note, 64–127 on the track before's pitch (its note, glide and PTCH, plus this track's PTCH, the carrier's interval to the modulator). A machine's INIT sets it to the track's own note |
 | clock | the tempo MONO2K times its LFOs (SPD), delays (DTIM) and AMP HOLD by: averaged over up to four beats, changed only past 0.25 % (pushpin's clock jitters; a moving delay time glides); a jump over 2 % starts the average over from the last beat. On any track's port, the first that sends it. MONO2K's sequencer stays stopped |
 | start, continue | the LFOs on FREE back to their PHAS, so they line up with PLAY (the others restart on notes) |
 | stop | ignored (the last tempo stays) |
@@ -181,6 +182,29 @@ engines/m2k/build.sh && python engines/m2k/gen_definitions.py
 - **Machine device** (first upper-row button): one per machine, picked from the
   device menu like Surge's oscillator types. Shows SYN A–H with that machine's
   own labels. Selecting one sends CC 14 and the machine's whole INIT sound.
+- **FX-FM** (machine 19, pushpin's addition: `patches/0005-fx-fm-machine.patch`):
+  FM with the track before as the modulator, the way FX-CHORUS and FX-RING
+  hear it (after its amp and filter, before its VOL, so its VOL or LEVL at 0
+  silences it and the FM goes on; track 1 has no track before, and plays the
+  plain carrier). The carrier is one of MONO2K's 32 waves (DIGI-WAV's M2K
+  bank) on this track's own note, so the FX track needs notes of its own; the
+  modulator's amp envelope becomes the FM index's. SYN A–H: **WAVE** the
+  carrier's wave, a knob named as DIGI-WAV's on M2K (SINE, the INIT, to NOIZ;
+  four values a wave, and it plays the wave it names, never a blend of two; it
+  ignores BANK, so FX-FM has none), **DEP** the depth on FM+'s law at 4/3 its
+  depth (about 19 rad at 127 from a full-scale modulator; the INIT's 68 is
+  about 3 rad off GND-SIN's INIT), **DEC** the depth falling from the trig (127 held, 0
+  quickest), **MIX** (0 the modulator as it came in, 127 the carrier alone),
+  **FB** the carrier's own feedback (FM+STAT's), **TONE** a lowpass on the
+  modulator (127 open), **TUNE** ±2 semitones, **INP** the modulator's level
+  (100 unity). The second page has **CARRIER** at knob 1 (where DIGI-WAV has
+  BANK): **OWN NOTE** (the INIT) puts the carrier on FX-FM's own note;
+  **PREV TRK** puts it on the track before's pitch (its note, glide and PTCH),
+  so FX-FM's **PTCH** (knob 2) is the carrier's interval to the modulator
+  whatever it plays (+12: ratio 2), and FX-FM's own notes only start and stop
+  the sound. It's m2k-jack's own parameter 84 on the machine's slot, so it
+  p-locks with the machine page. `tests/test_m2k_fxfm.py` renders it and
+  checks the sidebands against Bessel functions.
 - **DSTR**: BITS, FOLD, XOR and the reverb send (VERB), then MONO2K's MOD effect:
   TYPE (a menu: CHOR, FLNG, PHAS; four clicks an item), RATE, DPTH and MIX. The
   MOD parameters have no CC; the page sends them as NRPN 1:66–69.
@@ -250,7 +274,7 @@ On a track playing Monomachine, BROWSE works as it does for Surge, with
 mono2k's own sounds:
 
 - **Slots.** Each track has 8 slots (the pad rows). A slot keeps a whole sound:
-  the machine and all 84 parameters (MONO2K's 71, then VEL's 4, KEY TRACK's 6 and FILT's feedback's 3), in
+  the machine and all 85 parameters (MONO2K's 71, then VEL's 4, KEY TRACK's 6, FILT's feedback's 3 and FX-FM's CARRIER), in
   `~/.local/share/pushpin/m2k_state/<track>_<slot>.json`. Switching slots saves
   the one being left and plays the new one; an empty slot starts on its
   machine's INIT (the track's `m2k_machine`, else GND-SIN). The current slot is

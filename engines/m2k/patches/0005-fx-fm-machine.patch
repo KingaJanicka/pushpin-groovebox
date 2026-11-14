@@ -1,0 +1,235 @@
+diff --git a/firmware/gen/m2k_tables.h b/firmware/gen/m2k_tables.h
+index 71efa94..2dfc28f 100644
+--- a/firmware/gen/m2k_tables.h
++++ b/firmware/gen/m2k_tables.h
+@@ -767,9 +767,9 @@ static const int32_t T_DIST_C[128] = {
+     24179, 24179, 24179, 24179, 24179, 24179, 24179, 24179,
+     24179, 24179, 24179, 24179, 24179, 24179, 24179, 24179,
+ };
+-static const uint16_t T_DIST_M[19] = {
++static const uint16_t T_DIST_M[20] = {
+     4096, 4096, 4096, 3486, 4096, 1223, 4981, 1830, 3486, 4240, 2984, 4096, 4096, 4096,
+-    4096, 4096, 4096, 4096, 4096,
++    4096, 4096, 4096, 4096, 4096, 4096,
+ };
+ static const uint32_t T_DRM_RA[128] = {
+     268435456, 208140723, 128315228, 92332861, 71855410, 58637647, 49400289, 42580641,
+diff --git a/firmware/src/m2k.h b/firmware/src/m2k.h
+index df5d7d6..e03d124 100644
+--- a/firmware/src/m2k.h
++++ b/firmware/src/m2k.h
+@@ -93,6 +93,7 @@ _Static_assert(G_COUNT_OF(20, M2K_TRACKS) == G_COUNT, "the globals' blocks");
+  * the name) */
+ enum { M_GSIN, M_GPRC, M_SID, M_FMS, M_FMD, M_SAW, M_ENS, M_WAV, M_VOX, M_FMP, M_PUL, M_FXC, M_FXR, M_FXD, M_GNOI,
+        M_DKIK, M_DSNR, M_DHAT, M_DCYM,       /* the DRM- drums, after the LXR's voices */
++       M_FXF,                                /* FX-FM (pushpin's m2k-jack): the track before as its modulator */
+        M_COUNT };
+ 
+ typedef struct {
+diff --git a/firmware/src/m2k_dsp.c b/firmware/src/m2k_dsp.c
+index 4f9c8b6..26420de 100644
+--- a/firmware/src/m2k_dsp.c
++++ b/firmware/src/m2k_dsp.c
+@@ -166,6 +166,9 @@ typedef struct {
+     int32_t fine[P_COUNT];             /* a host's offset in 1/256 steps (pushpin's m2k-jack: 14-bit values, glides) */
+     uint8_t ktrk_off;                  /* a host's filter tracking switches (pushpin's m2k-jack: KEY's HPF, LPF): bit 0
+                                         * the high-pass, bit 1 the low-pass sits at M2K_FIXED_NOTE, not the note's */
++    uint8_t fm_trk;                    /* a host's FX-FM switch (pushpin's m2k-jack: CARRIER): its carrier on the track
++                                        * before's pitch, not its own note's */
++    int32_t pout;                      /* the pitch its machine last played (FX-FM's carrier on the next track reads it) */
+     int32_t peak;
+     int32_t lvl;                       /* its blocks' peaks followed, falling ~93 ms: how loud it is heard (the CPU
+                                         * guard's: a hat between its hits still counts) */
+@@ -411,6 +414,9 @@ static void mach_trig(trk_t *t, int m, int legato)
+     case M_FXD:                        /* the compressor from rest; legato, it follows on (its own re-attack stepped) */
+         if (!legato) t->ms[2] = t->ms[3] = 0;
+         break;
++    case M_FXF:                        /* FX-FM's carrier from its start (legato, it goes on; the depth's decay restarts) */
++        if (!legato) t->ph[0] = 0, t->ms[0] = t->ms[1] = 0;
++        break;
+     case M_PUL:                        /* the voices start together (the unison's beating says so) */
+         t->ph[0] = t->ph[1] = t->ph[2] = 0;
+         if (t->eff[P_SYN + 6] >= 64) t->ms[4] = 0;
+@@ -888,7 +894,7 @@ static void mach_block(int ti, int m, int32_t pitch)
+         }
+         break;
+     }
+-    case M_FXC: case M_FXR: case M_FXD: {
++    case M_FXC: case M_FXR: case M_FXD: case M_FXF: {
+         /* the FX machines take the previous track's output (after its amp, before its VOL; the first track has none),
+          * INP its level (100 as it is). MONO2K's own designs on the Monomachine's pages: the emulator it is measured on
+          * passes no neighbour into its FX machines */
+@@ -948,6 +954,39 @@ static void mach_block(int ti, int m, int32_t pitch)
+                 int32_t y = (xi * c) >> 15;
+                 o[i] = (int16_t)sat16((xi + (int32_t)mul_sh(y - xi, mix, 15)) >> RG_HR);
+             }
++        } else if (m == M_FXF) {   /* WAVE DEP DEC MIX FB TONE TUNE INP (pushpin's m2k-jack): one of MONO2K's 32
++                                    * waves (DIGI-WAV's, whatever the bank; the one WAVE names, never between two) on
++                                    * the track's note is the carrier, the track before (after its amp and filter,
++                                    * before its VOL, INP its level) its modulator, TONE a two-pole lowpass on it
++                                    * first. DEP the depth on FM+'s law, 4/3 its depth (about 19 rad at 127 from a
++                                    * full-scale modulator); DEC under 127 makes it fall from the trig (0 the
++                                    * quickest, FM+'s ENV times); FB the carrier's own feedback, FM+STAT's. MIX
++                                    * crossfades the modulator as it came in and the carrier, half scale as FM's */
++            /* (CARRIER on TRK: on the track before's pitch, its note, glide and PTCH, and this track's PTCH on it) */
++            int32_t cp = t->fm_trk && ti ? trk[ti - 1].pout + (PB8(t, P_PTCH) >> 2) : pitch;
++            uint32_t inc = inc_of(cp + (PB8(t, P_SYN + 6) >> 7));
++            const int16_t *wv = &T_WAVES[((P7(t, P_SYN + 0) * 32) >> 7) * 256];
++            uint32_t k = tq_u32(T_FMB, P8(t, P_SYN + 1)) * 4 / 3;                 /* (under 2^19) */
++            int32_t dc = P8(t, P_SYN + 2);
++            if (dc < 127 * 256) {
++                k = mulu_hi(k, t->menv[0] >> 15, 15);
++                t->menv[0] = mulu_hi(t->menv[0], tq_u32(T_FMEC, ((127 * 256 - dc) * 63) / 127), 31);
++            }
++            uint32_t kf = tq_u32(T_FMFB, P8(t, P_SYN + 4));
++            int32_t lp = tq_u16(T_FMLP, P8(t, P_SYN + 5));
++            for (int i = 0; i < M2K_SUB; i++) {
++                t->ms[2] += (int32_t)mul_sh(x[i] - t->ms[2], lp, 15);
++                t->ms[3] += (int32_t)mul_sh(t->ms[2] - t->ms[3], lp, 15);
++                /* the low words alone: a phase, wrapping */
++                uint32_t pm = (uint32_t)t->ms[3] * k + (uint32_t)((t->ms[0] + t->ms[1]) >> 1) * kf;
++                uint32_t p = t->ph[0] + pm;
++                int32_t j = (int32_t)(p >> 24), f = (int32_t)((p >> 16) & 255);
++                int32_t c = wv[j] + (((wv[(j + 1) & 255] - wv[j]) * f) >> 8);
++                t->ms[1] = t->ms[0];
++                t->ms[0] = c;
++                t->ph[0] += inc;
++                o[i] = (int16_t)sat16(x[i] + (int32_t)mul_sh((c >> 1) - x[i], mix, 15));
++            }
+         } else {                   /* ATK REL THRS MIX RAT GAIN RMS INP: a compressor on the block's peak and its RMS
+                                     * (RMS's blend), followed in log2, over THRS's -60 .. 0 dB by RAT, GAIN made up */
+             uint32_t pk = 1;
+@@ -1697,8 +1736,8 @@ static void chain_filter(int32_t *x, int eq_on, int32_t eqc, int32_t ceil, zsvf_
+  * the chain on the kit's defaults (one track held, less the idle render), then the machine's dearer settings and each
+  * stage it has on; the two cores' split weighs them (m2k_fx.c, par_split) */
+ static const uint16_t T_MCOST[M_COUNT] = {
+-    /* GSIN GPRC SID  FMS  FMD  SAW  ENS  WAV  VOX  FMP  PUL  FXC  FXR  FXD  GNOI DKIK DSNR DHAT DCYM */
+-       285, 275, 275, 310, 290, 310, 320, 290, 450, 325, 315, 350, 280, 290, 260, 290, 300, 320, 285
++    /* GSIN GPRC SID  FMS  FMD  SAW  ENS  WAV  VOX  FMP  PUL  FXC  FXR  FXD  GNOI DKIK DSNR DHAT DCYM FXF */
++       285, 275, 275, 310, 290, 310, 320, 290, 450, 325, 315, 350, 280, 290, 260, 290, 300, 320, 285, 300
+ };
+ #define C_UNI_SAW 140                  /* SWAV-SAW's unison */
+ #define C_UNI_PUL 90                   /* SWAV-PULS's */
+@@ -1724,7 +1763,7 @@ static void track_block(int ti, int32_t *restrict L, int32_t *restrict R, int32_
+     /* an FX machine hears this track (the next one; FX-RING two on, its EXT): only then its tout and tvol are kept (no
+      * one else reads them; the FX machine is with it on its core, after it) */
+     const uint8_t *mc = pp->machine;
+-    const int heard = (ti + 1 < M2K_TRACKS && mc[ti + 1] >= M_FXC && mc[ti + 1] <= M_FXD) ||
++    const int heard = (ti + 1 < M2K_TRACKS && ((mc[ti + 1] >= M_FXC && mc[ti + 1] <= M_FXD) || mc[ti + 1] == M_FXF)) ||
+                       (ti + 2 < M2K_TRACKS && mc[ti + 2] == M_FXR);
+     if (heard) {
+         m_set(tout[ti], 0, sizeof tout[ti]);
+@@ -1746,6 +1785,7 @@ static void track_block(int ti, int32_t *restrict L, int32_t *restrict R, int32_
+     int32_t gs = gd * g;                                                   /* notes 0..255 apart: under 2^31 */
+     t->pitch += gd > 0 ? (gs + 65535) >> 16 : gs >> 16;
+     int32_t pitch = t->pitch + (PB8(t, P_PTCH) >> 2);
++    t->pout = pitch;
+     PROF(2);
+     if (t->xf) xf_block(ti, m, pitch);
+     else mach_block(ti, m, pitch);
+diff --git a/firmware/src/m2k_fx.c b/firmware/src/m2k_fx.c
+index e264576..6b1890d 100644
+--- a/firmware/src/m2k_fx.c
++++ b/firmware/src/m2k_fx.c
+@@ -1362,7 +1362,7 @@ static uint8_t par_split(void)
+     const uint8_t *mc = PAT(cur_pat)->machine;
+     uint8_t tie = 0;                   /* track t's bit: it goes where track t - 1 goes */
+     for (int t = 1; t < M2K_TRACKS; t++)
+-        if (mc[t] == M_FXC || mc[t] == M_FXR || mc[t] == M_FXD || (t + 1 < M2K_TRACKS && mc[t + 1] == M_FXR)) tie |= (uint8_t)(1u << t);
++        if (mc[t] == M_FXC || mc[t] == M_FXR || mc[t] == M_FXD || mc[t] == M_FXF || (t + 1 < M2K_TRACKS && mc[t + 1] == M_FXR)) tie |= (uint8_t)(1u << t);
+     if (par_force >= 0) {
+         uint8_t m = (uint8_t)par_force;
+         for (int t = 1; t < M2K_TRACKS; t++) if (tie >> t & 1) m = (uint8_t)((m & ~(1u << t)) | (m >> (t - 1) & 1u) << t);
+diff --git a/firmware/src/m2k_proj.c b/firmware/src/m2k_proj.c
+index e851753..8e741b0 100644
+--- a/firmware/src/m2k_proj.c
++++ b/firmware/src/m2k_proj.c
+@@ -505,7 +505,7 @@ static int sound_guess(int m, const uint8_t *k, int lo, int hi)
+ {
+     int none = lo > hi, mid = none ? 60 : (lo + hi) / 2, melodic = !none && hi - lo >= 5;
+     switch (m) {
+-    case M_FXC: case M_FXR: case M_FXD: return CAT_FX;
++    case M_FXC: case M_FXR: case M_FXD: case M_FXF: return CAT_FX;
+     case M_GNOI: return k[P_DEC] < 59 ? CAT_HATS : CAT_SNARE;
+     case M_DKIK: return mid >= 60 ? CAT_PERC : CAT_KICK;      /* a high drum voice: a tom, a perc */
+     case M_DSNR: return CAT_SNARE;
+diff --git a/firmware/src/m2k_seq.c b/firmware/src/m2k_seq.c
+index 2c70dd0..40dc4b9 100644
+--- a/firmware/src/m2k_seq.c
++++ b/firmware/src/m2k_seq.c
+@@ -946,6 +946,7 @@ static const uint8_t MACH_DEF[M_COUNT][8] = {
+                                                    * a clap's hits 8 ms apart */
+     /* DRM-HATS */ {54, 60, 127, 127, 127, 0, 5, 0},  /* its hats: a sine under a sine and the noise, 60 ms closed */
+     /* DRM-CYMB */ {127, 64, 0, 64, 0, 110, 0, 107}, /* its cymbal: noise held at the top, a long fall */
++    /* FX-FM    */ {0, 68, 127, 127, 0, 127, 64, 100}, /* pushpin's: a SINE carrier, ~3 rad off GND-SIN's INIT, all wet */
+ };
+ 
+ /* each machine's INIT, a sound for its purpose: kit_default's chain and MACH_DEF's page, then these (param, value)
+@@ -1014,6 +1015,7 @@ static const struct { uint8_t home; const uint8_t *kv; } MACH_INIT[M_COUNT] = {
+     [M_FXD] = {48, KV(SA, 70, SB, 30, SC, 50, SE, 120, SF, 100, P_WDTH, 48, P_DEC, 127, P_REL, 100, P_GATE, 127,
+                       P_LEVL, 127, P_VOL, 78)},
+     [M_FXR] = {48, KV(P_PTCH, 70, P_DEC, 127, P_REL, 100, P_GATE, 127, P_LEVL, 127, P_VOL, 82)},
++    [M_FXF] = {48, KV(P_DEC, 127, P_REL, 100, P_GATE, 127, P_LEVL, 127, P_VOL, 82)},
+ };
+ 
+ static void kit_default(m2k_pattern_t *p, int t, int m)
+@@ -1043,7 +1045,7 @@ static void kit_default(m2k_pattern_t *p, int t, int m)
+     }
+     p->machine[t] = (uint8_t)m;
+     m_cpy(k, MACH_DEF[m], 8);
+-    if (m == M_FXC || m == M_FXR || m == M_FXD) k[P_HOLD] = 127;     /* an FX track stays open from its trig to the gate's end */
++    if (m == M_FXC || m == M_FXR || m == M_FXD || m == M_FXF) k[P_HOLD] = 127;     /* an FX track stays open from its trig to the gate's end */
+ }
+ 
+ static void feel_kit_v15(uint8_t *k);
+diff --git a/firmware/src/m2k_ui.c b/firmware/src/m2k_ui.c
+index ae0d196..b6cbd49 100644
+--- a/firmware/src/m2k_ui.c
++++ b/firmware/src/m2k_ui.c
+@@ -22,7 +22,8 @@ enum {
+     K_PCT, K_GRES, K_LANE,                                                 /* GRIDS' */
+     K_MUTQ, K_MOTN,                                                        /* GLO > PLAY's, the screen's motion */
+     K_TLEN,                                                                /* a track's own length (SEQ held) */
+-    K_PROB                                                                 /* its chance (HOME 2: 16 steps, 100 % first) */
++    K_PROB,                                                                /* its chance (HOME 2: 16 steps, 100 % first) */
++    K_WAVM                                                                 /* FX-FM's WAVE (pushpin's m2k-jack): MONO2K's 32, whatever the bank */
+ };
+ typedef struct { const char *s4, *name; uint8_t kind; } pi_t;
+ 
+@@ -97,7 +98,7 @@ typedef struct {
+ /* the machines as the selector steps through them (patterns keep their numbers): the ten tonal ones first, the sine
+  * and the SWAV and FM+ families together, then the drums in a kit's order, the noises, the FX (silent alone) */
+ static const uint8_t M_ORDER[M_COUNT] = {M_GSIN, M_SAW, M_PUL, M_ENS, M_FMS, M_FMP, M_FMD, M_VOX, M_WAV, M_SID,
+-                                          M_DKIK, M_DSNR, M_DHAT, M_DCYM, M_GPRC, M_GNOI, M_FXC, M_FXD, M_FXR};
++                                          M_DKIK, M_DSNR, M_DHAT, M_DCYM, M_GPRC, M_GNOI, M_FXC, M_FXD, M_FXR, M_FXF};
+ static int m_place(int m) { for (int i = 0; i < M_COUNT; i++) if (M_ORDER[i] == m) return i; return 0; }
+ 
+ static const mi_t MI[M_COUNT] = {
+@@ -159,6 +160,10 @@ static const mi_t MI[M_COUNT] = {
+     {"DRM-CYMB", "DRM", "CYMBAL", "PERC", {2, 5, 2},
+      {{"CARR", "CARRIER PITCH", K_SEMI}, {"M1FR", "MOD 1 PITCH", K_SEMI}, {"M1", "MOD 1 DEPTH", K_NUM}, {"M2FR", "NOISE PITCH", K_SEMI},
+       {"M2", "NOISE DEPTH", K_NUM}, {"WAVE", "CARRIER WAVE", K_DWV5}, {"ATK", "ATTACK", K_DRA}, {"DEC", "DECAY", K_DRD}}},
++    /* pushpin's m2k-jack: FM, the track before the modulator */
++    {"FX-FM", "FX", "FM", "FX", {3, 4, 2},
++     {{"WAVE", "CARRIER WAVE", K_WAVM}, {"DEP", "FM DEPTH", K_NUM}, {"DEC", "DEPTH DECAY", K_NUM}, {"MIX", "MIX", K_NUM},
++      {"FB", "FEEDBACK", K_NUM}, {"TONE", "MOD TONE", K_NUM}, {"TUNE", "TUNE", K_TUN2}, {"INP", "INPUT", K_NUM}}},
+ };
+ static const char *const DWAV_N[5] = {"SIN", "TRI", "SAW", "SQR", "NOIS"};
+ 
+@@ -440,6 +445,7 @@ static void fmt(const pi_t *pi, int t, int v, char *out, const char **unit)
+     case K_ALGO: s_cpy(out, ALGO_N[c]); break;
+     case K_VOIC: s_int(out, c + 1); *unit = "VOICES"; break;
+     case K_WAVE: s_cpy(out, (PAT(cur_pat)->kit[t][P_WBNK] * 2) >> 7 ? T_WAVE64_NAME[v >> 1 > 63 ? 63 : v >> 1] : T_WAVE_NAME[c]); break;
++    case K_WAVM: s_cpy(out, T_WAVE_NAME[(v * 32) >> 7]); break;
+     case K_VOF1: s_int(out, T_VO_F1HZ[v]); *unit = "HZ F1"; break;
+     case K_VOF2: s_int(out, T_VO_F2HZ[v]); *unit = "HZ F2"; break;
+     case K_CONS: s_cpy(out, T_VO_CONS[c]); break;
+@@ -3171,7 +3177,7 @@ static void mark_3d(int x, int y, int m)
+         }
+         return;
+     }
+-    blit(ICON_BITS[m][f], ICON_N, ICON_N, x, y - lift, 1);
++    blit(ICON_BITS[m == M_FXF ? M_FXR : m][f], ICON_N, ICON_N, x, y - lift, 1);   /* (FX-FM has none: FX-RING's) */
+ }
+ 
+ /* a cell a machine, the library's strip: 4 x 4 outlined 2 px apart, the current one solid (nineteen: 112 px of the
