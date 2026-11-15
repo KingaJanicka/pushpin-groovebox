@@ -21,6 +21,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import push2_python.constants as C
 import pytest
 
+import audio_in_state
 import engine
 from engine import SurgeXTEngine
 from modes import audio_in_device
@@ -103,6 +104,8 @@ def links(monkeypatch):
     """Record link changes instead of running pw-link: the queue gets tuples."""
     monkeypatch.setattr(audio_in_device, "connectPipewireSourceToPipewireDest", lambda s, d: ("link", s, d))
     monkeypatch.setattr(audio_in_device, "disconnectPipewireSourceFromPipewireDest", lambda s, d: ("unlink", s, d))
+    monkeypatch.setattr(audio_in_state, "connectPipewireSourceToPipewireDest", lambda s, d: ("link", s, d))
+    monkeypatch.setattr(audio_in_state, "disconnectPipewireSourceFromPipewireDest", lambda s, d: ("unlink", s, d))
 
 
 @pytest.fixture
@@ -479,3 +482,200 @@ def test_pd_patch_vol_k_scales_channel_k_straight_through(n):
         mult = mult_of_adc[k]
         assert dac_of_mult[mult] == k, f"channel {k} comes out on {dac_of_mult[mult]}"
         assert vol_of_mult[mult] == f"vol_{k}"
+
+
+# ---------------------------------------------- saved with the Surge slot
+#
+# The routing and gains are kept in a sidecar next to the slot's state patch
+# (audio_in_state.py), saved by name so a restarted node can be re-linked.
+
+
+def restart_node(eng):
+    """Kill the duplex node and bring up a new one, with new port ids."""
+    asyncio.run(eng.kill_pd_node())
+    wire_duplex_ports(eng)
+
+
+def test_routing_and_gains_are_saved_by_name(rig, device, tmp_path):
+    choose(device, 0, "Pushpin 1")
+    choose(device, 2, "Pushpin 2")
+    rig.me.engine.audio_in_gains[0] = 0.5
+    path = str(tmp_path / "Pushpin 0_3.audio_in.json")
+    audio_in_state.save(path, rig.me.engine)
+    data = audio_in_state.load(path)
+    assert data["columns"][0] == {"source": "Pushpin 1", "port": None}
+    assert data["columns"][1] is None
+    assert data["columns"][2] == {"source": "Pushpin 2", "port": None}
+    assert data["gains"][0] == 0.5
+
+
+def test_nothing_routed_removes_a_stale_sidecar(rig, tmp_path):
+    path = tmp_path / "Pushpin 0_0.audio_in.json"
+    path.write_text('{"columns": [], "gains": []}')
+    audio_in_state.save(str(path), rig.me.engine)
+    assert not path.exists()
+    audio_in_state.save(str(path), rig.me.engine)     # and none is written
+    assert not path.exists()
+
+
+def test_restore_links_the_saved_sources_into_a_new_node(rig, device, tmp_path):
+    choose(device, 0, "Pushpin 1")
+    rig.me.engine.audio_in_gains[0] = 0.7
+    path = str(tmp_path / "slot.audio_in.json")
+    audio_in_state.save(path, rig.me.engine)
+
+    restart_node(rig.me.engine)
+    rig.me.engine.duplex_node_osc_client = MagicMock()
+    rig.app.queue.clear()
+    audio_in_state.restore(rig.app, rig.me.engine, audio_in_state.load(path))
+
+    in_L, in_R = duplex_in(0)
+    assert rig.app.queue == [("link", 200, in_L), ("link", 201, in_R)]
+    assert rig.me.engine.connections[0]["source"] == "Pushpin 1"
+    sent = gains_sent(rig.me.engine)
+    assert sent["/vol_0"] == pytest.approx(0.7) and sent["/vol_1"] == pytest.approx(0.7)
+    assert sent["/vol_2"] == 0.0
+
+
+def test_restored_routing_shows_on_the_switches_and_gain_knobs(rig, tmp_path):
+    data = {"columns": [None, {"source": "Pushpin 2", "port": None}] + [None] * 6,
+            "gains": [0.0, 0.25] + [0.0] * 6}
+    audio_in_state.restore(rig.app, rig.me.engine, data)
+    dev = make_device(rig.app, rig.me.engine)
+    dev.update()
+    assert dev.switches[1].get_active_group().label == "Pushpin 2"
+    assert dev.gain_controls[1].value == pytest.approx(0.25)
+
+
+def test_restore_replaces_the_old_routing(rig, device):
+    choose(device, 0, "Pushpin 1")
+    choose(device, 1, "Pushpin 2")
+    rig.app.queue.clear()
+    data = {"columns": [{"source": "Pushpin 2", "port": None}] + [None] * 7, "gains": [0.0] * 8}
+    audio_in_state.restore(rig.app, rig.me.engine, data)
+    c0_L, c0_R = duplex_in(0)
+    c1_L, c1_R = duplex_in(1)
+    assert rig.app.queue == [
+        ("unlink", 200, c0_L), ("unlink", 201, c0_R),
+        ("link", 300, c0_L), ("link", 301, c0_R),
+        ("unlink", 300, c1_L), ("unlink", 301, c1_R),
+    ]
+    assert rig.me.engine.connections[1]["L"] is None
+
+
+def test_restoring_no_sidecar_clears_the_routing(rig, device):
+    choose(device, 0, "Pushpin 1")
+    rig.app.queue.clear()
+    audio_in_state.restore(rig.app, rig.me.engine, None)
+    in_L, in_R = duplex_in(0)
+    assert rig.app.queue == [("unlink", 200, in_L), ("unlink", 201, in_R)]
+    assert rig.me.engine.connections[0]["source"] is None
+
+
+def test_a_saved_source_that_is_gone_leaves_its_column_empty(rig):
+    data = {"columns": [{"source": "Pushpin 9", "port": None},
+                        {"source": "Pushpin 1", "port": None}] + [None] * 6,
+            "gains": [0.0] * 8}
+    audio_in_state.restore(rig.app, rig.me.engine, data)
+    in_L, in_R = duplex_in(1)
+    assert rig.app.queue == [("link", 200, in_L), ("link", 201, in_R)]
+    assert rig.me.engine.connections[0]["L"] is None
+
+
+def test_overwitch_port_is_restored_by_its_name(rig):
+    rig.app.external_instruments[0].engine.PID = 6000
+    data = {"columns": [{"source": "Overwitch", "port": "Track 1"}] + [None] * 7, "gains": [0.0] * 8}
+    audio_in_state.restore(rig.app, rig.me.engine, data)
+    in_L, in_R = duplex_in(0)
+    assert rig.app.queue == [("link", 902, in_L), ("link", 902, in_R)]
+    assert rig.me.engine.connections[0]["port"] == "Track 1"
+
+
+def test_overwitch_is_skipped_while_it_is_not_running(rig):
+    data = {"columns": [{"source": "Overwitch", "port": "Track 1"}] + [None] * 7, "gains": [0.0] * 8}
+    audio_in_state.restore(rig.app, rig.me.engine, data)
+    assert rig.app.queue == []
+
+
+def test_restore_waits_for_the_duplex_node(rig):
+    asyncio.run(rig.me.engine.kill_pd_node())
+    data = {"columns": [{"source": "Pushpin 1", "port": None}] + [None] * 7, "gains": [1.0] * 8}
+    audio_in_state.restore(rig.app, rig.me.engine, data)
+    assert rig.app.queue == []
+    assert rig.me.engine.audio_in_gains == [0.0] * 8
+
+
+def test_unreadable_sidecar_loads_as_nothing(tmp_path):
+    bad = tmp_path / "bad.audio_in.json"
+    bad.write_text("{not json")
+    assert audio_in_state.load(str(bad)) is None
+    assert audio_in_state.load(str(tmp_path / "missing.json")) is None
+
+
+def test_starting_the_duplex_node_restores_the_current_slot(app, monkeypatch):
+    eng = SurgeXTEngine(app, midi_device_idx=0, instrument_definition=definition(0))
+    monkeypatch.setattr(engine, "spawn_logged", AsyncMock(return_value=SimpleNamespace(pid=42)))
+    monkeypatch.setattr(engine.asyncio, "sleep", AsyncMock())
+    app.get_pipewire_config = AsyncMock()
+    eng.configure_duplex_node = AsyncMock()
+    asyncio.run(eng.start_pd_node())
+    app.preset_selection_mode.restore_audio_in.assert_called_once_with("Pushpin 0")
+
+
+def test_a_failed_node_start_does_not_restore(app, monkeypatch):
+    eng = SurgeXTEngine(app, midi_device_idx=0, instrument_definition=definition(0))
+    monkeypatch.setattr(engine, "spawn_logged", AsyncMock(return_value=SimpleNamespace(pid=42)))
+    monkeypatch.setattr(engine.asyncio, "sleep", AsyncMock())
+    app.get_pipewire_config = AsyncMock()
+    eng.configure_duplex_node = AsyncMock(side_effect=AssertionError("no instrument nodes"))
+    asyncio.run(eng.start_pd_node())
+    app.preset_selection_mode.restore_audio_in.assert_not_called()
+
+
+# -------------------------------- PresetSelectionMode saves and loads it
+
+
+@pytest.fixture
+def presets(rig, mocker):
+    from modes.preset_selection_mode import PresetSelectionMode
+    mocker.patch.object(PresetSelectionMode, "initialize")
+    for t in rig.tracks:
+        t.voices = {engine.DEFAULT_ENGINE: SimpleNamespace(engine=t.engine)}
+        t.send_message = MagicMock()
+    mode = PresetSelectionMode(rig.app, settings=None)
+    mode.last_pad_in_column_pressed = {t.name: (3, i) for i, t in enumerate(rig.tracks)}
+    return mode
+
+
+def test_saving_the_slots_saves_their_routing(rig, device, presets):
+    choose(device, 0, "Pushpin 1")
+    presets.save_all_presets_to_state()
+    data = audio_in_state.load(presets.audio_in_path("Pushpin 0", 3))
+    assert data["columns"][0]["source"] == "Pushpin 1"
+    assert not os.path.exists(presets.audio_in_path("Pushpin 1", 3))   # nothing routed there
+
+
+def test_saving_one_pad_saves_its_patch_to_the_slot_and_its_routing(rig, device, presets):
+    choose(device, 0, "Pushpin 1")
+    rig.app.instrument_selection_mode.get_current_instrument_short_name.return_value = "Pushpin 0"
+    rig.app.instrument_selection_mode.get_current_instrument_info.return_value = {"instrument_index": 0}
+    presets.save_pad_to_state()
+    rig.me.send_message.assert_called_once_with("/patch/save", f"{presets.surge_state_folder}/Pushpin 0_3")
+    assert audio_in_state.load(presets.audio_in_path("Pushpin 0", 3))["columns"][0]["source"] == "Pushpin 1"
+
+
+def test_restore_audio_in_reads_the_slots_sidecar(rig, device, presets):
+    choose(device, 0, "Pushpin 1")
+    presets.save_audio_in("Pushpin 0", 5)
+    restart_node(rig.me.engine)
+    rig.app.queue.clear()
+    presets.restore_audio_in("Pushpin 0", 5)
+    in_L, in_R = duplex_in(0)
+    assert rig.app.queue == [("link", 200, in_L), ("link", 201, in_R)]
+
+
+def test_tracks_without_a_surge_voice_are_skipped(rig, presets):
+    rig.tracks[1].voices = {}
+    presets.save_audio_in("Pushpin 1")
+    presets.restore_audio_in("Pushpin 1")
+    assert rig.app.queue == []
