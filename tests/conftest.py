@@ -83,6 +83,17 @@ def app(push):
 
 
 @pytest.fixture(autouse=True)
+def surge_state_in_tmp(tmp_path, monkeypatch):
+    """Slot saves write Audio In sidecars into the Surge state folder: keep
+    them out of the real one."""
+    try:
+        from modes.preset_selection_mode import PresetSelectionMode
+    except Exception:
+        return
+    monkeypatch.setattr(PresetSelectionMode, "surge_state_folder", str(tmp_path / "surge_state"))
+
+
+@pytest.fixture(autouse=True)
 def reset_mode_state():
     """Reset class-level mutable state on Mode classes between tests.
 

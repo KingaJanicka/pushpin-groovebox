@@ -60,6 +60,7 @@ minimal state each method needs.
 | Every Surge device definition (`definitions/*_definitions/*.json`) | test_device_definitions.py |
 | Wavetable ids by name (`wavetables.py`) and the wavetable picker | test_wavetables.py |
 | Surge's words for knob values (`definitions/surge_value_labels.json`) | test_surge_value_labels.py |
+| Audio In routing, and its sidecar saved with the Surge slot (`audio_in_state.py`) | test_audio_in_routing.py |
 
 ## Device definitions and the Surge snapshot
 

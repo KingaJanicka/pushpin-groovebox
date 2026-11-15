@@ -12,6 +12,7 @@ import traceback
 from definitions import PyshaMode
 from engine import connectPipewireSourceToPipewireDest
 from engine import disconnectPipewireSourceFromPipewireDest
+import audio_in_state
 logger = logging.getLogger("osc_device")
 # logger.setLevel(level=logging.DEBUG)
 from ratelimit import limits
@@ -224,6 +225,10 @@ class AudioInDevice(PyshaMode):
         """Rebuild page 2: a source switch (and its menu) for each of this
         device's 4 duplex columns, each showing what the column is linked to."""
         self.controls.clear()
+        # The knobs show the engine's levels (a restored slot sets them there)
+        base = 4 * (self.slot or 0)
+        for offset, control in enumerate(self.gain_controls):
+            control.value = float(self.engine.audio_in_gains[base + offset] or 0.0)
         for control in self.page_one_controls:
             self.controls.append(control)
         name = self.engine.instrument["instrument_name"]
@@ -388,33 +393,16 @@ class AudioInDevice(PyshaMode):
         return self.osc["client"].send_message(*args)
 
     def set_duplex_volumes(self, *args):
-        """An "In N Gain" knob moved: send every column's level to the duplex
-        node (each column is a stereo pair of its channels)."""
+        """An "In N Gain" knob moved: keep this device's 4 columns' levels on
+        the engine (slot 0's device has columns 0-3, slot 1's columns 4-7),
+        then send every column's level to the duplex node."""
         # The knob has its new value already; the gains must follow it before
         # they're sent, or the node gets the knob's previous value
-        self.update_input_gains()
-        client = self.engine.duplex_node_osc_client
-        if client is None:
-            return
-        for column, gain in enumerate(self.input_gains):
-            volume_value = float(gain or 0.0)
-            client.send_message(f"/vol_{2 * column}", volume_value)
-            client.send_message(f"/vol_{2 * column + 1}", volume_value)
-
-    def update_input_gains(self):
-        """Collect the track's 8 column gains: slot 0's Audio In device has
-        columns 0-3, slot 1's columns 4-7. Both devices share the result."""
-        devices = self.app.osc_mode.get_current_instrument_devices()
-        audio_ins = [d for d in devices if isinstance(d, AudioInDevice)]
-        if self not in audio_ins:
-            audio_ins.append(self)
-        gains = [None] * 8
-        for device in audio_ins:
-            base = 4 * (device.slot or 0)
-            for offset, control in enumerate(device.gain_controls):
-                gains[base + offset] = control.value
-        for device in audio_ins:
-            device.input_gains[:] = gains
+        base = 4 * (self.slot or 0)
+        for offset, control in enumerate(self.gain_controls):
+            self.engine.audio_in_gains[base + offset] = control.value
+        self.input_gains[:] = self.engine.audio_in_gains
+        audio_in_state.send_gains(self.engine)
 
     def column_for(self, column_offset):
         """Duplex column of this device's ``column_offset``-th switch (0-3)."""
@@ -422,25 +410,14 @@ class AudioInDevice(PyshaMode):
 
     def source_ports(self, source, column):
         """(L, R) PipeWire port ids that ``source`` feeds a column with, or None."""
-        if source is None:
-            return None
-        if source in self.app.external_instruments:
+        port_label = None
+        if source is not None and source in self.app.external_instruments:
             # Overwitch: the mono output its menu shows, to both sides
-            switch = self.switches[column % 4]
-            item = switch.get_active_group().controls[0].get_active_menu_item()
+            item = self.switches[column % 4].get_active_group().controls[0].get_active_menu_item()
             if item is None:
                 return None
-            for port in source.engine.pw_ports["output"]:
-                if port["info"]["props"].get("port.name") == item.label:
-                    return port["id"], port["id"]
-            return None
-        eng = source.engine
-        out_L_name, out_R_name = eng.output_port_names
-        source_L = next((p["id"] for p in eng.pw_ports["output"] if eng.port_is(p, (out_L_name,))), None)
-        source_R = next((p["id"] for p in eng.pw_ports["output"] if eng.port_is(p, (out_R_name,))), None)
-        if source_L is None or source_R is None:
-            return None
-        return source_L, source_R
+            port_label = item.label
+        return audio_in_state.source_ports(self.app, source, port_label)
 
     def connect_ports_duplex(self, *args):
         """A column's source switch or menu changed: link the chosen source's

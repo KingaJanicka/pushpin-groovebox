@@ -155,6 +155,7 @@ class Engine(ABC):
     instrument: dict[str, Any] | None = None
     duplex_node: dict[str, Any] | None = None
     duplex_ports: dict[str, dict[str, dict[str, Any]]]
+    audio_in_gains: list[float]
 
     def __init__(
         self,
@@ -185,6 +186,8 @@ class Engine(ABC):
         }
         # One dict per column ("L"/"R": the source port ids linked into it)
         self.connections = [{"L": None, "R": None} for _ in range(8)]
+        # Each column's level (the "In N Gain" knobs); a new node starts at 0
+        self.audio_in_gains = [0.0] * 8
 
     async def start(self):
         # TODO: We should prob init all the isobar timeline and midi in/out right here
@@ -693,6 +696,12 @@ class SurgeXTEngine(Engine):
             await self.configure_duplex_node()
         except Exception as e:
             print("error in start_pd_node", e)
+            return
+        # Route and level the new node as the track's current slot was saved
+        try:
+            self.app.preset_selection_mode.restore_audio_in(self.instrument["instrument_short_name"])
+        except Exception:
+            logger.exception("Audio In: restoring the saved routing failed")
         # Needs a line that will connect duplex to surge-xt in
     
         

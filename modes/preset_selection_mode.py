@@ -12,6 +12,8 @@ import logging
 import time
 import asyncio
 import m2k_state
+import audio_in_state
+import engine
 log = logging.getLogger("preset_selection_mode")
 
 # mono2k tracks' current slots are saved this often (seconds) when they changed,
@@ -50,6 +52,8 @@ class PresetSelectionMode(definitions.PyshaMode):
     m2k_presets_filename = "m2k_presets.json"
     m2k_sounds = None
     m2k_state_folder = definitions.M2K_STATE_FOLDER
+    # Surge slots' state patches, and their Audio In routing sidecars
+    surge_state_folder = definitions.SURGE_STATE_FOLDER
     _m2k_saved = {}
     _m2k_autosave_at = 0.0
     _browsing_m2k = False
@@ -339,6 +343,39 @@ class PresetSelectionMode(definitions.PyshaMode):
                     time.sleep(0.1)
             
 
+    # ------------------------------------------------------- Audio In routing
+
+    def surge_engine(self, instrument_short_name):
+        """The track's Surge engine (whichever engine is playing), or None."""
+        instrument = self.app.instruments.get(instrument_short_name, None)
+        voices = getattr(instrument, "voices", None)
+        if not isinstance(voices, dict) or engine.DEFAULT_ENGINE not in voices:
+            return None
+        return voices[engine.DEFAULT_ENGINE].engine
+
+    def audio_in_path(self, instrument_short_name, slot):
+        return audio_in_state.sidecar_path(self.surge_state_folder, instrument_short_name, slot)
+
+    def save_audio_in(self, instrument_short_name, slot=None):
+        """Save the track's Audio In routing with its Surge slot (default: the current one)."""
+        eng = self.surge_engine(instrument_short_name)
+        if eng is None:
+            return
+        if slot is None:
+            slot = self.current_slot(instrument_short_name)
+        audio_in_state.save(self.audio_in_path(instrument_short_name, slot), eng)
+
+    def restore_audio_in(self, instrument_short_name, slot=None):
+        """Route the track's duplex node as its Surge slot was saved (default:
+        the current slot). No sidecar: the slot has nothing routed."""
+        eng = self.surge_engine(instrument_short_name)
+        if eng is None:
+            return
+        if slot is None:
+            slot = self.current_slot(instrument_short_name)
+        data = audio_in_state.load(self.audio_in_path(instrument_short_name, slot))
+        audio_in_state.restore(self.app, eng, data)
+
     def save_pad_to_state(self):
         
         # This saves to the surge_state folder
@@ -351,10 +388,13 @@ class PresetSelectionMode(definitions.PyshaMode):
         instrument_index = self.app.instrument_selection_mode.get_current_instrument_info()["instrument_index"]
         preset_index = self.last_pad_in_column_pressed[instrument_shortname][0]
         preset_name = f"{instrument_shortname}_{preset_index}"            
-        preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
+        preset_path = f"{self.surge_state_folder}/{preset_name}"
         # print(preset_path)
         try:
-            self.send_osc("/patch/save", None, instrument_shortname=instrument_shortname)
+            # An explicit path: with none, Surge overwrites the patch it last
+            # loaded, which may be a factory/user patch rather than the slot's state
+            self.send_osc("/patch/save", preset_path, instrument_shortname=instrument_shortname)
+            self.save_audio_in(instrument_shortname, preset_index)
         except Exception as e:
             print("error in save_pad_to_state", e)
 
@@ -367,9 +407,10 @@ class PresetSelectionMode(definitions.PyshaMode):
         for idx, instrument_shortname in enumerate(self.app.instruments):
             preset_index = self.last_pad_in_column_pressed[instrument_shortname][0]
             preset_name = f"{instrument_shortname}_{preset_index}"            
-            preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
+            preset_path = f"{self.surge_state_folder}/{preset_name}"
             # print(preset_path)
             self.send_osc("/patch/save", preset_path, instrument_shortname=instrument_shortname)
+            self.save_audio_in(instrument_shortname, preset_index)
             # time.sleep(1)
             
         # self.app.osc_mode.save_state()
@@ -672,9 +713,12 @@ class PresetSelectionMode(definitions.PyshaMode):
                 self.load_m2k_slot(m2k_instrument, pad_ij[0])
             self.set_knob_postions()
             preset_name = f"{instrument_short_name}_{pad_ij[0]}"
-            preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
+            preset_path = f"{self.surge_state_folder}/{preset_name}"
             log.debug(f"Loading {preset_path}")
             self.send_osc("/patch/load", preset_path, instrument_shortname=instrument_short_name)
+            # A duplex node that's up stays up if the new patch is Audio In too:
+            # route it as the new slot was saved (starting a node restores itself)
+            self.restore_audio_in(instrument_short_name, pad_ij[0])
             
         idx_j = pad_ij[1]
         self.update_pads()
@@ -744,9 +788,10 @@ class PresetSelectionMode(definitions.PyshaMode):
 
                     # Overwrite the surge_state slot for this pad with the new preset
                     preset_name = f"{instrument_shortname}_{preset_number}"
-                    preset_path = f"{definitions.SURGE_STATE_FOLDER}/{preset_name}"
+                    preset_path = f"{self.surge_state_folder}/{preset_name}"
                     log.debug(f"Saving new preset to state: {preset_path}")
                     self.send_osc("/patch/save", preset_path, instrument_shortname=instrument_shortname)
+                    self.save_audio_in(instrument_shortname, preset_number)
                     time.sleep(0.5)
 
                     # Record the new source path in presets.json so the display name updates
