@@ -25,7 +25,9 @@ CC (if any), each machine's INIT sound, and MONO2K's factory library.
   A machine's second page: BANK (DIGI-WAV only) or CARRIER (FX-FM only,
   m2k-jack's own parameter 84), and PTCH. An LFO's: TRCK.
   FILT's: FEEDBACK (bipolar: below the middle inverted), then its EQ's
-  frequency and gain, as FX's EQ (m2k-jack's own parameters 81-83).
+  frequency and gain, as FX's EQ (m2k-jack's own parameters 81-83), then
+  where it's taken from (SOURCE: OSC, FILT, AMP, OUT) and where it goes
+  (DEVICE and DEST: AMP IN, or any parameter an LFO reaches; 85-86).
   AMP, FILT and the LFOs end on their trig switch (control 15, TRIG_CCS).
 
 The labels and INIT values come from MONO2K (GPL-3.0-only), which is why the
@@ -94,10 +96,10 @@ def lfo_target_switch(dest_cc: int, labels: dict[int, str]) -> dict:
     return target_switch(cc_address(dest_cc), labels, "LFO DESTINATION")
 
 
-def target_switch(address: str, labels: dict[int, str], menu_label: str) -> dict:
+def target_switch(address: str, labels: dict[int, str], menu_label: str, zero_label: str = "OFF") -> dict:
     """A modulation's destination: a device switch whose groups each hold a
     menu of that device's parameters, every item sending the parameter's number
-    + 1 to ``address`` (0: OFF)."""
+    + 1 to ``address`` (0: OFF, or what ``zero_label`` names)."""
 
     def item(label: str, value: int, label_from: dict | None = None) -> dict:
         entry = {"$type": "menu-item", "label": label,
@@ -110,7 +112,7 @@ def target_switch(address: str, labels: dict[int, str], menu_label: str) -> dict
         return {"$type": "group", "label": label, "controls": [
             {"$type": "control-menu", "menu_label": menu_label, "step": 1 / CLICKS_PER_ITEM, "items": items}]}
 
-    groups = [group("OFF", [item("OFF", 0)])]
+    groups = [group(zero_label, [item(zero_label, 0)])]
     for device, params in LFO_TARGETS:
         entries = [p if isinstance(p, tuple) else (p, labels.get(p, str(p))) for p in params]
         groups.append(group(device, [
@@ -441,20 +443,42 @@ def with_trig(controls: list[dict], page: str) -> list[dict]:
     return controls + spacers + [trig_menu(cc, label)]
 
 
-# FILT's second page: the track's out (after its chain and its delay) fed back into its chain before DIST, then that
-# feedback's EQ, FX's EQ's frequency and gain. m2k-jack's own parameters (m2k_jack.c, X_FDBK..), NRPN 1:<param>
+# FILT's second page: a tap on the track fed back, then that feedback's EQ (FX's EQ's frequency and gain), where it is
+# taken from (SOURCE: after the machine, the filters, the amp, or the track's whole out, its delay too) and where it
+# goes (DEST: back into the chain before DIST, AMP IN, or any parameter an LFO reaches, as an LFO's DEVICE and DEST).
+# m2k-jack's own parameters (m2k_jack.c, X_FDBK.., X_FSRC, X_FDST), NRPN 1:<param>
 FEEDBACK = 81
 FEEDBACK_EQ = (82, 83)
+FEEDBACK_SOURCE, FEEDBACK_DEST = 85, 86
+FEEDBACK_SOURCES = ["OSC", "FILT", "AMP", "OUT"]  # (m2k-jack: a quarter of 0-127 each; OUT the INIT's)
+FEEDBACK_INTO = "AMP IN"                          # (DEST 0: before DIST and the filters)
 
 
-def feedback_controls(all_params: dict[int, dict]) -> list[dict]:
-    """FEEDBACK, FEEDBACK EQ FREQ and GAIN: FILT's second page, its first three knobs."""
+def feedback_source_menu() -> dict:
+    return {
+        "$type": "control-menu",
+        "menu_label": "FEEDBACK SOURCE",
+        "step": 1 / CLICKS_PER_ITEM,
+        "items": [{"$type": "menu-item", "label": name,
+                   "onselect": {"$type": "message", "address": param_address(FEEDBACK_SOURCE),
+                                "value": choice_value(i, len(FEEDBACK_SOURCES))}}
+                  for i, name in enumerate(FEEDBACK_SOURCES)],
+    }
+
+
+def feedback_controls(all_params: dict[int, dict], labels: dict[int, str] | None = None) -> list[dict]:
+    """FEEDBACK, FEEDBACK EQ FREQ and GAIN: FILT's second page, its first three knobs; then SOURCE, and DEVICE and
+    DEST (knobs 4-6), where the binary has them."""
     if FEEDBACK not in all_params:
         return []
     fdbk = {"$type": "control-range", "label": display_name(all_params[FEEDBACK]), "address": param_address(FEEDBACK),
             "min": 0, "max": 127, "bipolar": 1, "display_center": 64}
     eq = [control(0, dict(all_params[p], max=127), "FILT", param_address(p)) for p in FEEDBACK_EQ]
-    return [fdbk, *eq]
+    routing = []
+    if FEEDBACK_DEST in all_params and labels is not None:
+        routing = [feedback_source_menu(),
+                   target_switch(param_address(FEEDBACK_DEST), labels, "FEEDBACK DEST", FEEDBACK_INTO)]
+    return [fdbk, *eq, *routing]
 
 
 def page_devices(params: list[dict], labels: dict[int, str] | None = None,
@@ -471,7 +495,7 @@ def page_devices(params: list[dict], labels: dict[int, str] | None = None,
         else:
             controls = [control(p["cc"], p["param"], page) for p in params if p["page"] == page]
         if page == "FILT" and all_params:
-            controls += feedback_controls(all_params)              # (controls 8-10: the second page)
+            controls += feedback_controls(all_params, labels)      # (controls 8-12: the second page)
         if page == "AMP" or page == "FILT" or (page.startswith("LFO") and labels is not None):
             controls = with_trig(controls, page)
         devices[stem] = {"name": name, "slot": slot, "init": [], "controls": controls}

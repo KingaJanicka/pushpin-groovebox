@@ -1,7 +1,8 @@
-"""Feedback on mono2k: m2k-jack's own track parameters 81-83, FILT's second page
-(only the page: the loop still goes in before DIST and the filters). FEEDBACK takes the
-track's own out (after its chain and its delay) back into its chain before DIST, a block later; it is
-bipolar about 64 (below: inverted). Its EQ (82, 83) is a band as FX's EQ is, 64 gain flat.
+"""Feedback on mono2k: m2k-jack's own track parameters 81-83 and 85-86, FILT's second page.
+FEEDBACK takes a tap on the track (SOURCE, 85: after its machine, its filters, its amp, or by default
+its whole out, its delay too) a block later to a destination (DEST, 86: by default back into its chain
+before DIST, AMP IN, or any parameter an LFO reaches); it is bipolar about 64 (below: inverted). Its EQ
+(82, 83) is a band as FX's EQ is, 64 gain flat.
 
 The render tests run the built binary (engines/m2k/build.sh); skipped without it.
 """
@@ -19,6 +20,9 @@ from engines.m2k import gen_definitions
 from tests.test_m2k_velocity import BINARY, M2K_DIR, built, nrpn
 
 FDBK, FEQF, FEQG = 81, 82, 83
+FSRC, FDST = 85, 86
+OSC, FILT, AMP, OUT = 16, 48, 80, 112             # SOURCE: the middle of each quarter
+WDTH = 17
 SAW = 5                                          # SWAV-SAW
 NOTE = ["0.1 144 48 100", "0.4 128 48 0"]
 
@@ -130,7 +134,7 @@ def test_eq_does_nothing_without_feedback(tmp_path):
 @built
 def test_describe_exports_feedback_after_key():
     d = json.loads(subprocess.run([BINARY, "--describe"], check=True, capture_output=True, text=True).stdout)
-    assert d["param_count"] == 85
+    assert d["param_count"] == 87
     tail = d["params_all"][81:84]
     assert [(p["param"], p["label"], p["name"]) for p in tail] == [
         (81, "FDBK", "FEEDBACK"), (82, "FEQF", "FEEDBACK EQ FREQ"), (83, "FEQG", "FEEDBACK EQ GAIN")]
@@ -139,6 +143,69 @@ def test_describe_exports_feedback_after_key():
     assert tail[1]["values"] == eqf["values"]
     assert all(m["kit"][81:84] == [64, 64, 64] for m in d["machines"])
     assert all(s["kit"][81:84] == [64, 64, 64] for s in d["library"])
+    routing = d["params_all"][85:87]
+    assert [(p["param"], p["label"], p["name"]) for p in routing] == [
+        (85, "FSRC", "FEEDBACK SOURCE"), (86, "FDST", "FEEDBACK DEST")]
+    assert all(m["kit"][85:87] == [127, 0] for m in d["machines"])            # OUT, into AMP IN: as before
+    assert all(s["kit"][85:87] == [127, 0] for s in d["library"])
+
+
+# ------------------------------------------------------------- SOURCE and DEST
+
+
+@built
+def test_the_default_source_and_dest_are_the_old_loop(tmp_path):
+    """OUT into AMP IN, said outright, plays what FEEDBACK alone always did."""
+    old = render(tmp_path, nrpn(0.01, FDBK, 110))
+    assert render(tmp_path, [*nrpn(0.01, FSRC, OUT), *nrpn(0.01, FDST, 0), *nrpn(0.01, FDBK, 110)]) == old
+
+
+@built
+@pytest.mark.parametrize("source", [OSC, FILT, AMP, OUT], ids=["osc", "filt", "amp", "out"])
+def test_each_source_is_off_at_64(tmp_path, source):
+    plain = render(tmp_path, [])
+    assert render(tmp_path, [*nrpn(0.01, FSRC, source), *nrpn(0.01, FDBK, 64)]) == plain
+
+
+@built
+def test_each_source_feeds_back_something_of_its_own(tmp_path):
+    plain = render(tmp_path, [])
+    fed = {s: render(tmp_path, [*nrpn(0.01, FSRC, s), *nrpn(0.01, FDBK, 110)]) for s in (OSC, FILT, AMP, OUT)}
+    assert all(x != plain for x in fed.values())
+    assert len({tuple(x) for x in fed.values()}) == 4
+
+
+@built
+@pytest.mark.parametrize("source", [OSC, FILT, AMP], ids=["osc", "filt", "amp"])
+def test_a_tap_dies_with_the_note(tmp_path, source):
+    """A silent track's chain takes no tap: nothing keeps the loop going after the release."""
+    fed = render(tmp_path, [*nrpn(0.01, FSRC, source), *nrpn(0.01, FDBK, 127)], seconds=4.0)
+    assert max(abs(v) for v in fed[int(3.5 * 44100):]) < 32
+
+
+def wdth_trace(tmp_path, setup: list[str]) -> list[int]:
+    from tests.test_m2k_velocity import trace
+    times = [0.2 + i * 0.0015 for i in range(40)]
+    return trace(tmp_path, [f"0 176 14 {SAW}", "0 176 73 64", *setup, *NOTE], WDTH, times)
+
+
+@built
+def test_feedback_into_a_parameter_moves_it_with_the_sound(tmp_path):
+    """DEST WDTH: the tap's block mean moves the low-pass's width while the note plays."""
+    still = wdth_trace(tmp_path, [*nrpn(0.01, FDST, WDTH + 1)])
+    assert len(set(still)) == 1                                   # (FEEDBACK at 64: nothing moves)
+    moved = wdth_trace(tmp_path, [*nrpn(0.01, FSRC, OSC), *nrpn(0.01, FDST, WDTH + 1), *nrpn(0.01, FDBK, 127)])
+    assert len(set(moved)) > 10
+    assert min(moved) < still[0] < max(moved)                     # (both ways: a saw swings about 0)
+
+
+@built
+def test_feedback_into_a_parameter_is_not_added_to_the_sound(tmp_path):
+    """Into a parameter, nothing goes back in before DIST: DEST on a parameter the sound doesn't hear (an LFO's
+    depth with its LFO off) leaves it as it was."""
+    plain = render(tmp_path, [])
+    lfo3_dpth = 63
+    assert render(tmp_path, [*nrpn(0.01, FDST, lfo3_dpth + 1), *nrpn(0.01, FDBK, 127)]) == plain
 
 
 # ------------------------------------------------------------- FILT's second page
@@ -155,7 +222,7 @@ def filt_page() -> dict:
 
 def test_filt_second_page_starts_with_feedback_and_its_eq():
     controls = filt_page()["controls"]
-    assert len(controls) == 16
+    assert gen_definitions.slots(controls) == 16                    # (two pages of eight knobs)
     fdbk, eqf, eqg = controls[8:11]
     assert (fdbk["label"], fdbk["address"]) == ("Feedback", "/m2k/param/81")
     assert fdbk["bipolar"] == 1 and fdbk["display_center"] == 64
@@ -170,10 +237,30 @@ def test_feedback_eq_reads_as_fx_eq():
     assert eqf["value_labels"] == fx[0]["value_labels"] and eqf["step"] == fx[0]["step"] == 0.5
 
 
-def test_filter_trig_stays_last_and_the_first_page_is_unchanged():
+def test_filt_second_page_routes_the_feedback_on_knobs_4_to_6():
     controls = filt_page()["controls"]
-    assert [c["$type"] for c in controls[11:15]] == ["control-spacer"] * 4
-    assert controls[15]["menu_label"] == "Filter Trig"
+    source, dest = controls[11:13]
+    assert source["menu_label"] == "Feedback Source"
+    assert [(i["label"], i["onselect"]["address"], i["onselect"]["value"]) for i in source["items"]] == [
+        ("OSC", "/m2k/param/85", OSC), ("Filt", "/m2k/param/85", FILT), ("Amp", "/m2k/param/85", AMP),
+        ("Out", "/m2k/param/85", OUT)]
+    assert dest["$type"] == "control-switch" and dest["menu_label"] == "Device"   # (DEVICE, then its DEST menu)
+    groups = dest["groups"]
+    assert groups[0]["label"] == "Amp In"
+    assert groups[0]["controls"][0]["items"][0]["onselect"] == {"$type": "message", "address": "/m2k/param/86",
+                                                               "value": 0}
+    assert [g["label"] for g in groups[1:]] == ["Syn", "Amp", "Filt", "FX", "Dstr", "LFO 1", "LFO 2", "LFO 3"]
+    wdth = next(i for i in groups[3]["controls"][0]["items"] if i["onselect"]["value"] == WDTH + 1)
+    assert wdth["onselect"]["address"] == "/m2k/param/86"
+
+
+def test_filter_trig_stays_last_and_the_first_page_is_unchanged():
+    """The DEVICE switch takes two knobs (its DEST menu beside it): FILTER TRIG stays on the second page's
+    eighth, where its p-locks are."""
+    controls = filt_page()["controls"]
+    assert gen_definitions.slots(controls[8:14]) == 7
+    assert controls[13]["$type"] == "control-spacer"
+    assert controls[14]["menu_label"] == "Filter Trig"
     assert [c["address"] for c in controls[:8]] == [f"/cc/{cc}" for cc in range(72, 80)]
 
 

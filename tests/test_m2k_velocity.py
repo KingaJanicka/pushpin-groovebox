@@ -121,7 +121,7 @@ def test_vel_is_the_tracks_own(tmp_path):
 @built
 def test_describe_exports_vel_after_mono2ks_parameters():
     d = json.loads(subprocess.run([BINARY, "--describe"], check=True, capture_output=True, text=True).stdout)
-    assert d["param_count"] == 85
+    assert d["param_count"] == 87
     assert [(p["param"], p["name"]) for p in d["params_all"][71:75]] == [
         (71, "VEL 1 DEST"), (72, "VEL 1 ADD"), (73, "VEL 2 DEST"), (74, "VEL 2 ADD")]
     assert all(m["kit"][71:75] == [0, 64, 0, 64] for m in d["machines"])
