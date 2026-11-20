@@ -71,7 +71,7 @@
     "play": {
       "name": "Play",
       "enter": "Press NOTE until the pads show a keyboard.",
-      "summary": "Play the selected track live from the pads.",
+      "summary": "Play the selected track live from the pads. This can't be recorded into the sequencer",
       "display": {
         "title": "Device controls",
         "labels": [
