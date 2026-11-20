@@ -1,13 +1,16 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Pushpin groovebox</title>
-  <meta name="description" content="Pushpin is an open-source groovebox: a Raspberry Pi 5 and an Ableton Push 2 playing eight tracks of Surge XT and mono2k. Interactive manual, guide and setup.">
+  <meta name="description"
+    content="Pushpin is an open-source groovebox: a Raspberry Pi 5 and an Ableton Push 2 playing eight tracks of Surge XT and mono2k. Interactive manual, guide and setup.">
   <link rel="icon" href="logo_v2.png">
   <link rel="stylesheet" href="assets/site.css?v=13">
 </head>
+
 <body>
   <a class="skip" href="#manual-section">Skip to the manual</a>
 
@@ -25,9 +28,12 @@
   <main>
     <section class="hero">
       <h1>The hackable groovebox.</h1>
-      <p class="lede">Pushpin turns an Ableton Push&nbsp;2 and a Raspberry Pi&nbsp;5 into a standalone instrument: eight tracks of
-        <a href="https://surge-synthesizer.github.io/">Surge XT</a> and <a href="https://github.com/InigoHernandez/mono2k">mono2k</a>,
-        a sequencer built for the pads, and no laptop.</p>
+      <p class="lede">Pushpin turns an Ableton Push&nbsp;2 and a Raspberry Pi&nbsp;5 into a standalone instrument: eight
+        tracks of
+        <a href="https://surge-synthesizer.github.io/">Surge XT</a> and <a
+          href="https://github.com/InigoHernandez/mono2k">mono2k</a>,
+        a sequencer built for the pads, and no laptop.
+      </p>
       <p class="cta">
         <a class="button primary" href="https://pushpin-images.kinga.dev">Download the image</a>
         <a class="button" href="https://discord.gg/CDCUF9uePy">Join the Discord</a>
@@ -38,11 +44,21 @@
           allow="encrypted-media; picture-in-picture" allowfullscreen></iframe>
       </div>
       <ul class="features">
-        <li><strong>Eight tracks</strong>, each playing Surge XT or mono2k, switched from the Push.</li>
-        <li><strong>A sequencer per track</strong>: eight stages, with layers for pitch, octave, velocity, gates, chance and parameter locks.</li>
-        <li><strong>Every Surge preset</strong>, eight sound slots per track, and clips you swap while it plays.</li>
-        <li><strong>Audio routing</strong> between tracks, and <a href="https://github.com/dagargo/overwitch">Overwitch</a> for Elektron Overbridge devices.</li>
+        <li><strong>Eight tracks in easy to read layouts</strong>: each playing Surge XT or mono2k, perfect mix
+          between complex sounds
+          and live tweakability.</li>
+        <li><strong>Performace-focused sequencer</strong>: Stage-based design, reimagined by utilizing Push pads for
+          immediate visual feedback</li>
+        <li><strong>Intuitive preset selection</strong>: each preset can be seleted and switched independently of
+          sequencer and other tracks.
+        </li>
+        <li><strong>Inter-track Audio Routing</strong>: audio can be routed betwen tracks and <a
+            href="https://github.com/dagargo/overwitch">Overwitch</a>, enabling complex
+          feedback paths or using tracks as sends and busses.</li>
         <li><strong>Made to be changed</strong>: devices and layouts are JSON files, the app is Python.</li>
+        <li><strong>Expanded mono2k voices</strong>: Mono2k, LXR-02 and one-sample feedback paths, all in one
+          place.
+        </li>
       </ul>
     </section>
 
@@ -51,8 +67,10 @@
         <div class="manual-head">
           <div class="manual-title">
             <h2 id="manual-h">Interactive manual</h2>
-            <p class="side-intro">A Push 2 running Pushpin. Point at a control to see what it does in this mode, and click to press it.
-              <span class="aside">Prefer paper? <a href="cheatsheet.pdf">Print the cheat sheet</a>.</span></p>
+            <p class="side-intro">A Push 2 running Pushpin. Point at a control to see what it does in this mode, and
+              click to press it.
+              <span class="aside">Prefer paper? <a href="cheatsheet.pdf">Print the cheat sheet</a>.</span>
+            </p>
           </div>
           <div class="mode-bars">
             <div id="manual-modes" class="chips" role="toolbar" aria-label="Jump to a mode"></div>
@@ -67,7 +85,8 @@
               <p id="info-summary" class="info-summary"></p>
               <h3 id="info-control">Point at a control</h3>
               <div id="info-text"></div>
-              <p class="info-foot">Buttons that light up do something in this mode. Shift and Select stay held when you click them in the
+              <p class="info-foot">Buttons that light up do something in this mode. Shift and Select stay held when you
+                click them in the
                 modes that use them. Scroll over an encoder to turn it.</p>
             </div>
           </aside>
@@ -79,67 +98,125 @@
       <h2 id="guide-h">Guide</h2>
 
       <h3 id="tracks">Tracks and engines</h3>
-      <p>Pushpin has eight tracks. The lower row of buttons under the display picks one, each lit in its track's colour. Every track
-        plays one engine at a time, Surge XT or mono2k: press <kbd>Add Track</kbd>, move with <kbd>◀</kbd> <kbd>▶</kbd> and press
-        <kbd>Add Track</kbd> again to switch. The choice is remembered.</p>
+      <p>Pushpin has eight tracks. The lower row of buttons under the display picks one, each lit in its track's colour.
+        Every track
+        plays one engine at a time, Surge XT or mono2k: press <kbd>Add Track</kbd>, move with <kbd>◀</kbd> <kbd>▶</kbd>
+        and press
+        <kbd>Add Track</kbd> again to switch. The choice is remembered.
+      </p>
 
       <h3 id="devices">Devices and controls</h3>
-      <p>A track's sound is split into devices (oscillators, filters, envelopes, effects…). The upper row of buttons shows one device on
-        the display, and the eight encoders above it turn its controls. Press a device's button again, or <kbd>Page ◀</kbd>
+      <p>A track's sound is split into devices (oscillators, filters, envelopes, effects…). The upper row of buttons
+        shows one device on
+        the display, and the eight encoders above it turn its controls. Press a device's button again, or <kbd>Page
+          ◀</kbd>
         <kbd>Page ▶</kbd>, for its other pages. <kbd>◀</kbd> <kbd>▶</kbd> switch between the track's two rows of
-        devices: on a Surge XT track the oscillators, filters, amp and three effects, then six LFOs, the macros and the mod
-        matrix; on a mono2k track the machine, amp, filter, FX, distortion and LFOs, then velocity, key tracking and feedback.
-        <kbd>Add Device</kbd> chooses which device fills a slot, such as the oscillator type. Turn the encoders slowly for fine
-        changes and quickly for big ones.</p>
+        devices: on a Surge XT track the oscillators, filters, amp and three effects, then six LFOs, the macros and the
+        mod
+        matrix; on a mono2k track the machine, amp, filter, FX, distortion and LFOs, then velocity, key tracking and
+        feedback.
+        <kbd>Add Device</kbd> chooses which device fills a slot, such as the oscillator type. Turn the encoders slowly
+        for fine
+        changes and quickly for big ones.
+      </p>
       <p>The tempo encoder (top left) sets the tempo, the master encoder (top right) the selected track's volume.</p>
 
       <h3 id="play">Playing live</h3>
-      <p><kbd>Note</kbd> switches the pads between the keyboard and the sequencer. The keyboard is laid out in fourths, like a bass
-        guitar: the root note is lit in the track's colour and the major scale in white. <kbd>Octave ▲</kbd> <kbd>Octave ▼</kbd>
-        move it, <kbd>Accent</kbd> fixes the velocity, and <kbd>Shift</kbd> turns the touch strip from pitch bend into a mod wheel.</p>
+      <p><kbd>Note</kbd> switches the pads between the keyboard and the sequencer. The keyboard is laid out in fourths,
+        like a bass
+        guitar: the root note is lit in the track's colour and the major scale in white. <kbd>Octave ▲</kbd> <kbd>Octave
+          ▼</kbd>
+        move it, <kbd>Accent</kbd> fixes the velocity, and <kbd>Shift</kbd> turns the touch strip from pitch bend into a
+        mod wheel.</p>
 
       <h3 id="sequencer">The sequencer</h3>
-      <p>Each track's sequencer has eight stages, one per column of pads. You edit it a layer at a time, with the buttons right of the
+      <p>Each track's sequencer has eight stages, one per column of pads. You edit it a layer at a time, with the
+        buttons right of the
         pads:</p>
       <table>
-        <thead><tr><th>Button</th><th>Layer</th><th>The pads set</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Button</th>
+            <th>Layer</th>
+            <th>The pads set</th>
+          </tr>
+        </thead>
         <tbody>
-          <tr><td><kbd>1/32t</kbd></td><td>Pitch</td><td>the stage's note in the major scale. Hold two neighbouring pads for the semitone between them.</td></tr>
-          <tr><td><kbd>1/32</kbd></td><td>Octave</td><td>the stage's octave.</td></tr>
-          <tr><td><kbd>1/16t</kbd></td><td>Velocity</td><td>how hard the stage plays.</td></tr>
-          <tr><td><kbd>1/16</kbd></td><td>Gate</td><td>the stage's pulses: tap to turn one on or off, <kbd>Select</kbd>+pad for the stage's length, <kbd>Shift</kbd>+pad for a tie.</td></tr>
-          <tr><td><kbd>1/8t</kbd></td><td>Skip</td><td>the bottom pad skips the stage; the others set the chance it plays.</td></tr>
-          <tr><td><kbd>1/8</kbd></td><td>Lock amount</td><td>how much of the stage's parameter locks it plays.</td></tr>
+          <tr>
+            <td><kbd>1/32t</kbd></td>
+            <td>Pitch</td>
+            <td>the stage's note in the major scale. Hold two neighbouring pads for the semitone between them.</td>
+          </tr>
+          <tr>
+            <td><kbd>1/32</kbd></td>
+            <td>Octave</td>
+            <td>the stage's octave.</td>
+          </tr>
+          <tr>
+            <td><kbd>1/16t</kbd></td>
+            <td>Velocity</td>
+            <td>how hard the stage plays.</td>
+          </tr>
+          <tr>
+            <td><kbd>1/16</kbd></td>
+            <td>Gate</td>
+            <td>the stage's pulses: tap to turn one on or off, <kbd>Select</kbd>+pad for the stage's length,
+              <kbd>Shift</kbd>+pad for a tie.
+            </td>
+          </tr>
+          <tr>
+            <td><kbd>1/8t</kbd></td>
+            <td>Skip</td>
+            <td>the bottom pad skips the stage; the others set the chance it plays.</td>
+          </tr>
+          <tr>
+            <td><kbd>1/8</kbd></td>
+            <td>Lock amount</td>
+            <td>how much of the stage's parameter locks it plays.</td>
+          </tr>
         </tbody>
       </table>
       <p>A good start is the gate layer: give a few stages some pulses, then set their notes on the pitch layer.
-        <kbd>Play</kbd> starts and stops every track.</p>
-      <p><strong>Parameter locks.</strong> Hold a pad and turn an encoder: that control takes a different value on that stage only. Stages
+        <kbd>Play</kbd> starts and stops every track.
+      </p>
+      <p><strong>Parameter locks.</strong> Hold a pad and turn an encoder: that control takes a different value on that
+        stage only. Stages
         with locks light white. Hold the pad and press <kbd>Delete</kbd> to clear them.</p>
-      <p><strong>Timing.</strong> <kbd>Scale</kbd> opens the track's timing page: gate length, how fast and how long this track's
-        sequencer runs, and the main clock's own length. Tracks with different lengths drift against each other, which is the point.</p>
+      <p><strong>Timing.</strong> <kbd>Scale</kbd> opens the track's timing page: gate length, how fast and how long
+        this track's
+        sequencer runs, and the main clock's own length. Tracks with different lengths drift against each other, which
+        is the point.</p>
 
       <h3 id="clips">Clips</h3>
-      <p><kbd>Session</kbd> shows every track's clips, one column per track. Tap a pad to switch that track to the clip; the one you
+      <p><kbd>Session</kbd> shows every track's clips, one column per track. Tap a pad to switch that track to the clip;
+        the one you
         leave is saved first. <kbd>Delete</kbd> removes the selected track's current clip.</p>
 
       <h3 id="mutes">Mutes</h3>
-      <p><kbd>Mute</kbd> shows a column per track and a row per sequencer layer. Tap a pad to mute that layer of that track while it
+      <p><kbd>Mute</kbd> shows a column per track and a row per sequencer layer. Tap a pad to mute that layer of that
+        track while it
         plays: drop the gates and the track goes quiet, drop the pitch and it plays the same note.</p>
 
       <h3 id="presets">Presets</h3>
-      <p><kbd>Browse</kbd> shows eight sound slots per track. Tap a slot to load it. Hold a slot (or hold <kbd>Select</kbd> and tap it)
-        to open the browser: the encoders walk the folders, and letting go loads the sound into the slot. The upper buttons save
-        the sound you've changed back to its slot, as a new preset, or rename it, with <kbd>◀</kbd> <kbd>▶</kbd> and the arrows
-        to edit the name.</p>
+      <p><kbd>Browse</kbd> shows eight sound slots per track. Tap a slot to load it. Hold a slot (or hold
+        <kbd>Select</kbd> and tap it)
+        to open the browser: the encoders walk the folders, and letting go loads the sound into the slot. The upper
+        buttons save
+        the sound you've changed back to its slot, as a new preset, or rename it, with <kbd>◀</kbd> <kbd>▶</kbd> and the
+        arrows
+        to edit the name.
+      </p>
 
       <h3 id="settings">Settings and MIDI</h3>
-      <p><kbd>Setup</kbd> opens Settings and steps through its pages: Performance (root note and aftertouch), MIDI, and About (save,
-        version and software update). To play Pushpin from an external sequencer, set <em>Notes in</em> on the MIDI page to it.</p>
+      <p><kbd>Setup</kbd> opens Settings and steps through its pages: Performance (root note and aftertouch), MIDI, and
+        About (save,
+        version and software update). To play Pushpin from an external sequencer, set <em>Notes in</em> on the MIDI page
+        to it.</p>
 
       <h3 id="overbridge">Routing with Overbridge</h3>
       <div class="video">
-        <iframe src="https://www.youtube-nocookie.com/embed/2ezX6MCOlo8?rel=0" title="Routing Elektron devices through Pushpin with Overbridge" loading="lazy"
+        <iframe src="https://www.youtube-nocookie.com/embed/2ezX6MCOlo8?rel=0"
+          title="Routing Elektron devices through Pushpin with Overbridge" loading="lazy"
           allow="encrypted-media; picture-in-picture" allowfullscreen></iframe>
       </div>
     </section>
@@ -150,77 +227,108 @@
       <ul>
         <li>A Raspberry Pi 5</li>
         <li>An Ableton Push 2</li>
-        <li>An audio interface or an audio HAT, such as the <a href="https://thepihut.com/products/iqaudio-dac">IQaudio DAC</a></li>
+        <li>An audio interface or an audio HAT, such as the <a href="https://thepihut.com/products/iqaudio-dac">IQaudio
+            DAC</a></li>
         <li>An SD card and a way to write images to it</li>
       </ul>
       <ol class="steps">
-        <li><strong>Download the image</strong> from <a href="https://pushpin-images.kinga.dev">pushpin-images.kinga.dev</a>.</li>
-        <li><strong>Write it to the SD card</strong>, for example with <a href="https://www.raspberrypi.com/software/">Raspberry Pi Imager</a>.
+        <li><strong>Download the image</strong> from <a
+            href="https://pushpin-images.kinga.dev">pushpin-images.kinga.dev</a>.</li>
+        <li><strong>Write it to the SD card</strong>, for example with <a
+            href="https://www.raspberrypi.com/software/">Raspberry Pi Imager</a>.
           Set up Wi-Fi there too if the Pi won't have a keyboard and screen.</li>
-        <li><strong>Plug everything in and power up.</strong> Pushpin starts on its own once the Pi has booted, and plays through
+        <li><strong>Plug everything in and power up.</strong> Pushpin starts on its own once the Pi has booted, and
+          plays through
           the audio HAT (or your interface) even if a screen is plugged in. Switch on the Push 2.</li>
-        <li><strong>Optional: an external sequencer.</strong> Press <kbd>Setup</kbd> twice for the MIDI page and pick it under
-          <em>Notes in</em>.</li>
+        <li><strong>Optional: an external sequencer.</strong> Press <kbd>Setup</kbd> twice for the MIDI page and pick it
+          under
+          <em>Notes in</em>.
+        </li>
       </ol>
       <h3 id="updating">Updating</h3>
-      <p>New images are posted to <a href="https://pushpin-images.kinga.dev">pushpin-images.kinga.dev</a>. On a running Pi,
-        <kbd>Setup</kbd> → About → <em>SW update</em> fetches the latest code and restarts Pushpin.</p>
+      <p>New images are posted to <a href="https://pushpin-images.kinga.dev">pushpin-images.kinga.dev</a>. On a running
+        Pi,
+        <kbd>Setup</kbd> → About → <em>SW update</em> fetches the latest code and restarts Pushpin.
+      </p>
       <h3 id="trouble">Troubleshooting</h3>
-      <p>Log in over SSH as <code>pushpin</code> (password <code>pushpin</code>; change it). Pushpin runs as a user service:</p>
+      <p>Log in over SSH as <code>pushpin</code> (password <code>pushpin</code>; change it). Pushpin runs as a user
+        service:</p>
       <pre><code>systemctl --user status pushpin
 systemctl --user restart pushpin
 journalctl --user -u pushpin -f</code></pre>
       <p>Each synth's own output is in <code>~/.local/state/pushpin-groovebox/logs/</code>. Ask in the
-        <a href="https://discord.gg/CDCUF9uePy">Discord</a> if you get stuck.</p>
+        <a href="https://discord.gg/CDCUF9uePy">Discord</a> if you get stuck.
+      </p>
     </section>
 
     <section id="developers" class="prose" aria-labelledby="dev-h">
       <h2 id="dev-h">Developers</h2>
-      <p>Pushpin is a Python app that grew from Frederic Font's <a href="https://github.com/ffont/pysha">Pysha</a>. It talks to Surge XT
-        over <a href="https://en.wikipedia.org/wiki/Open_Sound_Control">OSC</a> and to mono2k over MIDI, and draws its own screen on the
+      <p>Pushpin is a Python app that grew from Frederic Font's <a href="https://github.com/ffont/pysha">Pysha</a>. It
+        talks to Surge XT
+        over <a href="https://en.wikipedia.org/wiki/Open_Sound_Control">OSC</a> and to mono2k over MIDI, and draws its
+        own screen on the
         Push 2. The code is on <a href="https://github.com/kingajanicka/pushpin-groovebox">GitHub</a>.</p>
 
       <h3>How it starts</h3>
-      <p>The image runs Pushpin as the <code>pushpin</code> user's systemd service. The service runs <code>~/start_pushpin.sh</code>, which
-        runs <code>~/s/music_devices/pushpin-groovebox/run.sh</code> and from there <code>app.py</code>. Exactly one copy runs, whether
-        or not anyone is logged in. Stop the service before starting it by hand, or two copies fight over the Push and the OSC
-        ports.</p>
-      <p>On start, Pushpin launches eight <code>surge-xt-cli</code> processes and the mono2k engine (<code>m2k-jack</code>), waits for them,
+      <p>The image runs Pushpin as the <code>pushpin</code> user's systemd service. The service runs
+        <code>~/start_pushpin.sh</code>, which
+        runs <code>~/s/music_devices/pushpin-groovebox/run.sh</code> and from there <code>app.py</code>. Exactly one
+        copy runs, whether
+        or not anyone is logged in. Stop the service before starting it by hand, or two copies fight over the Push and
+        the OSC
+        ports.
+      </p>
+      <p>On start, Pushpin launches eight <code>surge-xt-cli</code> processes and the mono2k engine
+        (<code>m2k-jack</code>), waits for them,
         then starts <a href="https://github.com/dagargo/overwitch">Overwitch</a>, which runs as its own service
         (<code>systemctl --user status overwitch</code>).</p>
 
       <h3>Audio</h3>
-      <p>PipeWire provides eight duplex devices, <code>pushpin-0</code> to <code>pushpin-7</code>, with 16 inputs and outputs each, set
-        up in <code>~/.config/pipewire/pipewire.conf.d/pushpin_groovebox.conf</code>. Pushpin's Audio In device connects them for track
-        inputs, and a further <code>pushpin-volumes</code> device sets the track volumes. Run <code>pw-link -l</code> to see the
+      <p>PipeWire provides eight duplex devices, <code>pushpin-0</code> to <code>pushpin-7</code>, with 16 inputs and
+        outputs each, set
+        up in <code>~/.config/pipewire/pipewire.conf.d/pushpin_groovebox.conf</code>. Pushpin's Audio In device connects
+        them for track
+        inputs, and a further <code>pushpin-volumes</code> device sets the track volumes. Run <code>pw-link -l</code> to
+        see the
         connections, or <code>ssh -X pushpin@&lt;pi&gt;</code> and run <code>qpwgraph</code> to see them drawn.</p>
       <p>Sound goes to PipeWire's default output. A WirePlumber rule
-        (<code>~/.config/wireplumber/wireplumber.conf.d/51-pushpin-prefer-hat.conf</code>) ranks HDMI last, so an audio HAT wins.
-        Check with <code>wpctl status</code>; to change it, <code>wpctl set-default &lt;id&gt;</code> and restart Pushpin.</p>
+        (<code>~/.config/wireplumber/wireplumber.conf.d/51-pushpin-prefer-hat.conf</code>) ranks HDMI last, so an audio
+        HAT wins.
+        Check with <code>wpctl status</code>; to change it, <code>wpctl set-default &lt;id&gt;</code> and restart
+        Pushpin.</p>
 
       <h3>Devices are JSON</h3>
-      <p>What the encoders control is described in JSON files: Surge's devices in <code>definitions/device_definitions/</code> and mono2k's
+      <p>What the encoders control is described in JSON files: Surge's devices in
+        <code>definitions/device_definitions/</code> and mono2k's
         in <code>engines/m2k/definitions/</code>. The formats are described by JSON schemas:
         <a href="schemas/v2/device.json">device</a>, <a href="schemas/v2/control.json">control</a>,
-        <a href="schemas/v2/message.json">message</a> and <a href="schemas/v2/instrument.json">instrument</a>.</p>
+        <a href="schemas/v2/message.json">message</a> and <a href="schemas/v2/instrument.json">instrument</a>.
+      </p>
 
       <h3>Working on the code</h3>
       <pre><code>python -m pytest
 python -m pytest --cov --cov-report=term-missing</code></pre>
       <p>The tests run without the Push, Surge or cairo drawing anything. This manual's text is in
-        <a href="manual/manual.json"><code>docs/manual/manual.json</code></a>; a test checks that every button the modes use is in it.</p>
+        <a href="manual/manual.json"><code>docs/manual/manual.json</code></a>; a test checks that every button the modes
+        use is in it.
+      </p>
     </section>
   </main>
 
   <footer>
     <p>Pushpin is by <a href="https://www.instagram.com/kingajanicka">Kinga Janicka</a> and contributors, MIT licensed
       (the mono2k engine is GPL-3.0). <a href="https://www.youtube.com/kingajanicka">YouTube</a> ·
-      <a href="https://github.com/kingajanicka/pushpin-groovebox">GitHub</a> · <a href="https://discord.gg/CDCUF9uePy">Discord</a></p>
-    <p class="small">"Raspberry Pi" is a trademark of Raspberry Pi Ltd. "Ableton" and "Ableton Push" are trademarks of Ableton AG.
-      "Elektron" is a trademark of Elektron Music Machines MAV AB. All trademarks used with permission. Nothing on this page is
+      <a href="https://github.com/kingajanicka/pushpin-groovebox">GitHub</a> · <a
+        href="https://discord.gg/CDCUF9uePy">Discord</a>
+    </p>
+    <p class="small">"Raspberry Pi" is a trademark of Raspberry Pi Ltd. "Ableton" and "Ableton Push" are trademarks of
+      Ableton AG.
+      "Elektron" is a trademark of Elektron Music Machines MAV AB. All trademarks used with permission. Nothing on this
+      page is
       intended to imply any association with the aforementioned trademark holders.</p>
   </footer>
 
   <script src="assets/manual.js?v=16" defer></script>
 </body>
+
 </html>
