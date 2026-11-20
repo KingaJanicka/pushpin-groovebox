@@ -68,7 +68,7 @@
     seq: seqDemo(),        // track 1's sequencer, as MetroSequencerMode keeps it
     // ClipSelectionMode: which clips each track has a file for, and the clip it's on
     clipHas: [[0, 1, 2], [0, 1], [0, 1, 2, 3], [0], [0, 1], [0], [0, 1, 2, 3], [0, 1]], clipSel: [0, 1, 2, 0, 1, 0, 3, 0],
-    slotCount: [8, 5, 8, 3, 6, 2, 4, 8], slotSel: [0, 2, 1, 0, 4, 0, 3, 7],
+    slotSel: [0, 2, 1, 0, 4, 0, 3, 7],      // each track's current slot (last_pad_in_column_pressed)
     muted: { "3,2": 1, "0,5": 1, "4,1": 1, "1,6": 1 },
   };
   // ---- Track 1's sequencer, in MetroSequencerMode's own terms ---------------
@@ -359,6 +359,32 @@
     { on: "A spare layer: playback doesn't use it yet.", muted: "A spare layer: muting it changes nothing.", short: "nothing changes (a spare layer)." },
   ];
 
+  // PresetSelectionMode.slot_label: a Surge slot is named after the preset it came
+  // from (Init Saw unless chosen); a mono2k slot after its sound, or "-"
+  function slotNames(t) {
+    return trackState(t).engine === "mono2k" ? data.screens.slots_mono2k[t] || data.screens.slots_mono2k[0] : data.screens.slots[t];
+  }
+
+  // What a preset slot is and does, for the track's engine
+  function slotHelp(r, c) {
+    const n = c + 1, on = DEMO.slotSel[c] === r, name = slotNames(c)[r], m2k = trackState(c).engine === "mono2k";
+    const lines = [];
+    const title = on ? `Track ${n}'s current slot` : `Slot ${r + 1}`;
+    if (m2k) {
+      lines.push(name === "-" ? "Empty: it plays the machine's INIT sound until you save into it." : `Holds the mono2k sound “${name}”.`);
+      if (on) lines.push(`Track ${n} is playing it (white). mono2k slots save themselves: every few seconds while the sound changes, and before you switch away.`);
+      else lines.push(`Tap to play it on track ${n}; the slot it's on now (slot ${DEMO.slotSel[c] + 1}) is saved first.`);
+    } else {
+      lines.push(`A Surge XT patch, named after “${name}”, the preset it was loaded from, with any edits saved into it.`);
+      if (on) lines.push(`Track ${n} is playing it (white). Your edits are written into it when you close Presets (BROWSE).`);
+      else lines.push(`Tap to load it on track ${n}, as it was last saved. The slot you leave isn't saved first: edits made since Presets was last closed are dropped.`);
+    }
+    lines.push("Hold it for half a second (or hold SELECT and tap) to open the browser: turn the encoders to choose a sound, then let go to load it into this slot. Let go without browsing and nothing changes.");
+    if (on) lines.push(m2k ? "Save to Current (upper button 1) saves the sound into it now; Save to New (button 2) makes it a user preset; Rename (button 3) renames a user preset."
+      : "Rename (upper button 3) renames it if it's a Surge user patch.");
+    return { title: title, lines: lines };
+  }
+
   function padHelp(r, c) {
     const m = modeData();
     const track = "Track " + (c + 1);
@@ -404,8 +430,8 @@
         text: "", foot: m.pads };
     }
     if (state.mode === "presets") {
-      const text = state.held.select ? "SELECT is held: tap to open the browser on this slot. Turn the encoders to choose a sound, then let go." : m.pads;
-      return { where: track + ", slot " + (r + 1), text: text };
+      const text = state.held.select ? "SELECT is held: tap to open the browser on this slot. Turn the encoders to choose a sound, then let go." : "";
+      return Object.assign({ where: track + ", slot " + (r + 1), text: text, foot: m.pads }, slotHelp(r, c));
     }
     return { where: "", text: "" };
   }
@@ -862,8 +888,8 @@
       }
     } else if (state.mode === "presets") {
       for (let c = 0; c < 8; c++) for (let r = 0; r < 8; r++) {
-        if (r === DEMO.slotSel[c]) set(r, c, color("white"));
-        else set(r, c, r < DEMO.slotCount[c] ? trackColor(c) : dim(trackColor(c), 0.3));
+        // PresetSelectionMode.update_pads: every slot in its track's colour, the current one white
+        set(r, c, r === DEMO.slotSel[c] ? color("white") : trackColor(c));
       }
     } else if (state.mode === "mutes") {
       const order = ["pitch", "octave", "velocity", "gate", "skips", "lock_scale", "aux", "aux"];
@@ -1168,7 +1194,7 @@
         [[0, "Save to Current"], [1, "Save to New"], [2, "Rename"], [6, "Set All to Current"], [7, "Save All to New"]]
           .forEach(([i, t]) => showText(g, i, 15, t, { height: 15 }));
       } else {
-        S.slots.forEach((slots, t) => slots.forEach((name, i) => {
+        S.slots.forEach((_, t) => slotNames(t).forEach((name, i) => {
           showText(g, t, 15 + 15 * i, name, { height: 15, color: i === DEMO.slotSel[t] ? "#fff" : trackColor(t) });
         }));
       }

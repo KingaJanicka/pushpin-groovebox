@@ -309,7 +309,7 @@
     "presets": {
       "name": "Presets",
       "enter": "Press BROWSE.",
-      "summary": "Each track has eight sound slots. Tap one to play it, or hold it to browse for a new sound.",
+      "summary": "Each track has eight sound slots: Surge XT patches with your edits, or mono2k sounds. Tap one to play it, or hold it to browse for a new sound.",
       "display": {
         "title": "Presets",
         "labels": [
@@ -323,7 +323,7 @@
           ""
         ]
       },
-      "pads": "Each column is a track and each pad one of its slots. Tap a slot to load it. Hold it (or hold SELECT and tap it) to open the browser, turn the encoders to choose a sound, and let go to load it into the slot. White is the slot in use; dim slots are empty.",
+      "pads": "Each column is a track and each pad one of its eight slots, in the track's colour; the slot a track is on is white. Tap a slot to load it. Hold it (or hold SELECT and tap it) to open the browser, turn the encoders to choose a sound, and let go to load it into the slot.",
       "controls": {
         "select": "Hold and tap a slot to open the browser straight away.",
         "upper_row_1": "Save to Current: saves the track's sound into the slot in use.",
@@ -640,6 +640,28 @@
         "Harp",
         "Bells",
         "Vox"
+      ]
+    ],
+    "slots_mono2k": [
+      [
+        "Swav-Saw",
+        "Acid Drop",
+        "-",
+        "-",
+        "-",
+        "-",
+        "-",
+        "-"
+      ],
+      [
+        "Swav-Saw",
+        "Bass Drop",
+        "Kick Fold",
+        "-",
+        "-",
+        "-",
+        "-",
+        "-"
       ]
     ],
     "browser": [
