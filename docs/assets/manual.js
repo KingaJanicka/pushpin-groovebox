@@ -379,7 +379,7 @@
       if (on) lines.push(`Track ${n} is playing it (white). Your edits are written into it when you close Presets (BROWSE).`);
       else lines.push(`Tap to load it on track ${n}, as it was last saved. The slot you leave isn't saved first: edits made since Presets was last closed are dropped.`);
     }
-    lines.push("Hold it for half a second (or hold SELECT and tap) to open the browser: turn the encoders to choose a sound, then let go to load it into this slot. Let go without browsing and nothing changes.");
+    lines.push("Hold it for half a second (or hold SELECT and tap it, or Alt/Option-click to keep it held) to open the browser: turn the encoders to choose a sound, then let go to load it into this slot. Let go without browsing and nothing changes.");
     if (on) lines.push(m2k ? "Save to Current (upper button 1) saves the sound into it now; Save to New (button 2) makes it a user preset; Rename (button 3) renames a user preset."
       : "Rename (upper button 3) renames it if it's a Surge user patch.");
     return { title: title, lines: lines };
@@ -428,6 +428,14 @@
       return { where: track + ", " + m.rows[r] + " layer", title: muted ? "Muted" : "Playing",
         lines: [muted ? what.muted : what.on, (muted ? "Tap to bring it back." : "Tap to mute it: ") + (muted ? "" : what.short)],
         text: "", foot: m.pads };
+    }
+    const ph = state.presetHold;
+    if (state.mode === "presets" && ph && ph.browser && ph.r === r && ph.c === c) {
+      const ch = browserChoice(ph), last = ch.levels.length;
+      const lines = [`Encoders 1 to ${last} walk the levels shown, left to right; turning one starts the levels after it over.`];
+      lines.push(ph.browsed || !ph.viaLong ? `Let go to load “${ch.leaf}” into this slot.` : "Let go without turning an encoder and nothing changes.");
+      if (ph.latched) lines.push("(Held by Alt/Option-click: click the pad again to let go.)");
+      return { where: track + ", slot " + (r + 1), title: "Browsing", lines: lines, text: "", foot: m.pads };
     }
     if (state.mode === "presets") {
       const text = state.held.select ? "SELECT is held: tap to open the browser on this slot. Turn the encoders to choose a sound, then let go." : "";
@@ -486,7 +494,7 @@
         p.dataset.r = r; p.dataset.c = c;
         p.addEventListener("pointerenter", () => hoverPad(r, c));
         p.addEventListener("focus", () => hoverPad(r, c));
-        p.addEventListener("click", () => { if (state.mode !== "seq") pressPad(r, c); });
+        p.addEventListener("click", () => { if (state.mode !== "seq" && state.mode !== "presets") pressPad(r, c); });
         p.addEventListener("pointerdown", (e) => padDown(e, r, c));
         p.addEventListener("keydown", (e) => padKeys(e, r, c));
         pads[r].push(p);
@@ -705,6 +713,18 @@
   // Turning an encoder (mouse wheel) moves its control on the device page
   function turn(id, e) {
     const m = /^enc_(\d)$/.exec(id);
+    const ph = state.presetHold;
+    if (m && ph && ph.browser && state.mode === "presets") {
+      // PresetSelectionMode.on_encoder_rotated: encoder n moves level n; the levels after it start over
+      e.preventDefault();
+      const level = +m[1] - 1, lv = browserChoice(ph).levels[level];
+      if (!lv) return;
+      const next = Math.min(lv.names.length - 1, Math.max(0, lv.sel - Math.sign(e.deltaY)));
+      if (next !== lv.sel) { ph.path[level] = next; for (let k = level + 1; k < 8; k++) ph.path[k] = 0; }
+      ph.browsed = true;
+      if (state.hover && typeof state.hover === "object") hoverPad(state.hover.r, state.hover.c);
+      return drawScreen();
+    }
     const kind = state.overlay ? overlayData().screen : modeData().screen;
     if (!m || kind !== "device") return;
     const c = visibleControls()[+m[1] - 1];
@@ -803,7 +823,9 @@
   // away again. Alt/Option-click keeps a pad held until it's clicked again.
   const QUICK_PRESS = 400;
   function padDown(e, r, c) {
-    if (state.mode !== "seq" || e.button !== 0) return;
+    if (e.button !== 0) return;
+    if (state.mode === "presets") { e.preventDefault(); return presetDown(e, r, c); }
+    if (state.mode !== "seq") return;
     e.preventDefault();
     const h = state.heldStep;
     if (h && h.latched) {                         // a latched pad lets go on the next click
@@ -814,7 +836,75 @@
     hoverPad(r, c);
     render();
   }
+  // PresetSelectionMode: a press loads the slot. Holding it PAD_LONG_PRESS_SECONDS
+  // (0.5 s), or pressing it with SELECT held, opens the browser; letting go loads
+  // the browsed sound into the slot (browser_choice_wanted) and closes it.
+  const PAD_LONG_PRESS = 500;
+  function presetDown(e, r, c) {
+    const h = state.presetHold;
+    if (h && h.latched) { presetRelease(); if (h.r === r && h.c === c) return; }
+    state.track = c;
+    DEMO.slotSel[c] = r;
+    const viaSelect = state.held.select;
+    // the browser opens on the slot's own sound (set_knob_postions), else at the top
+    const path = findInTree(browserTree(c), slotNames(c)[r]) || [0];
+    state.presetHold = { r: r, c: c, latched: e.altKey, browser: viaSelect, viaLong: false, browsed: false, path: path };
+    if (!viaSelect) {
+      const hold = state.presetHold;
+      hold.timer = setTimeout(() => {
+        if (state.presetHold !== hold) return;
+        hold.browser = true; hold.viaLong = true;
+        if (state.hover && typeof state.hover === "object") hoverPad(state.hover.r, state.hover.c);
+        render();
+      }, PAD_LONG_PRESS);
+    }
+    hoverPad(r, c);
+    render();
+  }
+  function presetRelease() {
+    const h = state.presetHold;
+    if (!h) return;
+    clearTimeout(h.timer);
+    state.presetHold = null;
+    const leaf = h.browser ? browserChoice(h).leaf : null;
+    if (leaf && (h.browsed || !h.viaLong)) slotNames(h.c)[h.r] = leaf;
+    if (state.hover && typeof state.hover === "object") hoverPad(state.hover.r, state.hover.c);
+    render();
+  }
+
+  // The browser's tree for a track's engine: mono2k's from its sounds, Surge's an example
+  function browserTree(c) {
+    return trackState(c).engine === "mono2k" ? devices.m2k_browser : data.screens.surge_browser;
+  }
+  // Where a sound's name sits in a browser tree, as positions at each level
+  function findInTree(node, name, path = []) {
+    if (Array.isArray(node)) { const i = node.indexOf(name); return i < 0 ? null : path.concat(i); }
+    const keys = Object.keys(node || {});
+    for (let i = 0; i < keys.length; i++) {
+      const hit = findInTree(node[keys[i]], name, path.concat(i));
+      if (hit) return hit;
+    }
+    return null;
+  }
+
+  // The columns the browser shows for a hold: each level's names and the one chosen, and the sound at the end
+  function browserChoice(h) {
+    const levels = [];
+    let node = browserTree(h.c), leaf = null;
+    for (let level = 0; node && level < 8; level++) {
+      const names = Array.isArray(node) ? node : Object.keys(node);
+      if (!names.length) break;
+      const sel = Math.min(h.path[level] || 0, names.length - 1);
+      levels.push({ names: names, sel: sel });
+      if (Array.isArray(node)) { leaf = names[sel]; break; }
+      node = node[names[sel]];
+    }
+    return { levels: levels, leaf: leaf };
+  }
+
   function padUp() {
+    const p = state.presetHold;
+    if (p && !p.latched) presetRelease();
     const h = state.heldStep;
     if (!h || h.latched) return;
     state.heldStep = null;
@@ -1181,16 +1271,13 @@
       return;
     }
     if (kind === "presets") {
-      if (state.held.select) {
-        // the browser: one column per folder level, the choice in yellow
-        const drawLevel = (level) => {
-          const items = S.browser[level], sel = S.browser_sel[level];
-          items.forEach((name, idx) => {
-            if (Math.abs(idx - sel) > 2) return;
-            showText(g, level, 20 * (idx - sel) + 75, name, { color: idx === sel ? "#000" : "#fff", bg: idx === sel ? color("yellow") : color("green"), pct: 1, centerH: true, pad: 1 });
-          });
-        };
-        S.browser.forEach((_, level) => drawLevel(level));
+      const ph = state.presetHold;
+      if (ph && ph.browser) {
+        // nested_draw: one column per level, two either side of the choice, the choice in yellow
+        browserChoice(ph).levels.forEach(({ names, sel }, level) => names.forEach((name, idx) => {
+          if (Math.abs(idx - sel) > 2) return;
+          showText(g, level, 20 * (idx - sel) + 75, name, { color: idx === sel ? "#000" : "#fff", bg: idx === sel ? color("yellow") : color("green"), pct: 1, centerH: true, pad: 1 });
+        }));
         [[0, "Save to Current"], [1, "Save to New"], [2, "Rename"], [6, "Set All to Current"], [7, "Save All to New"]]
           .forEach(([i, t]) => showText(g, i, 15, t, { height: 15 }));
       } else {

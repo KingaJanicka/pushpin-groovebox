@@ -1,5 +1,5 @@
 {
-  "$comment": "What every Push 2 control does in each Pushpin mode. Read by docs/assets/manual.js (the interactive manual) and checked by tests/test_manual_data.py against the buttons the modes handle. A control's help is looked up in the open overlay, then the pad mode (and its layer), then 'global'. An overlay with hidesDevices stops the device controls in 'global' applying while it is open. Missing everywhere means 'Not used by Pushpin'. 'screens' is example content for the drawn Push 2 display, laid out as Pushpin draws its 960x160 screen; the device pages themselves are in devices.json, generated from definitions/ by tools/build_manual_devices.py.",
+  "$comment": "What every Push 2 control does in each Pushpin mode. Read by docs/assets/manual.js (the interactive manual) and checked by tests/test_manual_data.py against the buttons the modes handle. A control's help is looked up in the open overlay, then the pad mode (and its layer), then 'global'. An overlay with hidesDevices stops the device controls in 'global' applying while it is open. Missing everywhere means 'Not used by Pushpin'. 'screens' is example content for the drawn Push 2 display, laid out as Pushpin draws its 960x160 screen; the device pages themselves are in devices.json, generated from definitions/ by tools/build_manual_devices.py. screens.surge_browser is an example tree (Surge's factory patches aren't in the repo); a mono2k track's browser is the real one, in devices.json.",
   "tracks": [
     "orange",
     "yellow",
@@ -644,9 +644,9 @@
     ],
     "slots_mono2k": [
       [
-        "Swav-Saw",
-        "Acid Drop",
-        "-",
+        "ACID",
+        "SIDLEAD",
+        "SWAV-SAW",
         "-",
         "-",
         "-",
@@ -654,41 +654,15 @@
         "-"
       ],
       [
-        "Swav-Saw",
-        "Bass Drop",
-        "Kick Fold",
+        "SWAV-SAW",
+        "CHIPSQR",
+        "BOOM808",
         "-",
         "-",
         "-",
         "-",
         "-"
       ]
-    ],
-    "browser": [
-      [
-        "Factory",
-        "Third Party",
-        "User"
-      ],
-      [
-        "Basses",
-        "Keys",
-        "Leads",
-        "Pads",
-        "Plucks"
-      ],
-      [
-        "Acid Line",
-        "Bass Drop",
-        "Deep Sub",
-        "Fm Bass",
-        "Reese"
-      ]
-    ],
-    "browser_sel": [
-      0,
-      2,
-      1
     ],
     "settings_values": [
       [
@@ -773,6 +747,64 @@
         ],
         "sel": 1
       }
-    ]
+    ],
+    "surge_browser": {
+      "Factory": {
+        "Basses": [
+          "Acid Line",
+          "Bass Drop",
+          "Deep Sub",
+          "Fm Bass",
+          "Reese",
+          "Sub Mono"
+        ],
+        "Keys": [
+          "Ep Soft",
+          "Glass Keys",
+          "Organ",
+          "Clav"
+        ],
+        "Leads": [
+          "Lead Sync",
+          "Square Lead",
+          "Fm Lead",
+          "Wobble"
+        ],
+        "Pads": [
+          "Pad Wide",
+          "Choir",
+          "Drone Low",
+          "Grain Cloud"
+        ],
+        "Plucks": [
+          "Pluck Me",
+          "Marimba",
+          "Harp",
+          "Bell Tree"
+        ],
+        "Templates": [
+          "Init Saw",
+          "Init Sine",
+          "Init Square"
+        ]
+      },
+      "Third Party": {
+        "Example Author": {
+          "Basses": [
+            "Rubber Bass",
+            "Grit"
+          ],
+          "Pads": [
+            "Slow Wash"
+          ]
+        }
+      },
+      "User": {
+        "My Patches": [
+          "Kick Fold",
+          "Night Lead"
+        ]
+      }
+    }
   }
 }
