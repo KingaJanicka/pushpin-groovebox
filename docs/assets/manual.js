@@ -727,6 +727,16 @@
       return drawScreen();
     }
     const kind = state.overlay ? overlayData().screen : modeData().screen;
+    if (m && kind === "timing") {
+      // MetroSequencerMode.on_encoder_rotated on the SCALE page: a hundredth of the
+      // range a click (a menu moves in fractions of an item, as on the Push)
+      const c = data.screens.timing[+m[1] - 1];
+      if (!c) return;
+      e.preventDefault();
+      const lo = c.t === "menu" ? 0 : c.min, hi = c.t === "menu" ? c.items.length - 0.1 : c.max;
+      c.value = Math.min(hi, Math.max(lo, Math.round((c.value - Math.sign(e.deltaY) * (hi - lo) / 100) * 1000) / 1000));
+      return drawScreen();
+    }
     if (!m || kind !== "device") return;
     const c = visibleControls()[+m[1] - 1];
     if (!c || c.t === "label") return;
@@ -1291,7 +1301,7 @@
     }
     if (kind === "timing") {
       svg("rect", { x: 0, y: 0, width: SW, height: 135, fill: "#000" }, g);
-      S.timing.forEach((c, i) => { if (c && c.menu) drawMenu(g, i, c, col); else if (c) drawControl(g, i, c, col); });
+      S.timing.forEach((c, i) => drawAny(g, i, c, col));
       drawTrackBar(g);
       return;
     }
