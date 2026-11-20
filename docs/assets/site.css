@@ -4,7 +4,7 @@
   --ink: #17171a;
   --muted: #5d5c63;
   --line: #dcd8d0;
-  --accent: #d9480f;
+  --accent: #a80838;   /* the pin's crimson, from the logo */
   --accent-ink: #ffffff;
   --code-bg: #ebe7df;
   /* the drawn Push 2 is always dark, like the hardware */
@@ -22,12 +22,12 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #111113; --surface: #19191c; --ink: #ecebe8; --muted: #a3a2a8; --line: #2e2e33;
-    --accent: #ff8a4c; --accent-ink: #111113; --code-bg: #232327; color-scheme: dark;
+    --accent: #a80838; --accent-ink: #ffffff; --code-bg: #232327; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #111113; --surface: #19191c; --ink: #ecebe8; --muted: #a3a2a8; --line: #2e2e33;
-  --accent: #ff8a4c; --accent-ink: #111113; --code-bg: #232327; color-scheme: dark;
+  --accent: #a80838; --accent-ink: #ffffff; --code-bg: #232327; color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
