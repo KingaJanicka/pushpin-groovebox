@@ -240,7 +240,7 @@ def test_add_track_switches_to_the_highlighted_engine_saves_and_closes(menu, app
     assert mode.on_button_pressed(B.BUTTON_ADD_TRACK) is True
     assert instrument.active_engine_name == M2K
     assert load_track_engines(mode.track_engines_filename) == {"Pushpin 2": M2K}
-    app.add_display_notification.assert_called_with("Pushpin 2: Monomachine")
+    app.add_display_notification.assert_called_with("Trk 3: Monomachine")   # (Pushpin 2, as the Push numbers it)
     assert app.osc_mode.current_device_index_and_page == [0, 0]
     app.toggle_engine_selection_mode.assert_called_once()
 
@@ -338,7 +338,7 @@ def test_preset_refresh_leaves_a_mono2k_tracks_pages_alone(app):
 def test_mono2k_devices_each_have_their_own_slot(app):
     instrument, _ = make_instrument(app)
     slots = [d.slot for slot in instrument.devices for d in slot if d.slot != 0]
-    assert sorted(slots) == [1, 2, 3, 4, 5, 6, 7, 8, 9]          # FX and DSTR no longer share one
+    assert sorted(slots) == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]      # FX and DSTR no longer share one
     assert [d.label for d in instrument.devices[3]] == ["FX"]
     assert [d.label for d in instrument.devices[4]] == ["Dstr"]
 
@@ -346,7 +346,7 @@ def test_mono2k_devices_each_have_their_own_slot(app):
 def test_surge_keeps_slots_2_to_4_always_shown(app):
     instrument, _ = make_instrument(app, initial_engine=SURGE)
     assert instrument.engine.always_shown_slots == (2, 3, 4)
-    assert instrument.voices[M2K].engine.always_shown_slots == (1, 2, 3, 4, 5, 6, 7, 8, 9)
+    assert instrument.voices[M2K].engine.always_shown_slots == (1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
 
 
 def test_p_locks_on_mono2k_fx_dont_play_on_dstr(app):
@@ -393,12 +393,12 @@ def test_right_arrow_stays_on_page_1_without_a_modulation_page(app):
     assert mode.instrument_page == 0
 
 
-def test_right_arrow_shows_mono2k_vel_and_key_pages(app):
+def test_right_arrow_shows_mono2k_vel_key_and_feedback_pages(app):
     instrument, _ = make_instrument(app)
     mode = page_mode(app, instrument)
     mode.update_current_instrument_page(new_instrument_page=1)
     assert mode.instrument_page == 1
-    assert [d.label for d in mode.get_current_instrument_page_devices()] == ["Velocity", "Key Track"]
+    assert [d.label for d in mode.get_current_instrument_page_devices()] == ["Velocity", "Key Track", "Feedback"]
     assert mode.get_current_instrument_device().label == "Velocity"
 
 

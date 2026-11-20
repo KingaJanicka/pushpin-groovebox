@@ -366,7 +366,7 @@ def test_generated_filter_page_has_fine_steps():
 def test_load_device_definitions_is_in_page_order():
     defs = load_device_definitions(M2K_DIR)
     assert list(defs)[0] == "00_machine_00"
-    assert list(defs)[-5:] == ["50_lfo1", "51_lfo2", "52_lfo3", "60_vel", "61_key"]
+    assert list(defs)[-6:] == ["50_lfo1", "51_lfo2", "52_lfo3", "60_vel", "61_key", "62_fdbk"]
 
 
 # ------------------------------------------------------ instrument end to end
@@ -440,7 +440,8 @@ def test_m2k_instrument_shows_machine_then_pages(m2k_instrument):
         "Gnd-Sin", "Amp", "Filt", "FX", "Dstr", "LFO 1", "LFO 2", "LFO 3"]
     assert [d.slot for d in instrument.current_devices] == [0, 1, 2, 3, 4, 5, 6, 7]
     # and VEL and KEY TRACK on the second (slots 8-9, where Surge's modulation is)
-    assert [(d.label, d.slot) for d in instrument.devices_modulation] == [("Velocity", 8), ("Key Track", 9)]
+    assert [(d.label, d.slot) for d in instrument.devices_modulation] == [("Velocity", 8), ("Key Track", 9),
+                                                                         ("Feedback", 10)]
 
 
 def test_selecting_a_machine_switches_page_and_loads_its_init(m2k_instrument):

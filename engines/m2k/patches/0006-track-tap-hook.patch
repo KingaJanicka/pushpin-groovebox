@@ -1,0 +1,29 @@
+--- a/firmware/src/m2k_dsp.c
++++ b/firmware/src/m2k_dsp.c
+@@ -202,6 +202,10 @@
+ /* a host's input into a track's chain, called with the machine's block before DIST and the filters hear it (pushpin's
+  * m2k-jack: the track's feedback, its own out of the block before added in) */
+ void (*m2k_track_in)(int ti, int m, int16_t *blk);
++/* and a host's taps on a track's chain, called with the block as it stands after the filters (stage 1) and after the amp
++ * (stage 2), in the machine's 16-bit scale (pushpin's m2k-jack: where the feedback is taken from). A silent track
++ * calls neither */
++void (*m2k_track_tap)(int ti, int stage, const int32_t *x);
+ 
+ /* where a filter with its tracking off sits: as if every note were this one */
+ #ifndef M2K_FIXED_NOTE
+@@ -1897,6 +1901,7 @@
+     int32_t x[M2K_SUB], xs[M2K_SUB], msd[M2K_SUB];
+     for (int i = 0; i < M2K_SUB; i++) x[i] = CLAMP(dist_in(blk[ti][i], dh, ish), -(1 << 24), 1 << 24);
+     chain_filter(x, eq_on, t->eqc, ceil, &t->eq, &t->lp1, &t->hp2, &t->hp1, &t->lp2a, &t->lp2b);
++    if (m2k_track_tap) m2k_track_tap(ti, 1, x);
+     if (side) {                        /* the side through the same filters, amp, VOL and SRR, added after the pan */
+         for (int i = 0; i < M2K_SUB; i++) xs[i] = CLAMP(dist_in(eside[ti][i], dh, ish), -(1 << 24), 1 << 24);
+         chain_filter(xs, eq_on, t->eqc, ceil, &t->eqs, &t->lp1s, &t->hp2s, &t->hp1s, &t->lp2as, &t->lp2bs);
+@@ -1908,6 +1913,7 @@
+         if (xr) s = (int32_t)(int16_t)((uint16_t)sat16(s) ^ (uint16_t)xm);
+         x[i] = (int32_t)mul_sh(s, a0 + ((da * i) >> 4), 15);
+     }
++    if (m2k_track_tap) m2k_track_tap(ti, 2, x);
+     if (mmix) {
+         int16_t *mb = mod_mem[ti];
+         mod_block(t, mb, x, msd, mtype, minc, mdep, mmix);

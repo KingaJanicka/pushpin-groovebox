@@ -51,12 +51,26 @@
  *                velocity (VEL) or its note number (KEY), from its note-on to the next. 79, 80: KEY's HPF and
  *                LPF, the high-pass and low-pass following the note (64-127, as MONO2K's always do) or sitting
  *                where note 60 puts them (0-63). A machine's INIT turns the rows and the tracking off.
- *   NRPN 1:81-83 FILT's second page: FDBK, the track's own out (after its chain and its delay) back into its chain
- *                before DIST, a block later, bipolar about 64 (below: inverted), and that feedback's EQ, EQF and
+ *   NRPN 1:81-83 the FEEDBACK page: FDBK, the track's own out (after its chain and its delay) back into its chain
+ *                before DIST, a sample later, bipolar about 64 (below: inverted), and that feedback's EQ, EQF and
  *                EQG as FX's at half its depth in dB (64 flat). A machine's INIT turns it off.
  *   NRPN 1:84    FX-FM's CARRIER (patches/0005): 0-63 the carrier on the track's own note, 64-127 on the track
  *                before's pitch (its note, glide and PTCH), so the track's PTCH is its interval to the modulator. A
  *                machine's INIT sets it to the track's own note.
+ *   NRPN 1:85-86 the FEEDBACK page, where FDBK's feedback is taken from and where it goes: 85 SOURCE, a quarter of
+ *                0-127 each: after the machine (OSC), after the filters (FILT), after the amp (AMP), or the track's
+ *                whole out, its delay too (OUT, the INIT's); 86 DEST, 0 back into the chain before DIST (AMP IN, the
+ *                INIT's), else the number + 1 of a parameter (as an LFO's DEST), which each sample of the tap moves
+ *                at the next, 64 steps at full scale and gain 1 (patches/0006 adds the FILT and AMP taps).
+ *   NRPN 1:88    the feedback's EQ: 64-127 on (the INIT's), 0-63 off (EQF and EQG kept, unheard).
+ *   NRPN 1:87    the feedback's TRACK, the track it's taken from (SOURCE is where on it), in pushpin's TRCK encoding:
+ *                0 the track's own (the INIT's), 1-8 track 1-8. DEST 72 (one past the parameters): OSC FM, phase
+ *                modulation of the machine's oscillators by the feedback, a sample at a time (patches/0007's
+ *                m2k_phase_add): 9.4 rad from a full-scale tap at FDBK's gain 1, 19 rad at its top. DEST is still this track's AMP IN or parameter, so a
+ *                track's FEEDBACK page says what comes into it. Every route comes back one sample later: the tracks
+ *                a feedback joins render a sample at a time, in step (patches/0007: the core renders any slice of a
+ *                block). --sample-step renders every track that way, which with no feedback sounds as whole blocks
+ *                do, to the bit (a check), but for FX-DYN's compressor, which then hears the block before.
  *   Clock (on any track's port; the first port it comes on, if several send it) sets the tempo
  *                MONO2K times its LFOs, delays and HOLD by: its sequencer stays stopped, pushpin
  *                sequences. Start / Continue put the LFOs on FREE back to their PHAS, so they line
@@ -73,7 +87,7 @@
  *   m2k-jack [--name NAME] [--machine N] [--midi-connect TRACK=SUBSTR ...] [--enable LIST]
  *            [--no-audio-connect] [--glide-ms MS] [--snap-ms MS]
  *   m2k-jack --render OUT.wav [--rate HZ] [--seconds S] [--machine N] [--script FILE]
- *            [--stems PREFIX] [--stock] [--trace-param P]
+ *            [--stems PREFIX] [--stock] [--trace-param P] [--sample-step]
  *   m2k-jack --list-machines
  *   m2k-jack --describe          every machine's parameters and INIT sound as JSON
  *                                (engines/m2k/gen_definitions.py builds pushpin's pages from it)
@@ -92,8 +106,9 @@
 #include <unistd.h>
 #include <math.h>
 
-/* the core's modulation queue: three LFOs a track, and pushpin's velocity and key rows (PP_ROWS, below) */
-#define M2K_MODQ_PER_TRACK 7
+/* the core's modulation queue: three LFOs a track, pushpin's velocity and key rows (PP_ROWS, below) and the feedback
+ * when it goes to a parameter */
+#define M2K_MODQ_PER_TRACK 8
 #include "m2k_core.c"
 
 #ifdef M2K_WITH_JACK
@@ -132,29 +147,34 @@ static const pp_ccmap_t PP_CC[] = {
  * KEY's HPF and LPF, whether each filter follows the note (MONO2K's always do) */
 enum { X_VDST1 = P_COUNT, X_VADD1, X_VDST2, X_VADD2,
        X_KDST1, X_KADD1, X_KDST2, X_KADD2, X_KHPF, X_KLPF,
-       X_FDBK, X_FEQF, X_FEQG, X_FMC, X_END };
+       X_FDBK, X_FEQF, X_FEQG, X_FMC, X_FSRC, X_FDST, X_FTRK, X_FEQON, X_END };
 #define X_COUNT (X_END - P_COUNT)
 #define PP_PARAMS X_END                      /* every parameter pushpin can set: MONO2K's and its own */
+#define FB_DEST_FM (P_COUNT + 1)             /* the feedback's DEST past the parameters: the oscillator's frequency */
 #define PP_ROWS 4                            /* VEL 1, VEL 2, KEY 1, KEY 2: each a DEST, its ADD the one after */
 static const uint8_t PP_ROW_DST[PP_ROWS] = {X_VDST1, X_VDST2, X_KDST1, X_KDST2};
-_Static_assert(M2K_MODQ_PER_TRACK >= 3 + PP_ROWS, "room in the core's modulation queue for every source");
-enum { XK_DEST, XK_ADD, XK_SWITCH };
+_Static_assert(M2K_MODQ_PER_TRACK >= 3 + PP_ROWS + 1, "room in the core's modulation queue for every source");
+enum { XK_DEST, XK_ADD, XK_SWITCH, XK_CHOICE, XK_TRACK };
 static const uint8_t PP_X_KIND[X_COUNT] = {XK_DEST, XK_ADD, XK_DEST, XK_ADD, XK_DEST, XK_ADD, XK_DEST, XK_ADD,
-                                           XK_SWITCH, XK_SWITCH, XK_ADD, XK_ADD, XK_ADD, XK_SWITCH};
+                                           XK_SWITCH, XK_SWITCH, XK_ADD, XK_ADD, XK_ADD, XK_SWITCH,
+                                           XK_CHOICE, XK_DEST, XK_TRACK, XK_SWITCH};
 static const char *const PP_X_LABEL[X_COUNT] = {"DEST", "ADD", "DEST", "ADD", "DEST", "ADD", "DEST", "ADD",
-                                                "HPF", "LPF", "FDBK", "FEQF", "FEQG", "CARR"};
+                                                "HPF", "LPF", "FDBK", "FEQF", "FEQG", "CARR", "FSRC", "FDST", "FTRK", "FEQ"};
 static const char *const PP_X_NAME[X_COUNT] = {"VEL 1 DEST", "VEL 1 ADD", "VEL 2 DEST", "VEL 2 ADD",
                                                "KEY 1 DEST", "KEY 1 ADD", "KEY 2 DEST", "KEY 2 ADD",
                                                "HPF TRACKING", "LPF TRACKING",
-                                               "FEEDBACK", "FEEDBACK EQ FREQ", "FEEDBACK EQ GAIN", "FM CARRIER"};
+                                               "FEEDBACK", "FEEDBACK EQ FREQ", "FEEDBACK EQ GAIN", "FM CARRIER",
+                                               "FEEDBACK SOURCE", "FEEDBACK DEST", "FEEDBACK FROM TRACK", "FEEDBACK EQ"};
 /* off, nothing added; neither filter tracking (a switch: 0-63 off, 64-127 on). pushpin's default, not MONO2K's,
  * whose filters always track: a sound sits where it does at note 60 whatever note plays it. No feedback (64: none,
  * bipolar), its EQ flat at FX's EQ's INIT frequency. FX-FM's carrier on its own note (0-63; 64-127 the track before's
- * pitch) */
-static const uint8_t PP_X_INIT[X_COUNT] = {0, 64, 0, 64, 0, 64, 0, 64, 0, 0, 64, 64, 64, 0};
+ * pitch). The feedback taken from the track's out (FSRC 96-127) and going back in before DIST (FDST 0), on the track's
+ * own sound (FTRK 0; 1-8 track 1-8, as pushpin sends an LFO's TRCK), its EQ switched on (FEQ 64-127; flat at EQG 64
+ * whatever, so a sound saved before the switch keeps its EQ) */
+static const uint8_t PP_X_INIT[X_COUNT] = {0, 64, 0, 64, 0, 64, 0, 64, 0, 0, 64, 64, 64, 0, 127, 0, 0, 127};
 /* the MONO2K parameter whose values (what the screen shows) each of pushpin's own takes, -1 none: the feedback's EQ
  * is FX's EQ's */
-static const int8_t PP_X_LIKE[X_COUNT] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, P_EQF, P_EQG, -1};
+static const int8_t PP_X_LIKE[X_COUNT] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, P_EQF, P_EQG, -1, -1, -1, -1, -1};
 
 static int pp_param_of_cc(int cc)
 {
@@ -222,8 +242,12 @@ static void pp_set_x(int t, int param, int32_t q8)
 {
     const int i = param - P_COUNT;
     switch (PP_X_KIND[i]) {
-    case XK_DEST: q8 = CLAMP(q8, 0, P_COUNT * 256) & ~255; break;   /* a choice, never in between */
-    case XK_SWITCH: q8 = CLAMP(q8, 0, 127 * 256) & ~255; break;
+    case XK_DEST:                                                    /* a choice, never in between (the feedback's: OSC
+                                                                      * FM past the parameters) */
+        q8 = CLAMP(q8, 0, (param == X_FDST ? FB_DEST_FM : P_COUNT) * 256) & ~255;
+        break;
+    case XK_SWITCH: case XK_CHOICE: q8 = CLAMP(q8, 0, 127 * 256) & ~255; break;
+    case XK_TRACK: q8 = CLAMP(q8, 0, NT * 256) & ~255; break;
     default: q8 = CLAMP(q8, 0, 127 * 256);
     }
     pp_x[t][i] = q8;
@@ -248,25 +272,64 @@ static void pp_assign_block(int t)
 
 /* ---------------------------------------------------------------- feedback */
 
-/* FILT's second page: the track's own out, after everything on it (its chain, its delay), back into its chain where
- * the machine's sound goes in, before DIST and the filters, a block (16 samples) later. FDBK is bipolar about 64:
- * below it the feedback goes back inverted; |FDBK - 64| / 64 squared is its gain, up to 2 (so the loop can run away
- * into DIST's clip at the top, with VOL and LEVL in it too), its EQ a band as FX's EQ is (EQF, EQG; 64 flat). Then a
- * tanh, the last thing on the way back in (after the gain too, or FDBK's 2 would lift its ceiling back to full
- * scale): a quiet feedback passes as it was, a loud one is held under PP_FB_SAT, so a loop that screams is tamed. The
- * amp's envelope is in the loop: it dies with the note's release, and a silent track hears none */
+/* the FEEDBACK page (pushpin's second instrument page), what comes into the track: a tap on a track, its own or another
+ * (TRACK: 0 its own, 1-8 track 1-8, as pushpin sends an LFO's TRCK), where on it (SOURCE: after its machine, after its
+ * filters, after its amp, or its whole out, its chain and its delay), to a destination on this track (DEST): back into
+ * its chain where the machine's sound goes in, before DIST and the filters (AMP IN, 0, the INIT's), or any parameter
+ * an LFO reaches (the parameter's number + 1, as an LFO's DEST). Every route comes back one sample later: the tracks a
+ * feedback joins (the track it's taken from, its own and any FX machine between them) render a sample at a time, in step (patches/0007: the core renders any slice of a block), and the tap of each
+ * sample goes in at the next. FDBK is bipolar about 64: below it the feedback goes back inverted; |FDBK - 64| / 64
+ * squared is its gain, up to 2 (so the loop can run away into DIST's clip at the top), ramped across each block, its
+ * EQ a band as FX's EQ is (EQF, EQG; 64 flat).
+ *
+ * Into AMP IN, a tanh is the last thing on the way back in (after the gain too, or FDBK's 2 would lift its ceiling back
+ * to full scale): a quiet feedback passes as it was, a loud one is held under PP_FB_SAT, so a loop that screams is
+ * tamed. Into a parameter, each sample moves it for the next (64 steps either way from a full-scale tap at gain 1, so
+ * FDBK is its depth; no tanh): whatever the track reads of it in its sample is moved at audio rate (a filter's cutoff, a
+ * machine's pitch or depth, VOL, PAN); what moves once a block (an envelope's times, an LFO's own settings) is read
+ * in the block's first sample. The amp's envelope is in every tap but OSC's, which a silent track (its note over, its
+ * release done) doesn't take either: the feedback dies with the note */
 #define PP_FB_SAT 12000.0f                /* the tanh's ceiling, in the machine's 16-bit scale: about -8.7 dB of full */
-static int32_t pp_fb[NT][M2K_SUB];        /* the out of the block before, EQ'd and scaled: the next block's input */
+enum { FB_OSC, FB_FILT, FB_AMP, FB_OUT };  /* SOURCE: 0-31, 32-63, 64-95, 96-127 */
 static int32_t pp_fb_g[NT];               /* the gain the last block ended on, Q15 (signed): the next ramps from it */
+static int32_t pp_fbv[NT];                /* each track's feedback out of its last sample: what its next one hears */
+static int32_t pp_tap[NT][3];             /* each track's taps this sample (OSC, FILT, AMP), in the machine's 16-bit
+                                           * scale */
+static uint8_t pp_tapped[NT];             /* whether the track's chain ran this sample (a silent track's doesn't) */
 static zsvf_t pp_fb_eq[NT];
 static int32_t pp_fb_eqc[NT], pp_fb_kf[NT] = {-1, -1, -1, -1, -1, -1, -1, -1}, pp_fb_kg[NT];
+static int pp_step_all;                   /* --sample-step: every track a sample at a time, with or without feedback
+                                           * (a check: with none it sounds as the whole blocks do, to the bit) */
 
 static void pp_fb_reset(int t)
 {
-    m_set(pp_fb[t], 0, sizeof pp_fb[t]);
     m_set(&pp_fb_eq[t], 0, sizeof pp_fb_eq[t]);
     pp_fb_g[t] = 0;
+    pp_fbv[t] = 0;
     pp_fb_kf[t] = -1;
+    pp_tapped[t] = 0;
+}
+
+static int pp_fb_source(int t) { return (pp_x[t][X_FSRC - P_COUNT] >> 8) * 4 >> 7; }
+
+/* DEST: 0 back into the chain (AMP IN), the parameter's number + 1, or FB_DEST_FM, the oscillator's frequency */
+static int pp_fb_dest(int t)
+{
+    const int d = pp_x[t][X_FDST - P_COUNT] >> 8;
+    return d > FB_DEST_FM ? 0 : d;
+}
+
+/* OSC FM: phase modulation, as the FM machines' own (FM+, FX-FM): the feedback added to the phase every oscillator of the
+ * machine reads its wave at (patches/0007's m2k_phase_add). A full-scale tap at FDBK's gain 1 is 1.5 cycles (9.4 rad),
+ * at its top (gain 2) 3 cycles (19 rad, FX-FM's DEP at 127 from a full-scale modulator) */
+#define PP_PM_K 196608                    /* 2^32 a cycle: 1.5 cycles for 32768 */
+static int64_t pp_fm_phase(int32_t y) { return (int64_t)y * PP_PM_K; }
+
+/* TRACK: the track the feedback is taken from (its own, or track 1-8) */
+static int pp_fb_from(int t)
+{
+    const int sel = pp_x[t][X_FTRK - P_COUNT] >> 8;
+    return sel <= 0 || sel > NT ? t : sel - 1;
 }
 
 /* FDBK's gain, Q15 signed: d |d| / 2^12, d = FDBK - 64 in 1/256 steps (2^16 at the top: 2) */
@@ -282,20 +345,13 @@ static uint32_t pp_fb_eq_gain(int32_t eqv)
     return (uint32_t)lrint(sqrt((double)tq_u32(T_EQGAIN, eqv) * 65536.0));
 }
 
-/* the track's out this block (its L and R, before pushpin's output gain) into the next block's input */
-static void pp_fb_take(int t, const int32_t *L, const int32_t *R)
+/* the EQ, as the chain's (track_block): a band added to the signal, a cut the inverse of a boost as deep. Half FX's
+ * EQ's depth in dB at every EQG (the band's gain, T_EQGAIN's Q16, square-rooted): +18 / -15.5 dB at the ends, since in
+ * the loop a band's boost is heard again on every pass. Whether it is on, its coefficients set for this block */
+static int pp_fb_eq_update(int t)
 {
-    const int32_t g1 = pp_fb_gain(t), g0 = pp_fb_g[t];
-    pp_fb_g[t] = g1;
-    if (!g0 && !g1) {
-        m_set(pp_fb[t], 0, sizeof pp_fb[t]);
-        return;
-    }
-    /* the EQ, as the chain's (track_block): a band added to the signal, a cut the inverse of a boost as deep. Half
-     * FX's EQ's depth in dB at every EQG (the band's gain, T_EQGAIN's Q16, square-rooted): +18 / -15.5 dB at the
-     * ends, since in the loop a band's boost is heard again on every pass */
     const int32_t eqv = pp_x[t][X_FEQG - P_COUNT], eqf = pp_x[t][X_FEQF - P_COUNT];
-    const int eq_on = eqv != 64 * 256;
+    const int eq_on = eqv != 64 * 256 && pp_x[t][X_FEQON - P_COUNT] >= 64 * 256;   /* (FEQ: the EQ's switch) */
     if (eq_on && (eqv != pp_fb_kg[t] || eqf != pp_fb_kf[t])) {
         const uint32_t gb = pp_fb_eq_gain(eqv), ef = tq_u32(T_EQG, eqf);
         const uint32_t k = eqv > 64 * 256 ? EQ_K : mulu_hi(EQ_K, gb, 16);
@@ -305,28 +361,113 @@ static void pp_fb_take(int t, const int32_t *L, const int32_t *R)
         pp_fb_kg[t] = eqv;
         pp_fb_kf[t] = eqf;
     }
-    zsvf_t f = pp_fb_eq[t];
-    for (int i = 0; i < M2K_SUB; i++) {
-        int32_t x = (L[i] + R[i]) >> 1;
-        if (eq_on) {
-            int32_t b;
-            zsvf_tick(&f, x, 0, &b, 0);
-            x = CLAMP(x + (int32_t)mul_sh(b, pp_fb_eqc[t], 24), -(1 << 20), 1 << 20);
-        }
-        const int32_t g = g0 + (((g1 - g0) * (i + 1)) >> 4);      /* across the block: no zipper */
-        const float y = (float)(((int64_t)x * g) >> 15);
-        pp_fb[t][i] = (int32_t)lrintf(PP_FB_SAT * tanhf(y * (1.0f / PP_FB_SAT)));
-    }
-    pp_fb_eq[t] = f;
+    return eq_on;
 }
 
-/* the core's hook (patches/0004): the feedback added to the machine's block, at the headroom the machine's out has
- * (GND-NOIS's and FX-RING's come out of the machine lower, and the chain takes it back) */
+/* ------------------------------------------- the feedback's routes this block */
+
+/* each track's feedback that sounds this block (its gain or the last block's not 0), as the block began: the track it's
+ * taken from and where on it, where it goes on this track, its gains, its EQ. A track's FEEDBACK page says what comes
+ * into it, so every track has one route at most, and any number may take from one track */
+static struct {
+    uint8_t on, src, dest, from, eq_on;
+    int32_t g0, g1;
+} pp_rt[NT];
+static uint8_t pp_stepped[NT];            /* the tracks rendered a sample at a time this block */
+/* a parameter feedback moves: its modulation as the block's LFOs and rows left it, given back after the block */
+static int32_t pp_rt_base[NT];
+
+static int pp_fx_input(const uint8_t *mc, int t, int from)   /* does track t's machine hear track from? */
+{
+    const int m = mc[t];
+    return (from == t - 1 && ((m >= M_FXC && m <= M_FXD) || m == M_FXF)) || (from == t - 2 && m == M_FXR);
+}
+
+/* which tracks render a sample at a time: every feedback's track and the track it's taken from, and every track an FX
+ * machine carries one's sound through from one of them to another (the rest render whole blocks: before them, or after
+ * them when they hear one of them) */
+static void pp_fb_plan(void)
+{
+    uint8_t in[NT] = {0};
+    for (int t = 0; t < NT; t++) {
+        const int32_t g1 = pp_fb_gain(t), g0 = pp_fb_g[t];
+        pp_rt[t].on = (uint8_t)(g0 || g1);
+        if (!pp_rt[t].on) continue;
+        pp_rt[t].src = (uint8_t)pp_fb_source(t);
+        pp_rt[t].dest = (uint8_t)pp_fb_dest(t);
+        pp_rt[t].from = (uint8_t)pp_fb_from(t);
+        pp_rt[t].g0 = g0;
+        pp_rt[t].g1 = g1;
+        pp_rt[t].eq_on = (uint8_t)pp_fb_eq_update(t);
+        in[t] = in[pp_rt[t].from] = 1;
+        if (pp_rt[t].dest && pp_rt[t].dest <= P_COUNT) pp_rt_base[t] = trk[t].mod[pp_rt[t].dest - 1];
+    }
+    const uint8_t *mc = PAT(cur_pat)->machine;
+    uint8_t up[NT], down[NT];                 /* a track that hears one of them; one that one of them hears */
+    for (int t = 0; t < NT; t++) {
+        up[t] = 0;
+        for (int f = t - 2; f < t; f++) if (f >= 0 && pp_fx_input(mc, t, f) && (in[f] || up[f])) up[t] = 1;
+    }
+    for (int t = NT - 1; t >= 0; t--) {
+        down[t] = 0;
+        for (int u = t + 1; u <= t + 2 && u < NT; u++) if (pp_fx_input(mc, u, t) && (in[u] || down[u])) down[t] = 1;
+    }
+    for (int t = 0; t < NT; t++) pp_stepped[t] = (uint8_t)(pp_step_all || in[t] || (up[t] && down[t]));
+}
+
+/* a feedback's tap at this sample (i of the block) through its EQ, its gain and (into AMP IN) the tanh */
+static int32_t pp_fb_sample(int t, int i, int32_t x)
+{
+    x = CLAMP(x, -(1 << 20), 1 << 20);
+    if (pp_rt[t].eq_on) {
+        int32_t b;
+        zsvf_tick(&pp_fb_eq[t], x, 0, &b, 0);
+        x = CLAMP(x + (int32_t)mul_sh(b, pp_fb_eqc[t], 24), -(1 << 20), 1 << 20);
+    }
+    const int32_t g = pp_rt[t].g0 + (((pp_rt[t].g1 - pp_rt[t].g0) * (i + 1)) >> 4);      /* across the block */
+    const int64_t y = ((int64_t)x * g) >> 15;
+    if (pp_rt[t].dest == FB_DEST_FM) return (int32_t)CLAMP(y, -65536, 65536);    /* (OSC FM: to 19 rad) */
+    if (pp_rt[t].dest) return (int32_t)CLAMP(y, -32768, 32767);
+    return (int32_t)lrintf(PP_FB_SAT * tanhf((float)y * (1.0f / PP_FB_SAT)));
+}
+
+/* before a sample: every parameter a feedback moves, its block's modulation and the feedback of the sample before (Q8:
+ * the sample / 2, 64 steps at full scale) */
+static void pp_fb_params(void)
+{
+    for (int t = 0; t < NT; t++) {
+        if (!pp_rt[t].on || !pp_rt[t].dest) continue;
+        if (pp_rt[t].dest == FB_DEST_FM) m2k_phase_add[t] = pp_fm_phase(pp_fbv[t]);
+        else trk[t].mod[pp_rt[t].dest - 1] = pp_rt_base[t] + pp_fbv[t] / 2;
+    }
+}
+
+/* after the block: the parameters' own modulation back, for the next block's LFOs and rows */
+static void pp_fb_unparams(void)
+{
+    for (int t = 0; t < NT; t++) {
+        m2k_phase_add[t] = 0;
+        if (pp_rt[t].on && pp_rt[t].dest && pp_rt[t].dest <= P_COUNT) trk[t].mod[pp_rt[t].dest - 1] = pp_rt_base[t];
+    }
+}
+
+/* the core's hook (patches/0004): the machine's slice, its OSC tap (at the 16-bit scale: GND-NOIS's and FX-RING's
+ * come out of the machine lower, and the chain takes it back), and the track's feedback of the sample before added to
+ * it when it goes to AMP IN */
 static void pp_track_in(int t, int m, int16_t *blk)
 {
-    if (!pp_fb_g[t]) return;
+    if (!pp_stepped[t]) return;
     const int hr = m == M_GNOI ? GN_HR : m == M_FXR ? RG_HR : 0;
-    for (int i = 0; i < M2K_SUB; i++) blk[i] = (int16_t)sat16(blk[i] + (pp_fb[t][i] >> hr));
+    const int i = m2k_s0;                          /* (a sample at a time) */
+    pp_tap[t][FB_OSC] = (int32_t)blk[i] << hr;
+    pp_tapped[t] = 1;
+    if (pp_rt[t].on && !pp_rt[t].dest && pp_fbv[t]) blk[i] = (int16_t)sat16(blk[i] + (pp_fbv[t] >> hr));
+}
+
+/* the core's taps (patches/0006): after the filters (1) and after the amp (2) */
+static void pp_track_tap(int t, int stage, const int32_t *x)
+{
+    if (pp_stepped[t]) pp_tap[t][stage == 1 ? FB_FILT : FB_AMP] = x[m2k_s0];
 }
 
 /* a choice (a wave, a mode, a destination): never through the values between (FX-FM's WAVE, K_WAVM: a knob on the
@@ -442,6 +583,7 @@ static void pp_engine_init(int machine)
 {
     m2k_init(0x50555348u);
     m2k_track_in = pp_track_in;
+    m2k_track_tap = pp_track_tap;
     /* no track is the panel keys' (the core's would be track 1): every track's notes take the same path, the
      * core's voice_on, which pushpin's slides and ties build on (the keys' own path slid only with PORT on, and
      * kept a note stack of its own) */
@@ -838,10 +980,24 @@ static void pp_handle_midi(int t, const uint8_t *m, size_t n)
 static int16_t pp_fx16[2 * M2K_SUB];
 static float pp_tout[2][NT][2][M2K_SUB];            /* [this block, the one before][track][L, R] */
 static int pp_tcur;
+static int pp_trace_param = -1;         /* --trace-param: that parameter of track 1 as the DSP reads it, a line a block */
+static int32_t pp_trace_v;              /* (as its last sample read it: a feedback may move it a sample at a time) */
+
+/* a track's block whole, or one sample of it (m2k_s0 .. m2k_s1, patches/0007) */
+static void pp_run(int t, int s0, int s1, int32_t (*tL)[M2K_SUB], int32_t (*tR)[M2K_SUB], int32_t (*ds)[M2K_SUB],
+                   int32_t *rs)
+{
+    m2k_s0 = s0;
+    m2k_s1 = s1;
+    pp_tapped[t] = 0;
+    run_track(t, tL[t], tR[t], rs, ds[t]);      /* (L and R stay empty: the bus gets the sends alone) */
+    m2k_s0 = 0;
+    m2k_s1 = M2K_SUB;
+}
 
 static void pp_render_split(void)
 {
-    static int32_t ds[M2K_SUB], tL[M2K_SUB], tR[M2K_SUB];
+    static int32_t ds[NT][M2K_SUB], tL[NT][M2K_SUB], tR[NT][M2K_SUB];
     brec_t *rc = &brec[bcur];
     rc->nstep = 0;
     rc->dt = 0;
@@ -859,14 +1015,38 @@ static void pp_render_split(void)
      * below -6 dB), so a track's out is its share of MONO2K's mix */
     const float g = (float)T_MVOL[rc->mvol] * (float)T_DRIV[rc->glob[G_DRIV]] / (256.0f * 32768.0f * 32768.0f);
     pp_tcur ^= 1;
+    m_set(tL, 0, sizeof tL);
+    m_set(tR, 0, sizeof tR);
+    pp_fb_plan();
+    /* the tracks no feedback joins, whole: those none of the stepped ones' sound reaches first, then the stepped ones a
+     * sample at a time in step (each sample's taps the next one's feedback), then the rest */
+    uint8_t after[NT] = {0};
+    const uint8_t *mc = PAT(cur_pat)->machine;
+    for (int t = 0; t < NT; t++)
+        for (int f = t - 2; f < t; f++) if (f >= 0 && pp_fx_input(mc, t, f) && (pp_stepped[f] || after[f])) after[t] = 1;
+    for (int t = 0; t < NT; t++) if (!pp_stepped[t] && !after[t]) pp_run(t, 0, M2K_SUB, tL, tR, ds, rc->rs);
+    int any = 0;
+    for (int t = 0; t < NT; t++) any |= pp_stepped[t];
+    for (int i = 0; any && i < M2K_SUB; i++) {
+        pp_fb_params();
+        for (int t = 0; t < NT; t++) if (pp_stepped[t]) pp_run(t, i, i + 1, tL, tR, ds, rc->rs);
+        for (int t = 0; t < NT; t++) {
+            if (!pp_rt[t].on) continue;
+            const int f = pp_rt[t].from;
+            const int32_t x = pp_rt[t].src == FB_OUT ? (tL[f][i] + tR[f][i]) >> 1
+                            : pp_tapped[f] ? pp_tap[f][pp_rt[t].src] : 0;
+            pp_fbv[t] = pp_fb_sample(t, i, x);
+        }
+    }
+    if (pp_trace_param >= 0) pp_trace_v = P8(&trk[0], pp_trace_param);
+    pp_fb_unparams();
+    for (int t = 0; t < NT; t++) if (after[t] && !pp_stepped[t]) pp_run(t, 0, M2K_SUB, tL, tR, ds, rc->rs);
     for (int t = 0; t < NT; t++) {
-        m_set(tL, 0, sizeof tL);
-        m_set(tR, 0, sizeof tR);
-        run_track(t, tL, tR, rc->rs, ds);       /* (L and R stay empty: the bus gets the sends alone) */
-        pp_fb_take(t, tL, tR);                  /* (its whole out, its delay too: the next block's feedback) */
+        pp_fb_g[t] = pp_fb_gain(t);
+        if (!pp_rt[t].on) pp_fbv[t] = 0;
         for (int i = 0; i < M2K_SUB; i++) {
-            pp_tout[pp_tcur][t][0][i] = tL[i] * g;
-            pp_tout[pp_tcur][t][1][i] = tR[i] * g;
+            pp_tout[pp_tcur][t][0][i] = tL[t][i] * g;
+            pp_tout[pp_tcur][t][1][i] = tR[t][i] * g;
         }
     }
     mx_gates_out();
@@ -877,7 +1057,6 @@ static void pp_render_split(void)
 /* ------------------------------------------------- 44.1 kHz -> host rate */
 
 static int pp_stock;                    /* --stock: the core's own render, its mix on the return's channels */
-static int pp_trace_param = -1;         /* --trace-param: that parameter of track 1 as the DSP reads it, a line a block */
 static int16_t pp_stock16[2 * M2K_SUB];
 static int pp_pos = M2K_SUB;
 static float pp_s0[NCH], pp_s1[NCH];
@@ -887,7 +1066,8 @@ static void pp_next_in(float out[NCH])
 {
     if (pp_pos >= M2K_SUB) {
         pp_glide_block();
-        if (pp_trace_param >= 0) fprintf(stderr, "%u %d\n", m2k_samples(), P8(&trk[0], pp_trace_param));
+        if (pp_trace_param >= 0)
+            fprintf(stderr, "%u %d\n", m2k_samples(), pp_stock ? P8(&trk[0], pp_trace_param) : pp_trace_v);
         if (pp_stock) m2k_render(pp_stock16, M2K_SUB);
         else pp_render_split();
         pp_pos = 0;
@@ -1135,6 +1315,7 @@ static void pp_usage(void)
             "       m2k-jack --render OUT.wav [--rate HZ] [--seconds S] [--machine N] [--script FILE]\n"
             "                [--stems PREFIX] [--stock]\n"
             "                [--trace-param P]   (stderr: samples and track 1's parameter P as the DSP reads it, Q8)\n"
+            "                [--sample-step]     (every track a sample at a time: with no feedback it sounds the same)\n"
             "       m2k-jack --list-machines | --describe\n");
 }
 
@@ -1196,6 +1377,7 @@ int main(int argc, char **argv)
         else if (!strcmp(a, "--stems") && more) stems = argv[++i];
         else if (!strcmp(a, "--stock")) pp_stock = 1;
         else if (!strcmp(a, "--trace-param") && more) pp_trace_param = atoi(argv[++i]);
+        else if (!strcmp(a, "--sample-step")) pp_step_all = 1;
         else { pp_usage(); return 2; }
     }
     if (machine >= M_COUNT) { fprintf(stderr, "m2k-jack: machine %d out of range (0-%d)\n", machine, M_COUNT - 1); return 2; }

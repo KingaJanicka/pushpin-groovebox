@@ -97,13 +97,55 @@ a pushpin track that plays Surge can stay connected to its MONO2K track.
 | NRPN 1:*p* | any of MONO2K's 71 track parameters by number *p*, including the 9 no CC reaches (arp, gate, MOD effect, wave bank); pushpin saves and loads whole sounds with it |
 | **NRPN 1:71–78** | the Monomachine's ASSIGN > VEL (71–74) and KEY (75–78), pushpin's addition: two rows each of DEST (the parameter's number + 1, 0 off, as an LFO's DEST) and ADD (bipolar about 64). A note adds (ADD − 64) × *s* / 127 steps to DEST on its own track, *s* its velocity (VEL) or its note number (KEY), from its note-on to the next one (through the release too). A machine's INIT turns the rows off |
 | **NRPN 1:79 / 80** | KEY's HPF / LPF: 64–127 the high-pass / low-pass follows the note, as MONO2K's always does; 0–63 it stays where note 60 puts it (`patches/0003-filter-tracking-switches.patch`). A machine's INIT turns both off: pushpin's default, so a sound keeps its filter wherever it's played |
-| **NRPN 1:81–83** | FILT's FEEDBACK (81) and its EQ's EQF and EQG (82, 83), pushpin's addition: the track's own output, after everything on it (its chain and its delay), goes back into its chain where the machine's sound goes in, before DIST and the filters, one 16-sample block (0.36 ms) later. FEEDBACK is bipolar about 64: above it the signal goes back in phase, below it inverted; the gain is ((FEEDBACK − 64) / 64)², up to 2 at the ends, so the loop can drive itself into DIST's clip. The EQ is a band like FX's EQ at half its depth in dB (about +18 / −15.5 dB at the ends; gain 64: flat), since a boost in the loop is heard again on every pass. Last on the way back in, after the EQ and the gain, a fixed tanh soft-clips the feedback at about −8.7 dB of full scale: gentle feedback passes almost unchanged, and a screaming loop is held down (not a control). The amp's envelope is inside the loop, so the feedback dies with the note (`patches/0004-track-input-hook.patch`). A machine's INIT turns it off |
+| **NRPN 1:81–83** | FEEDBACK (81) and its EQ's EQF and EQG (82, 83), pushpin's addition: the track's own output, after everything on it (its chain and its delay), goes back into its chain where the machine's sound goes in, before DIST and the filters, one sample later. FEEDBACK is bipolar about 64: above it the signal goes back in phase, below it inverted; the gain is ((FEEDBACK − 64) / 64)², up to 2 at the ends, so the loop can drive itself into DIST's clip. The EQ is a band like FX's EQ at half its depth in dB (about +18 / −15.5 dB at the ends; gain 64: flat), since a boost in the loop is heard again on every pass. Last on the way back in, after the EQ and the gain, a fixed tanh soft-clips the feedback at about −8.7 dB of full scale: gentle feedback passes almost unchanged, and a screaming loop is held down (not a control). The amp's envelope is inside the loop, so the feedback dies with the note (`patches/0004-track-input-hook.patch`). A machine's INIT turns it off. (See 85–87 for where else it can come from and go; every route comes back one sample later, see "One sample at a time".) |
+| **NRPN 1:85 / 86** | the feedback's SOURCE and DEST, pushpin's addition: SOURCE (a quarter of 0–127 each) takes the feedback after the machine (**OSC**), after the filters (**FILT**), after the amp (**AMP**) or from the track's whole out, its delay too (**OUT**, the INIT's: the loop as above). DEST 0 sends it back into the chain before DIST (**AMP IN**, the INIT's); any other value is the number + 1 of a parameter, as an LFO's DEST, and the feedback moves it instead of going back in: each sample of the tap (after the EQ and FEEDBACK's gain, no tanh) moves it for the next, 64 steps either way from a full-scale tap at gain 1, so FEEDBACK is its depth, at audio rate. The OSC, FILT and AMP taps are taken only while the track sounds, so the feedback still dies with the note (`patches/0006-track-tap-hook.patch` adds the FILT and AMP taps). A machine's INIT sets OUT and AMP IN |
+| **NRPN 1:86 = 72** | the feedback's DEST past MONO2K's 71 parameters, pushpin's addition: **OSC FM**, phase modulation of the machine's oscillators by the feedback (`patches/0007`'s `m2k_phase_add`, a phase offset each oscillator adds where it reads its wave, every sample): 9.4 rad from a full-scale tap at FEEDBACK's gain 1, 19 rad at its top |
+| **NRPN 1:88** | the feedback's EQ switch, pushpin's addition: 64–127 on (the INIT's; flat at EQG 64 anyway, so a sound saved before the switch keeps its EQ), 0–63 off: bypassed, EQF and EQG kept |
+| **NRPN 1:87** | the feedback's TRACK, pushpin's addition: the track it's taken from (SOURCE is where on it), 0 the track's own (the INIT's), 1–8 track 1–8, as pushpin sends an LFO's TRCK. DEST stays this track's AMP IN, parameter or OSC FM, so a track's FEEDBACK page says what comes into it, and any number of tracks can take from one. It comes back one sample later, whatever order the tracks render in, so two tracks can feed each other. Into AMP IN it goes through this track's own chain and amp, so it's heard only while this track plays a note; OSC, FILT and AMP are only taken while the track they're taken from plays |
 | **NRPN 1:84** | FX-FM's CARRIER, pushpin's addition (`patches/0005-fx-fm-machine.patch`): 0–63 the carrier on the track's own note, 64–127 on the track before's pitch (its note, glide and PTCH, plus this track's PTCH, the carrier's interval to the modulator). A machine's INIT sets it to the track's own note |
 | clock | the tempo MONO2K times its LFOs (SPD), delays (DTIM) and AMP HOLD by: averaged over up to four beats, changed only past 0.25 % (pushpin's clock jitters; a moving delay time glides); a jump over 2 % starts the average over from the last beat. On any track's port, the first that sends it. MONO2K's sequencer stays stopped |
 | start, continue | the LFOs on FREE back to their PHAS, so they line up with PLAY (the others restart on notes) |
 | stop | ignored (the last tempo stays) |
 
 In `--render` scripts the MIDI channel picks the track (channel 1 = track 1).
+
+## One sample at a time
+
+MONO2K works a 16-sample block at a time: envelopes, LFOs and parameters are
+set once a block, and each stage of a track (its machine, its chain, MOD, VOL,
+the pan, its delay) runs over the whole block before the next. A feedback loop
+through that could only come back a block (0.36 ms) late, so it rang at
+multiples of 2.76 kHz whatever was played, and a parameter moved by audio was
+stepped at 2.76 kHz. `patches/0007-sample-slices.patch` lets every stage render
+any slice of a block (`m2k_s0`, `m2k_s1`), and m2k-jack renders the tracks a
+feedback joins one sample at a time, all of them in step, so **every feedback
+route comes back one sample later**: from any tap (OSC, FILT, AMP, OUT), into
+AMP IN or a parameter, on the track's own sound or another's.
+
+- **What stays once a block:** the envelopes, the LFOs, pushpin's VEL/KEY rows,
+  the glides and the machines' own sweeps. A parameter, though, is read again
+  every sample, so a feedback into one moves it at audio rate (a filter's cutoff,
+  a machine's pitch or depth, VOL, PAN). What is only read once a block (an
+  envelope's times, an LFO's own settings) hears the feedback's first sample.
+- **Which tracks:** a feedback's source and destination, and any FX machine that
+  carries one's sound to the other. Every other track still renders whole blocks,
+  before them, or after them if it hears one of them through an FX machine.
+- **The same to the bit:** what changes once a block happens in the first slice
+  (when the block goes on to use it) or the last (when only the next does), and
+  what a later slice needs of the block's start is kept. So a track rendered a
+  sample at a time with no feedback sounds exactly as a whole block does:
+  `m2k-jack --render ... --sample-step` renders every track that way, and
+  `tests/test_m2k_feedback.py` checks it to the bit on every machine, with DIST,
+  EQ, FOLD, XOR, MOD and the delay on. Two exceptions: FX-DYN's compressor sets
+  its gain from its whole block's peak, so one sample at a time it uses the block
+  before's (within a dB); and a delay whose track sends it a whole block of exact
+  silence while its line is already silent goes to sleep in a whole block, but
+  one sample at a time can't know the block will stay silent and runs on (a few
+  LSB in a silent delay's filters).
+- **Cost**, measured on a Mac (20 s, eight held SWAV-SAW notes, FILT tap, EQ on):
+  feedback on one track 1.18 times the original engine, on all eight 2.15 times,
+  still 21 times faster than real time there. The engine without feedback is as
+  fast as before. Not yet measured on the Pi.
 
 ## Resolution and smoothing
 
@@ -219,7 +261,7 @@ engines/m2k/build.sh && python engines/m2k/gen_definitions.py
   DEST (the parameter's number + 1). Then WAVE TRIG MULT SPD PHAS and DPTH,
   which is bipolar and shown as -64..+63 (0: no modulation).
   The second page (Right) has TRCK: the track the LFO modulates, OWN (its own
-  track, the default) or TRK 1–8. m2k-jack turns that into MONO2K's own TRCK
+  track, the default) or TRK 1–8 (the Push's tracks, Pushpin 0–7 inside). m2k-jack turns that into MONO2K's own TRCK
   encoding, which a CC can't reach for tracks 7–8.
 - **VELOCITY and KEY TRACK** (the second instrument page: **Right** arrow;
   **Left** goes back): the Monomachine's ASSIGN > VEL and KEY. Two rows of four
@@ -235,13 +277,28 @@ engines/m2k/build.sh && python engines/m2k/gen_definitions.py
   them beside MONO2K's parameters (NRPN 1:71–80); `patches/0002` makes room in
   the core's modulation queue for their four rows (three LFOs a track before)
   and `patches/0003` adds the filters' switches.
-- **FILT's second page** (Right on FILT): **FEEDBACK**, **FEEDBACK EQ FREQ** and
-  **FEEDBACK EQ GAIN** at knobs 1–3, then FILTER TRIG as before at knob 8.
-  (Only the page: the feedback still goes in before DIST, ahead of the filters.)
-  FEEDBACK is bipolar (shown −64..+63, negative goes back inverted); the EQ
-  reads and steps like FX's EQ (half a step a click on the frequency),
-  with half its boost and cut in dB. It's
-  m2k-jack's own parameters 81–83, on FILT's slot, so it p-locks with FILT.
+- **FEEDBACK** (the second instrument page, after VELOCITY and KEY TRACK), what
+  comes into the track: **DEVICE** and **DEST** at knobs 1–2, where it goes on
+  this track: **AMP IN** (back into the chain before DIST, ahead of the filters),
+  any parameter an LFO reaches, from the LFOs' own menus, or **OSC FM**, at the
+  end of SYN's menu: phase modulation, as the FM machines' own (FM+, FX-FM): the
+  feedback added to the phase every oscillator of the machine reads its wave at,
+  a sample at a time (sub-oscillators an octave or two down a half or a quarter
+  of it, so they stay locked). A full-scale tap is 9.4 rad at FEEDBACK's gain 1
+  and 19 rad at its top, FX-FM's deepest. GND-PERC's noise, GND-NOIS, FX-CHORUS
+  and FX-DYN have no oscillator to bend: there it does nothing; **FEEDBACK SOURCE**
+  (OSC, FILT, AMP, OUT) at knob 3, where it's taken from, on **FROM TRACK** at
+  knob 4 (**OWN**, the default, or **TRK 1–8**, the Push's tracks); **FEEDBACK
+  EQ** (EQ ON, the default, or EQ OFF), **FEEDBACK EQ FREQ** and **FEEDBACK EQ
+  GAIN** at knobs 5–7; **FEEDBACK**, how much, at knob 8. FEEDBACK is bipolar
+  (shown −64..+63, negative goes back inverted; 0 is none); the EQ reads and
+  steps like FX's EQ (half a step a click on the frequency), with half its
+  boost and cut in dB, and switched off it's bypassed whatever its frequency
+  and gain.
+  It's m2k-jack's own parameters 81–83 and 85–88, in a slot of its own (10), so
+  it p-locks like the other pages. (It used to be FILT's second page, which is
+  FILTER TRIG alone again: p-locks a sequence saved then on FEEDBACK land on
+  nothing now.)
 - **Second pages**: every machine has PTCH (pitch in semitones, bipolar, shown
   -64..+63) at knob 2 of its second page; DIGI-WAV also has BANK (M2K or M64,
   NRPN 1:70) at knob 1.
@@ -274,7 +331,7 @@ On a track playing Monomachine, BROWSE works as it does for Surge, with
 mono2k's own sounds:
 
 - **Slots.** Each track has 8 slots (the pad rows). A slot keeps a whole sound:
-  the machine and all 85 parameters (MONO2K's 71, then VEL's 4, KEY TRACK's 6, FILT's feedback's 3 and FX-FM's CARRIER), in
+  the machine and all 89 parameters (MONO2K's 71, then VEL's 4, KEY TRACK's 6, the feedback's 3, FX-FM's CARRIER and the feedback's SOURCE, DEST, TRACK and EQ switch), in
   `~/.local/share/pushpin/m2k_state/<track>_<slot>.json`. Switching slots saves
   the one being left and plays the new one; an empty slot starts on its
   machine's INIT (the track's `m2k_machine`, else GND-SIN). The current slot is

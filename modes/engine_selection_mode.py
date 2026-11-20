@@ -99,7 +99,7 @@ class EngineSelectionMode(definitions.PyshaMode):
         save_track_engine(instrument.name, engine_name, self.track_engines_filename)
         # The new engine's pages: start from its first device and page
         self.app.osc_mode.current_device_index_and_page = [0, 0]
-        self.app.add_display_notification(f"{instrument.name}: {label}")
+        self.app.add_display_notification(f"{definitions.track_label(instrument.name)}: {label}")
         self.app.buttons_need_update = True
         self.app.pads_need_update = True
         return True
@@ -155,7 +155,7 @@ class EngineSelectionMode(definitions.PyshaMode):
                 center_horizontally=True,
                 rectangle_padding=1,
             )
-        title = f"{instrument.name}: {active_label}" if instrument is not None else "No track"
+        title = f"{definitions.track_label(instrument.name)}: {active_label}" if instrument is not None else "No track"
         show_text(ctx, 0, 60, title, height=25, font_color=definitions.WHITE)
         show_text(ctx, 0, 100, "< > choose, ADD TRACK: select", height=20, font_color=definitions.GRAY_LIGHT)
 

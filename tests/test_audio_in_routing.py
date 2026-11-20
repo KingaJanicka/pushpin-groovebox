@@ -138,10 +138,12 @@ def turn(device, knob, increment):
 
 
 def choose(device, column, source_label):
-    """Turn a column's source switch (page 2, encoder 2c+1) to ``source_label``."""
+    """Turn a column's source switch (page 2, encoder 2c+1) to ``source_label`` (a track by its name, "Pushpin 1",
+    which the switch shows as the Push numbers its tracks, "Trk 2")."""
+    import definitions
     device.set_page(1)
     switch = device.get_visible_controls()[2 * (column % 4)]
-    target = [g.label for g in switch.groups].index(source_label)
+    target = [g.label for g in switch.groups].index(definitions.track_label(source_label))
     # One twist that lands mid-way into the target group (a full 127-click
     # sweep covers all the groups)
     delta = target + 0.5 - switch.value
@@ -170,7 +172,7 @@ def test_page_2_is_a_source_switch_and_its_menu_per_column(device):
     assert len(page) == 8
     switches = page[0::2]
     assert all(s.name == "Switch" for s in switches)
-    assert [g.label for g in switches[0].groups] == ["None sel.", "Pushpin 0", "Pushpin 1", "Pushpin 2"]
+    assert [g.label for g in switches[0].groups] == ["None sel.", "Trk 1", "Trk 2", "Trk 3"]
 
 
 def test_overwitch_is_offered_once_it_is_running(rig):
@@ -297,7 +299,7 @@ def test_routing_before_the_duplex_node_is_up_is_ignored_not_raised(rig, app, li
 def test_switches_show_the_current_routing_after_reopening(rig, device):
     choose(device, 2, "Pushpin 2")
     device.update()                      # selecting the device again rebuilds the switches
-    assert device.pages[1][4].label == "Pushpin 2"
+    assert device.pages[1][4].label == "Trk 3"
     assert device.pages[1][0].label == "None sel."
 
 
@@ -543,7 +545,7 @@ def test_restored_routing_shows_on_the_switches_and_gain_knobs(rig, tmp_path):
     audio_in_state.restore(rig.app, rig.me.engine, data)
     dev = make_device(rig.app, rig.me.engine)
     dev.update()
-    assert dev.switches[1].get_active_group().label == "Pushpin 2"
+    assert dev.switches[1].get_active_group().label == "Trk 3"
     assert dev.gain_controls[1].value == pytest.approx(0.25)
 
 

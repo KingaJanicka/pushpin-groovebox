@@ -209,7 +209,8 @@ class InstrumentSelectionMode(definitions.PyshaMode):
             else:
                 background_color = definitions.BLACK
                 font_color = instrument_color
-            instrument_index = f'Trk {self.instruments_info[i]["instrument_index"]}'
+            index = self.instruments_info[i]["instrument_index"]
+            instrument_index = f'Trk {index + 1}' if isinstance(index, int) else "Trk -"   # (1-8, as the menus count)
             instrument_short_name = f'{self.instruments_info[i]["instrument_short_name"]}    {volume_parsed}'
             label = f'{instrument_index}  {volume_parsed} / {globlal_volume_rounded}'
             show_text(
