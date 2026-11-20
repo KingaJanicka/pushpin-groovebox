@@ -66,7 +66,8 @@
   const LAYER_COLOR = { pitch: "green", octave: "orange", velocity: "yellow", gate: "turquoise", skips: "red", lock_scale: "blue" };
   const DEMO = {
     seq: seqDemo(),        // track 1's sequencer, as MetroSequencerMode keeps it
-    clipCount: [3, 2, 4, 1, 2, 1, 4, 2], clipSel: [0, 1, 2, 0, 1, 0, 3, 0],
+    // ClipSelectionMode: which clips each track has a file for, and the clip it's on
+    clipHas: [[0, 1, 2], [0, 1], [0, 1, 2, 3], [0], [0, 1], [0], [0, 1, 2, 3], [0, 1]], clipSel: [0, 1, 2, 0, 1, 0, 3, 0],
     slotCount: [8, 5, 8, 3, 6, 2, 4, 8], slotSel: [0, 2, 1, 0, 4, 0, 3, 7],
     muted: { "3,2": 1, "0,5": 1, "4,1": 1, "1,6": 1 },
   };
@@ -150,6 +151,25 @@
   }
   const color = (name) => (data && data.colors[name]) || name;
   const trackColor = (i) => color(data.tracks[i]);
+  // definitions.py's "<colour>_darker1": the HLS lightness times 0.35
+  function darker1(hex) {
+    const n = parseInt(hex.slice(1), 16);
+    let [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => v / 255);
+    const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2;
+    let h = 0, sat = 0;
+    if (mx !== mn) {
+      const d = mx - mn;
+      sat = l <= 0.5 ? d / (mx + mn) : d / (2 - mx - mn);
+      h = mx === r ? (g - b) / d / 6 : mx === g ? (2 + (b - r) / d) / 6 : (4 + (r - g) / d) / 6;
+      h = ((h % 1) + 1) % 1;
+    }
+    const L = Math.max(0, Math.min(1, 0.35 * l));
+    const v = (m1, m2, hue) => { hue = ((hue % 1) + 1) % 1; if (hue < 1 / 6) return m1 + (m2 - m1) * hue * 6; if (hue < 0.5) return m2; if (hue < 2 / 3) return m1 + (m2 - m1) * (2 / 3 - hue) * 6; return m1; };
+    let out = [L, L, L];
+    if (sat !== 0) { const m2 = L <= 0.5 ? L * (1 + sat) : L + sat - L * sat, m1 = 2 * L - m2; out = [v(m1, m2, h + 1 / 3), v(m1, m2, h), v(m1, m2, h - 1 / 3)]; }
+    return "#" + out.map((x) => Math.round(x * 255).toString(16).padStart(2, "0")).join("");
+  }
+
   function dim(hex, f) {
     const n = parseInt(hex.slice(1), 16);
     const c = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => Math.round(v * f));
@@ -355,7 +375,27 @@
       const step = stepHelp(r, c);
       return Object.assign(step, { text: text === l.pads ? "" : text, foot: l.pads });
     }
-    if (state.mode === "clips") return { where: track + ", clip " + (r + 1), text: m.pads };
+    if (state.mode === "clips") {
+      const n = c + 1, on = DEMO.clipSel[c] === r, has = DEMO.clipHas[c].includes(r);
+      const lines = [];
+      let title;
+      if (on && has) {
+        title = `Track ${n}'s current clip`;
+        lines.push(`Track ${n} is playing this clip (its full colour).`, "DELETE (with the track selected) deletes it and empties the pattern.");
+      } else if (on) {
+        title = `Track ${n}'s current clip, still empty`;
+        lines.push(`Track ${n} is on this clip, but nothing is written in it yet. Write a pattern and it's kept as clip ${r + 1}; leave it empty and it isn't saved.`);
+      } else if (has) {
+        title = "A saved clip";
+        lines.push(`Holds a sequence for track ${n} (the darker shade).`,
+          `Tap to switch track ${n} to it: the clip it's on now (clip ${DEMO.clipSel[c] + 1}) is saved first, and the new one carries on from the playhead's next step.`);
+      } else {
+        title = "Empty";
+        lines.push(`Tap to start an empty pattern for track ${n} here; clip ${DEMO.clipSel[c] + 1} is saved first. It becomes a clip once you write something in it.`);
+      }
+      lines.push("A clip is a track's whole sequence: every layer and the stages' parameter locks. The sound (Presets), the mutes and the timing page aren't part of it.");
+      return { where: track + ", clip " + (r + 1), title: title, lines: lines, text: "", foot: m.pads };
+    }
     if (state.mode === "mutes") {
       // What the muted layer does to playback (SequencerMetro, via the *_track_active flags)
       const muted = !!DEMO.muted[r + "," + c], what = MUTE_EFFECTS[r];
@@ -579,6 +619,11 @@
       delete DEMO.seq.locks[heldStage()][dev.slot + ":" + ((t.devPage[key] || 0) * 8 + (+tapped[1] - 1))];
       return render();
     }
+    if (id === "delete" && state.mode === "clips" && !state.overlay) {
+      const t = state.track;                      // ClipSelectionMode: delete_state on the current clip
+      DEMO.clipHas[t] = DEMO.clipHas[t].filter((x) => x !== DEMO.clipSel[t]);
+      return render();
+    }
     if (id === "delete" && heldStage() !== null) {
       DEMO.seq.locks[heldStage()] = {};          // clear_all_locks_for_step
       return render();
@@ -673,7 +718,8 @@
   function pressPad(r, c) {
     if (state.mode === "clips" || state.mode === "presets") {
       state.track = c;
-      if (state.mode === "clips" && r < DEMO.clipCount[c]) DEMO.clipSel[c] = r;
+      // the clip left is saved (if it holds anything) and the tapped one loads, empty or not
+      if (state.mode === "clips") DEMO.clipSel[c] = r;
       if (state.mode === "presets") DEMO.slotSel[c] = r;
     } else if (state.mode === "mutes") {
       const k = r + "," + c;
@@ -808,8 +854,11 @@
       if (L === "gate") set(7 - (sq.step % 8), stage, color("pink"));
     } else if (state.mode === "clips") {
       for (let c = 0; c < 8; c++) for (let r = 0; r < 8; r++) {
-        if (r === DEMO.clipSel[c]) set(r, c, color("white"));
-        else if (r < DEMO.clipCount[c]) set(r, c, trackColor(c));
+        // ClipSelectionMode.update_pads: the clip each track is on in its colour,
+        // the others it has in its darker1 shade, empty pads black
+        if (r === DEMO.clipSel[c]) set(r, c, trackColor(c));
+        else if (DEMO.clipHas[c].includes(r)) set(r, c, darker1(trackColor(c)));
+        else set(r, c, "#000000");
       }
     } else if (state.mode === "presets") {
       for (let c = 0; c < 8; c++) for (let r = 0; r < 8; r++) {

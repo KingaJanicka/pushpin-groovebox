@@ -244,7 +244,7 @@
     "clips": {
       "name": "Clips",
       "enter": "Press SESSION.",
-      "summary": "Every track has its own clips. Switch a track to another clip without stopping the others.",
+      "summary": "Every track has eight clips, each a whole sequence. Switch a track to another clip without stopping the others.",
       "display": {
         "title": "Clips",
         "labels": [
@@ -258,11 +258,11 @@
           "Clip 1"
         ]
       },
-      "pads": "Each column is a track and each pad one of its clips. Tap a pad to switch the track to that clip; the clip you leave is saved first. Lit pads hold a clip, white is the one playing.",
+      "pads": "Each column is a track and each pad one of its clips. The clip a track is on shows in its full colour, the other clips it has in a darker shade, and empty pads are dark. Tap a pad to switch the track to that clip; the clip you leave is saved first.",
       "controls": {
-        "delete": "Deletes the selected track's current clip.",
-        "left": "The previous page of clips.",
-        "right": "The next page of clips."
+        "delete": "Deletes the selected track's current clip and empties the pattern it was playing.",
+        "left": "Moves a page counter left over from the preset browser; the pads show the same eight clips per track on every page.",
+        "right": "Moves a page counter left over from the preset browser; the pads show the same eight clips per track on every page."
       },
       "screen": "device"
     },
