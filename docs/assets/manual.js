@@ -250,7 +250,8 @@
     return { pitch: pitch, octave: octave, note: pitch + octave * 12, velocity: velocity, chance: chance,
       skipped: L.skips[7][c] === true, lockScale: lh.length ? lh[0] / 7 : 0, length: length };
   }
-  const chanceText = (x) => x >= 6 ? "always plays" : x <= 0 ? "never plays" : `plays ${x} time${x > 1 ? "s" : ""} in 6`;
+  // probability_for_step: a note plays when a roll of 1 to 6 is at most the chance, x
+  const chanceText = (x) => `so it plays ${Math.round((x * 100) / 6)}% of the time (${x}/6)`;
   const pct = (f) => Math.round(f * 100) + " %";
 
   // The hover text for a sequencer pad: what it is, then what is true of its stage
@@ -307,9 +308,9 @@
         } else {
           const x = h - 1;
           title = v ? "Chance" : "Not the stage's chance";
-          lines.push(v ? `Each note of the stage ${chanceText(x)} (a roll of 1 to 6 must be ${x} or less).`
-            : `Tap so each note of the stage ${chanceText(x)}.`);
-          if (!v && !litHeights(sq.layers.skips, c).some((k) => k > 0)) lines.push("No chance is set on this stage, so its notes play 1 time in 6.");
+          lines.push(v ? `Each note of the stage rolls 1 to 6 and plays on ${x} or less, ${chanceText(x)}.`
+            : `Tap to set the stage's chance here, ${chanceText(x)}.`);
+          if (!v && !litHeights(sq.layers.skips, c).some((k) => k > 0)) lines.push(`No chance is set on this stage yet, ${chanceText(1)}.`);
         }
       } else if (L === "lock_scale") {
         title = v ? "Lock amount " + pct(h / 7) : "Not the stage's lock amount";
@@ -331,7 +332,7 @@
       if (heldStage() !== c) lines.push("Hold the pad to see them on the screen.");
     }
     if (f.skipped && L !== "skips" && !(L === "gate" && (v === true || v === "Tie"))) lines.push("This stage is skipped (Skip layer): the playhead jumps over it.");
-    if (!f.skipped && f.chance < 6 && L !== "skips") lines.push(`Each note of this stage ${chanceText(f.chance)} (Skip layer).`);
+    if (!f.skipped && f.chance < 6 && L !== "skips") lines.push(`The Skip layer gives this stage a chance, ${chanceText(f.chance)}.`);
     return { where: where, title: title, lines: lines };
   }
 
