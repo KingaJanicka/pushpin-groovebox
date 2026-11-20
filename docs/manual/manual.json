@@ -226,7 +226,20 @@
           ]
         }
       },
-      "screen": "device"
+      "screen": "device",
+      "held": {
+        "delete": "Clears every parameter lock on the held stage (its pads go back to the layer's colour).",
+        "enc_1": "Turn to lock this control on the held stage, starting from the knob's value. Tap it (touch and let go without turning) to remove that one lock. The knob itself doesn't move while a step is held.",
+        "enc_2": "Turn to lock this control on the held stage; tap it to remove that lock.",
+        "enc_3": "Turn to lock this control on the held stage; tap it to remove that lock.",
+        "enc_4": "Turn to lock this control on the held stage; tap it to remove that lock.",
+        "enc_5": "Turn to lock this control on the held stage; tap it to remove that lock.",
+        "enc_6": "Turn to lock this control on the held stage; tap it to remove that lock.",
+        "enc_7": "Turn to lock this control on the held stage; tap it to remove that lock.",
+        "enc_8": "Turn to lock this control on the held stage; tap it to remove that lock.",
+        "upper_row_1": "Shows the first device, as usual. While a step is held, the buttons of devices with locks on its stage light white."
+      },
+      "$comment": "'held' replaces a control's help while a sequencer step is held (MetroSequencerMode with steps_held)."
     },
     "clips": {
       "name": "Clips",

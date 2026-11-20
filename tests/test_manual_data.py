@@ -107,6 +107,7 @@ def documented_controls(manual: dict) -> set[str]:
     found = set(manual["global"])
     for mode in manual["modes"].values():
         found |= set(mode.get("controls", {}))
+        found |= set(mode.get("held", {}))
         for layer in mode.get("layers", {}).values():
             found |= set(layer.get("controls", {}))
             found.add(layer["button"])

@@ -194,6 +194,8 @@
   // What a control does right now
   function helpFor(id) {
     const o = overlayData();
+    const held = data.modes.seq.held || {};
+    if (!o && heldStage() !== null && held[id]) return held[id];
     if (o && o.controls && o.controls[id]) return o.controls[id];
     if (state.mode === "seq") {
       const l = layerData();
@@ -540,6 +542,13 @@
     }
     if (o === "scale_menu" && id === "scale") { closeOverlay(); return render(); }
 
+    const tapped = /^enc_(\d)$/.exec(id);
+    if (tapped && heldStage() !== null && !state.overlay) {
+      // MetroSequencerMode.on_encoder_released: a quick touch with no turn drops the lock
+      const t = trackState(), key = deviceTabs()[t.device], dev = devices.devices[key];
+      delete DEMO.seq.locks[heldStage()][dev.slot + ":" + ((t.devPage[key] || 0) * 8 + (+tapped[1] - 1))];
+      return render();
+    }
     if (id === "delete" && heldStage() !== null) {
       DEMO.seq.locks[heldStage()] = {};          // clear_all_locks_for_step
       return render();
@@ -1124,6 +1133,7 @@
     const o = overlayData();
     let where = m.name;
     if (state.mode === "seq") where += " · " + layerData().name + " layer";
+    if (heldStage() !== null) where += " · holding stage " + (heldStage() + 1);
     if (o) where += " · " + o.name;
     document.getElementById("info-mode").textContent = where;
     document.getElementById("info-summary").textContent = o ? o.summary : m.summary;
