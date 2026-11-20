@@ -47,7 +47,7 @@
   const SCENE_LABEL = { "1_4": "1/4", "1_4t": "1/4t", "1_8": "1/8", "1_8t": "1/8t", "1_16": "1/16", "1_16t": "1/16t", "1_32": "1/32", "1_32t": "1/32t" };
 
   const NAMES = {
-    enc_tempo: "Tempo encoder", enc_swing: "Swing encoder", enc_master: "Master encoder",
+    enc_tempo: "Tempo encoder", enc_swing: "Swing encoder (track volume)", enc_master: "Master encoder (synth volume)",
     touchstrip: "Touch strip", up: "Up", down: "Down", left: "Left", right: "Right",
     octave_up: "Octave Up", octave_down: "Octave Down", page_left: "Page Left", page_right: "Page Right",
   };
@@ -273,6 +273,7 @@
     }
     const m = modeData();
     if (m.controls && m.controls[id]) return m.controls[id];
+    if (!o && (m.unused || []).includes(id)) return null;
     if ((state.mode === "presets" || (o && o.hidesDevices)) && DEVICE_CONTROLS.has(id)) return null;
     return data.global[id] || null;
   }
@@ -766,6 +767,7 @@
 
   // Turning an encoder (mouse wheel) moves its control on the device page
   function turn(id, e) {
+    if (["enc_tempo", "enc_swing", "enc_master"].includes(id)) return turnGlobal(id, e);
     const m = /^enc_(\d)$/.exec(id);
     const ph = state.presetHold;
     if (m && ph && ph.browser && state.mode === "presets") {
@@ -815,6 +817,33 @@
       c.value = Math.min(n - 1, Math.max(0, c.value + dir));
     }
     drawScreen();
+  }
+
+  // OSCMode / OSCDevice: tempo, the track's fader (Swing) and its synth volume (Master)
+  function turnGlobal(id, e) {
+    if (state.mode === "presets" && !state.overlay) return;          // OSCMode is off in Presets
+    if (id === "enc_swing" && (heldStage() !== null || state.overlay === "scale_menu")) return;
+    e.preventDefault();
+    const dir = -Math.sign(e.deltaY);
+    if (id === "enc_tempo") {
+      state.tempo = (state.tempo || 120) + dir;
+      notify("Tempo: " + state.tempo);                             // add_display_notification
+    } else {
+      const v = data.screens.track_volumes[state.track], i = id === "enc_swing" ? 0 : 1;
+      v[i] = Math.min(100, Math.max(0, v[i] + dir));               // step_fader: 0.01 a click
+    }
+    drawScreen();
+  }
+
+  // show_notification: a message over the display for NOTIFICATION_TIME (3 s), fading
+  let noticeTimer = null;
+  function notify(text) {
+    state.notice = { text: text, t0: performance.now() };
+    clearInterval(noticeTimer);
+    noticeTimer = setInterval(() => {
+      if (!state.notice || performance.now() - state.notice.t0 > 3000) { state.notice = null; clearInterval(noticeTimer); }
+      drawScreen();
+    }, 100);
   }
 
   // BROWSE (and friends) close the device menu, as the app does
@@ -1302,6 +1331,17 @@
     const g = el.screen;
     while (g.firstChild) g.removeChild(g.firstChild);
     if (!state.display) return;
+    drawScreenBody(g);
+    const n = state.notice;
+    if (n) {
+      const fade = Math.max(0, 1 - (performance.now() - n.t0) / 3000);
+      svg("rect", { x: 0, y: 0, width: SW, height: SH, fill: "#000", "fill-opacity": 0.8 * fade }, g);
+      const t = svg("text", { x: 8, y: 88, fill: "#fff", "fill-opacity": fade, "font-size": 40, class: "scr" }, g);
+      t.textContent = n.text;
+    }
+  }
+
+  function drawScreenBody(g) {
     const S = data.screens, col = trackColor(state.track);
     const o = overlayData();
     const kind = o ? o.screen : modeData().screen;

@@ -1,5 +1,5 @@
 {
-  "$comment": "What every Push 2 control does in each Pushpin mode. Read by docs/assets/manual.js (the interactive manual) and checked by tests/test_manual_data.py against the buttons the modes handle. A control's help is looked up in the open overlay, then the pad mode (and its layer), then 'global'. An overlay with hidesDevices stops the device controls in 'global' applying while it is open. Missing everywhere means 'Not used by Pushpin'. 'screens' is example content for the drawn Push 2 display, laid out as Pushpin draws its 960x160 screen; the device pages themselves are in devices.json, generated from definitions/ by tools/build_manual_devices.py. screens.surge_browser is an example tree (Surge's factory patches aren't in the repo); a mono2k track's browser is the real one, in devices.json.",
+  "$comment": "What every Push 2 control does in each Pushpin mode. Read by docs/assets/manual.js (the interactive manual) and checked by tests/test_manual_data.py against the buttons the modes handle. A control's help is looked up in the open overlay, then the pad mode (and its layer), then 'global'. An overlay with hidesDevices stops the device controls in 'global' applying while it is open. Missing everywhere means 'Not used by Pushpin'. 'screens' is example content for the drawn Push 2 display, laid out as Pushpin draws its 960x160 screen; the device pages themselves are in devices.json, generated from definitions/ by tools/build_manual_devices.py. screens.surge_browser is an example tree (Surge's factory patches aren't in the repo); a mono2k track's browser is the real one, in devices.json. A mode's 'unused' lists controls that do nothing in it although 'global' explains them.",
   "tracks": [
     "orange",
     "yellow",
@@ -64,8 +64,9 @@
     "enc_6": "Turns the sixth control on the display.",
     "enc_7": "Turns the seventh control on the display.",
     "enc_8": "Turns the eighth control on the display.",
-    "enc_tempo": "Changes the tempo, one BPM a click.",
-    "enc_master": "Changes the selected track's volume."
+    "enc_tempo": "Tempo: one BPM a click, for every track. The display shows the new tempo for a moment.",
+    "enc_master": "The selected track's synth volume: Surge XT's master volume, or the mono2k sound's level, one percent a click. It's the second number in the track's box at the bottom of the display (Trk 1 80 / 100).",
+    "enc_swing": "Despite its name, the selected track's volume fader: the level after the synth, one percent a click. It's the first number in the track's box at the bottom of the display (Trk 1 80 / 100)."
   },
   "modes": {
     "play": {
@@ -237,7 +238,8 @@
         "enc_6": "Turn to lock this control on the held stage; tap it to remove that lock.",
         "enc_7": "Turn to lock this control on the held stage; tap it to remove that lock.",
         "enc_8": "Turn to lock this control on the held stage; tap it to remove that lock.",
-        "upper_row_1": "Shows the first device, as usual. While a step is held, the buttons of devices with locks on its stage light white."
+        "upper_row_1": "Shows the first device, as usual. While a step is held, the buttons of devices with locks on its stage light white.",
+        "enc_swing": "Not used while a step is held."
       },
       "$comment": "'held' replaces a control's help while a sequencer step is held (MetroSequencerMode with steps_held)."
     },
@@ -341,7 +343,12 @@
         "enc_7": "While the browser is open: the next folder down.",
         "enc_8": "While the browser is open: the next folder down."
       },
-      "screen": "presets"
+      "screen": "presets",
+      "unused": [
+        "enc_tempo",
+        "enc_swing",
+        "enc_master"
+      ]
     }
   },
   "overlays": {
@@ -490,7 +497,10 @@
         "enc_5": "Sequencer time scale: how many 32nds each of this track's steps lasts, from 1/32 to 32/32.",
         "enc_6": "Sequencer steps: how many steps this track runs before it starts again (2/32 up to 1+32/32), or INF to never start over.",
         "enc_7": "Main time scale: the main clock's step length. Turning it changes every track.",
-        "enc_8": "Main steps: how long the main pattern runs before every track starts over (or INF). Turning it changes every track."
+        "enc_8": "Main steps: how long the main pattern runs before every track starts over (or INF). Turning it changes every track.",
+        "enc_tempo": "Tempo: one BPM a click, for every track. The display shows the new tempo for a moment.",
+        "enc_master": "The selected track's synth volume: Surge XT's master volume, or the mono2k sound's level, one percent a click. It's the second number in the track's box at the bottom of the display (Trk 1 80 / 100).",
+        "enc_swing": "Not used on the timing page."
       },
       "screen": "timing"
     },
