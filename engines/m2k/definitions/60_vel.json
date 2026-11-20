@@ -1,0 +1,1407 @@
+{
+	"name": "Velocity",
+	"slot": 8,
+	"init": [],
+	"controls": [
+		{
+			"$type": "control-switch",
+			"menu_label": "Device",
+			"clicks_per_group": 4,
+			"select_by_value": true,
+			"groups": [
+				{
+					"$type": "group",
+					"label": "Off",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "Vel Destination",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "Off",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 0
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "Syn",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "Vel Destination",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "Syn A",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 1
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 0
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Syn B",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 2
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 1
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Syn C",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 3
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 2
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Syn D",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 4
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 3
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Syn E",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 5
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 4
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Syn F",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 6
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 5
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Syn G",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 7
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 6
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Syn H",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 8
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 7
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "Amp",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "Vel Destination",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "Attack",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 9
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Hold",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 10
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Decay",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 11
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Release",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 12
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Distortion",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 13
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Volume",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 14
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Pan",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 15
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Portamento",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 16
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "Filt",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "Vel Destination",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "Filter Base",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 17
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Filter Width",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 18
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "HP Resonance",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 19
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LP Resonance",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 20
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Filter Attack",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 21
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Filter Decay",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 22
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Base By Env",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 23
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Width By Env",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 24
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "FX",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "Vel Destination",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "EQ Frequency",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 25
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "EQ Gain",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 26
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Rate Reduction",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 27
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Delay Time",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 28
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Delay Send",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 29
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Delay Feedback",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 30
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Delay Base",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 31
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Delay Width",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 32
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "Dstr",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "Vel Destination",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "Bit Depth",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 33
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Wavefold",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 34
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "XOR Mangle",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 35
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Reverb Send",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 36
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Mod Type",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 67
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Mod Rate",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 68
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Mod Depth",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 69
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Mod Mix",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 70
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "LFO 1",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "Vel Destination",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "LFO Wave",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 45
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Trig Mode",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 46
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Multiplier",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 47
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Cycle",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 48
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Start Phase",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 49
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Depth",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 50
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "LFO 2",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "Vel Destination",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "LFO Wave",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 53
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Trig Mode",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 54
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Multiplier",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 55
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Cycle",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 56
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Start Phase",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 57
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Depth",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 58
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "LFO 3",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "Vel Destination",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "LFO Wave",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 61
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Trig Mode",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 62
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Multiplier",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 63
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Cycle",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 64
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Start Phase",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 65
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Depth",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/71",
+										"value": 66
+									}
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"$type": "control-range",
+			"label": "Vel 1 Add",
+			"address": "/m2k/param/72",
+			"min": 0,
+			"max": 127,
+			"bipolar": 1,
+			"display_center": 64
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-switch",
+			"menu_label": "Device",
+			"clicks_per_group": 4,
+			"select_by_value": true,
+			"groups": [
+				{
+					"$type": "group",
+					"label": "Off",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "Vel Destination",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "Off",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 0
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "Syn",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "Vel Destination",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "Syn A",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 1
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 0
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Syn B",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 2
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 1
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Syn C",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 3
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 2
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Syn D",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 4
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 3
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Syn E",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 5
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 4
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Syn F",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 6
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 5
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Syn G",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 7
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 6
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Syn H",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 8
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 7
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "Amp",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "Vel Destination",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "Attack",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 9
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Hold",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 10
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Decay",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 11
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Release",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 12
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Distortion",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 13
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Volume",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 14
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Pan",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 15
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Portamento",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 16
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "Filt",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "Vel Destination",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "Filter Base",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 17
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Filter Width",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 18
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "HP Resonance",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 19
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LP Resonance",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 20
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Filter Attack",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 21
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Filter Decay",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 22
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Base By Env",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 23
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Width By Env",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 24
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "FX",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "Vel Destination",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "EQ Frequency",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 25
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "EQ Gain",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 26
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Rate Reduction",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 27
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Delay Time",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 28
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Delay Send",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 29
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Delay Feedback",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 30
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Delay Base",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 31
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Delay Width",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 32
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "Dstr",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "Vel Destination",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "Bit Depth",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 33
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Wavefold",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 34
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "XOR Mangle",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 35
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Reverb Send",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 36
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Mod Type",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 67
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Mod Rate",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 68
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Mod Depth",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 69
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Mod Mix",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 70
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "LFO 1",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "Vel Destination",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "LFO Wave",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 45
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Trig Mode",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 46
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Multiplier",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 47
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Cycle",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 48
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Start Phase",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 49
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Depth",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 50
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "LFO 2",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "Vel Destination",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "LFO Wave",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 53
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Trig Mode",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 54
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Multiplier",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 55
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Cycle",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 56
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Start Phase",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 57
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Depth",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 58
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "LFO 3",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "Vel Destination",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "LFO Wave",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 61
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Trig Mode",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 62
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Multiplier",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 63
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Cycle",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 64
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Start Phase",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 65
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Depth",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/73",
+										"value": 66
+									}
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"$type": "control-range",
+			"label": "Vel 2 Add",
+			"address": "/m2k/param/74",
+			"min": 0,
+			"max": 127,
+			"bipolar": 1,
+			"display_center": 64
+		},
+		{
+			"$type": "control-spacer"
+		}
+	]
+}

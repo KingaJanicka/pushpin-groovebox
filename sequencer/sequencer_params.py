@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+# Seq Steps / Main Steps value meaning "INF": that loop never resets.
+INF_STEPS = 0
+
 
 @dataclass(frozen=True)
 class SequencerParams:
@@ -19,6 +22,16 @@ class SequencerParams:
 
     sequencer_is_playing: bool = False
     gate_track_active: bool = True
+    # Muted pitch track: the note keeps the last played pitch (octave still moves).
+    pitch_track_active: bool = True
+    # Muted octave track: the note keeps the last played octave (pitch still moves).
+    octave_track_active: bool = True
+    # Muted velocity track: the note keeps the last played velocity.
+    velocity_track_active: bool = True
+    # Muted mutes/skips track: every step plays, nothing is skipped.
+    mutes_skips_track_active: bool = True
+    # Muted lock-scale track: p-locks keep the last scaling used.
+    lock_scale_track_active: bool = True
 
     # Gate length in beats (controls[0].value)
     gate_len: float = 1.0
@@ -26,11 +39,13 @@ class SequencerParams:
     # Sequencer time subdivision (controls[4] menu value)
     seq_time_scale: int = 1
 
-    # Number of active steps in this instrument's pattern (controls[5])
+    # Number of active steps in this instrument's pattern (controls[5]);
+    # INF_STEPS = the track never jumps back to its first step
     pattern_len: int = 16
 
     # Global pattern time subdivision (controls[6])
     main_seq_time_scale: int = 1
 
-    # Global pattern length in steps (controls[7])
+    # Global pattern length in steps (controls[7]); INF_STEPS = the main
+    # pattern never resets the track
     main_pattern_len: int = 64

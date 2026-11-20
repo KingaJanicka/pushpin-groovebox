@@ -1,4 +1,6 @@
 settings.json
+track_engines.json
+m2k_presets.json
 presets.json
 .DS_Store
 node_modules
@@ -139,3 +141,13 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+
+# Raspberry Pi image build outputs (scripts/image)
+scripts/image/.build/
+scripts/image/my.plugins
+scripts/image/my.plugins.1
+*.img
+*.img.xz
+
+# Pi diagnostics reports (scripts/diagnostics/diagnose.sh)
+diagnostics-output/

@@ -1,0 +1,2435 @@
+{
+	"name": "LFO 1",
+	"slot": 5,
+	"init": [],
+	"controls": [
+		{
+			"$type": "control-switch",
+			"menu_label": "Device",
+			"clicks_per_group": 4,
+			"select_by_value": true,
+			"groups": [
+				{
+					"$type": "group",
+					"label": "Off",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "LFO Destination",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "Off",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 0
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "Syn",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "LFO Destination",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "Syn A",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 1
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 0
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Syn B",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 2
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 1
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Syn C",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 3
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 2
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Syn D",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 4
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 3
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Syn E",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 5
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 4
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Syn F",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 6
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 5
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Syn G",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 7
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 6
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Syn H",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 8
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 7
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "Amp",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "LFO Destination",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "Attack",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 9
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Hold",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 10
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Decay",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 11
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Release",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 12
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Distortion",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 13
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Volume",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 14
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Pan",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 15
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Portamento",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 16
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "Filt",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "LFO Destination",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "Filter Base",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 17
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Filter Width",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 18
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "HP Resonance",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 19
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LP Resonance",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 20
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Filter Attack",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 21
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Filter Decay",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 22
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Base By Env",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 23
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Width By Env",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 24
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "FX",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "LFO Destination",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "EQ Frequency",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 25
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "EQ Gain",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 26
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Rate Reduction",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 27
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Delay Time",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 28
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Delay Send",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 29
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Delay Feedback",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 30
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Delay Base",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 31
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Delay Width",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 32
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "Dstr",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "LFO Destination",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "Bit Depth",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 33
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Wavefold",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 34
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "XOR Mangle",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 35
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Reverb Send",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 36
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Mod Type",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 67
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Mod Rate",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 68
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Mod Depth",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 69
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Mod Mix",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 70
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "LFO 1",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "LFO Destination",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "LFO Wave",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 45
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Trig Mode",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 46
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Multiplier",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 47
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Cycle",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 48
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Start Phase",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 49
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Depth",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 50
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "LFO 2",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "LFO Destination",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "LFO Wave",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 53
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Trig Mode",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 54
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Multiplier",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 55
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Cycle",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 56
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Start Phase",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 57
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Depth",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 58
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "LFO 3",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "LFO Destination",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "LFO Wave",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 61
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Trig Mode",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 62
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Multiplier",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 63
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Cycle",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 64
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Start Phase",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 65
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Depth",
+									"onselect": {
+										"$type": "message",
+										"address": "/cc/89",
+										"value": 66
+									}
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"$type": "control-menu",
+			"menu_label": "LFO Wave",
+			"step": 0.25,
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "Tri",
+					"range": [
+						0,
+						18
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/90",
+						"value": 9
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Sin",
+					"range": [
+						19,
+						36
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/90",
+						"value": 28
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Sqr",
+					"range": [
+						37,
+						54
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/90",
+						"value": 46
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Saw",
+					"range": [
+						55,
+						73
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/90",
+						"value": 64
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Exp",
+					"range": [
+						74,
+						91
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/90",
+						"value": 83
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Rmp",
+					"range": [
+						92,
+						109
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/90",
+						"value": 101
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Rnd",
+					"range": [
+						110,
+						127
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/90",
+						"value": 119
+					}
+				}
+			]
+		},
+		{
+			"$type": "control-menu",
+			"menu_label": "LFO Trig Mode",
+			"step": 0.25,
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "Free",
+					"range": [
+						0,
+						25
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/91",
+						"value": 13
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Trig",
+					"range": [
+						26,
+						51
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/91",
+						"value": 39
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Hold",
+					"range": [
+						52,
+						76
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/91",
+						"value": 64
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "One",
+					"range": [
+						77,
+						102
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/91",
+						"value": 90
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Half",
+					"range": [
+						103,
+						127
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/91",
+						"value": 115
+					}
+				}
+			]
+		},
+		{
+			"$type": "control-menu",
+			"menu_label": "LFO Multiplier",
+			"step": 0.25,
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "X1",
+					"range": [
+						0,
+						15
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/92",
+						"value": 8
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "X2",
+					"range": [
+						16,
+						31
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/92",
+						"value": 24
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "X4",
+					"range": [
+						32,
+						47
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/92",
+						"value": 40
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "X8",
+					"range": [
+						48,
+						63
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/92",
+						"value": 56
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "X16",
+					"range": [
+						64,
+						79
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/92",
+						"value": 72
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "X32",
+					"range": [
+						80,
+						95
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/92",
+						"value": 88
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "X64",
+					"range": [
+						96,
+						111
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/92",
+						"value": 104
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "X128",
+					"range": [
+						112,
+						127
+					],
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/92",
+						"value": 120
+					}
+				}
+			]
+		},
+		{
+			"$type": "control-range",
+			"label": "LFO Cycle",
+			"address": "/cc/93",
+			"min": 0,
+			"max": 127,
+			"value_labels_by": {
+				"address": "/cc/92",
+				"choices": 8,
+				"tables": [
+					[
+						"Stop",
+						"30.6 Bars",
+						"28.9 Bars",
+						"27.2 Bars",
+						"25.7 Bars",
+						"24 Bars",
+						"22.9 Bars",
+						"21.6 Bars",
+						"20.4 Bars",
+						"19.3 Bars",
+						"18.2 Bars",
+						"17.1 Bars",
+						"16 Bars",
+						"15.3 Bars",
+						"14.4 Bars",
+						"13.6 Bars",
+						"12.8 Bars",
+						"12 Bars",
+						"11.4 Bars",
+						"10.8 Bars",
+						"10.2 Bars",
+						"9.6 Bars",
+						"9.1 Bars",
+						"8.5 Bars",
+						"8 Bars",
+						"7.6 Bars",
+						"7.2 Bars",
+						"6.8 Bars",
+						"6.4 Bars",
+						"6 Bars",
+						"5.7 Bars",
+						"5.4 Bars",
+						"5.1 Bars",
+						"4.8 Bars",
+						"4.5 Bars",
+						"4.2 Bars",
+						"4 Bars",
+						"3.8 Bars",
+						"3.6 Bars",
+						"3.4 Bars",
+						"3.2 Bars",
+						"3 Bars",
+						"2.8 Bars",
+						"2.7 Bars",
+						"2.5 Bars",
+						"2.4 Bars",
+						"2.2 Bars",
+						"2.1 Bars",
+						"2 Bars",
+						"1.9 Bars",
+						"1.8 Bars",
+						"1.7 Bars",
+						"1.6 Bars",
+						"1.5 Bars",
+						"1.4 Bars",
+						"1.3 Bars",
+						"1.2 Bars",
+						"1.2 Bars",
+						"1.1 Bars",
+						"1.0 Bars",
+						"1 Bar",
+						"3.8 Beats",
+						"3.6 Beats",
+						"3.4 Beats",
+						"3.2 Beats",
+						"1/2.",
+						"2.8 Beats",
+						"2.7 Beats",
+						"2.5 Beats",
+						"2.4 Beats",
+						"2.2 Beats",
+						"2.1 Beats",
+						"1/2 Note",
+						"1.9 Beats",
+						"1.8 Beats",
+						"1.7 Beats",
+						"1.6 Beats",
+						"1/4.",
+						"1.4 Beats",
+						"1/2t",
+						"1.2 Beats",
+						"1.2 Beats",
+						"1.1 Beats",
+						"1.0 Beats",
+						"1/4 Note",
+						"0.95 Beat",
+						"0.90 Beat",
+						"0.85 Beat",
+						"0.80 Beat",
+						"1/8.",
+						"0.71 Beat",
+						"1/4t",
+						"0.63 Beat",
+						"0.60 Beat",
+						"0.56 Beat",
+						"0.53 Beat",
+						"1/8 Note",
+						"0.47 Beat",
+						"0.45 Beat",
+						"0.42 Beat",
+						"0.40 Beat",
+						"1/16.",
+						"0.35 Beat",
+						"1/8t",
+						"0.32 Beat",
+						"0.30 Beat",
+						"0.28 Beat",
+						"0.26 Beat",
+						"1/16 Note",
+						"0.23 Beat",
+						"0.22 Beat",
+						"0.21 Beat",
+						"0.20 Beat",
+						"1/32.",
+						"0.17 Beat",
+						"1/16t",
+						"0.16 Beat",
+						"0.15 Beat",
+						"0.14 Beat",
+						"0.13 Beat",
+						"1/32 Note",
+						"16.7 Hz",
+						"17.7 Hz",
+						"18.7 Hz",
+						"19.8 Hz",
+						"21.0 Hz",
+						"22.3 Hz",
+						"23.6 Hz"
+					],
+					[
+						"Stop",
+						"15.3 Bars",
+						"14.4 Bars",
+						"13.6 Bars",
+						"12.8 Bars",
+						"12 Bars",
+						"11.4 Bars",
+						"10.8 Bars",
+						"10.2 Bars",
+						"9.6 Bars",
+						"9.1 Bars",
+						"8.5 Bars",
+						"8 Bars",
+						"7.6 Bars",
+						"7.2 Bars",
+						"6.8 Bars",
+						"6.4 Bars",
+						"6 Bars",
+						"5.7 Bars",
+						"5.4 Bars",
+						"5.1 Bars",
+						"4.8 Bars",
+						"4.5 Bars",
+						"4.2 Bars",
+						"4 Bars",
+						"3.8 Bars",
+						"3.6 Bars",
+						"3.4 Bars",
+						"3.2 Bars",
+						"3 Bars",
+						"2.8 Bars",
+						"2.7 Bars",
+						"2.5 Bars",
+						"2.4 Bars",
+						"2.2 Bars",
+						"2.1 Bars",
+						"2 Bars",
+						"1.9 Bars",
+						"1.8 Bars",
+						"1.7 Bars",
+						"1.6 Bars",
+						"1.5 Bars",
+						"1.4 Bars",
+						"1.3 Bars",
+						"1.2 Bars",
+						"1.2 Bars",
+						"1.1 Bars",
+						"1.0 Bars",
+						"1 Bar",
+						"3.8 Beats",
+						"3.6 Beats",
+						"3.4 Beats",
+						"3.2 Beats",
+						"1/2.",
+						"2.8 Beats",
+						"2.7 Beats",
+						"2.5 Beats",
+						"2.4 Beats",
+						"2.2 Beats",
+						"2.1 Beats",
+						"1/2 Note",
+						"1.9 Beats",
+						"1.8 Beats",
+						"1.7 Beats",
+						"1.6 Beats",
+						"1/4.",
+						"1.4 Beats",
+						"1/2t",
+						"1.2 Beats",
+						"1.2 Beats",
+						"1.1 Beats",
+						"1.0 Beats",
+						"1/4 Note",
+						"0.95 Beat",
+						"0.90 Beat",
+						"0.85 Beat",
+						"0.80 Beat",
+						"1/8.",
+						"0.71 Beat",
+						"1/4t",
+						"0.63 Beat",
+						"0.60 Beat",
+						"0.56 Beat",
+						"0.53 Beat",
+						"1/8 Note",
+						"0.47 Beat",
+						"0.45 Beat",
+						"0.42 Beat",
+						"0.40 Beat",
+						"1/16.",
+						"0.35 Beat",
+						"1/8t",
+						"0.31 Beat",
+						"0.30 Beat",
+						"0.28 Beat",
+						"0.26 Beat",
+						"1/16 Note",
+						"0.23 Beat",
+						"0.22 Beat",
+						"0.21 Beat",
+						"0.20 Beat",
+						"1/32.",
+						"0.17 Beat",
+						"1/16t",
+						"0.16 Beat",
+						"0.15 Beat",
+						"0.14 Beat",
+						"0.13 Beat",
+						"1/32 Note",
+						"16.7 Hz",
+						"17.7 Hz",
+						"18.7 Hz",
+						"19.8 Hz",
+						"21.0 Hz",
+						"22.3 Hz",
+						"23.6 Hz",
+						"25.0 Hz",
+						"26.5 Hz",
+						"28.1 Hz",
+						"29.7 Hz",
+						"1/64 Note",
+						"33.4 Hz",
+						"35.4 Hz",
+						"37.5 Hz",
+						"39.7 Hz",
+						"42.1 Hz",
+						"44.6 Hz",
+						"47.2 Hz"
+					],
+					[
+						"Stop",
+						"7.6 Bars",
+						"7.2 Bars",
+						"6.8 Bars",
+						"6.4 Bars",
+						"6 Bars",
+						"5.7 Bars",
+						"5.4 Bars",
+						"5.1 Bars",
+						"4.8 Bars",
+						"4.5 Bars",
+						"4.2 Bars",
+						"4 Bars",
+						"3.8 Bars",
+						"3.6 Bars",
+						"3.4 Bars",
+						"3.2 Bars",
+						"3 Bars",
+						"2.8 Bars",
+						"2.7 Bars",
+						"2.5 Bars",
+						"2.4 Bars",
+						"2.2 Bars",
+						"2.1 Bars",
+						"2 Bars",
+						"1.9 Bars",
+						"1.8 Bars",
+						"1.7 Bars",
+						"1.6 Bars",
+						"1.5 Bars",
+						"1.4 Bars",
+						"1.3 Bars",
+						"1.2 Bars",
+						"1.2 Bars",
+						"1.1 Bars",
+						"1.0 Bars",
+						"1 Bar",
+						"3.8 Beats",
+						"3.6 Beats",
+						"3.4 Beats",
+						"3.2 Beats",
+						"1/2.",
+						"2.8 Beats",
+						"2.7 Beats",
+						"2.5 Beats",
+						"2.4 Beats",
+						"2.2 Beats",
+						"2.1 Beats",
+						"1/2 Note",
+						"1.9 Beats",
+						"1.8 Beats",
+						"1.7 Beats",
+						"1.6 Beats",
+						"1/4.",
+						"1.4 Beats",
+						"1/2t",
+						"1.2 Beats",
+						"1.2 Beats",
+						"1.1 Beats",
+						"1.0 Beats",
+						"1/4 Note",
+						"0.95 Beat",
+						"0.90 Beat",
+						"0.85 Beat",
+						"0.80 Beat",
+						"1/8.",
+						"0.71 Beat",
+						"1/4t",
+						"0.63 Beat",
+						"0.60 Beat",
+						"0.56 Beat",
+						"0.53 Beat",
+						"1/8 Note",
+						"0.47 Beat",
+						"0.45 Beat",
+						"0.42 Beat",
+						"0.40 Beat",
+						"1/16.",
+						"0.35 Beat",
+						"1/8t",
+						"0.31 Beat",
+						"0.30 Beat",
+						"0.28 Beat",
+						"0.26 Beat",
+						"1/16 Note",
+						"0.23 Beat",
+						"0.22 Beat",
+						"0.21 Beat",
+						"0.20 Beat",
+						"1/32.",
+						"0.17 Beat",
+						"1/16t",
+						"0.15 Beat",
+						"0.15 Beat",
+						"0.14 Beat",
+						"0.13 Beat",
+						"1/32 Note",
+						"16.7 Hz",
+						"17.7 Hz",
+						"18.7 Hz",
+						"19.8 Hz",
+						"21.0 Hz",
+						"22.3 Hz",
+						"23.6 Hz",
+						"25.0 Hz",
+						"26.5 Hz",
+						"28.1 Hz",
+						"29.7 Hz",
+						"1/64 Note",
+						"33.4 Hz",
+						"35.4 Hz",
+						"37.5 Hz",
+						"39.7 Hz",
+						"42.1 Hz",
+						"44.6 Hz",
+						"47.2 Hz",
+						"50.0 Hz",
+						"53.0 Hz",
+						"56.2 Hz",
+						"59.5 Hz",
+						"63.0 Hz",
+						"66.8 Hz",
+						"70.8 Hz",
+						"75.0 Hz",
+						"79.4 Hz",
+						"84.2 Hz",
+						"89.2 Hz",
+						"94.5 Hz"
+					],
+					[
+						"Stop",
+						"3.8 Bars",
+						"3.6 Bars",
+						"3.4 Bars",
+						"3.2 Bars",
+						"3 Bars",
+						"2.8 Bars",
+						"2.7 Bars",
+						"2.5 Bars",
+						"2.4 Bars",
+						"2.2 Bars",
+						"2.1 Bars",
+						"2 Bars",
+						"1.9 Bars",
+						"1.8 Bars",
+						"1.7 Bars",
+						"1.6 Bars",
+						"1.5 Bars",
+						"1.4 Bars",
+						"1.3 Bars",
+						"1.2 Bars",
+						"1.2 Bars",
+						"1.1 Bars",
+						"1.0 Bars",
+						"1 Bar",
+						"3.8 Beats",
+						"3.6 Beats",
+						"3.4 Beats",
+						"3.2 Beats",
+						"1/2.",
+						"2.8 Beats",
+						"2.7 Beats",
+						"2.5 Beats",
+						"2.4 Beats",
+						"2.2 Beats",
+						"2.1 Beats",
+						"1/2 Note",
+						"1.9 Beats",
+						"1.8 Beats",
+						"1.7 Beats",
+						"1.6 Beats",
+						"1/4.",
+						"1.4 Beats",
+						"1/2t",
+						"1.2 Beats",
+						"1.2 Beats",
+						"1.1 Beats",
+						"1.0 Beats",
+						"1/4 Note",
+						"0.95 Beat",
+						"0.90 Beat",
+						"0.85 Beat",
+						"0.80 Beat",
+						"1/8.",
+						"0.71 Beat",
+						"1/4t",
+						"0.63 Beat",
+						"0.60 Beat",
+						"0.56 Beat",
+						"0.53 Beat",
+						"1/8 Note",
+						"0.47 Beat",
+						"0.45 Beat",
+						"0.42 Beat",
+						"0.40 Beat",
+						"1/16.",
+						"0.35 Beat",
+						"1/8t",
+						"0.31 Beat",
+						"0.30 Beat",
+						"0.28 Beat",
+						"0.26 Beat",
+						"1/16 Note",
+						"0.23 Beat",
+						"0.22 Beat",
+						"0.21 Beat",
+						"0.20 Beat",
+						"1/32.",
+						"0.17 Beat",
+						"1/16t",
+						"0.15 Beat",
+						"0.15 Beat",
+						"0.14 Beat",
+						"0.13 Beat",
+						"1/32 Note",
+						"16.7 Hz",
+						"17.7 Hz",
+						"18.7 Hz",
+						"19.8 Hz",
+						"21.0 Hz",
+						"22.3 Hz",
+						"23.6 Hz",
+						"25.0 Hz",
+						"26.5 Hz",
+						"28.1 Hz",
+						"29.7 Hz",
+						"1/64 Note",
+						"33.4 Hz",
+						"35.4 Hz",
+						"37.5 Hz",
+						"39.7 Hz",
+						"42.1 Hz",
+						"44.6 Hz",
+						"47.2 Hz",
+						"50.0 Hz",
+						"53.0 Hz",
+						"56.2 Hz",
+						"59.5 Hz",
+						"63.0 Hz",
+						"66.8 Hz",
+						"70.8 Hz",
+						"75.0 Hz",
+						"79.4 Hz",
+						"84.2 Hz",
+						"89.2 Hz",
+						"94.5 Hz",
+						"100 Hz",
+						"106 Hz",
+						"112 Hz",
+						"119 Hz",
+						"126 Hz",
+						"134 Hz",
+						"142 Hz",
+						"150 Hz",
+						"159 Hz",
+						"168 Hz",
+						"178 Hz",
+						"189 Hz"
+					],
+					[
+						"Stop",
+						"1.9 Bars",
+						"1.8 Bars",
+						"1.7 Bars",
+						"1.6 Bars",
+						"1.5 Bars",
+						"1.4 Bars",
+						"1.3 Bars",
+						"1.2 Bars",
+						"1.2 Bars",
+						"1.1 Bars",
+						"1.0 Bars",
+						"1 Bar",
+						"3.8 Beats",
+						"3.6 Beats",
+						"3.4 Beats",
+						"3.2 Beats",
+						"1/2.",
+						"2.8 Beats",
+						"2.7 Beats",
+						"2.5 Beats",
+						"2.4 Beats",
+						"2.2 Beats",
+						"2.1 Beats",
+						"1/2 Note",
+						"1.9 Beats",
+						"1.8 Beats",
+						"1.7 Beats",
+						"1.6 Beats",
+						"1/4.",
+						"1.4 Beats",
+						"1/2t",
+						"1.2 Beats",
+						"1.2 Beats",
+						"1.1 Beats",
+						"1.0 Beats",
+						"1/4 Note",
+						"0.95 Beat",
+						"0.90 Beat",
+						"0.85 Beat",
+						"0.80 Beat",
+						"1/8.",
+						"0.71 Beat",
+						"1/4t",
+						"0.63 Beat",
+						"0.60 Beat",
+						"0.56 Beat",
+						"0.53 Beat",
+						"1/8 Note",
+						"0.47 Beat",
+						"0.45 Beat",
+						"0.42 Beat",
+						"0.40 Beat",
+						"1/16.",
+						"0.35 Beat",
+						"1/8t",
+						"0.31 Beat",
+						"0.30 Beat",
+						"0.28 Beat",
+						"0.26 Beat",
+						"1/16 Note",
+						"0.23 Beat",
+						"0.22 Beat",
+						"0.21 Beat",
+						"0.20 Beat",
+						"1/32.",
+						"0.17 Beat",
+						"1/16t",
+						"0.15 Beat",
+						"0.15 Beat",
+						"0.14 Beat",
+						"0.13 Beat",
+						"1/32 Note",
+						"16.7 Hz",
+						"17.7 Hz",
+						"18.7 Hz",
+						"19.8 Hz",
+						"21.0 Hz",
+						"22.3 Hz",
+						"23.6 Hz",
+						"25.0 Hz",
+						"26.5 Hz",
+						"28.1 Hz",
+						"29.7 Hz",
+						"1/64 Note",
+						"33.4 Hz",
+						"35.4 Hz",
+						"37.5 Hz",
+						"39.7 Hz",
+						"42.1 Hz",
+						"44.6 Hz",
+						"47.2 Hz",
+						"50.0 Hz",
+						"53.0 Hz",
+						"56.2 Hz",
+						"59.5 Hz",
+						"63.0 Hz",
+						"66.8 Hz",
+						"70.8 Hz",
+						"75.0 Hz",
+						"79.4 Hz",
+						"84.2 Hz",
+						"89.2 Hz",
+						"94.5 Hz",
+						"100 Hz",
+						"106 Hz",
+						"112 Hz",
+						"119 Hz",
+						"126 Hz",
+						"134 Hz",
+						"142 Hz",
+						"150 Hz",
+						"159 Hz",
+						"168 Hz",
+						"178 Hz",
+						"189 Hz",
+						"200 Hz",
+						"212 Hz",
+						"225 Hz",
+						"238 Hz",
+						"252 Hz",
+						"267 Hz",
+						"283 Hz",
+						"300 Hz",
+						"318 Hz",
+						"337 Hz",
+						"345 Hz",
+						"345 Hz"
+					],
+					[
+						"Stop",
+						"3.8 Beats",
+						"3.6 Beats",
+						"3.4 Beats",
+						"3.2 Beats",
+						"1/2.",
+						"2.8 Beats",
+						"2.7 Beats",
+						"2.5 Beats",
+						"2.4 Beats",
+						"2.2 Beats",
+						"2.1 Beats",
+						"1/2 Note",
+						"1.9 Beats",
+						"1.8 Beats",
+						"1.7 Beats",
+						"1.6 Beats",
+						"1/4.",
+						"1.4 Beats",
+						"1/2t",
+						"1.2 Beats",
+						"1.2 Beats",
+						"1.1 Beats",
+						"1.0 Beats",
+						"1/4 Note",
+						"0.95 Beat",
+						"0.90 Beat",
+						"0.85 Beat",
+						"0.80 Beat",
+						"1/8.",
+						"0.71 Beat",
+						"1/4t",
+						"0.63 Beat",
+						"0.60 Beat",
+						"0.56 Beat",
+						"0.53 Beat",
+						"1/8 Note",
+						"0.47 Beat",
+						"0.45 Beat",
+						"0.42 Beat",
+						"0.40 Beat",
+						"1/16.",
+						"0.35 Beat",
+						"1/8t",
+						"0.31 Beat",
+						"0.30 Beat",
+						"0.28 Beat",
+						"0.26 Beat",
+						"1/16 Note",
+						"0.23 Beat",
+						"0.22 Beat",
+						"0.21 Beat",
+						"0.20 Beat",
+						"1/32.",
+						"0.17 Beat",
+						"1/16t",
+						"0.15 Beat",
+						"0.15 Beat",
+						"0.14 Beat",
+						"0.13 Beat",
+						"1/32 Note",
+						"16.7 Hz",
+						"17.7 Hz",
+						"18.7 Hz",
+						"19.8 Hz",
+						"21.0 Hz",
+						"22.3 Hz",
+						"23.6 Hz",
+						"25.0 Hz",
+						"26.5 Hz",
+						"28.1 Hz",
+						"29.7 Hz",
+						"1/64 Note",
+						"33.4 Hz",
+						"35.4 Hz",
+						"37.5 Hz",
+						"39.7 Hz",
+						"42.1 Hz",
+						"44.6 Hz",
+						"47.2 Hz",
+						"50.0 Hz",
+						"53.0 Hz",
+						"56.2 Hz",
+						"59.5 Hz",
+						"63.0 Hz",
+						"66.8 Hz",
+						"70.8 Hz",
+						"75.0 Hz",
+						"79.4 Hz",
+						"84.2 Hz",
+						"89.2 Hz",
+						"94.5 Hz",
+						"100 Hz",
+						"106 Hz",
+						"112 Hz",
+						"119 Hz",
+						"126 Hz",
+						"134 Hz",
+						"142 Hz",
+						"150 Hz",
+						"159 Hz",
+						"168 Hz",
+						"178 Hz",
+						"189 Hz",
+						"200 Hz",
+						"212 Hz",
+						"225 Hz",
+						"238 Hz",
+						"252 Hz",
+						"267 Hz",
+						"283 Hz",
+						"300 Hz",
+						"318 Hz",
+						"337 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz"
+					],
+					[
+						"Stop",
+						"1.9 Beats",
+						"1.8 Beats",
+						"1.7 Beats",
+						"1.6 Beats",
+						"1/4.",
+						"1.4 Beats",
+						"1/2t",
+						"1.2 Beats",
+						"1.2 Beats",
+						"1.1 Beats",
+						"1.0 Beats",
+						"1/4 Note",
+						"0.95 Beat",
+						"0.90 Beat",
+						"0.85 Beat",
+						"0.80 Beat",
+						"1/8.",
+						"0.71 Beat",
+						"1/4t",
+						"0.63 Beat",
+						"0.60 Beat",
+						"0.56 Beat",
+						"0.53 Beat",
+						"1/8 Note",
+						"0.47 Beat",
+						"0.45 Beat",
+						"0.42 Beat",
+						"0.40 Beat",
+						"1/16.",
+						"0.35 Beat",
+						"1/8t",
+						"0.31 Beat",
+						"0.30 Beat",
+						"0.28 Beat",
+						"0.26 Beat",
+						"1/16 Note",
+						"0.23 Beat",
+						"0.22 Beat",
+						"0.21 Beat",
+						"0.20 Beat",
+						"1/32.",
+						"0.17 Beat",
+						"1/16t",
+						"0.15 Beat",
+						"0.15 Beat",
+						"0.14 Beat",
+						"0.13 Beat",
+						"1/32 Note",
+						"16.7 Hz",
+						"17.7 Hz",
+						"18.7 Hz",
+						"19.8 Hz",
+						"21.0 Hz",
+						"22.3 Hz",
+						"23.6 Hz",
+						"25.0 Hz",
+						"26.5 Hz",
+						"28.1 Hz",
+						"29.7 Hz",
+						"1/64 Note",
+						"33.4 Hz",
+						"35.4 Hz",
+						"37.5 Hz",
+						"39.7 Hz",
+						"42.1 Hz",
+						"44.6 Hz",
+						"47.2 Hz",
+						"50.0 Hz",
+						"53.0 Hz",
+						"56.2 Hz",
+						"59.5 Hz",
+						"63.0 Hz",
+						"66.8 Hz",
+						"70.8 Hz",
+						"75.0 Hz",
+						"79.4 Hz",
+						"84.2 Hz",
+						"89.2 Hz",
+						"94.5 Hz",
+						"100 Hz",
+						"106 Hz",
+						"112 Hz",
+						"119 Hz",
+						"126 Hz",
+						"134 Hz",
+						"142 Hz",
+						"150 Hz",
+						"159 Hz",
+						"168 Hz",
+						"178 Hz",
+						"189 Hz",
+						"200 Hz",
+						"212 Hz",
+						"225 Hz",
+						"238 Hz",
+						"252 Hz",
+						"267 Hz",
+						"283 Hz",
+						"300 Hz",
+						"318 Hz",
+						"337 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz"
+					],
+					[
+						"Stop",
+						"0.95 Beat",
+						"0.90 Beat",
+						"0.85 Beat",
+						"0.80 Beat",
+						"1/8.",
+						"0.71 Beat",
+						"1/4t",
+						"0.63 Beat",
+						"0.60 Beat",
+						"0.56 Beat",
+						"0.53 Beat",
+						"1/8 Note",
+						"0.47 Beat",
+						"0.45 Beat",
+						"0.42 Beat",
+						"0.40 Beat",
+						"1/16.",
+						"0.35 Beat",
+						"1/8t",
+						"0.31 Beat",
+						"0.30 Beat",
+						"0.28 Beat",
+						"0.26 Beat",
+						"1/16 Note",
+						"0.23 Beat",
+						"0.22 Beat",
+						"0.21 Beat",
+						"0.20 Beat",
+						"1/32.",
+						"0.17 Beat",
+						"1/16t",
+						"0.15 Beat",
+						"0.15 Beat",
+						"0.14 Beat",
+						"0.13 Beat",
+						"1/32 Note",
+						"16.7 Hz",
+						"17.7 Hz",
+						"18.7 Hz",
+						"19.8 Hz",
+						"21.0 Hz",
+						"22.3 Hz",
+						"23.6 Hz",
+						"25.0 Hz",
+						"26.5 Hz",
+						"28.1 Hz",
+						"29.7 Hz",
+						"1/64 Note",
+						"33.4 Hz",
+						"35.4 Hz",
+						"37.5 Hz",
+						"39.7 Hz",
+						"42.1 Hz",
+						"44.6 Hz",
+						"47.2 Hz",
+						"50.0 Hz",
+						"53.0 Hz",
+						"56.2 Hz",
+						"59.5 Hz",
+						"63.0 Hz",
+						"66.8 Hz",
+						"70.8 Hz",
+						"75.0 Hz",
+						"79.4 Hz",
+						"84.2 Hz",
+						"89.2 Hz",
+						"94.5 Hz",
+						"100 Hz",
+						"106 Hz",
+						"112 Hz",
+						"119 Hz",
+						"126 Hz",
+						"134 Hz",
+						"142 Hz",
+						"150 Hz",
+						"159 Hz",
+						"168 Hz",
+						"178 Hz",
+						"189 Hz",
+						"200 Hz",
+						"212 Hz",
+						"225 Hz",
+						"238 Hz",
+						"252 Hz",
+						"267 Hz",
+						"283 Hz",
+						"300 Hz",
+						"318 Hz",
+						"337 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz",
+						"345 Hz"
+					]
+				]
+			}
+		},
+		{
+			"$type": "control-range",
+			"label": "Start Phase",
+			"address": "/cc/94",
+			"min": 0,
+			"max": 127,
+			"value_labels": [
+				"0\u00b0",
+				"3\u00b0",
+				"6\u00b0",
+				"8\u00b0",
+				"11\u00b0",
+				"14\u00b0",
+				"17\u00b0",
+				"20\u00b0",
+				"22\u00b0",
+				"25\u00b0",
+				"28\u00b0",
+				"31\u00b0",
+				"34\u00b0",
+				"37\u00b0",
+				"39\u00b0",
+				"42\u00b0",
+				"45\u00b0",
+				"48\u00b0",
+				"51\u00b0",
+				"53\u00b0",
+				"56\u00b0",
+				"59\u00b0",
+				"62\u00b0",
+				"65\u00b0",
+				"68\u00b0",
+				"70\u00b0",
+				"73\u00b0",
+				"76\u00b0",
+				"79\u00b0",
+				"82\u00b0",
+				"84\u00b0",
+				"87\u00b0",
+				"90\u00b0",
+				"93\u00b0",
+				"96\u00b0",
+				"98\u00b0",
+				"101\u00b0",
+				"104\u00b0",
+				"107\u00b0",
+				"110\u00b0",
+				"112\u00b0",
+				"115\u00b0",
+				"118\u00b0",
+				"121\u00b0",
+				"124\u00b0",
+				"127\u00b0",
+				"129\u00b0",
+				"132\u00b0",
+				"135\u00b0",
+				"138\u00b0",
+				"141\u00b0",
+				"143\u00b0",
+				"146\u00b0",
+				"149\u00b0",
+				"152\u00b0",
+				"155\u00b0",
+				"158\u00b0",
+				"160\u00b0",
+				"163\u00b0",
+				"166\u00b0",
+				"169\u00b0",
+				"172\u00b0",
+				"174\u00b0",
+				"177\u00b0",
+				"180\u00b0",
+				"183\u00b0",
+				"186\u00b0",
+				"188\u00b0",
+				"191\u00b0",
+				"194\u00b0",
+				"197\u00b0",
+				"200\u00b0",
+				"202\u00b0",
+				"205\u00b0",
+				"208\u00b0",
+				"211\u00b0",
+				"214\u00b0",
+				"217\u00b0",
+				"219\u00b0",
+				"222\u00b0",
+				"225\u00b0",
+				"228\u00b0",
+				"231\u00b0",
+				"233\u00b0",
+				"236\u00b0",
+				"239\u00b0",
+				"242\u00b0",
+				"245\u00b0",
+				"248\u00b0",
+				"250\u00b0",
+				"253\u00b0",
+				"256\u00b0",
+				"259\u00b0",
+				"262\u00b0",
+				"264\u00b0",
+				"267\u00b0",
+				"270\u00b0",
+				"273\u00b0",
+				"276\u00b0",
+				"278\u00b0",
+				"281\u00b0",
+				"284\u00b0",
+				"287\u00b0",
+				"290\u00b0",
+				"292\u00b0",
+				"295\u00b0",
+				"298\u00b0",
+				"301\u00b0",
+				"304\u00b0",
+				"307\u00b0",
+				"309\u00b0",
+				"312\u00b0",
+				"315\u00b0",
+				"318\u00b0",
+				"321\u00b0",
+				"323\u00b0",
+				"326\u00b0",
+				"329\u00b0",
+				"332\u00b0",
+				"335\u00b0",
+				"338\u00b0",
+				"340\u00b0",
+				"343\u00b0",
+				"346\u00b0",
+				"349\u00b0",
+				"352\u00b0",
+				"354\u00b0",
+				"357\u00b0"
+			]
+		},
+		{
+			"$type": "control-range",
+			"label": "LFO Depth",
+			"address": "/cc/95",
+			"min": 0,
+			"max": 127,
+			"bipolar": 1,
+			"value_labels": [
+				"-100 %",
+				"-96 %",
+				"-93 %",
+				"-90 %",
+				"-87 %",
+				"-85 %",
+				"-82 %",
+				"-79 %",
+				"-76 %",
+				"-73 %",
+				"-71 %",
+				"-68 %",
+				"-66 %",
+				"-63 %",
+				"-61 %",
+				"-58 %",
+				"-56 %",
+				"-53 %",
+				"-51 %",
+				"-49 %",
+				"-47 %",
+				"-45 %",
+				"-43 %",
+				"-41 %",
+				"-39 %",
+				"-37 %",
+				"-35 %",
+				"-33 %",
+				"-31 %",
+				"-29 %",
+				"-28 %",
+				"-26 %",
+				"-25 %",
+				"-23 %",
+				"-22 %",
+				"-20 %",
+				"-19 %",
+				"-17 %",
+				"-16 %",
+				"-15 %",
+				"-14 %",
+				"-12 %",
+				"-11 %",
+				"-10 %",
+				"-9.8 %",
+				"-8.8 %",
+				"-7.9 %",
+				"-7.1 %",
+				"-6.3 %",
+				"-5.5 %",
+				"-4.8 %",
+				"-4.1 %",
+				"-3.5 %",
+				"-3.0 %",
+				"-2.4 %",
+				"-2.0 %",
+				"-1.6 %",
+				"-1.2 %",
+				"-0.9 %",
+				"-0.6 %",
+				"-0.4 %",
+				"-0.2 %",
+				"-0.1 %",
+				"0 %",
+				"0 %",
+				"0 %",
+				"+0.1 %",
+				"+0.2 %",
+				"+0.4 %",
+				"+0.6 %",
+				"+0.9 %",
+				"+1.2 %",
+				"+1.6 %",
+				"+2.0 %",
+				"+2.5 %",
+				"+3.1 %",
+				"+3.6 %",
+				"+4.3 %",
+				"+4.9 %",
+				"+5.7 %",
+				"+6.4 %",
+				"+7.3 %",
+				"+8.2 %",
+				"+9.1 %",
+				"+10 %",
+				"+11 %",
+				"+12 %",
+				"+13 %",
+				"+14 %",
+				"+15 %",
+				"+17 %",
+				"+18 %",
+				"+19 %",
+				"+21 %",
+				"+22 %",
+				"+24 %",
+				"+25 %",
+				"+27 %",
+				"+29 %",
+				"+30 %",
+				"+32 %",
+				"+34 %",
+				"+36 %",
+				"+38 %",
+				"+40 %",
+				"+42 %",
+				"+44 %",
+				"+46 %",
+				"+48 %",
+				"+51 %",
+				"+53 %",
+				"+55 %",
+				"+58 %",
+				"+60 %",
+				"+63 %",
+				"+65 %",
+				"+68 %",
+				"+70 %",
+				"+73 %",
+				"+76 %",
+				"+79 %",
+				"+81 %",
+				"+84 %",
+				"+87 %",
+				"+90 %",
+				"+93 %",
+				"+96 %",
+				"+100 %"
+			]
+		},
+		{
+			"$type": "control-menu",
+			"menu_label": "LFO Track",
+			"step": 0.25,
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "Own",
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/88",
+						"value": 0
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Trk 1",
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/88",
+						"value": 1
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Trk 2",
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/88",
+						"value": 2
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Trk 3",
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/88",
+						"value": 3
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Trk 4",
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/88",
+						"value": 4
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Trk 5",
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/88",
+						"value": 5
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Trk 6",
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/88",
+						"value": 6
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Trk 7",
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/88",
+						"value": 7
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Trk 8",
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/88",
+						"value": 8
+					}
+				}
+			]
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-spacer"
+		},
+		{
+			"$type": "control-menu",
+			"menu_label": "LFO Trig",
+			"step": 0.25,
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "LFO Trig On",
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/23",
+						"value": 0
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "LFO Trig Off",
+					"onselect": {
+						"$type": "message",
+						"address": "/cc/23",
+						"value": 127
+					}
+				}
+			]
+		}
+	]
+}

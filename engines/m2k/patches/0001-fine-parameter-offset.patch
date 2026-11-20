@@ -1,0 +1,19 @@
+--- a/firmware/src/m2k_dsp.c
++++ b/firmware/src/m2k_dsp.c
+@@ -163,6 +163,7 @@
+     /* params: the kit with this trig's locks, and the modulation in 1/256 steps */
+     uint8_t eff[P_COUNT];
+     int32_t mod[P_COUNT];              /* the LFOs' modulation, set a block at a time (modq: only what they touch) */
++    int32_t fine[P_COUNT];             /* a host's offset in 1/256 steps (pushpin's m2k-jack: 14-bit values, glides) */
+     int32_t peak;
+     int32_t lvl;                       /* its blocks' peaks followed, falling ~93 ms: how loud it is heard (the CPU
+                                         * guard's: a hat between its hits still counts) */
+@@ -197,7 +198,7 @@
+ /* a parameter with its modulation, 0..127*256 */
+ static inline int32_t P8(const trk_t *t, int id)
+ {
+-    int32_t v = (int32_t)t->eff[id] * 256 + t->mod[id];
++    int32_t v = (int32_t)t->eff[id] * 256 + t->mod[id] + t->fine[id];
+     return CLAMP(v, 0, 127 * 256);
+ }
+ static inline int32_t P7(const trk_t *t, int id) { return P8(t, id) >> 8; }

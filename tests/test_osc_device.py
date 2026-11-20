@@ -4,7 +4,7 @@ from typing import Any
 from unittest.mock import MagicMock
 
 from modes.osc_device import OSCDevice
-from osc_controls import scale_value
+from osc_controls import ACCEL_SLOW, scale_value
 from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.dispatcher import Dispatcher
 import push2_python
@@ -167,11 +167,11 @@ def test_OSCDevice(mocker):
         len(device.controls) == 3
     ), "Should spawn 3 controls (1 range, 1 spacer, 1 switch)"
 
-    # First encoder drives the range control. update_value() now adds a *scaled*
-    # increment (scale_value), so the value is fractional, not the raw 1.0.
+    # First encoder drives the range control. A single click from rest is a
+    # fine step (knob acceleration): ACCEL_SLOW of the normal click.
     device.on_encoder_rotated(push2_python.constants.ENCODER_TRACK1_ENCODER, 1)
     client.send_message.assert_any_call(
-        "/param/a/feg/release_shape", scale_value(1, 0, 2)
+        "/param/a/feg/release_shape", round(ACCEL_SLOW * scale_value(1, 0, 2), 4)
     )
 
     # Spacer (encoder 2) shouldn't throw when rotated.
@@ -550,3 +550,56 @@ def test_that_bit_of_logic_in_oscdevice(mocker):
         "",
         "Z",
     ], "Should display groups and spacers"
+
+
+def test_encoders_past_a_short_page_do_nothing():
+    """A page with fewer than 8 controls: the remaining encoders must not raise."""
+    sent = []
+    osc = {"client": MagicMock(send_message=lambda *a: sent.append(a)), "server": None, "dispatcher": Dispatcher()}
+    app = MagicMock(name="app")
+    app.metro_sequencer_mode.disable_controls = False
+    config = {
+        "name": "Short",
+        "controls": [
+            {"$type": "control-range", "label": f"C{i}", "address": f"/cc/{i}", "min": 0, "max": 127}
+            for i in range(6)
+        ],
+    }
+    device = OSCDevice(config, osc, app=app, osc_in_port=9000, osc_out_port=9001)
+    assert len(device.get_visible_controls()) == 6
+
+    device.on_encoder_rotated(push2_python.constants.ENCODER_TRACK7_ENCODER, 1)
+    device.on_encoder_rotated(push2_python.constants.ENCODER_TRACK8_ENCODER, 1)
+    assert sent == []
+
+    device.on_encoder_rotated(push2_python.constants.ENCODER_TRACK6_ENCODER, 1)
+    assert sent == [("/cc/5", 1.0)]
+
+
+def test_macro_control_listens_on_each_of_its_addresses():
+    """A top-level control-macro used to crash OSCDevice (it read param.address
+    off a dict) and mapped the previous control's handler."""
+    from osc_controls import OSCControlMacro
+
+    config = {
+        "name": "Macro", "slot": 8, "init": [],
+        "controls": [{
+            "$type": "control-macro", "label": "Both",
+            "params": [
+                {"$type": "control-range", "address": "/param/a/osc/1/param1", "min": 0, "max": 1},
+                {"$type": "control-range", "address": "/param/a/osc/1/param2", "min": 0, "max": 1},
+            ],
+        }],
+    }
+    dispatcher = Dispatcher()
+    client = MagicMock()
+    device = OSCDevice(config, {"client": client, "dispatcher": dispatcher}, app=MagicMock(),
+                       osc_in_port=1, osc_out_port=2)
+    macro = device.controls[0]
+    assert isinstance(macro, OSCControlMacro)
+    for address in ("/param/a/osc/1/param1", "/param/a/osc/1/param2"):
+        handlers = list(dispatcher.handlers_for_address(address))
+        assert [h.callback for h in handlers] == [macro.set_state]
+    macro.update_value(127)
+    client.send_message.assert_any_call("/param/a/osc/1/param1", 1.0)
+    client.send_message.assert_any_call("/param/a/osc/1/param2", 1.0)

@@ -109,7 +109,7 @@
 						"$type": "message",
 						"$comment": "",
 						"address": "/param/a/aeg/mode",
-						"value": 1
+						"value": 0
 					},
 					"controls": [
 						{
@@ -152,7 +152,7 @@
 							"items": [
 								{
 									"$type": "menu-item",
-									"label": "Convex Dec.",
+									"label": "Linear Dec.",
 									"onselect": {
 										"$type": "message",
 										"$comment": "RingMod",
@@ -162,7 +162,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "Linear Dec.",
+									"label": "Quad. Dec.",
 									"onselect": {
 										"$type": "message",
 										"$comment": "RingMod",
@@ -172,7 +172,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "Concave Dec.",
+									"label": "Cubic Dec.",
 									"onselect": {
 										"$type": "message",
 										"$comment": "RingMod",
@@ -187,7 +187,7 @@
 							"items": [
 								{
 									"$type": "menu-item",
-									"label": "Convex Rel.",
+									"label": "Linear Rel.",
 									"onselect": {
 										"$type": "message",
 										"$comment": "RingMod",
@@ -197,7 +197,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "Linear Rel.",
+									"label": "Quad. Rel.",
 									"onselect": {
 										"$type": "message",
 										"$comment": "RingMod",
@@ -207,7 +207,7 @@
 								},
 								{
 									"$type": "menu-item",
-									"label": "Concave Rel.",
+									"label": "Cubic Rel.",
 									"onselect": {
 										"$type": "message",
 										"$comment": "RingMod",

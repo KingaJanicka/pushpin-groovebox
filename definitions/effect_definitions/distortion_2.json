@@ -15,7 +15,8 @@
 			"label": "PreEQ Gain",
 			"address": "/param/fx/a/2/param1",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
 		},
 		{
 			"$type": "control-range",
@@ -129,14 +130,16 @@
 			"label": "Dist Drive",
 			"address": "/param/fx/a/2/param5",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
 		},
 		{
 			"$type": "control-range",
 			"label": "Dist Feedback",
 			"address": "/param/fx/a/2/param6",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
 		},
 		{
 			"$type": "control-spacer"
@@ -146,7 +149,8 @@
 			"label": "PostEQ Gain",
 			"address": "/param/fx/a/2/param7",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
 		},
 		{
 			"$type": "control-range",
@@ -183,7 +187,8 @@
 			"label": "Gain Out",
 			"address": "/param/fx/a/2/param11",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
 		}
 	]
 }

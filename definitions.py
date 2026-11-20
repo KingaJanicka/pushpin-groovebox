@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import push2_python
 import colorsys
-from os import path, mkdir
+from os import path, makedirs
 from typing import Any
 
 VERSION = "0.25"
@@ -113,6 +113,8 @@ DEVICE_DEFINITION_FOLDER = DEFINITIONS_FOLDER +"/"+"device_definitions"
 EFFECT_DEFINITION_FOLDER = DEFINITIONS_FOLDER +"/"+"effect_definitions"
 MODULATION_DEFINITIONS_FOLDER = DEFINITIONS_FOLDER +"/"+"modulation_definitions"
 INSTRUMENT_LISTING_PATH = "definitions/instrument_listing.json"
+# mono2k's device pages (every track's mono2k voice; see modes/instrument.py)
+M2K_DEFINITION_FOLDER = "engines/m2k/definitions"
 SURGE_XT_ROOT = (
     f"{path.expanduser('~')}/.local/share/surge-xt"
     if path.isdir(f"{path.expanduser('~')}/.local/share/surge-xt")
@@ -122,11 +124,16 @@ FACTORY_PATCHES_FOLDER = f"{SURGE_XT_ROOT}/patches_factory"
 THIRD_PARTY_PATCHES_FOLDER = f"{SURGE_XT_ROOT}/patches_3rdparty"
 USER_PATCHES_FOLDER = f"{path.expanduser('~')}/Documents/Surge XT/Patches"
 USER_CONFIG_FOLDER = f"{path.expanduser('~')}/.local/share/pushpin"
-    
-if not path.isdir(USER_CONFIG_FOLDER):
-    mkdir(USER_CONFIG_FOLDER)
+
+# makedirs, not mkdir: on a fresh Lite image (no desktop login) ~/.local/share
+# doesn't exist yet, and a plain mkdir crashed the app on import.
+makedirs(USER_CONFIG_FOLDER, exist_ok=True)
 
 SURGE_STATE_FOLDER = f"{path.expanduser('~')}/s/music_devices/pushpin-groovebox/surge_state" # Root is ~/Documents/Surge XT/Patches
+# mono2k sounds (m2k_state.py): each track's 8 preset slots, and presets saved
+# with "Save to New" (the browser's User folder)
+M2K_STATE_FOLDER = f"{USER_CONFIG_FOLDER}/m2k_state"
+M2K_USER_PRESETS_FOLDER = f"{USER_CONFIG_FOLDER}/m2k_presets"
 
 TRACK_NAMES_METRO = [
     "pitch",
@@ -140,6 +147,16 @@ TRACK_NAMES_METRO = [
 ]
 
 DEFAULT_GLOBAL_TEMPO = 120
+
+
+def track_label(name: str) -> str:
+    """A track as the Push shows it: "Pushpin 0".."Pushpin 7" (the names its MIDI ports, saved sequences and sounds
+    are keyed by) as "Trk 1".."Trk 8", as the LFO's and the feedback's track menus count them. Anything else (an
+    Overwitch source) as it is."""
+    prefix = "Pushpin "
+    if name.startswith(prefix) and name[len(prefix):].isdigit():
+        return f"Trk {int(name[len(prefix):]) + 1}"
+    return name
 
 
 class PyshaMode(object):

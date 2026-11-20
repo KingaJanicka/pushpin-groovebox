@@ -132,7 +132,7 @@
 		},
 		{
 			"$type": "control-spacer-address",
-			"address": "/param/fx/a/2/param12"
+			"address": "/param/fx/a/1/param12"
 		}
 	]
 }

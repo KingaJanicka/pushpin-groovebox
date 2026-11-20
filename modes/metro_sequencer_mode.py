@@ -2,6 +2,7 @@ import definitions
 from controllers import push2_constants
 import push2_python
 from sequencer.sequencer_metro import SequencerMetro
+from sequencer.sequencer_params import INF_STEPS
 from modes.melodic_mode import MelodicMode
 import isobar as iso
 import os
@@ -18,8 +19,14 @@ from osc_controls import (
     OSCControlMenu,
 )
 from definitions import TRACK_NAMES_METRO
+import logging
+
+log = logging.getLogger("metro_sequencer_mode")
 
 EMPTY_PATTERN = []
+
+# The SCALE page is saved this often (seconds) at most while it's being changed
+SCALE_AUTOSAVE_SECONDS = 2.0
 
 TRACK_COLORS = {
     TRACK_NAMES_METRO[0]: definitions.GREEN,
@@ -59,7 +66,8 @@ _SCALE_ITEMS = [
     for n in range(1, 33)
 ]
 
-# Seq Steps / Main Steps: 2/32 .. 32/32, then 1+1/32 .. 1+32/32.
+# Seq Steps / Main Steps: 2/32 .. 32/32, then 1+1/32 .. 1+32/32, then INF
+# (never reset). INF is last so saved SCALE pages keep their positions.
 _STEP_ITEMS = [
     {
         "$type": "menu-item",
@@ -74,6 +82,12 @@ _STEP_ITEMS = [
         "onselect": {"$type": "message", "address": "/", "value": 32 + n},
     }
     for n in range(1, 33)
+] + [
+    {
+        "$type": "menu-item",
+        "label": "INF",
+        "onselect": {"$type": "message", "address": "/", "value": INF_STEPS},
+    }
 ]
 
 
@@ -84,9 +98,9 @@ def _make_track_controls(color_func):
       0 = Gate Len (OSCControl range 0-1)
       1-3 = spacers
       4 = Seq Time Scale (menu, 1-32 steps)
-      5 = Seq Steps     (menu, 2-64 steps)
+      5 = Seq Steps     (menu, 2-64 steps or INF)
       6 = Main Time Scale (menu, 1-32 steps), default value 2
-      7 = Main Steps    (menu, 2-64 steps), default value 64
+      7 = Main Steps    (menu, 2-64 steps or INF), default value 64
     """
     gate_len = OSCControl(
         {"$type": "control-range", "label": "Gate Len", "address": "/", "min": 0, "max": 1},
@@ -132,6 +146,9 @@ class MetroSequencerMode(MelodicMode):
     encoder_short_press_time = 400000000
     major_scale = [0, 2, 4, 5, 7, 9, 11, 12]
     scale_menu_filename = "scale_menu_metro.json"
+    # SCALE page changed since it was last saved; when it was last autosaved
+    scale_state_dirty = False
+    _scale_autosave_at = 0.0
 
     def initialize(self, settings):
         # -- instance-level mutable state (was class-level, caused cross-test bleed) --
@@ -210,13 +227,16 @@ class MetroSequencerMode(MelodicMode):
                     return int(item.value)
                 return default
 
-            gate_active = (
-                self.app.mute_mode.tracks_active.get(name, {}).get("gate", True)
-            )
+            tracks_active = self.app.mute_mode.tracks_active.get(name, {})
 
             seq.params = SequencerParams(
                 sequencer_is_playing=self.sequencer_is_playing,
-                gate_track_active=bool(gate_active),
+                gate_track_active=bool(tracks_active.get("gate", True)),
+                pitch_track_active=bool(tracks_active.get("pitch", True)),
+                octave_track_active=bool(tracks_active.get("octave", True)),
+                velocity_track_active=bool(tracks_active.get("velocity", True)),
+                mutes_skips_track_active=bool(tracks_active.get("mutes_skips", True)),
+                lock_scale_track_active=bool(tracks_active.get("lock_scale", True)),
                 gate_len=float(controls[0].value),
                 seq_time_scale=_menu_int(4, 1),
                 pattern_len=_menu_int(5, 16),
@@ -343,77 +363,90 @@ class MetroSequencerMode(MelodicMode):
             self.update_pads()
             self.app.pads_need_update = True
     
+    def current_clip(self, instrument_short_name):
+        """The clip the track is playing (the last pad pressed in its column on
+        the clip page); 0 until one is picked."""
+        try:
+            pressed = self.app.clip_selection_mode.last_pad_in_column_pressed
+            return int(pressed[instrument_short_name][0])
+        except (AttributeError, KeyError, IndexError, TypeError, ValueError):
+            return 0
+
     def load_state(self):
-        # pass
-        # Loads seq state
+        # Each track's sequence, from the clip it's on
         for (
             instrument_short_name
         ) in self.get_all_distinct_instrument_short_names_helper():
-            self.instrument_sequencers[instrument_short_name].load_state()
+            self.instrument_sequencers[instrument_short_name].load_state(
+                clip=self.current_clip(instrument_short_name)
+            )
+        self.load_scale_state()
 
-        # # Loads Osc mode state
-        # self.app.osc_mode.load_state()
-
-        # Loads scale edit menu
+    def load_scale_state(self):
+        """The SCALE page's settings (global, not per clip). A track missing
+        from the file keeps its defaults; the others still load."""
+        if not os.path.exists(self.scale_menu_filename):
+            return
         try:
-            dump = None
-            if os.path.exists(self.scale_menu_filename):
-                dump = json.load(open(self.scale_menu_filename))
-            for (
-                instrument_short_name
-            ) in self.get_all_distinct_instrument_short_names_helper():
-                for track_name in TRACK_NAMES_METRO:
-                    for idx, control in enumerate(
-                        self.instrument_scale_edit_controls[instrument_short_name]
-                    ):
-                        try:
-                            control.value = dump[instrument_short_name][idx]
-                        except:
-                            print(e)
-        except Exception as e:
-            print("Exception in trig_edit load_state")
-            traceback.print_exc()
+            with open(self.scale_menu_filename) as f:
+                dump = json.load(f)
+        except (OSError, ValueError) as e:
+            log.warning("could not load %s: %s", self.scale_menu_filename, e)
+            return
+        if not isinstance(dump, dict):
+            return
+        for instrument_short_name, controls in self.instrument_scale_edit_controls.items():
+            saved = dump.get(instrument_short_name)
+            if not isinstance(saved, list):
+                continue
+            for control, value in zip(controls, saved):
+                if isinstance(control, ControlSpacer) or value is None:
+                    continue
+                control.value = value
+        self.scale_state_dirty = False
+
+    def get_scale_state(self):
+        """Each track's SCALE page values, by control position (None for spacers)."""
+        return {
+            instrument_short_name: [
+                None if isinstance(control, ControlSpacer) else control.value
+                for control in controls
+            ]
+            for instrument_short_name, controls in self.instrument_scale_edit_controls.items()
+        }
+
+    def save_scale_state(self):
+        tmp = self.scale_menu_filename + ".tmp"
+        try:
+            with open(tmp, "w") as f:
+                json.dump(self.get_scale_state(), f)
+            os.replace(tmp, self.scale_menu_filename)  # a crash mid-save leaves the old file
+            self.scale_state_dirty = False
+        except (OSError, TypeError, ValueError) as e:
+            log.warning("could not save %s: %s", self.scale_menu_filename, e)
+
+    def autosave_scale_state(self, now=None):
+        """Save the SCALE page when it changed (at most every SCALE_AUTOSAVE_SECONDS)."""
+        if not self.scale_state_dirty:
+            return
+        now = time.monotonic() if now is None else now
+        if now - self._scale_autosave_at < SCALE_AUTOSAVE_SECONDS:
+            return
+        self._scale_autosave_at = now
+        self.save_scale_state()
+
+    def save_sequences(self):
+        """Each track's sequence, into the clip it's on."""
+        for (
+            instrument_short_name
+        ) in self.get_all_distinct_instrument_short_names_helper():
+            self.instrument_sequencers[instrument_short_name].save_state(
+                clip=self.current_clip(instrument_short_name)
+            )
 
     def save_state(self):
-        # pass
-        # Saves seq state
-        scale_edit_state = {}
-        try:
-            for (
-                instrument_short_name
-            ) in self.get_all_distinct_instrument_short_names_helper():
-
-                self.instrument_sequencers[instrument_short_name].save_state()
-                scale_edit_state[instrument_short_name] = {}
-                # Populates the temp scale_edit_state array with current state
-                scale_edit_state[instrument_short_name] = [
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                ]
-                for index, control in enumerate(
-                    self.instrument_scale_edit_controls[instrument_short_name]
-                ):
-                    scale_edit_state[instrument_short_name][index] = control.value
-        except Exception as e:
-            print("Error in saving scale_edit state")
-            traceback.print_exc()
-        # Saves scale edit menu
-        try:
-            json.dump(
-                scale_edit_state, open(self.scale_menu_filename, "w")
-            )  # Save to file
-        except Exception as e:
-            print("Exception in trig_edit save_state")
-            traceback.print_exc()
-
-        # # Saves Osc mode state
-        # self.app.osc_mode.save_state()
+        self.save_sequences()
+        self.save_scale_state()
 
     def start_timeline(self):
         self.global_timeline.background()
@@ -424,12 +457,14 @@ class MetroSequencerMode(MelodicMode):
     def activate(self):
         self.disable_controls = False
         self.draw_pads = True
-        self.app.steps_held = []   
+        self.app.steps_held = []
+        self.steps_held = []
         self.active_track_button_on()
         self.push.buttons.set_button_color(push2_constants.BUTTON_SCALE, definitions.GRAY_DARK)
 
     def deactivate(self):
         self.app.steps_held = []
+        self.steps_held = []
         self.show_scale_menu = False
         self.draw_pads = False
         self.disable_controls = False
@@ -623,24 +658,33 @@ class MetroSequencerMode(MelodicMode):
                 )
 
     def on_pad_pressed(self, pad_n, pad_ij, velocity):
+        # Note the held step now, not in the queued task: the release arrives on
+        # this thread straight away, and a quick tap could otherwise be released
+        # before its press ran. Its step then stayed "held" for good, and every
+        # later p-lock went to that step instead of the one under the finger.
+        idx_n = pad_n - 36
+        self.steps_held.append(idx_n)
+        self.app.steps_held.append(self.index_to_pad_ij(idx_n)[1])
+        self.disable_controls = True
         # TODO: VERY RUDE but IG it works???
         self.app.queue.append(self.async_pad_pressed(pad_n=pad_n))
-    
+
+    def held_lock_step(self):
+        """The step (column) p-locks are recorded on and shown for: the first
+        pad still held, or None."""
+        return self.app.steps_held[0] if self.app.steps_held else None
+
     async def async_pad_pressed(self, pad_n):
         try:
             pad_state = self.metro_seq_pad_state[
                 self.get_current_instrument_short_name_helper()
             ]
             idx_n = pad_n - 36
-            self.steps_held.append(idx_n)
             seq = self.instrument_sequencers[self.get_current_instrument_short_name_helper()]
             seq_pad_state = pad_state[self.selected_track]
-            n = self.steps_held[-1]
-            idx_ij = self.index_to_pad_ij(n)
+            idx_ij = self.index_to_pad_ij(idx_n)
             idx_i = idx_ij[0]
             idx_j = idx_ij[1]
-            self.app.steps_held.append(idx_j)
-            self.disable_controls = True
         except Exception as e:
             print("Exception on_pad_pressed, init", e)
         # Pitch track
@@ -914,9 +958,14 @@ class MetroSequencerMode(MelodicMode):
         epoch_time = time.time()
         press_time = epoch_time - self.pads_press_time[idx_n]
         seq = self.instrument_sequencers[self.get_current_instrument_short_name_helper()]
-        self.app.steps_held.remove(idx_j)
+        # Not there if the mode was switched while the pad was down (that clears
+        # the held steps); removing it then raised and skipped the rest.
+        if idx_j in self.app.steps_held:
+            self.app.steps_held.remove(idx_j)
+        if idx_n in self.steps_held:
+            self.steps_held.remove(idx_n)
 
-        self.disable_controls = False
+        self.disable_controls = len(self.app.steps_held) != 0
         if self.selected_track == TRACK_NAMES_METRO[0] or self.selected_track == TRACK_NAMES_METRO[1] or self.selected_track == TRACK_NAMES_METRO[2] or self.selected_track == TRACK_NAMES_METRO[5]:
             pass
 
@@ -973,7 +1022,6 @@ class MetroSequencerMode(MelodicMode):
             elif press_time > self.pad_quick_press_time:
                 pass
                 # seq.set_state(self.selected_track, idx, False
-        self.steps_held.remove(idx_n)
         self.app.osc_mode.update_buttons()
         self.app.pads_need_update = True
     def update_modulation_wheel_mode_button(self):
@@ -1098,34 +1146,32 @@ class MetroSequencerMode(MelodicMode):
                         # TODO: make active page offset the encoder by 8
                         device = self.app.osc_mode.get_current_instrument_device()
 
-                    idx = int(self.steps_held[0]%8)
-                    value = None
+                    # The same step the display shows and a tap clears (it was
+                    # self.steps_held[0], which could be a different pad).
+                    idx = self.held_lock_step()
                     page_offset = int(device.page) * 8
-                    
-                    if seq.get_lock_state(idx, encoder_idx + page_offset) == None:
-                        value = device.controls[
-                            encoder_idx
-                        ].value
+                    # The control under the encoder on the page shown: device.controls
+                    # is the flat list, which a switch's group or an earlier page
+                    # shifts away from the encoders (#67, undone by #68).
+                    visible_controls = device.get_visible_controls()
+                    if encoder_idx >= len(visible_controls):
+                        return
+                    control = visible_controls[encoder_idx]
+                    if not hasattr(control, "value"):
+                        return                                  # a spacer
+                    if hasattr(control, "groups"):
+                        min, max = 0, len(control.groups) - 1
+                    elif hasattr(control, "items"):
+                        min, max = 0, len(control.items)
                     else:
-                        # calmping to min/max values, scaling
-                        control = device.controls[encoder_idx + page_offset]
-                        lock_value = seq.get_lock_state(idx, encoder_idx + page_offset)
-
-                        min = 0 if hasattr(control, "items") else control.min
-                        max = (
-                            len(control.items)
-                            if hasattr(control, "items")
-                            else control.max
-                        )
-                        range = max - min
-                        incr = increment * range / 100
-                        if lock_value == None:
-                            lock_value = control.value
-                        if min <= (lock_value + incr) <= max:
-                            value = lock_value + incr
-                        else:
-                            value = lock_value
-                    # unindented to cover both branches
+                        min, max = control.min, control.max
+                    lock_value = seq.get_lock_state(idx, encoder_idx + page_offset)
+                    if lock_value is None:
+                        lock_value = control.value              # start from the sound's value
+                    # Move on the first click too: it used to only copy the value,
+                    # so the first turn of a new lock did nothing you could hear.
+                    incr = increment * (max - min) / 100
+                    value = lock_value + incr if min <= lock_value + incr <= max else lock_value
                     seq.set_lock_state(idx, encoder_idx + page_offset, value)
                     return
                 if self.show_scale_menu == True:
@@ -1170,6 +1216,7 @@ class MetroSequencerMode(MelodicMode):
                         if max < (control.value + incr):
                             control.value = max
 
+                    self.scale_state_dirty = True  # autosaved by the app loop
                     self.update_pads()
                 # elif len(self.app.steps_held) == 0 and self.show_scale_menu == False:
                 #     current_device = self.app.instrument_selection_mode.get_current_instrument_device()

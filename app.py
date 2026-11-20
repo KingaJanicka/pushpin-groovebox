@@ -16,15 +16,20 @@ import asyncio
 import logging
 import jack
 import isobar as iso
+import sequencer.isobar_threads  # noqa: F401  (before any Track exists: stops a thread leak per note)
 import re
+import shutdown
+from push_connection import PushConnection
+from utilities.volume_taper import DEFAULT_TRACK_FADER, fader_to_gain, step_fader
 from ratelimit import limits
 from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.osc_server import AsyncIOOSCUDPServer
 from pythonosc.dispatcher import Dispatcher
 
-from engine import disconnectPipewireLink
+from engine import disconnectPipewireLink, spawn_logged
 from modes.melodic_mode import MelodicMode
 from modes.instrument_selection_mode import InstrumentSelectionMode
+from modes.instrument import mono2k_clock_port
 from modes.rhythmic_mode import RhythmicMode
 from modes.slice_notes_mode import SliceNotesMode
 from modes.metro_sequencer_mode import MetroSequencerMode
@@ -36,6 +41,8 @@ from modes.osc_mode import OSCMode
 from modes.preset_selection_mode import PresetSelectionMode
 from modes.ddrm_tone_selector_mode import DDRMToneSelectorMode
 from modes.menu_mode import MenuMode
+from modes.engine_selection_mode import EngineSelectionMode
+from modes.rename_mode import RenameMode
 from modes.mute_mode import MuteMode
 from user_interface.display_utils import show_notification
 from user_interface.recording_context import RecordingContext
@@ -99,7 +106,8 @@ class PyshaApp(object):
     # Pipewire-related
     external_instruments: list[Any] = []
     pipewire: list[Any] | None = None
-    volumes: list[float] = [0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6]
+    # Fader positions (0..1) per channel; set_main_volumes() maps them to gain.
+    volumes: list[float] = [DEFAULT_TRACK_FADER] * 16
     volume_client: Any = None
     volume_node: Any = None
     iso_midi_in: Any = None
@@ -205,6 +213,9 @@ class PyshaApp(object):
         )  
         self.ddrm_tone_selector_mode = DDRMToneSelectorMode(self, settings=settings)
         self.menu_mode = MenuMode(self, settings=settings, send_osc_func=self.send_osc)
+        self.engine_selection_mode = EngineSelectionMode(self, settings=settings)
+        # The name editor the preset browser opens to rename a preset (not active until then)
+        self.rename_mode = RenameMode(self, settings=settings)
         self.settings_mode = SettingsMode(self, settings=settings)
         self.mute_mode = MuteMode(self, settings=settings) 
         overwitch_def = {
@@ -270,6 +281,18 @@ class PyshaApp(object):
 
     # TODO: preset sel/trig edit get wonky when switching from one to another
     # One triggering needs to shut down another
+
+    def toggle_engine_selection_mode(self):
+        """ADD TRACK: the menu that picks the current track's engine."""
+        if self.is_mode_active(self.engine_selection_mode):
+            self.active_modes = [m for m in self.active_modes if m != self.engine_selection_mode]
+            self.engine_selection_mode.deactivate()
+        else:
+            if self.is_mode_active(self.menu_mode):
+                self.toggle_menu_mode()
+            self.active_modes = self.active_modes + [self.engine_selection_mode]
+            self.engine_selection_mode.activate()
+        self.buttons_need_update = True
 
     def toggle_preset_selection_mode(self):
         
@@ -709,22 +732,12 @@ class PyshaApp(object):
         # )
         # print("App.py send_osc", address, value, instrument_short_name)
         try:
-            if instrument_short_name is not None:
-                # This is for the sequencer
-                client = self.instruments[instrument_short_name].osc.get(
-                    "client", None
-                )
-                if client:
-                    client.send_message(address, value)
-            else:
+            if instrument_short_name is None:
                 # This is for wiggling knobs
-                client = self.instruments[
-                    self.instrument_selection_mode.get_current_instrument_short_name()
-                ].get("client", None)
-
-                if client:
-                    client.send_message(address, value)
-                # print("adress", address, value)
+                instrument_short_name = self.instrument_selection_mode.get_current_instrument_short_name()
+            # The instrument picks the client: its active engine's, or Surge's
+            # for patch commands
+            self.instruments[instrument_short_name].send_message(address, value)
         except Exception as e:
             print("Exception in app.py send_osc")
             traceback.print_exc()
@@ -904,6 +917,10 @@ class PyshaApp(object):
             # "ALSA lib seq_hw.c:466:(snd_seq_hw_open) open /dev/snd/seq failed: Cannot allocate memory" issues.
             # A work around is make the reconnection time bigger, but a better solution should probably be found.
             self.push.set_push2_reconnect_call_interval(2)
+        # Late plug-in, unplug and replug: handled on the main loop
+        self.push_connection = PushConnection(
+            self.push, self.on_midi_push_connection_established
+        )
             
         # for y in range(0, 8):
         #     for x in range(0, 8):
@@ -961,9 +978,9 @@ class PyshaApp(object):
             )
 
     def check_for_delayed_actions(self):
-        # If MIDI not configured, make sure we try sending messages so it gets configured
-        if not self.push.midi_is_configured():
-            self.push.configure_midi()
+        # Open the Push's MIDI ports if they're closed, and set the Push up
+        # once it has been heard from (also after a late plug-in or a replug)
+        self.push_connection.poll()
 
         # Call dalyed actions in active modes
         for mode in self.active_modes:
@@ -987,21 +1004,37 @@ class PyshaApp(object):
         # Refresh sequencer param snapshots so the MIDI clock thread can read
         # up-to-date UI state without touching mode objects directly.
         self.metro_sequencer_mode.refresh_sequencer_params()
-    
+
+        # mono2k tracks' sounds, saved into their slots when they change
+        try:
+            self.preset_selection_mode.autosave_m2k()
+        except Exception as e:
+            logger.warning("mono2k autosave failed: %s", e)
+
+        # The SCALE page, saved when it changes
+        try:
+            self.metro_sequencer_mode.autosave_scale_state()
+        except Exception as e:
+            logger.warning("SCALE page autosave failed: %s", e)
+
     async def queue_tasks(self):
-        for task in self.queue:
+        # Take tasks off the front one at a time. Removing from the list while a
+        # for loop walked it skipped every other task (they waited a frame), and
+        # other threads append to it meanwhile.
+        while self.queue:
+            task = self.queue.pop(0)
             if task:
                 t = asyncio.create_task(task)
                 self.tasks.add(t)
                 t.add_done_callback(self.tasks.discard)
-            
-            self.queue.remove(task)
 
 
     async def run_loop(self):
         print("Loading State ...")
         self.metro_sequencer_mode.load_state()
         self.preset_selection_mode.init_surge_preset_state()
+        # Tracks playing mono2k: their current slot's saved sound
+        self.preset_selection_mode.restore_m2k_slots()
         
         for idx, instrument_shortname in enumerate(self.instruments):
             instrument = self.instruments[instrument_shortname]
@@ -1052,30 +1085,30 @@ class PyshaApp(object):
         print("Doing initial Push config...")
 
         # Force configure MIDI out (in case it wasn't...)
-        app.push.configure_midi_out()
+        self.push.configure_midi_out()
 
         # Configure custom color palette
-        app.push.color_palette = {}
+        self.push.color_palette = {}
         for count, color_name in enumerate(definitions.COLORS_NAMES):
-            app.push.set_color_palette_entry(
+            self.push.set_color_palette_entry(
                 count,
                 [color_name, color_name],
                 rgb=definitions.get_color_rgb_float(color_name),
                 allow_overwrite=True,
             )
-        app.push.reapply_color_palette()
+        self.push.reapply_color_palette()
 
         # Initialize all buttons to black, initialize all pads to off
-        app.push.buttons.set_all_buttons_color(color=definitions.BLACK)
-        app.push.pads.set_all_pads_to_color(color=definitions.BLACK)
+        self.push.buttons.set_all_buttons_color(color=definitions.BLACK)
+        self.push.pads.set_all_pads_to_color(color=definitions.BLACK)
 
         # Iterate over modes and (re-)activate them
         for mode in self.active_modes:
             mode.activate()
 
         # Update buttons and pads (just in case something was missing!)
-        app.update_push2_buttons()
-        app.update_push2_pads()
+        self.update_push2_buttons()
+        self.update_push2_pads()
 
     async def get_pipewire_config(self):
         try:
@@ -1101,22 +1134,21 @@ class PyshaApp(object):
 
     
     async def start_pd_node(self, file_index = 8):
-        self.pd_process = await asyncio.create_subprocess_exec(
+        self.pd_process = await spawn_logged(
+            f"puredata-{file_index}",
             "pw-jack",
             "-p",
             "128",
             "puredata",
             "-jack",
+            # pushpin makes the volume node's links itself
+            "-nojackconnect",
             "-nogui",
             "-rt",
             "-channels",
             "16",
             "-nocallback",
             f"./puredata_nodes/passthrough_{file_index}.pd",
-            stdin=asyncio.subprocess.PIPE,
-            stdout=asyncio.subprocess.PIPE,
-            # stderr=asyncio.subprocess.PIPE,
-            
         )
         
         self.puredata_process_id = self.pd_process.pid
@@ -1174,9 +1206,17 @@ class PyshaApp(object):
             left_channel_idx = idx * 2
             right_channel_idx = left_channel_idx + 1
             # Value only from left because we want to have it center
-            volume_value = self.volumes[left_channel_idx]
+            volume_value = fader_to_gain(self.volumes[left_channel_idx])
             self.volume_node_osc_client.send_message(f"/vol_{left_channel_idx}", float(volume_value))
             self.volume_node_osc_client.send_message(f"/vol_{right_channel_idx}", float(volume_value))
+
+    def adjust_track_volume(self, instrument: Any, increment: int) -> None:
+        """Move a track's post-synth fader by ``increment`` encoder clicks."""
+        instrument_idx = instrument.osc_in_port % 10
+        position = step_fader(self.volumes[instrument_idx * 2], increment)
+        self.volumes[instrument_idx * 2] = position
+        self.volumes[instrument_idx * 2 + 1] = position
+        self.set_main_volumes()
         
   
 
@@ -1306,8 +1346,10 @@ midi_connected_received_before_app = False
 
 @push2_python.on_midi_connected()
 def on_midi_connected(_):
+    # push2_python calls this on its MIDI input thread: hand the setup to the
+    # main loop instead of drawing pads/buttons from here
     try:
-        app.on_midi_push_connection_established()
+        app.push_connection.notify_connected()
     except NameError as e:
         global midi_connected_received_before_app
         midi_connected_received_before_app = True
@@ -1340,8 +1382,13 @@ async def main():
     # for instrument in app.external_instruments:
     #     await instrument.start(loop)
         
+    # mono2k after the Surges have picked their audio devices (M2KEngine.start_late)
+    await asyncio.sleep(3)
+    for instrument in app.instruments:
+        await app.instruments[instrument].start_late_engines()
+
     print("Initialising Pipewire support...")
-    await asyncio.sleep(5)
+    await asyncio.sleep(2)
     await app.get_pipewire_config()
     
     app.get_volume_client()
@@ -1354,10 +1401,17 @@ async def main():
     for index, instrument in enumerate(app.instruments):
         # IDK why the fuck but after switch to JACK
         # The config_pw call makes surge-xt instances crash
-        await app.instruments[instrument].engine.configure_pipewire()
+        # Every engine the track can play (Surge, and mono2k when built)
+        await app.instruments[instrument].configure_pipewire()
         
         app.queue.append(app.instruments[instrument].init_devices_sync())
-        app.global_timeline.add_output_device(app.instruments[instrument].midi_out_device)    
+        # The clock goes to each Surge port, as before
+        app.global_timeline.add_output_device(app.instruments[instrument].surge_midi_out_device)
+    # ...and to one mono2k port: m2k-jack's tempo (after the routing, which may drop a mono2k voice)
+    m2k_clock = mono2k_clock_port(app.instruments)
+    if m2k_clock is not None:
+        m2k_clock.send_clock = True
+        app.global_timeline.add_output_device(m2k_clock)
     for instrument in app.external_instruments:
         await instrument.engine.configure_pipewire()
     while True:
@@ -1366,6 +1420,8 @@ async def main():
 
 # Run app main loop
 if __name__ == "__main__":
+    # systemd stops the service with SIGTERM: exit through the same path as Ctrl-C
+    shutdown.install_sigterm_handler()
     try:
         app = PyshaApp()
         if midi_connected_received_before_app:
@@ -1376,6 +1432,9 @@ if __name__ == "__main__":
         asyncio.run(main())
     except KeyboardInterrupt:
         print("Exiting Pysha...")
+        # Keep each track's sequence (in the clip it's on) and the SCALE page
+        if "app" in globals():
+            shutdown.save_on_exit(app)
         try:
             app._display_process.stop()
             app.push.f_stop.set()

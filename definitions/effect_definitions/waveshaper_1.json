@@ -269,16 +269,6 @@
                     "address": "/param/fx/a/1/param3",
                     "value": 23
                   }
-                },
-                {
-                  "$type": "menu-item",
-                  "label": "Full Rect",
-                  "onselect": {
-                    "$type": "message",
-                    "$comment": "Full Rect",
-                    "address": "/param/fx/a/1/param3",
-                    "value": 10
-                  }
                 }
               ]
             }
@@ -583,7 +573,8 @@
       "label": "Drive",
       "address": "/param/fx/a/1/param5",
       "min": 0,
-      "max": 1
+      "max": 1,
+      "bipolar": 1
     },
     {
       "$type": "control-spacer"
@@ -632,7 +623,8 @@
       "label": "Gain Out",
       "address": "/param/fx/a/1/param8",
       "min": 0,
-      "max": 1
+      "max": 1,
+      "bipolar": 1
     }
   ]
 }

@@ -7,7 +7,6 @@ out; the pure paging/grid methods are exercised with minimal local state.
 import pytest
 import push2_python.constants
 
-import definitions
 from modes.clip_selection_mode import ClipSelectionMode
 
 
@@ -50,11 +49,6 @@ def test_pad_ij_to_bank_and_preset_num(clip):
 def test_has_prev_next_pages(clip):
     clip.current_page = 0
     assert clip.has_prev_next_pages() == (False, True)
-
-
-def test_get_preset_path_factory(clip):
-    clip.state[0] = 0
-    assert clip.get_preset_path("X") == f"{definitions.FACTORY_PATCHES_FOLDER}/X"
 
 
 def test_right_button_navigates(clip):

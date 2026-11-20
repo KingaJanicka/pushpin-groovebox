@@ -255,20 +255,17 @@
 			"$type": "control-range",
 			"label": "Unison Voices",
 			"address": "/param/a/osc/2/param7",
-			"min": 0,
+			"min": 1,
 			"max": 16
 		},
 		{
-			"$type": "control-spacer-address",
-			"address": "/wavetable/a/osc/2/id"
+			"$type": "control-spacer"
 		},
 		{
-			"$type": "control-spacer-address",
-			"address": "/wavetable/a/osc/2/id"
+			"$type": "control-spacer"
 		},
 		{
-			"$type": "control-spacer-address",
-			"address": "/wavetable/a/osc/2/id"
+			"$type": "control-spacer"
 		},
 		{
 			"$type": "control-menu",
@@ -329,7 +326,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "Filter 1",
-						"address": "/param/a/mixer/osc1/route",
+						"address": "/param/a/mixer/osc2/route",
 						"value": 0
 					}
 				},
@@ -339,7 +336,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "To Both Filters",
-						"address": "/param/a/osc/2/retrigger",
+						"address": "/param/a/mixer/osc2/route",
 						"value": 1
 					}
 				},
@@ -349,7 +346,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "To Filter 2",
-						"address": "/param/a/osc/2/retrigger",
+						"address": "/param/a/mixer/osc2/route",
 						"value": 2
 					}
 				}

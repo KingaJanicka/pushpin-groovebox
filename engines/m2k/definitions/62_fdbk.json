@@ -1,0 +1,1015 @@
+{
+	"name": "Feedback",
+	"slot": 10,
+	"init": [],
+	"controls": [
+		{
+			"$type": "control-switch",
+			"menu_label": "Device",
+			"clicks_per_group": 4,
+			"select_by_value": true,
+			"groups": [
+				{
+					"$type": "group",
+					"label": "Amp In",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "Feedback Dest",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "Amp In",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 0
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "Syn",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "Feedback Dest",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "Syn A",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 1
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 0
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Syn B",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 2
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 1
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Syn C",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 3
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 2
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Syn D",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 4
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 3
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Syn E",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 5
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 4
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Syn F",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 6
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 5
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Syn G",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 7
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 6
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Syn H",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 8
+									},
+									"label_from": {
+										"slot": 0,
+										"control": 7
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "OSC FM",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 72
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "Amp",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "Feedback Dest",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "Attack",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 9
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Hold",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 10
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Decay",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 11
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Release",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 12
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Distortion",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 13
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Volume",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 14
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Pan",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 15
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Portamento",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 16
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "Filt",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "Feedback Dest",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "Filter Base",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 17
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Filter Width",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 18
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "HP Resonance",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 19
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LP Resonance",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 20
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Filter Attack",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 21
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Filter Decay",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 22
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Base By Env",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 23
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Width By Env",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 24
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "FX",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "Feedback Dest",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "EQ Frequency",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 25
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "EQ Gain",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 26
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Rate Reduction",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 27
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Delay Time",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 28
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Delay Send",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 29
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Delay Feedback",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 30
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Delay Base",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 31
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Delay Width",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 32
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "Dstr",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "Feedback Dest",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "Bit Depth",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 33
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Wavefold",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 34
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "XOR Mangle",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 35
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Reverb Send",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 36
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Mod Type",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 67
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Mod Rate",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 68
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Mod Depth",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 69
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Mod Mix",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 70
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "LFO 1",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "Feedback Dest",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "LFO Wave",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 45
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Trig Mode",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 46
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Multiplier",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 47
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Cycle",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 48
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Start Phase",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 49
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Depth",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 50
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "LFO 2",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "Feedback Dest",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "LFO Wave",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 53
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Trig Mode",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 54
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Multiplier",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 55
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Cycle",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 56
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Start Phase",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 57
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Depth",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 58
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"$type": "group",
+					"label": "LFO 3",
+					"controls": [
+						{
+							"$type": "control-menu",
+							"menu_label": "Feedback Dest",
+							"step": 0.25,
+							"items": [
+								{
+									"$type": "menu-item",
+									"label": "LFO Wave",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 61
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Trig Mode",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 62
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Multiplier",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 63
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Cycle",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 64
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "Start Phase",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 65
+									}
+								},
+								{
+									"$type": "menu-item",
+									"label": "LFO Depth",
+									"onselect": {
+										"$type": "message",
+										"address": "/m2k/param/86",
+										"value": 66
+									}
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"$type": "control-menu",
+			"menu_label": "Feedback Source",
+			"step": 0.25,
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "OSC",
+					"onselect": {
+						"$type": "message",
+						"address": "/m2k/param/85",
+						"value": 16
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Filt",
+					"onselect": {
+						"$type": "message",
+						"address": "/m2k/param/85",
+						"value": 48
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Amp",
+					"onselect": {
+						"$type": "message",
+						"address": "/m2k/param/85",
+						"value": 80
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Out",
+					"onselect": {
+						"$type": "message",
+						"address": "/m2k/param/85",
+						"value": 112
+					}
+				}
+			]
+		},
+		{
+			"$type": "control-menu",
+			"menu_label": "From Track",
+			"step": 0.25,
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "Own",
+					"onselect": {
+						"$type": "message",
+						"address": "/m2k/param/87",
+						"value": 0
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Trk 1",
+					"onselect": {
+						"$type": "message",
+						"address": "/m2k/param/87",
+						"value": 1
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Trk 2",
+					"onselect": {
+						"$type": "message",
+						"address": "/m2k/param/87",
+						"value": 2
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Trk 3",
+					"onselect": {
+						"$type": "message",
+						"address": "/m2k/param/87",
+						"value": 3
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Trk 4",
+					"onselect": {
+						"$type": "message",
+						"address": "/m2k/param/87",
+						"value": 4
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Trk 5",
+					"onselect": {
+						"$type": "message",
+						"address": "/m2k/param/87",
+						"value": 5
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Trk 6",
+					"onselect": {
+						"$type": "message",
+						"address": "/m2k/param/87",
+						"value": 6
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Trk 7",
+					"onselect": {
+						"$type": "message",
+						"address": "/m2k/param/87",
+						"value": 7
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "Trk 8",
+					"onselect": {
+						"$type": "message",
+						"address": "/m2k/param/87",
+						"value": 8
+					}
+				}
+			]
+		},
+		{
+			"$type": "control-menu",
+			"menu_label": "Feedback EQ",
+			"step": 0.25,
+			"items": [
+				{
+					"$type": "menu-item",
+					"label": "EQ Off",
+					"onselect": {
+						"$type": "message",
+						"address": "/m2k/param/88",
+						"value": 0
+					}
+				},
+				{
+					"$type": "menu-item",
+					"label": "EQ On",
+					"onselect": {
+						"$type": "message",
+						"address": "/m2k/param/88",
+						"value": 127
+					}
+				}
+			]
+		},
+		{
+			"$type": "control-range",
+			"label": "Feedback EQ Freq",
+			"address": "/m2k/param/82",
+			"min": 0,
+			"max": 127,
+			"step": 0.5,
+			"value_labels": [
+				"30 Hz",
+				"32 Hz",
+				"33 Hz",
+				"35 Hz",
+				"37 Hz",
+				"39 Hz",
+				"41 Hz",
+				"43 Hz",
+				"45 Hz",
+				"48 Hz",
+				"50 Hz",
+				"53 Hz",
+				"56 Hz",
+				"59 Hz",
+				"62 Hz",
+				"65 Hz",
+				"69 Hz",
+				"72 Hz",
+				"76 Hz",
+				"80 Hz",
+				"84 Hz",
+				"89 Hz",
+				"93 Hz",
+				"98 Hz",
+				"103 Hz",
+				"109 Hz",
+				"115 Hz",
+				"121 Hz",
+				"127 Hz",
+				"134 Hz",
+				"141 Hz",
+				"148 Hz",
+				"156 Hz",
+				"164 Hz",
+				"173 Hz",
+				"182 Hz",
+				"191 Hz",
+				"202 Hz",
+				"212 Hz",
+				"223 Hz",
+				"235 Hz",
+				"248 Hz",
+				"261 Hz",
+				"274 Hz",
+				"289 Hz",
+				"304 Hz",
+				"320 Hz",
+				"337 Hz",
+				"355 Hz",
+				"374 Hz",
+				"393 Hz",
+				"414 Hz",
+				"436 Hz",
+				"459 Hz",
+				"483 Hz",
+				"508 Hz",
+				"535 Hz",
+				"564 Hz",
+				"593 Hz",
+				"625 Hz",
+				"657 Hz",
+				"692 Hz",
+				"729 Hz",
+				"767 Hz",
+				"808 Hz",
+				"850 Hz",
+				"895 Hz",
+				"942 Hz",
+				"992 Hz",
+				"1.0 kHz",
+				"1.0 kHz",
+				"1.1 kHz",
+				"1.2 kHz",
+				"1.2 kHz",
+				"1.3 kHz",
+				"1.4 kHz",
+				"1.4 kHz",
+				"1.5 kHz",
+				"1.6 kHz",
+				"1.7 kHz",
+				"1.8 kHz",
+				"1.9 kHz",
+				"2.0 kHz",
+				"2.1 kHz",
+				"2.2 kHz",
+				"2.3 kHz",
+				"2.5 kHz",
+				"2.6 kHz",
+				"2.7 kHz",
+				"2.9 kHz",
+				"3.0 kHz",
+				"3.2 kHz",
+				"3.4 kHz",
+				"3.5 kHz",
+				"3.7 kHz",
+				"3.9 kHz",
+				"4.1 kHz",
+				"4.4 kHz",
+				"4.6 kHz",
+				"4.8 kHz",
+				"5.1 kHz",
+				"5.4 kHz",
+				"5.6 kHz",
+				"5.9 kHz",
+				"6.3 kHz",
+				"6.6 kHz",
+				"6.9 kHz",
+				"7.3 kHz",
+				"7.7 kHz",
+				"8.1 kHz",
+				"8.5 kHz",
+				"9.0 kHz",
+				"9.5 kHz",
+				"10.0 kHz",
+				"10.5 kHz",
+				"11.1 kHz",
+				"11.6 kHz",
+				"12.3 kHz",
+				"12.9 kHz",
+				"13.6 kHz",
+				"14.3 kHz",
+				"15.1 kHz",
+				"15.9 kHz",
+				"16.7 kHz",
+				"17.6 kHz",
+				"18.5 kHz",
+				"19.5 kHz",
+				"20.5 kHz"
+			]
+		},
+		{
+			"$type": "control-range",
+			"label": "Feedback EQ Gain",
+			"address": "/m2k/param/83",
+			"min": 0,
+			"max": 127,
+			"bipolar": 1
+		},
+		{
+			"$type": "control-range",
+			"label": "Feedback",
+			"address": "/m2k/param/81",
+			"min": 0,
+			"max": 127,
+			"bipolar": 1,
+			"display_center": 64
+		}
+	]
+}

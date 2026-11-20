@@ -8,10 +8,58 @@ import os
 import traceback
 from pythonosc.udp_client import SimpleUDPClient
 from definitions import TRACK_NAMES_METRO
-from sequencer.sequencer_params import SequencerParams
+from sequencer.sequencer_params import INF_STEPS, SequencerParams
+
+# An empty clip: what a clip with no file of its own loads.
+INIT_STATE_FILENAME = "init_state.json"
+
+_init_state_cache: dict = {}
+
+
+def init_state(path: str = INIT_STATE_FILENAME) -> dict | None:
+    """The empty-clip state from ``path`` (read once), or None when missing."""
+    if path not in _init_state_cache:
+        try:
+            with open(path) as f:
+                _init_state_cache[path] = json.load(f)
+        except (OSError, ValueError):
+            return None
+    return _init_state_cache[path]
+
+
+def lockable_controls(device):
+    """(lock index, control) for every control a p-lock can be on, across all
+    of the device's pages. Locks are recorded and shown at page * 8 + position
+    on the page; playing only the page on screen (indexed 0..7) dropped every
+    other page's locks and put page 1's on whichever page was showing."""
+    pages = getattr(device, "pages", None)
+    if not pages:
+        yield from enumerate(device.get_visible_controls())
+        return
+    for page_idx, page in enumerate(pages):
+        for position, control in enumerate(page):
+            index = page_idx * 8 + position
+            if index >= LOCKS_PER_DEVICE:
+                return
+            yield index, control
+
+
+def lock_message(control, value):
+    """The (address, value) a p-lock of ``value`` on ``control`` plays. A menu's
+    locks are item positions: play the item's own message, not the position
+    (most of Surge's menus send their position, but not all, and mono2k's
+    MOD type sends 21/64/106)."""
+    items = getattr(control, "items", None)
+    if items:
+        idx = min(max(int(round(float(value))), 0), len(items) - 1)
+        item = items[idx]
+        if item.address is not None and item.value is not None:
+            return item.address, float(item.value)
+    return control.address, value
 
 
 default_number_of_steps = 64
+LOCKS_PER_DEVICE = 18          # the length of each device's list in self.locks
 
 from typing import Any
 
@@ -35,6 +83,12 @@ class SequencerMetro(object):
     midi_in_name: str | None = None
     midi_in_device: Any = None
     index: Any = None
+    # The pitch, octave and velocity of the last note played, and the last
+    # p-lock scaling used: what a muted track holds them at.
+    held_pitch: int | None = None
+    held_octave: int | None = None
+    held_velocity: int | None = None
+    held_lock_scale: float | None = None
 
     def __init__(
         self, instrument, tick_callback, playhead, send_osc_func, global_timeline, app
@@ -46,7 +100,7 @@ class SequencerMetro(object):
             self.locks.append([])
             for device_idx in range(17):
                 self.locks[step_idx].append(
-                    [None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+                    [None] * LOCKS_PER_DEVICE
                 )
         
         self.app = app
@@ -140,55 +194,74 @@ class SequencerMetro(object):
         seq_filename = self.get_state_filename(clip=clip)
         try:
             if os.path.exists(seq_filename):
-                dump = json.load(open(seq_filename))
-            elif os.path.exists(f"init_state.json"):
-                dump = json.load(open("init_state.json"))
+                with open(seq_filename) as f:
+                    dump = json.load(f)
+            else:
+                dump = init_state()
+                if dump is None:
+                    return
             self.locks = dump["locks"]
             self.note = dump["note"]
             self.pitch = dump[TRACK_NAMES_METRO[0]]
             self.octave = dump[TRACK_NAMES_METRO[1]]
-            self.aux_4 = dump[TRACK_NAMES_METRO[2]]
+            self.velocity = dump[TRACK_NAMES_METRO[2]]
             self.gate = dump[TRACK_NAMES_METRO[3]]
             self.mutes_skips = dump[TRACK_NAMES_METRO[4]]
             self.lock_scale = dump[TRACK_NAMES_METRO[5]]
             self.aux_2 = dump[TRACK_NAMES_METRO[6]]
             self.aux_3 = dump[TRACK_NAMES_METRO[7]]
-            
+
             self.app.metro_sequencer_mode.update_pads_to_seq_state()
         except Exception as e:
             print("Exception in seq load_state")
             traceback.print_exc()
 
+    def get_state(self):
+        return {
+            "locks": self.locks,
+            "note": self.note,
+            TRACK_NAMES_METRO[0]: self.pitch,
+            TRACK_NAMES_METRO[1]: self.octave,
+            TRACK_NAMES_METRO[2]: self.velocity,
+            TRACK_NAMES_METRO[3]: self.gate,
+            TRACK_NAMES_METRO[4]: self.mutes_skips,
+            TRACK_NAMES_METRO[5]: self.lock_scale,
+            TRACK_NAMES_METRO[6]: self.aux_2,
+            TRACK_NAMES_METRO[7]: self.aux_3,
+        }
+
     def save_state(self, clip=0):
+        """Write the sequence to its clip's file. A clip with no file that is
+        still empty (the init state) gets none, so browsing or deleting clips
+        doesn't leave empty clip files behind."""
         seq_filename = self.get_state_filename(clip=clip)
         try:
-            # pass
-            sequencer_state = {
-                "locks": self.locks,
-                "note": self.note,
-                TRACK_NAMES_METRO[0]: self.pitch,
-                TRACK_NAMES_METRO[1]: self.octave,
-                TRACK_NAMES_METRO[2]: self.velocity,
-                TRACK_NAMES_METRO[3]: self.gate,
-                TRACK_NAMES_METRO[4]: self.mutes_skips,
-                TRACK_NAMES_METRO[5]: self.lock_scale,
-                TRACK_NAMES_METRO[6]: self.aux_2,
-                TRACK_NAMES_METRO[7]: self.aux_3,
-            }
-            json.dump(
-                sequencer_state, open(seq_filename, "w")
-            )  # Save to file
+            sequencer_state = self.get_state()
+            if not os.path.exists(seq_filename) and sequencer_state == init_state():
+                return
+            tmp = seq_filename + ".tmp"
+            with open(tmp, "w") as f:
+                json.dump(sequencer_state, f)
+            os.replace(tmp, seq_filename)  # a crash mid-save leaves the old file
         except Exception as e:
             print("Exception in seq save_state")
             traceback.print_exc()
 
     def delete_state(self, clip):
+        """Delete the clip's file and empty the sequence playing it, so the
+        deleted pattern isn't saved back when you switch clips."""
         seq_filename = self.get_state_filename(clip=clip)
-        os.remove(seq_filename)
+        if os.path.exists(seq_filename):
+            os.remove(seq_filename)
+        self.load_state(clip=clip)
         
     def advance_and_evaluate_main_tick(self):
         # Counts down ticks down to zero from length of main reset
-        
+
+        # Main Steps on INF: the main pattern never resets the track
+        if self.params.main_pattern_len == INF_STEPS:
+            return
+
         if self.main_ticks_to_reset <= 0:
             self.main_ticks_to_reset = self.params.main_pattern_len * self.params.main_seq_time_scale
             # Sets this to zero so it resets in the fuction below
@@ -200,8 +273,12 @@ class SequencerMetro(object):
         pattern_was_reset = False
         
         # This first branch for when we reset, so we don't skip over the first step
+        # Seq Steps on INF: the track keeps stepping and never goes back to
+        # its first step (only a main-pattern reset or stop/start does that)
+        infinite = self.params.pattern_len == INF_STEPS
         if self.seq_ticks_to_reset == 0:
-            self.seq_ticks_to_reset = self.params.seq_time_scale * self.params.pattern_len
+            pattern_len = 1 if infinite else self.params.pattern_len
+            self.seq_ticks_to_reset = self.params.seq_time_scale * pattern_len
             self.reset_index()
             self.evaluate_and_play_notes()
 
@@ -211,6 +288,9 @@ class SequencerMetro(object):
             self.evaluate_and_play_notes()
 
         self.seq_ticks_to_reset -= 1
+        if infinite and self.seq_ticks_to_reset == 0:
+            # Count down one more step instead of reaching the reset
+            self.seq_ticks_to_reset = self.params.seq_time_scale
                 
 
     def seq_playhead_update(self):
@@ -241,10 +321,7 @@ class SequencerMetro(object):
         next_step_index = (current_index + 1) % 64
         
         
-        column = int(next_step_index / 8)
-        skips_idx = column*8
-        
-        if self.gate[next_step_index] != False and self.mutes_skips[skips_idx] != True:
+        if self.gate[next_step_index] != False and not self.step_is_skipped(next_step_index):
             self.step_index = next_step_index
             # Signal the asyncio thread to update pads — calling update_pads()
             # directly here runs push2_python USB code from the MIDI clock thread,
@@ -258,10 +335,7 @@ class SequencerMetro(object):
         current_index = index if index != None else self.step_index
         next_step_index = (current_index + 1) % 64
         
-        column = int(next_step_index / 8)
-        skips_idx = column*8
-        
-        if self.gate[next_step_index] != False and self.mutes_skips[skips_idx] != True:
+        if self.gate[next_step_index] != False and not self.step_is_skipped(next_step_index):
             self.next_step_index = next_step_index
             return 
         
@@ -271,11 +345,7 @@ class SequencerMetro(object):
     def increment_previous_step_index(self, index = None):
         current_index = index if index != None else self.step_index
         prev_step_index = (current_index - 1) % 64
-        column = int(prev_step_index / 8)
-        skips_idx = column*8
-        
-    
-        if self.gate[prev_step_index] != False and self.mutes_skips[skips_idx] != True:
+        if self.gate[prev_step_index] != False and not self.step_is_skipped(prev_step_index):
             self.prev_step_index = prev_step_index
             return 
         
@@ -293,26 +363,14 @@ class SequencerMetro(object):
 
             if self.gate[self.step_index] != "Off" and gate_track_active:
                 gate = 1
-                pitch = self.pitch[self.step_index] if self.pitch[self.step_index] is not None else 0
-                octave = self.octave[self.step_index] * 12 if self.octave[self.step_index] is not None else 0
-
-                pitch_and_octave = pitch + octave
-                velocity = ((self.velocity[self.step_index] + 1) * 16 - 1) if self.velocity[self.step_index] is not None else 1
+                pitch, octave, velocity = self.note_for_step(params)
+                pitch_and_octave = pitch + octave * 12
                 gate = None
 
                 gate_len = params.gate_len
                 
-                column = int(self.step_index / 8)
-                mutes_idx = column*8+1
-                
-                
-                prob = 1
-                
-                # checking columns for the True statement
-                for x in range(7):
-                    if self.mutes_skips[mutes_idx + x] == True:
-                        prob = x
-                        
+                prob = self.probability_for_step(params)
+
                 next_step_index = self.next_step_index
                 
                 if self.gate[next_step_index] == "Tie":
@@ -323,27 +381,33 @@ class SequencerMetro(object):
                 
                 if prob >= random.randint(1, 6):
                     # We need to reset values that were changed by param locks
-                    for control in self.controls_to_reset:
+                    for control, unlocked in self.controls_to_reset:
                         # print(control.name, control.label)
                         if control.name == "Switch":
                             control.reset_group()
                         else:
-                            self.app.send_osc(control.address, float(control.value), instrument.name)
+                            # Back to the knob's value now. play_lock() keeps the
+                            # lock's echo off control.value, so it is the knob's
+                            # live position; the value remembered when the lock
+                            # played is stale if the knob was turned since, and
+                            # resetting to it snapped a swept knob back. Through
+                            # play_lock() so Surge's late echo of the reset can't
+                            # pull the knob back either.
+                            self.play_lock(control, float(control.value), instrument)
+                    self.held_pitch, self.held_octave, self.held_velocity = pitch, octave, velocity
                     self.timeline.schedule(
-                        {"note": pitch_and_octave, "gate": gate, "amplitude": velocity}, count=1, output_device=self.midi_out_device
+                        {"note": pitch_and_octave, "gate": gate, "amplitude": velocity}, count=1,
+                        # the track's active engine's port (Surge's, or its mono2k port), looked up
+                        # each step so an engine switch takes effect on the next note
+                        output_device=instrument.midi_out_device
                     )
                     self.controls_to_reset.clear()
             
             
             # This sends the param locks, out of the prev if statement
             # so it triggers even if the gate is off
+            lock_scale_value = self.lock_scale_for_step(params)
             for slot_idx, slot in enumerate(instrument.slots):
-                # get lock_scale value, mult by lock_val
-                lock_scale_value = None
-                if self.lock_scale[self.step_index] == 0:
-                    lock_scale_value = 0
-                else:
-                    lock_scale_value = self.lock_scale[self.step_index] / 7
                 if slot != None:
                     for device_idx, device in enumerate(instrument.devices[slot_idx]):
                         for command in enumerate(device.init):
@@ -352,46 +416,46 @@ class SequencerMetro(object):
                                 # we have the right device
                                 # Now we just need to enum the controls and send the values 
                                 # This needs to go through VISIBLE controls, so that groups don't get shafted
-                                for control_idx, control in enumerate(device.get_visible_controls()):
+                                for control_idx, control in lockable_controls(device):
                                     lock_address = control.address
                                     lock_value = None
                                     if self.locks[self.step_index][slot_idx][control_idx] != None:
                                         lock_value = self.locks[self.step_index][slot_idx][control_idx] 
                                         if hasattr(control, "value"):
-                                            lock_offset = lock_value - control.value
-                                            value_after_scale = lock_offset * lock_scale_value + control.value
+                                            unlocked = self.remember_unlocked(control)   # (before the lock and its echo)
+                                            lock_offset = lock_value - unlocked
+                                            value_after_scale = lock_offset * lock_scale_value + unlocked
                                             
                                             if lock_value != None and lock_address != None:
-                                                self.app.send_osc(lock_address, value_after_scale, instrument.name)
+                                                self.play_lock(control, value_after_scale, instrument)
                                             elif lock_value != None and control.name == "Switch":
                                                     control.update_value_lock(value_after_scale)
                                             
-                                            self.controls_to_reset.append(control)
                                                 
                                     else:
                                         lock_value = 0
                 # This elif branch is for slots that have only one device and therefore
                 # don't have the device address/val in the init
-                elif slot_idx == 2 or slot_idx == 3 or slot_idx == 4:
+                elif slot_idx in getattr(instrument.engine, "always_shown_slots", (2, 3, 4)):
                     for device_idx, device in enumerate(instrument.devices[slot_idx]):
                         # we have the right device
                         # Now we just need to enum the controls and send the values 
                         # Visible controls so we don't ommit groups
-                        for control_idx, control in enumerate(device.get_visible_controls()):
+                        for control_idx, control in lockable_controls(device):
                             lock_address = control.address
                             lock_value = None
                             if self.locks[self.step_index][slot_idx][control_idx] != None:
                                 lock_value = self.locks[self.step_index][slot_idx][control_idx] 
                                 if hasattr(control, "value"):
-                                    lock_offset = lock_value - control.value
-                                    value_after_scale = lock_offset * lock_scale_value + control.value
+                                    unlocked = self.remember_unlocked(control)   # (before the lock and its echo)
+                                    lock_offset = lock_value - unlocked
+                                    value_after_scale = lock_offset * lock_scale_value + unlocked
                                     
                                     if lock_value != None and lock_address != None:
-                                        self.app.send_osc(lock_address, value_after_scale, instrument.name)
+                                        self.play_lock(control, value_after_scale, instrument)
                                     elif lock_value != None and control.name == "Switch":
                                             control.update_value_lock(value_after_scale)
                                     
-                                    self.controls_to_reset.append(control)
                             else:
                                 lock_value = 0
 
@@ -400,6 +464,55 @@ class SequencerMetro(object):
             print("Error in evaluate_and_play_notes")
             traceback.print_exc()
 
+
+    def note_for_step(self, params):
+        """The (pitch, octave, velocity) the current step plays. A muted pitch,
+        octave or velocity track holds that part at the last note played; the
+        other parts still follow their tracks. Nothing played yet: the step's
+        own value."""
+        pitch = self.pitch[self.step_index]
+        pitch = pitch if pitch is not None else 0
+        octave = self.octave[self.step_index]
+        octave = octave if octave is not None else 0
+        velocity = self.velocity[self.step_index]
+        velocity = (velocity + 1) * 16 - 1 if velocity is not None else 1
+        if not params.pitch_track_active and self.held_pitch is not None:
+            pitch = self.held_pitch
+        if not params.octave_track_active and self.held_octave is not None:
+            octave = self.held_octave
+        if not params.velocity_track_active and self.held_velocity is not None:
+            velocity = self.held_velocity
+        return pitch, octave, velocity
+
+    def probability_for_step(self, params):
+        """The current step's chance to play, out of 6 (it plays when this is
+        at least a roll of 1-6). Rows 1-7 of the step's mutes/skips column
+        pick it; a muted mutes/skips track always plays."""
+        if not params.mutes_skips_track_active:
+            return 6
+        mutes_idx = int(self.step_index / 8) * 8 + 1
+        prob = 1
+        for x in range(7):
+            if self.mutes_skips[mutes_idx + x] == True:
+                prob = x
+        return prob
+
+    def step_is_skipped(self, index):
+        """Whether the step at ``index`` is skipped: row 0 of its mutes/skips
+        column. Nothing is skipped while the mutes/skips track is muted."""
+        if not self.params.mutes_skips_track_active:
+            return False
+        return self.mutes_skips[int(index / 8) * 8] == True
+
+    def lock_scale_for_step(self, params):
+        """How much of each p-lock the current step applies, 0-1. A muted
+        lock-scale track keeps the last scaling used. Nothing used yet: the
+        step's own value."""
+        if not params.lock_scale_track_active and self.held_lock_scale is not None:
+            return self.held_lock_scale
+        scale = self.lock_scale[self.step_index]
+        self.held_lock_scale = 0 if scale == 0 else scale / 7
+        return self.held_lock_scale
 
     def update_notes(self):
         for idx, note in enumerate(self.note):
@@ -475,6 +588,36 @@ class SequencerMetro(object):
             
         selected_track = self.app.metro_sequencer_mode.selected_track
         return self.locks[index * 8][device_idx][parameter_idx]
+
+    def play_lock(self, control, value, instrument):
+        """Send a p-lock without moving the control's display: it keeps the
+        knob's position, and the lock shows only while its pad is held. The
+        synth's echo of the lock is ignored, whether it comes back at once
+        (mono2k's MIDI-CC client) or later (Surge over OSC)."""
+        knob = control.value
+        address, sent = lock_message(control, value)
+        echoes = getattr(control, "lock_echoes", None) or getattr(control, "recent_sends", None)
+        if echoes is not None:
+            echoes.add(sent)
+        self.app.send_osc(address, sent, instrument.name)
+        control.value = knob
+
+    def remember_unlocked(self, control):
+        """A lock is about to be sent to ``control``: note that it needs a reset
+        after its step, and return the knob's value now (play_lock() keeps
+        lock echoes off control.value): the base a scaled lock is measured
+        from, and what saving a sound keeps instead of the lock."""
+        self.controls_to_reset = [(c, v) for c, v in self.controls_to_reset if c is not control]
+        self.controls_to_reset.append((control, control.value))
+        return control.value
+
+    def clear_all_locks(self):
+        """Every step's p-locks: they are stored by page position, so they
+        mean other parameters once the track plays another engine."""
+        for step_locks in self.locks:
+            for device_locks in step_locks:
+                for parameter_idx in range(len(device_locks)):
+                    device_locks[parameter_idx] = None
 
     def clear_all_locks_for_step(self, index):
         device = self.app.osc_mode.get_current_instrument_device()

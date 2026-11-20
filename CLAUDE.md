@@ -106,7 +106,12 @@ updating the corresponding test.
    `update_value()` add `scale_value(increment, …)` (increment / 127 × range),
    so a single encoder click nudges values by a tiny fraction; advancing a
    menu/switch integer index takes a large increment. Intentional mitigation,
-   but worth revisiting for UX.
+   but worth revisiting for UX. `OSCControl` and `OSCControlMacro` now apply
+   knob acceleration (`EncoderAcceleration`, tuned by the `ACCEL_*` constants):
+   slow clicks are 0.125× the old click size, fast turns move the old click
+   size (1.0×); stepped and 0..127 controls always move one step a click. Tests that fire clicks back-to-back read as a fast
+   turn, so give the control an `EncoderAcceleration(clock=…)` with spaced-out
+   ticks when the test isn't about acceleration.
 
 5. **Stale-test drift is real.** `OSCDevice` config now uses the `"controls"`
    key (was `"osc"`) and requires `app`, `osc_in_port`, `osc_out_port` kwargs;

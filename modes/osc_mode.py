@@ -11,6 +11,7 @@ from user_interface.display_utils import show_text
 from glob import glob
 from pathlib import Path
 from modes.instrument import Instrument
+from utilities.volume_taper import step_fader
 from ratelimit import RateLimitException
 import traceback
 import numbers
@@ -32,6 +33,10 @@ from osc_controls import (
 )
 
 logger = logging.getLogger("osc_mode")
+
+
+from modes.device_definitions import apply_value_tables, load_device_definitions  # noqa: E402  (re-exported)
+from modes.engine_selection_mode import load_track_engines, TRACK_ENGINES_FILENAME  # noqa: E402
 
 
 class OSCMode(PyshaMode):
@@ -118,6 +123,14 @@ class OSCMode(PyshaMode):
             except FileNotFoundError:
                 device_definitions[modulation_name] = {}
 
+        # Surge's own words for knob values ("62.50 ms")
+        apply_value_tables(device_definitions)
+
+        # mono2k's pages, shared by every track's mono2k voice
+        m2k_device_definitions = load_device_definitions(definitions.M2K_DEFINITION_FOLDER)
+        # Each track's engine as last chosen with ADD TRACK
+        track_engines = load_track_engines(TRACK_ENGINES_FILENAME)
+
         for (
             instrument_short_name
         ) in self.get_all_distinct_instrument_short_names_helper():
@@ -142,6 +155,8 @@ class OSCMode(PyshaMode):
                 device_definitions,
                 get_current_instrument_color_helper=self.get_current_instrument_color_helper,
                 app=self.app,
+                initial_engine=track_engines.get(instrument_short_name),
+                m2k_device_definitions=m2k_device_definitions,
             )
 
     def load_state(self):
@@ -346,7 +361,16 @@ class OSCMode(PyshaMode):
         
         # Only pages when you're not trying to pick a new device
         if self.app.is_mode_active(self.app.menu_mode) == False:
+            instrument = self.get_current_instrument()
+            if new_instrument_page and instrument is not None and not instrument.devices_modulation:
+                # (no second page: an instrument with no devices in slots 8-15)
+                new_instrument_page = 0
             self.instrument_page = new_instrument_page or 0
+            # The pages hold different numbers of devices (mono2k's second has
+            # one, VEL): a device past the new page's last selects its first
+            devices = self.get_current_instrument_page_devices() if instrument is not None else None
+            if devices is not None and self.current_device_index_and_page[0] >= len(devices):
+                self.current_device_index_and_page = [0, 0]
             self.app.buttons_need_update = True
             self.query_all_instrument_page_params()
 
@@ -539,16 +563,7 @@ class OSCMode(PyshaMode):
                 instrument_shortname = self.get_current_instrument_short_name_helper()
                 instrument = self.app.instruments.get(instrument_shortname, None)
                 
-                if 0 < instrument.instrument_global_volume + 0.01 * increment < 1:
-                    new_volume = instrument.instrument_global_volume + 0.01 * increment
-                    instrument.instrument_global_volume = new_volume
-                if 0 >= instrument.instrument_global_volume + 0.01 * increment:
-                    instrument.instrument_global_volume = 0
-                
-                if instrument.instrument_global_volume + 0.01 * increment > 1:
-                    instrument.instrument_global_volume = 1
-                    
-                instrument.send_message("/param/global/volume", float(instrument.instrument_global_volume))
+                instrument.set_global_volume(step_fader(instrument.instrument_global_volume, increment))
             # This call makes sure we always use the right enc_rot call
             # Because the seq has its own due to how param locks work
             elif len(self.app.steps_held) == 0 and metro.show_scale_menu == False:

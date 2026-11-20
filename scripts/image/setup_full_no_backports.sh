@@ -125,6 +125,23 @@ pip install ratelimit
 pip install pytest
 pip install pytest-asyncio
 
+echo "Building m2k-jack (the mono2k engine behind ADD TRACK's Monomachine)"
+# Needs a C compiler, patch, pkg-config and JACK's headers (libjack-dev, above,
+# is libjack-jackd2-dev on Bookworm; at run time pw-jack points it at PipeWire's
+# JACK). build.sh fetches MONO2K at its pinned commit, so this needs the network.
+# Without m2k-jack every track still works, but only on Surge XT.
+apt install -y build-essential pkg-config patch
+M2K_DIR="$PUSHPIN_SOURCE_PATH/pushpin-groovebox/engines/m2k"
+if [ -f "$M2K_DIR/build.sh" ]; then
+    M2K_REQUIRE_JACK=1 bash "$M2K_DIR/build.sh" \
+        || { echo "ERROR: m2k-jack did not build; tracks could not play Monomachine"; exit 1; }
+    "$M2K_DIR/build/m2k-jack" --list-machines > /dev/null \
+        || { echo "ERROR: m2k-jack was built but does not run"; exit 1; }
+    echo "m2k-jack built: $M2K_DIR/build/m2k-jack"
+else
+    echo "Note: this pushpin-groovebox has no engines/m2k; tracks will play Surge XT only"
+fi
+
 chown -R $USER_NAME:audio $USER_HOME_PATH 
 chmod -R 755 $USER_HOME_PATH
 

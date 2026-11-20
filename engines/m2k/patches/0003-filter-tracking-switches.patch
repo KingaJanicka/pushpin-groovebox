@@ -1,0 +1,33 @@
+--- a/firmware/src/m2k_dsp.c
++++ b/firmware/src/m2k_dsp.c
+@@ -164,6 +164,8 @@
+     uint8_t eff[P_COUNT];
+     int32_t mod[P_COUNT];              /* the LFOs' modulation, set a block at a time (modq: only what they touch) */
+     int32_t fine[P_COUNT];             /* a host's offset in 1/256 steps (pushpin's m2k-jack: 14-bit values, glides) */
++    uint8_t ktrk_off;                  /* a host's filter tracking switches (pushpin's m2k-jack: KEY's HPF, LPF): bit 0
++                                        * the high-pass, bit 1 the low-pass sits at M2K_FIXED_NOTE, not the note's */
+     int32_t peak;
+     int32_t lvl;                       /* its blocks' peaks followed, falling ~93 ms: how loud it is heard (the CPU
+                                         * guard's: a hat between its hits still counts) */
+@@ -194,6 +196,11 @@
+ static int16_t tvol[M2K_TRACKS][M2K_SUB];     /* and after its VOL, its clip and its LEV, as the Monomachine's FX hear it (FX-RING) */
+ static int16_t eside[M2K_TRACKS][M2K_SUB];    /* SWAV-ENS's and GND-NOIS's side out of the machine, before the chain */
+ static int16_t bside[M2K_TRACKS][M2K_SUB];    /* FX-CHORUS's side (its width), added after the pan */
++
++/* where a filter with its tracking off sits: as if every note were this one */
++#ifndef M2K_FIXED_NOTE
++#define M2K_FIXED_NOTE 60
++#endif
+ 
+ /* a parameter with its modulation, 0..127*256 */
+ static inline int32_t P8(const trk_t *t, int id)
+@@ -1750,7 +1757,8 @@
+     int32_t sb = P8(t, P_BASE) + ob, sl = sb + P8(t, P_WDTH) + ow;          /* steps, Q8 */
+     int32_t key = t->note * 8 * 256;
+     if (m == M_GSIN || m == M_GNOI) key += (PB8(t, P_SYN + 7) >> 7) * 32;   /* and their TUNE (chain_tune13, gnoi42) */
+-    int32_t ph = key + 12 * (sb - 16 * 256), pl = key + 12 * (sl - 16 * 256);
++    int32_t ph = (t->ktrk_off & 1 ? M2K_FIXED_NOTE * 8 * 256 : key) + 12 * (sb - 16 * 256);
++    int32_t pl = (t->ktrk_off & 2 ? M2K_FIXED_NOTE * 8 * 256 : key) + 12 * (sl - 16 * 256);
+     int32_t lq = P8(t, P_LPQ), hq = P8(t, P_HPQ);                        /* (an LFO glides the resonances too) */
+     int32_t lpc = pl + tq_i16(T_LPC, lq), hpc = ph + tq_i16(T_HPC, hq);
+     uint32_t lpk = tq_u32(T_LPK, lq), hpk = tq_u32(T_HPK, hq);

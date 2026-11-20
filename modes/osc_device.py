@@ -82,14 +82,15 @@ class OSCDevice(PyshaMode):
                 case "control-spacer":
                     self.controls.append(ControlSpacer())
                 case "control-macro":
-                    self.controls.append(
-                        OSCControlMacro(control_def, get_color, self.send_message)
-                    )
+                    control = OSCControlMacro(control_def, get_color, self.send_message)
                     for param in control_def["params"]:
-                        self.dispatcher.map(param.address, control.set_state)
+                        self.dispatcher.map(param["address"], control.set_state)
+                    self.controls.append(control)
                 case "control-range":
                     control = OSCControl(control_def, get_color, self.send_message)
                     self.dispatcher.map(control.address, control.set_state)
+                    if control.labels_address:
+                        self.dispatcher.map(control.labels_address, control.set_labels_source)
                     self.controls.append(control)
                 case "control-spacer-address":
                     control = OSCSpacerAddress(control_def, self.send_message)
@@ -272,25 +273,7 @@ class OSCDevice(PyshaMode):
             #This if statement is for setting post-synth volume levels
             if encoder_name == push2_python.constants.ENCODER_SWING_ENCODER:
                 instrument = self.app.osc_mode.get_current_instrument()
-                all_volumes = self.app.volumes
-                instrument_idx = instrument.osc_in_port % 10
-                track_L_volume = all_volumes[instrument_idx * 2]
-                track_R_volume = all_volumes[instrument_idx * 2 +1]
-                #This specific wording of elif is needed
-                # to ensure we can reach max/min values
-                if track_L_volume + increment*0.01 <= 0:
-                    track_L_volume = 0
-                    track_R_volume = 0
-                elif track_L_volume + increment*0.01 >=1:
-                    track_L_volume = 1
-                    track_R_volume = 1
-                else:
-                    track_L_volume = track_L_volume + increment*0.01
-                    track_R_volume = track_R_volume + increment*0.01
-                all_volumes[instrument_idx*2] = track_L_volume
-                all_volumes[instrument_idx*2 +1] = track_R_volume
-                self.app.volumes = all_volumes
-                self.app.set_main_volumes()
+                self.app.adjust_track_volume(instrument, increment)
             else: 
                 encoder_idx = [
                     push2_python.constants.ENCODER_TRACK1_ENCODER,
@@ -304,6 +287,10 @@ class OSCDevice(PyshaMode):
                 ].index(encoder_name)
                 if self.app.metro_sequencer_mode.disable_controls == False:
                     visible_controls = self.get_visible_controls()
+                    # A page with fewer than 8 controls (a device's last page) leaves
+                    # the encoders past them with nothing to turn
+                    if encoder_idx >= len(visible_controls):
+                        return
                     control = visible_controls[encoder_idx]
                     control.update_value(increment)
                     

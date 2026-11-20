@@ -15,7 +15,8 @@
 			"label": "PreEQ Gain",
 			"address": "/param/fx/global/1/param1",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
 		},
 		{
 			"$type": "control-range",
@@ -58,7 +59,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "2",
-						"address": "/param/a/osc/1/param12",
+						"address": "/param/fx/global/1/param12",
 						"value": 1
 					}
 				},
@@ -68,7 +69,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "3",
-						"address": "/param/a/osc/1/param12",
+						"address": "/param/fx/global/1/param12",
 						"value": 2
 					}
 				},
@@ -78,7 +79,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "4",
-						"address": "/param/a/osc/1/param12",
+						"address": "/param/fx/global/1/param12",
 						"value": 3
 					}
 				},
@@ -88,7 +89,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "4",
-						"address": "/param/a/osc/1/param12",
+						"address": "/param/fx/global/1/param12",
 						"value": 4
 					}
 				},
@@ -98,7 +99,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "4",
-						"address": "/param/a/osc/1/param12",
+						"address": "/param/fx/global/1/param12",
 						"value": 5
 					}
 				},
@@ -108,7 +109,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "4",
-						"address": "/param/a/osc/1/param12",
+						"address": "/param/fx/global/1/param12",
 						"value": 6
 					}
 				},
@@ -118,7 +119,7 @@
 					"onselect": {
 						"$type": "message",
 						"$comment": "4",
-						"address": "/param/a/osc/1/param12",
+						"address": "/param/fx/global/1/param12",
 						"value": 7
 					}
 				}
@@ -129,14 +130,16 @@
 			"label": "Dist Drive",
 			"address": "/param/fx/global/1/param5",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
 		},
 		{
 			"$type": "control-range",
 			"label": "Dist Feedback",
 			"address": "/param/fx/global/1/param6",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
 		},
 		{
 			"$type": "control-spacer"
@@ -146,7 +149,8 @@
 			"label": "PostEQ Gain",
 			"address": "/param/fx/global/1/param7",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
 		},
 		{
 			"$type": "control-range",
@@ -183,7 +187,8 @@
 			"label": "Gain Out",
 			"address": "/param/fx/global/1/param11",
 			"min": 0,
-			"max": 1
+			"max": 1,
+			"bipolar": 1
 		}
 	]
 }

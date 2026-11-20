@@ -2,9 +2,12 @@ from __future__ import annotations
 
 import definitions
 import math
+import re
 import push2_python
 from user_interface.display_utils import show_text
 import logging
+import time
+import wavetables
 from typing import Any, Callable
 
 logger = logging.getLogger("osc_controls")
@@ -31,6 +34,92 @@ def scale_value(value: float, min_val: float, max_val: float, decimals: int = DE
     return round(float(value / SCALING_FACTOR * (max_val - min_val)), decimals)
 
 
+AMOUNT = re.compile(r"^(-?\d+(?:\.(\d+))?)((?:\s|%|[^\W\d_]).*)?$")
+
+
+def parse_amount(text: str) -> tuple[float, int, str] | None:
+    """"62.50 ms" -> (62.5, 2, " ms"): the number, its decimals and the rest."""
+    match = AMOUNT.match(text)
+    if not match:
+        return None
+    return float(match.group(1)), len(match.group(2) or ""), match.group(3) or ""
+
+
+# Knob acceleration: how fast an encoder turns sets how far each click moves
+# the value. Turning fast moves a normal click (ACCEL_FAST, the click size the
+# knobs always had); turning slowly gives fine steps (ACCEL_SLOW of a normal
+# click). Speeds are in clicks per second; between ACCEL_SLOW_SPEED and
+# ACCEL_FAST_SPEED the factor rises smoothly (log scale).
+ACCEL_SLOW = 0.125
+ACCEL_FAST = 1.0
+ACCEL_SLOW_SPEED = 8.0
+ACCEL_FAST_SPEED = 150.0
+# A pause longer than this starts the next turn slow again.
+ACCEL_IDLE_SECONDS = 0.25
+# Clicks can arrive in bursts a few ms apart; this keeps one burst from
+# reading as an enormous speed.
+ACCEL_MIN_INTERVAL = 0.004
+# How much the newest click's speed counts against the running average.
+ACCEL_SMOOTHING = 0.5
+# Continuous values keep this many decimals, enough for the fine steps.
+FINE_DECIMAL_PLACES = 4
+
+
+def normal_click(min_val: float, max_val: float) -> float:
+    """How far one unaccelerated click moves a continuous value: what
+    scale_value() gave before acceleration (0.01 on a 0..1 Surge control),
+    or the exact 1/127 of the range where that rounds to nothing."""
+    return scale_value(1, min_val, max_val) or (max_val - min_val) / SCALING_FACTOR
+
+
+class EncoderAcceleration(object):
+    """Tracks how fast one knob is being turned and turns that into a factor
+    for the size of each click."""
+
+    def __init__(self, clock: Callable[[], float] = time.monotonic) -> None:
+        self.clock = clock
+        self.speed: float = 0.0  # clicks per second, smoothed
+        self.last_time: float | None = None
+        self.direction: int = 0
+
+    def factor(self, increment: float) -> float:
+        clicks = abs(increment)
+        if clicks == 0:
+            return 1.0
+        now = self.clock()
+        direction = 1 if increment > 0 else -1
+        if (
+            self.last_time is None
+            or now - self.last_time > ACCEL_IDLE_SECONDS
+            or direction != self.direction
+        ):
+            # A fresh turn (or a change of direction) starts slow
+            self.speed = 0.0
+        else:
+            interval = max(now - self.last_time, ACCEL_MIN_INTERVAL)
+            current = clicks / interval
+            self.speed = ACCEL_SMOOTHING * current + (1 - ACCEL_SMOOTHING) * self.speed
+        self.last_time = now
+        self.direction = direction
+        factor = self.curve(self.speed)
+        if clicks > 1:
+            # The encoder only packs several clicks into one message when it
+            # is turned quickly, so such a message moves at the fast rate.
+            factor = ACCEL_FAST
+        return factor
+
+    @staticmethod
+    def curve(speed: float) -> float:
+        if speed <= ACCEL_SLOW_SPEED:
+            return ACCEL_SLOW
+        if speed >= ACCEL_FAST_SPEED:
+            return ACCEL_FAST
+        t = (math.log(speed) - math.log(ACCEL_SLOW_SPEED)) / (
+            math.log(ACCEL_FAST_SPEED) - math.log(ACCEL_SLOW_SPEED)
+        )
+        return math.exp(math.log(ACCEL_SLOW) + t * (math.log(ACCEL_FAST) - math.log(ACCEL_SLOW)))
+
+
 def closest(lst: list[float], K: float) -> float:
     return lst[min(range(len(lst)), key=lambda i: abs(lst[i] - K))]
 
@@ -54,15 +143,95 @@ class OSCControl(object):
         self.min: float = config["min"]
         self.max: float = config["max"]
         self.value: float = 0.0
+        # Values the sequencer just played as p-locks. The synth echoes them
+        # back (mono2k at once, Surge later); applying that echo moved the
+        # display to the lock, which should only show while its pad is held.
+        self.lock_echoes: RecentSends = RecentSends()
         self.modmatrix: bool = config.get("modmatrix", True)
         self.string: str = ""
         self.get_color_func: ColorFunc = get_color_func or (lambda: definitions.GRAY_LIGHT)
         self.send_osc_func: OscSendFunc = send_osc_func or (lambda addr, val: None)
         self.log = logger.getChild(f"{self.label}:Range")
         self.bipolar: bool = config.get("bipolar", False)
+        # Optional: how far one encoder click moves the value, in the control's
+        # own units. Without it a click is (max - min) / SCALING_FACTOR.
+        self.step: float | None = config.get("step", None)
+        # Optional: show the value as an offset from this centre, signed
+        # (mono2k's LFO depth: 64 is none, below it the other way round)
+        self.display_center: float | None = config.get("display_center", None)
+        # Optional: what to show for each whole value (mono2k's own words for
+        # its values: "1/16 NOTE", "2.3 KHZ"). With "value_labels_by", the
+        # table follows another parameter's value: {"address", "choices",
+        # "tables"}, table (v * choices) >> 7 for that parameter's v (DIGI-WAV's
+        # waves follow its BANK, an LFO's SPD its MULT).
+        self.value_labels: list[str] | None = config.get("value_labels", None)
+        self.value_labels_by: ConfigDict | None = config.get("value_labels_by", None)
+        self.labels_source_value: float = 0.0
+        # Optional: Surge's own words for the value at evenly spaced points from
+        # min to max ("62.50 ms"), recorded by tools/surge_value_labels.py and
+        # added by modes/device_definitions.py. Values between two points get
+        # their number interpolated.
+        self.value_table: list[str] | None = config.get("value_table", None)
+        self.labels_address: str | None = self.value_labels_by["address"] if self.value_labels_by else None
+        self.acceleration: EncoderAcceleration = EncoderAcceleration()
 
     def query(self) -> None:
         self.send_osc_func("/q" + self.address, None)
+
+    def set_labels_source(self, address: str, *args: Any) -> None:
+        """The parameter the labels follow has a new value."""
+        if args:
+            try:
+                self.labels_source_value = float(args[0])
+            except (TypeError, ValueError):
+                pass
+
+    def labels_table(self) -> list[str] | None:
+        if self.value_labels_by:
+            tables = self.value_labels_by["tables"]
+            n = int(self.value_labels_by.get("choices", len(tables)))
+            v = min(max(int(self.labels_source_value), 0), 127)
+            return tables[min((v * n) >> 7, len(tables) - 1)]
+        return self.value_labels
+
+    @property
+    def has_value_labels(self) -> bool:
+        return bool(self.value_labels or self.value_labels_by or self.value_table)
+
+    def table_text(self, value: float) -> str:
+        table = self.value_table
+        assert table
+        position = self.fraction(float(value)) * (len(table) - 1)
+        below = int(math.floor(position))
+        above = min(below + 1, len(table) - 1)
+        part = position - below
+        if part < 1e-9 or below == above:
+            return table[below]
+        a, b = parse_amount(table[below]), parse_amount(table[above])
+        if a is None or b is None or a[2] != b[2]:
+            return table[below] if part < 0.5 else table[above]
+        number = a[0] + (b[0] - a[0]) * part
+        decimals = max(a[1], b[1])
+        return f"{number:.{decimals}f}{a[2]}"
+
+    def display_text(self, value: float) -> str:
+        if self.value_table:
+            return self.table_text(value)
+        table = self.labels_table()
+        if table:
+            return table[min(max(int(float(value)), 0), len(table) - 1)]
+        if self.display_center is not None:
+            offset = round(float(value) - float(self.display_center), 2)
+            return "0" if offset == 0 else f"{offset:+g}"
+        return str(round(value, 2))
+
+    def fraction(self, value: float) -> float:
+        """Where ``value`` sits between min and max, 0..1, for drawing. Surge's
+        controls run 0..1, mono2k's 0..127: the drawing must not assume either."""
+        span = self.max - self.min
+        if span <= 0:
+            return 0.0
+        return min(max((value - self.min) / span, 0.0), 1.0)
 
     def draw(self, ctx: Any, x_part: int, draw_lock: bool = False, lock_value: float | None = None) -> None:
         font_color = definitions.WHITE        
@@ -116,11 +285,13 @@ class OSCControl(object):
                 ctx,
                 x_part,
                 margin_top + name_height,
-                str(round(value, 2)),
+                self.display_text(value),
                 # str(self.string),
                 height=val_height,
                 font_color=color,
-                margin_left=int(value / self.max * 80 + 10),
+                # (words don't fit where a number rides along with the knob)
+                center_horizontally=self.has_value_labels,
+                margin_left=int(self.fraction(value) * 80 + 10),
             )
 
             # Knob
@@ -145,7 +316,7 @@ class OSCControl(object):
             ctx.stroke()
 
             # Inner line
-            bipolar_value = value / self.max - 0.5 * self.max
+            bipolar_value = self.fraction(value) - 0.5
             ctx.move_to(xc, yc)
             ctx.line_to(xc + length, yc)
             ctx.set_source_rgb(*definitions.get_color_rgb_float(definitions.GRAY_LIGHT))
@@ -160,16 +331,15 @@ class OSCControl(object):
             ctx.stroke()
 
             # Triangle indicator
-            ctx.move_to(xc + length * value / self.max, yc - triangle_padding)
+            ctx.move_to(xc + length * self.fraction(value), yc - triangle_padding)
             ctx.line_to(
-                xc + length * value / self.max - triangle_size,
+                xc + length * self.fraction(value) - triangle_size,
                 yc - triangle_padding - 2 * triangle_size,
             )
             ctx.line_to(
-                xc + length * value / self.max + triangle_size,
+                xc + length * self.fraction(value) + triangle_size,
                 yc - triangle_padding - 2 * triangle_size,
             )
-            ctx.move_to(xc + length * value, yc - triangle_padding)
             ctx.close_path()
             ctx.set_source_rgb(*definitions.get_color_rgb_float(color))
             ctx.fill()
@@ -197,11 +367,13 @@ class OSCControl(object):
                 ctx,
                 x_part,
                 margin_top + name_height,
-                str(round(value, 2)),
+                self.display_text(value),
                 # str(self.string),
                 height=val_height,
                 font_color=color,
-                margin_left=int(value / self.max * 80 + 10),
+                # (words don't fit where a number rides along with the knob)
+                center_horizontally=self.has_value_labels,
+                margin_left=int(self.fraction(value) * 80 + 10),
             )
 
             # Knob
@@ -235,22 +407,21 @@ class OSCControl(object):
 
             # Outer line
             ctx.move_to(xc, yc)
-            ctx.line_to(xc + length * value / self.max, yc)
+            ctx.line_to(xc + length * self.fraction(value), yc)
             ctx.set_source_rgb(*definitions.get_color_rgb_float(color))
             ctx.set_line_width(3)
             ctx.stroke()
 
             # Triangle indicator
-            ctx.move_to(xc + length * value / self.max, yc - triangle_padding)
+            ctx.move_to(xc + length * self.fraction(value), yc - triangle_padding)
             ctx.line_to(
-                xc + length * value / self.max - triangle_size,
+                xc + length * self.fraction(value) - triangle_size,
                 yc - triangle_padding - 2 * triangle_size,
             )
             ctx.line_to(
-                xc + length * value / self.max + triangle_size,
+                xc + length * self.fraction(value) + triangle_size,
                 yc - triangle_padding - 2 * triangle_size,
             )
-            ctx.move_to(xc + length * value, yc - triangle_padding)
             ctx.close_path()
             ctx.set_source_rgb(*definitions.get_color_rgb_float(color))
             ctx.fill()
@@ -305,10 +476,11 @@ class OSCControl(object):
             ctx,
             x_part,
             margin_top + name_height,
-            str(round(value, 2)),
+            self.display_text(value),
             height=val_height,
             font_color=color,
-            margin_left=int(value / self.max * line_width * 0.75 + 10),
+            center_horizontally=self.has_value_labels,
+            margin_left=int(self.fraction(value) * line_width * 0.75 + 10),
         )
 
         radius = name_height / 2
@@ -340,18 +512,36 @@ class OSCControl(object):
     def set_state(self, address: str, *args: Any) -> None:
         value, *rest = args
         self.log.debug((address, value))
+        if self.lock_echoes.contains(value):
+            return  # a p-lock coming back: the knob stays where it was
         self.value = value
         # this human readable string doesn't change with knob movements, querry fixes it but makes it glitchy
         # self.string = string
 
+    @property
+    def quantized(self) -> bool:
+        """Whether the value moves in whole steps: an explicit ``step``, or a
+        MIDI-style 0..127 range (mono2k), where a click is already one unit."""
+        return self.step is not None or (self.max - self.min) >= SCALING_FACTOR
+
+    def scaled_increment(self, increment: float) -> float:
+        """How far ``increment`` clicks move the value, with acceleration."""
+        factor = self.acceleration.factor(increment)
+        if self.quantized:
+            # Whole steps only: never less than one step a click (with
+            # ACCEL_FAST at 1.0, always exactly one, as before)
+            unit = self.step if self.step is not None else (self.max - self.min) / SCALING_FACTOR
+            return round(increment * max(1, round(factor)) * unit, DECIMAL_PLACES)
+        return increment * factor * normal_click(self.min, self.max)
+
     def update_value(self, increment: float, **kwargs: Any) -> None:
-        scaled = scale_value(increment, self.min, self.max)
+        scaled = self.scaled_increment(increment)
         if self.value + scaled > self.max:
             self.value = self.max
         elif self.value + scaled < self.min:
             self.value = self.min
         else:
-            self.value += scaled
+            self.value = round(self.value + scaled, FINE_DECIMAL_PLACES)
         # print("update value: adress", self.address, "value", self.value)
         # Send cc message, subtract 1 to number because MIDO works from 0 - 127
         # msg = mido.Message('control_change', control=self.address, value=self.value)
@@ -437,20 +627,23 @@ class OSCControlMacro(object):
         self.min: float = 0.0
         self.max: float = 1.0
         self.value: float = 0.0
+        self.lock_echoes: RecentSends = RecentSends()   # (see OSCControl)
         self.modmatrix: bool = config.get("modmatrix", True)
         self.get_color_func: ColorFunc = get_color_func or (lambda: definitions.GRAY_LIGHT)
         self.params: list[ConfigDict] = config["params"]
         self.send_osc_func: OscSendFunc = send_osc_func or (lambda addr, val: None)
         self.log = logger.getChild("Macro")
+        self.acceleration: EncoderAcceleration = EncoderAcceleration()
 
     def update_value(self, increment: float, **kwargs: Any) -> None:
-        scaled = scale_value(increment, self.min, self.max)
+        factor = self.acceleration.factor(increment)
+        scaled = increment * factor * normal_click(self.min, self.max)
         if self.value + scaled > self.max:
             self.value = self.max
         elif self.value + scaled < self.min:
             self.value = self.min
         else:
-            self.value += scaled
+            self.value = round(self.value + scaled, FINE_DECIMAL_PLACES)
         # print("update value: adress", self.address, "value", self.value)
         # Send cc message, subtract 1 to number because MIDO works from 0 - 127
         # msg = mido.Message('control_change', control=self.address, value=self.value)
@@ -466,8 +659,40 @@ class OSCControlMacro(object):
     def set_state(self, address: str, *args: Any) -> None:
         value, *rest = args
         self.log.debug((address, value))
+        if self.lock_echoes.contains(value):
+            return  # a p-lock coming back: the knob stays where it was
         self.value = scale_value(value, self.min, self.max)
         # Find by index
+
+
+# Surge XT echoes every parameter value it receives back to the app. An echo
+# can arrive after the user has already turned further, and applying it then
+# jumps the control back. Controls remember what they sent recently and ignore
+# those echoes; anything else (e.g. a preset load) is still applied.
+ECHO_WINDOW_SECONDS = 1.0
+
+
+class RecentSends(object):
+    def __init__(self, window: float = ECHO_WINDOW_SECONDS, clock: Callable[[], float] = time.monotonic) -> None:
+        self.window = window
+        self.clock = clock
+        self._sent: list[tuple[float, float]] = []  # (time, value)
+
+    def add(self, value: Any) -> None:
+        if value is None:
+            return
+        self._prune()
+        self._sent.append((self.clock(), float(value)))
+
+    def contains(self, value: Any) -> bool:
+        if value is None:
+            return False
+        self._prune()
+        return any(abs(sent - float(value)) < 1e-6 for _, sent in self._sent)
+
+    def _prune(self) -> None:
+        cutoff = self.clock() - self.window
+        self._sent = [entry for entry in self._sent if entry[0] >= cutoff]
 
 
 class OSCControlSwitch(object):
@@ -509,6 +734,17 @@ class OSCControlSwitch(object):
         self.get_color_func: ColorFunc = get_color_func or (lambda: definitions.GRAY_LIGHT)
         self.send_osc_func: OscSendFunc = send_osc_func or (lambda addr, val: None)
         self.modmatrix: bool = config.get("modmatrix", True)
+        # Optional fixed encoder speed: clicks needed to move one group. Without
+        # it, a full 127-click sweep covers all groups, so switches with many
+        # groups (e.g. 13 filter families) change every few clicks.
+        self.clicks_per_group: float | None = config.get("clicks_per_group", None)
+        # Optional title above it, as a menu's menu_label (and drawn the same
+        # height, so its selection lines up with menus and range controls)
+        self.menu_label: str | None = config.get("menu_label", None)
+        # Optional: a value coming back for the switch's (family) address moves it
+        # to the group whose menu holds that value, not only its first item's
+        # (mono2k's LFO destination: a device per group, its parameters a menu)
+        self.select_by_value: bool = bool(config.get("select_by_value", False))
         self.log = logger.getChild(f"{self.label}:Switch")
         groups = config.get("groups", [])
 
@@ -522,6 +758,12 @@ class OSCControlSwitch(object):
             )
 
             self.groups.append(group_control)
+
+        # A "type family" switch (filter/waveshaper type) has groups with no
+        # onselect message, each starting with a menu on one shared address.
+        # Choosing a group there must set that address in Surge.
+        self.family_address: str | None = self._find_family_address()
+        self.recent_sends = RecentSends()
 
         if (
             len(self.groups) > 0
@@ -540,10 +782,15 @@ class OSCControlSwitch(object):
 
     def update_value(self, increment: float, **kwargs: Any) -> None:
         prev_idx = int(self.value)
-        scaled = scale_value(increment, 0, len(self.groups))
-        if 0 <= (self.value + scaled) <= len(self.groups):
-            self.value += scaled
-            self.knob_value = self.value
+        if self.clicks_per_group:
+            scaled = increment / self.clicks_per_group
+        else:
+            scaled = scale_value(increment, 0, len(self.groups))
+        # Stay within the groups: the value used to reach len(groups), one past
+        # the last, and drawing it raised IndexError (and stopped the app)
+        last = float(max(len(self.groups) - 1, 0))
+        self.value = min(max(self.value + scaled, 0.0), last)
+        self.knob_value = self.value
         if int(self.value) != prev_idx:
             active = self.get_active_group()
             if active:
@@ -551,7 +798,35 @@ class OSCControlSwitch(object):
                     self.send_osc_func(
                         active.message["address"], float(active.message["value"])
                     )
+                elif self.family_address is not None:
+                    # Without this, select() below only *queried* Surge, which
+                    # answered with the old type, and set_state() moved the
+                    # switch straight back: the filter type couldn't be changed.
+                    item = self._family_menu(active).get_active_menu_item()
+                    if item is not None:
+                        self.recent_sends.add(item.value)
+                        item.select()
                 active.select()
+
+    def _family_menu(self, group: "OSCGroup") -> "OSCControlMenu":
+        return group.controls[0]
+
+    def _find_family_address(self) -> str | None:
+        addresses = set()
+        for group in self.groups:
+            if group.message or not group.controls:
+                return None
+            first = group.controls[0]
+            if not isinstance(first, OSCControlMenu) or not first.items:
+                return None
+            addresses |= {item.address for item in first.items}
+        return addresses.pop() if len(addresses) == 1 else None
+
+    def _move_to_group(self, idx: int) -> None:
+        # Already on this group: keep the fractional position so the encoder's
+        # progress towards the next group isn't thrown away.
+        if int(self.value) != idx:
+            self.value = float(idx)
 
     def update_value_lock(self, value) -> None:
         self.lock_value = value
@@ -586,18 +861,32 @@ class OSCControlSwitch(object):
 
     def set_state(self, address: str, *args: Any) -> None:
         # print("Control switch args", args)
-        value, label = args
+        # Surge sends a value and a label; a MIDI-CC engine's echo only the value
+        value, *rest = args
         # print("switch val = ", value)
         self.log.debug((address, args))
+        if address == self.family_address and self.recent_sends.contains(value):
+            # Our own type change coming back (possibly late, after the user
+            # has turned on further): applying it would jump the switch back.
+            return
+        if self.select_by_value and address == self.family_address:
+            for idx, group in enumerate(self.groups):
+                menu = self._family_menu(group)
+                if any(item.value is not None and int(round(float(item.value))) == int(round(float(value)))
+                       for item in menu.items):
+                    self._move_to_group(idx)
+                    self.knob_value = self.value          # (what draw() shows)
+                    return
+            return
         # TODO do we need the following?
         for idx, group in enumerate(self.groups):
             for control in group.controls:
                 if isinstance(control, OSCControl) and control.address == address:
-                    self.value = float(idx)
+                    self._move_to_group(idx)
                 elif isinstance(control, OSCControlMacro) and any(
                     [param for param in control.params if param["address"] == address]
                 ):
-                    self.value = float(idx)
+                    self._move_to_group(idx)
                 elif isinstance(control, OSCControlMenu) and (
                     any([item for item in control.items if item.address == address])
                     or control.address == address
@@ -606,10 +895,11 @@ class OSCControlSwitch(object):
                     if (
                         isinstance(first, OSCControlMenu)
                         and first.items
-                        and int(first.items[0].message["value"]) == int(value)
+                        and first.items[0].value is not None
+                        and int(first.items[0].value) == int(value)
                         and first.items[0].address == address
                     ):
-                        self.value = float(idx)
+                        self._move_to_group(idx)
 
     def draw(self, ctx: Any, offset: int,  draw_lock: bool = False, lock_value: float | None = None) -> None:
         margin_top = 30
@@ -640,6 +930,22 @@ class OSCControlSwitch(object):
     
                 
         
+        if not self.groups:
+            return
+        idx = min(max(idx, 0), len(self.groups) - 1)
+        tip_top = 0
+        if self.menu_label:
+            tip_top = 25
+            show_text(
+                ctx,
+                offset,
+                tip_top,
+                self.menu_label,
+                height=20,
+                font_color=definitions.WHITE,
+                center_horizontally=True,
+            )
+        margin_top += tip_top   # (a stray value or lock must not crash the display)
         if len(self.groups) > idx + 1:
             next_label = self.groups[idx + 1].label
 
@@ -850,8 +1156,12 @@ class OSCControlMenu(object):
         self.message: ConfigDict | None = config.get("onselect", None)
         self.address: str | None = self.message["address"] if self.message else None
         self.value: float | int | None = self.message["value"] if self.message else None
-        self.size: int = 0
+        self.size: int = 1                  # (one encoder and one place on the display)
         self.log = logger.getChild(f"{self.label}:Menu")
+        self.recent_sends = RecentSends()
+        # Optional: items moved per encoder click. Without it a full 127-click
+        # sweep covers the whole menu, so a short menu takes ~40 clicks an item.
+        self.step: float | None = config.get("step", None)
 
         for item in config.get("items", []):
             self.items.append(OSCMenuItem(item, send_osc_func=send_osc_func))
@@ -863,15 +1173,30 @@ class OSCControlMenu(object):
         
     def set_state(self, address: str, value: float, *args: Any) -> None:
         self.log.debug((address, value))
-        self.value = self.get_closest_idx(value)
+        if self.recent_sends.contains(value):
+            return  # our own selection coming back, possibly after a newer one
+        idx = self.get_closest_idx(value)
+        if idx is None:
+            return  # nothing here means that value (e.g. wavetables not found)
+        # Surge echoes back every value we send. If the echo names the item
+        # that's already selected, keep our fractional position: snapping to
+        # the integer index on every echo threw away the encoder's progress
+        # towards the next item, so the menu could never be moved.
+        if idx is not None and self.value is not None and idx == math.floor(self.value):
+            return
+        self.value = idx
 
     def query(self) -> None:
         if self.address:
             self.send_osc_func("/q" + self.address, None)
 
     def update_value(self, increment: float, **kwargs: Any) -> None:
-        scaled = scale_value(increment, 0, len(self.items))
+        if self.step is not None:
+            scaled = increment * self.step
+        else:
+            scaled = scale_value(increment, 0, len(self.items))
         current = self.value if self.value is not None else 0.0
+        prev_item = self.get_active_menu_item()
         new_value = current + scaled
 
         # print(self.label, min_item_value, max_item_value, scaled, self.value, new_value)
@@ -882,8 +1207,12 @@ class OSCControlMenu(object):
         elif new_value > len(self.items) - 1:
             self.value = len(self.items) - 1
 
+        # Only tell Surge when the selected item actually changes (as
+        # OSCControlSwitch does). Sending the same item on every encoder click
+        # made Surge echo it straight back, and each echo reset the menu.
         active_item = self.get_active_menu_item()
-        if active_item is not None:
+        if active_item is not None and active_item is not prev_item:
+            self.recent_sends.add(active_item.value)
             active_item.select()
 
     def get_active_menu_item(self) -> OSCMenuItem | None:
@@ -892,7 +1221,18 @@ class OSCControlMenu(object):
         return None
 
     def get_closest_idx(self, value: float) -> int | None:
-        closest_value = closest([float(item.value) for item in self.items if item.value is not None], value)
+        try:
+            whole = int(float(value))
+        except (TypeError, ValueError):
+            whole = None
+        if whole is not None:
+            for idx, item in enumerate(self.items):
+                if item.range is not None and item.range[0] <= whole <= item.range[1]:
+                    return idx
+        values = [float(item.value) for item in self.items if item.value is not None]
+        if not values:
+            return None
+        closest_value = closest(values, value)
         for idx, item in enumerate(self.items):
             if item.value == closest_value:
                 return idx
@@ -1050,12 +1390,42 @@ class OSCMenuItem(object):
         if config.get("$type", None) != "menu-item":
             raise Exception("Invalid config passed to new OSCMenuItem")
 
-        self.label: str = config.get("label", "")
+        self.label = config.get("label", "")
         self.message: ConfigDict | None = config.get("onselect", None)
         self.modmatrix: bool = config.get("modmatrix", True)
         self.address: str | None = self.message["address"] if self.message else None
         self.value: float | int | None = self.message["value"] if self.message else None
+        # Optional: a Surge factory wavetable, "Category/Name". Its id depends on
+        # the machine Surge runs on, so it's looked up here (see wavetables.py);
+        # an unknown name leaves the item inert rather than picking another table.
+        self.wavetable: str | None = config.get("wavetable", None)
+        if self.wavetable is not None:
+            self.value = wavetables.wavetable_id(self.wavetable)
+        # Optional: [lo, hi], every whole value that means this item (mono2k's
+        # choices are runs of values, not all the same length)
+        self.range: list[int] | None = config.get("range", None)
         self.send_osc_func: OscSendFunc = send_osc_func or (lambda addr, val: None)
+        # Optional: {"slot": s, "control": k}: the item names the k-th control of
+        # the device slot s shows (mono2k's LFO destinations on the machine page).
+        # Whoever owns the devices sets label_func to resolve it; until then, and
+        # whenever it has nothing, the static label shows.
+        self.label_from: ConfigDict | None = config.get("label_from", None)
+        self.label_func: Callable[[], str | None] | None = None
+
+    @property
+    def label(self) -> str:
+        if self.label_func is not None:
+            try:
+                dynamic = self.label_func()
+            except Exception:
+                dynamic = None
+            if dynamic:
+                return dynamic
+        return self._label
+
+    @label.setter
+    def label(self, value: str) -> None:
+        self._label = value
 
     def select(self) -> None:
         if self.address is not None and self.value is not None:

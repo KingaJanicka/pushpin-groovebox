@@ -117,6 +117,20 @@ class MainControlsMode(definitions.PyshaMode):
         else:
             self.push.buttons.set_button_color(ADD_DEVICE_BUTTON, definitions.BLACK)
 
+        # Engine selection (ADD TRACK): blinking while its menu is open
+        if self.app.is_mode_active(self.app.engine_selection_mode):
+            self.push.buttons.set_button_color(
+                ADD_TRACK_BUTTON,
+                definitions.WHITE,
+                animation=definitions.DEFAULT_ANIMATION,
+            )
+        else:
+            self.push.buttons.set_button_color(
+                ADD_TRACK_BUTTON,
+                definitions.OFF_BTN_COLOR,
+                push2_constants.ANIMATION_STATIC,
+            )
+
     def on_button_pressed(self, button_name):
         if button_name == NOTE_BUTTON:
             self.app.toggle_melodic_rhythmic_slice_modes()
@@ -162,6 +176,9 @@ class MainControlsMode(definitions.PyshaMode):
             if self.app.preset_selection_mode.should_be_enabled():
                 self.app.toggle_preset_selection_mode()
                 self.app.buttons_need_update = True
+            return True
+        elif button_name == ADD_TRACK_BUTTON:
+            self.app.toggle_engine_selection_mode()
             return True
         elif button_name == ADD_DEVICE_BUTTON:
             if self.app.menu_mode.should_be_enabled():

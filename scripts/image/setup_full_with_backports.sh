@@ -25,7 +25,13 @@ echo PIPEWIRE_CONFIGURATION_PATH=$PIPEWIRE_CONFIGURATION_PATH
 OVERWITCH_FOLDER_NAME="overwitch"
 echo OVERWITCH_FOLDER_NAME=$OVERWITCH_FOLDER_NAME
 
-echo USE_DEV_BRANCH=${USE_DEV_BRANCH:-(unset)}
+# Git ref (tag or branch) of pushpin-groovebox to install. create-image-with-backports.sh
+# prepends PUSHPIN_REF/PUSHPIN_REPO to a generated copy of this script, because sdm
+# runs it in a clean environment where the caller's variables are not visible.
+PUSHPIN_REPO="${PUSHPIN_REPO:-https://github.com/kingajanicka/pushpin-groovebox}"
+PUSHPIN_REF="${PUSHPIN_REF:-dev}"
+echo PUSHPIN_REPO=$PUSHPIN_REPO
+echo PUSHPIN_REF=$PUSHPIN_REF
 
 
 # Start logging
@@ -47,11 +53,18 @@ echo "Adding Bookworm backports"
 apt install -y pipewire/bookworm-backports pipewire-pulse/bookworm-backports pipewire-alsa/bookworm-backports libpipewire-0.3-modules/bookworm-backports pipewire-bin/bookworm-backports pipewire-jack/bookworm-backports wireplumber/bookworm-backports
 
 echo "Adding initial packages"
-apt install -y python3-brlapi raspberrypi-ui-mods libjson-glib-dev libgtk-4-dev 
+# No desktop on this Lite image: raspberrypi-ui-mods pulled in lightdm and a
+# full desktop, which fights the console auto-login on tty1, and nothing needs
+# libgtk-4-dev (Overwitch is built CLI_ONLY, so its GTK 4 GUI isn't built).
+# Overwitch needs json-glib (device file), and overwitch-service also needs
+# libsystemd and glib-2.0.
+apt install -y python3-brlapi libjson-glib-dev libglib2.0-dev
 apt install -y libusb-dev libsystemd-dev
+# Session D-Bus for the lingering pushpin user manager (overwitch-service needs it)
+apt install -y dbus-user-session
 apt install -y autopoint gettext
 apt install -y libasound2-dev libjack-dev libsamplerate0-dev libsndfile1-dev
-apt install -y python3-dev libcairo2-dev
+apt install -y python3-dev python3-venv libcairo2-dev
 apt install -y git automake libtool
 
 # For Overwitch 
@@ -69,9 +82,13 @@ apt install surge-xt-nightly -y
 
 echo "Building Overwitch"
 cd $OVERWITCH_SOURCE_PATH
-git clone https://github.com/dagargo/overwitch
+# 2.0+ is needed: the app looks for the "overwitch-service" client, which older
+# releases don't build. The service's systemd user unit is written further down
+# (see "Installing Overwitch systemd user service").
+OVERWITCH_VERSION="2.2"
+git clone --branch "$OVERWITCH_VERSION" https://github.com/dagargo/overwitch \
+    || { echo "ERROR: could not clone Overwitch $OVERWITCH_VERSION"; exit 1; }
 cd $OVERWITCH_FOLDER_NAME
-git checkout 7e4743a
 autoreconf --install
 ./configure  CLI_ONLY=yes
 make
@@ -79,13 +96,6 @@ make install
 ldconfig
 cd udev
 make install
-cd $OVERWITCH_SOURCE_PATH/systemd
-make install
-systemctl --user enable overwitch.service
-# We need to run it through pw-jack so update service with correct invocation
-sed -i "s/overwitch-service/pw-jack overwitch-service/" /etc/systemd/user/overwitch.service
-
-
 
 echo "Installing PureData"
 apt install puredata -y
@@ -103,6 +113,7 @@ OVERWITCH_INSTALL_PATHS=(
     "/usr/local/bin/overwitch-record"
     "/usr/local/bin/overwitch-play"
     "/usr/local/bin/overwitch-cli"
+    "/usr/local/bin/overwitch-service"
     "/usr/local/include/overwitch.h"
     "/usr/local/lib/liboverwitch.*"
 )
@@ -118,34 +129,20 @@ done
 
 
 
-# Ensure /etc/rc.local exists and is executable
-if [ ! -f /etc/rc.local ]; then
-    echo "#!/bin/sh -e" > /etc/rc.local
-    echo "exit 0" >> /etc/rc.local
-fi
-chmod +x /etc/rc.local
-
-# Remove 'exit 0' from /etc/rc.local if it exists
-sed -i '/^exit 0$/d' /etc/rc.local
-
-# Append the commands
-cat <<EOF >> /etc/rc.local
-
-# Commands to install Overwitch udev rules
-cd $OVERWITCH_SOURCE_PATH/$OVERWITCH_FOLDER_NAME/udev
-make install
-
-exit 0
-EOF
+# The Overwitch udev rules are (re)installed once by the sdm first-boot script
+# above. They used to be reinstalled from /etc/rc.local on EVERY boot, which
+# held up the tty1 getty (it waits for rc-local) and re-triggered every udev
+# device, the Push 2 included.
 
 echo "Installing Pushpin"
 cd $PUSHPIN_SOURCE_PATH
-git clone https://github.com/kingajanicka/pushpin-groovebox/ $PUSHPIN_SOURCE_PATH/pushpin-groovebox
+git clone --branch "$PUSHPIN_REF" "$PUSHPIN_REPO" "$PUSHPIN_SOURCE_PATH/pushpin-groovebox" \
+    || { echo "ERROR: could not clone $PUSHPIN_REPO at $PUSHPIN_REF"; exit 1; }
 
 ln -s $PUSHPIN_SOURCE_PATH/pushpin-groovebox/pushpin_groovebox.conf $PIPEWIRE_CONFIGURATION_PATH/pushpin_groovebox.conf
 
 echo "Installing Pushpin deps"
-python -m venv $PYTHON_ENVIRONMENT_PATH/venv_pushpin_groovebox
+python3 -m venv $PYTHON_ENVIRONMENT_PATH/venv_pushpin_groovebox
 
 . $PYTHON_ENVIRONMENT_PATH/venv_pushpin_groovebox/bin/activate
 cd $PUSHPIN_SOURCE_PATH/pushpin-groovebox
@@ -155,8 +152,57 @@ pip install ratelimit
 pip install pytest
 pip install pytest-asyncio
 
-chown -R $USER_NAME:audio $USER_HOME_PATH 
-chmod -R 755 $USER_HOME_PATH
+echo "Building m2k-jack (the mono2k engine behind ADD TRACK's Monomachine)"
+# Needs a C compiler, patch, pkg-config and JACK's headers (libjack-dev, above,
+# is libjack-jackd2-dev on Bookworm; at run time pw-jack points it at PipeWire's
+# JACK). build.sh fetches MONO2K at its pinned commit, so this needs the network.
+# Without m2k-jack every track still works, but only on Surge XT.
+apt install -y build-essential pkg-config patch
+M2K_DIR="$PUSHPIN_SOURCE_PATH/pushpin-groovebox/engines/m2k"
+if [ -f "$M2K_DIR/build.sh" ]; then
+    M2K_REQUIRE_JACK=1 bash "$M2K_DIR/build.sh" \
+        || { echo "ERROR: m2k-jack did not build; tracks could not play Monomachine"; exit 1; }
+    "$M2K_DIR/build/m2k-jack" --list-machines > /dev/null \
+        || { echo "ERROR: m2k-jack was built but does not run"; exit 1; }
+    echo "m2k-jack built: $M2K_DIR/build/m2k-jack"
+else
+    echo "Note: this pushpin-groovebox has no engines/m2k; tracks will play Surge XT only"
+fi
+
+echo "Installing pushpin-diag"
+# Read-only health report; on every image, diagnostics mode or not.
+DIAG_SCRIPT="$PUSHPIN_SOURCE_PATH/pushpin-groovebox/scripts/diagnostics/pushpin-diag.sh"
+if [ -f "$DIAG_SCRIPT" ]; then
+    install -m 755 "$DIAG_SCRIPT" /usr/local/bin/pushpin-diag
+else
+    echo "Warning: $DIAG_SCRIPT not in $PUSHPIN_REF; pushpin-diag not installed"
+fi
+
+PUSHPIN_DIAG_PUBKEY_TEXT="${PUSHPIN_DIAG_PUBKEY_TEXT:-}"
+if [ -n "$PUSHPIN_DIAG_PUBKEY_TEXT" ]; then
+    echo "Enabling diagnostics mode"
+    # Key-based SSH for the pushpin user, so diagnostics can run unattended.
+    mkdir -p "$USER_HOME_PATH/.ssh"
+    touch "$USER_HOME_PATH/.ssh/authorized_keys"
+    grep -qxF "$PUSHPIN_DIAG_PUBKEY_TEXT" "$USER_HOME_PATH/.ssh/authorized_keys" \
+        || echo "$PUSHPIN_DIAG_PUBKEY_TEXT" >> "$USER_HOME_PATH/.ssh/authorized_keys"
+    chmod 700 "$USER_HOME_PATH/.ssh"
+    chmod 600 "$USER_HOME_PATH/.ssh/authorized_keys"
+    systemctl enable ssh
+
+    # Reachable as pushpin.local (Raspberry Pi Imager's own hostname setting,
+    # if used when flashing, overrides this).
+    apt install -y avahi-daemon
+    echo pushpin > /etc/hostname
+    sed -i 's/^127\.0\.1\.1.*/127.0.1.1\tpushpin/' /etc/hosts
+    grep -q '^127\.0\.1\.1' /etc/hosts || printf '127.0.1.1\tpushpin\n' >> /etc/hosts
+
+    # Read the system journal and kernel log without sudo.
+    usermod -aG adm,systemd-journal "$USER_NAME"
+
+    echo "Diagnostics image, built $(date -Is) from $PUSHPIN_REF" > /etc/pushpin-diagnostics
+fi
+
 
 
 # echo "Configuring /boot/firmware/config.txt for HiFiBerry DAC8x"
@@ -193,10 +239,24 @@ chmod -R 755 $USER_HOME_PATH
 # echo "Configuration of /boot/firmware/config.txt completed."
 
 
+# Realtime priority for PipeWire without depending on rtkit. Lingering starts
+# PipeWire at boot, at the same moment as rtkit-daemon, so PipeWire's request to
+# rtkit could go unanswered: its DAC thread then ran at normal priority and the
+# audio crackled (thousands of xruns an hour). PipeWire's
+# /etc/security/limits.d/25-pw-rlimits.conf gives the "pipewire" group rtprio 95,
+# and the systemd user manager applies those limits (pam_limits), so PipeWire
+# gets realtime priority directly. A desktop login starts PipeWire much later,
+# which is why dev machines didn't show this.
+getent group pipewire >/dev/null || groupadd --system pipewire
+usermod -aG pipewire "$USER_NAME"
+
 echo "Creating startup file"
-cat <<EOF >> $USER_HOME_PATH/start_pushpin.sh
+# Overwrite (not append) so re-running this script leaves one valid script.
+cat <<EOF > $USER_HOME_PATH/start_pushpin.sh
 #!/bin/bash
-# Path to your virtual environment
+# Started by the pushpin.service systemd user unit. Run it by hand only after
+# "systemctl --user stop pushpin", or two copies will fight over the Push 2
+# and OSC ports 1030-1047.
 VENV_PATH="$PYTHON_ENVIRONMENT_PATH/venv_pushpin_groovebox"
 PUSHPIN_PATH="$INSTALL_PATH/pushpin-groovebox"
 
@@ -209,17 +269,106 @@ else
     exit 1
 fi
 
-# Run Python commands or scripts within the virtual environment
 python --version
 cd "\${PUSHPIN_PATH}"
-./run.sh
+# Through bash, so a checkout without the executable bit on run.sh still starts.
+exec /bin/bash ./run.sh
+EOF
+chmod 755 $USER_HOME_PATH/start_pushpin.sh
 
+echo "Installing Overwitch systemd user service"
+# Written here instead of installing upstream's overwitch/systemd unit:
+# - upstream uses Type=notify-reload, which needs systemd 253+; Bookworm has 252
+#   (plain notify + ExecReload does the same job: SIGHUP reloads the config)
+# - it has to run through pw-jack to reach PipeWire's JACK API
+# The app finds Overwitch through PipeWire at startup, so pushpin.service is
+# ordered after this one. overwitch-service is a D-Bus service, which is why
+# dbus-user-session is installed above.
+SYSTEMD_USER_PATH="$USER_HOME_PATH/.config/systemd/user"
+mkdir -p "$SYSTEMD_USER_PATH/default.target.wants"
+cat <<EOF > "$SYSTEMD_USER_PATH/overwitch.service"
+[Unit]
+Description=Overwitch service (Elektron Overbridge audio)
+Requires=pipewire.service
+After=pipewire.service wireplumber.service
+
+[Service]
+Type=notify
+# "all", in case pw-jack forks instead of exec'ing overwitch-service.
+NotifyAccess=all
+ExecStart=/usr/bin/pw-jack /usr/local/bin/overwitch-service
+ExecReload=/bin/kill -HUP \$MAINPID
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
+EOF
+ln -sf ../overwitch.service "$SYSTEMD_USER_PATH/default.target.wants/overwitch.service"
+
+echo "Installing pushpin systemd user service"
+# Exactly one copy of the app, started at boot by the pushpin user's systemd
+# manager. Previously .profile ran start_pushpin.sh, so every login shell
+# (the tty1 auto-login AND each SSH session) started its own copy.
+cat <<EOF > "$SYSTEMD_USER_PATH/pushpin.service"
+[Unit]
+Description=Pushpin groovebox
+# Wants, not Requires: the app still runs if Overwitch fails to start.
+Wants=pipewire.service wireplumber.service overwitch.service
+After=pipewire.service wireplumber.service overwitch.service
+
+[Service]
+Type=simple
+# Without this Python buffers print() output and the journal stays empty.
+Environment=PYTHONUNBUFFERED=1
+ExecStart=$USER_HOME_PATH/start_pushpin.sh
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target
+EOF
+# Equivalent of "systemctl --user enable pushpin.service", which can't run as
+# root inside the sdm build container.
+ln -sf ../pushpin.service "$SYSTEMD_USER_PATH/default.target.wants/pushpin.service"
+
+# Equivalent of "loginctl enable-linger pushpin": start the user manager (and so
+# pipewire and pushpin.service) at boot without waiting for a login.
+mkdir -p /var/lib/systemd/linger
+touch /var/lib/systemd/linger/$USER_NAME
+
+echo "Preferring the audio HAT over HDMI for the default output"
+# The DAC HAT and HDMI outputs have equal priority, so with a monitor plugged
+# in WirePlumber made HDMI the default sink. Pure Data connects its outputs to
+# the default sink when it starts, so all audio went to the monitor and the
+# HAT stayed silent. Lowering HDMI's priority makes any other ALSA output (the
+# HAT) win; HDMI remains selectable. Syntax is for WirePlumber 0.5 (backports).
+WIREPLUMBER_CONF_PATH="$USER_HOME_PATH/.config/wireplumber/wireplumber.conf.d"
+mkdir -p "$WIREPLUMBER_CONF_PATH"
+cat <<'EOF' > "$WIREPLUMBER_CONF_PATH/51-pushpin-prefer-hat.conf"
+# Pushpin: prefer an audio HAT (or any other ALSA output) over HDMI, so the
+# default sink, and so Pure Data, does not follow the monitor.
+monitor.alsa.rules = [
+  {
+    matches = [
+      { node.name = "~alsa_output.*hdmi.*" }
+    ]
+    actions = {
+      update-props = {
+        priority.session = 100
+        priority.driver = 100
+      }
+    }
+  }
+]
 EOF
 
-chown $USER_NAME:audio $USER_HOME_PATH/start_pushpin.sh
-chmod +x $USER_HOME_PATH/start_pushpin.sh
+# Make sure no older autostart hook is left in .profile.
+[ -f $USER_HOME_PATH/.profile ] && sed -i '/start_pushpin\.sh/d' $USER_HOME_PATH/.profile
 
-echo "./start_pushpin.sh" >> $USER_HOME_PATH/.profile
+# Everything under the home folder was created by root; hand it to the user.
+# Ownership only: a blanket chmod -R 755 made every file executable and
+# opened private files (e.g. ~/.ssh) to other users.
+chown -R $USER_NAME:audio $USER_HOME_PATH
 
 echo "---------------------------------------------"
 echo "Script completed at: $(date)"
