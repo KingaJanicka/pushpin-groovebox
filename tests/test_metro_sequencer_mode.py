@@ -30,7 +30,6 @@ def metro(app, mocker):
     mode.selected_track = TRACK_NAMES_METRO[0]
     mode.metro_seq_pad_state = {}
     mode.instrument_scale_edit_controls = {}
-    mode.rachets = {}
     mode.pads_press_time = [False] * 64
     mode.steps_held = []
     mode.show_scale_menu = False
@@ -182,7 +181,6 @@ def metro_for_init(app, mocker):
     mode.instrument_sequencers = {}
     mode.metro_seq_pad_state = {}
     mode.instrument_scale_edit_controls = {}
-    mode.rachets = {}
     mode.playhead = 0
     mode.global_timeline = MagicMock()
     # Patch SequencerMetro so _init_instrument doesn't need real MIDI hardware.
@@ -227,11 +225,10 @@ def test_init_instrument_creates_scale_edit_controls(metro_for_init):
     assert len(controls) == 8
 
 
-def test_init_instrument_creates_rachets(metro_for_init):
+def test_init_instrument_has_no_ratchets(metro_for_init):
+    """Ratchets were only ever drawn (yellow), never played or saved, so they were removed."""
     metro_for_init._init_instrument("INST1")
-    rachets = metro_for_init.rachets["INST1"]
-    assert len(rachets) == 64
-    assert all(v is False for v in rachets)
+    assert not hasattr(metro_for_init, "rachets")
 
 
 def test_init_instrument_independent_pad_states(metro_for_init):

@@ -173,7 +173,6 @@ class MetroSequencerMode(MelodicMode):
         self.steps_held = []
         self.encoders_held = [False] * 8
         self.encoder_incr_since_held = [False] * 8
-        self.rachets = {}
 
         super().initialize(settings)
         self.global_timeline = self.app.global_timeline
@@ -198,7 +197,6 @@ class MetroSequencerMode(MelodicMode):
             self.global_timeline,
             self.app,
         )
-        self.rachets[instrument_short_name] = [False] * 64
         self.instrument_scale_edit_controls[instrument_short_name] = (
             _make_track_controls(self.get_current_instrument_color_helper)
         )
@@ -613,17 +611,11 @@ class MetroSequencerMode(MelodicMode):
 
                         # Set pad colours for on/off states of the seq
                         if seq_pad_state[i][j] is True:
-                            # If rachet is on display yellow steps
-                            
-                            if self.rachets[instrument_name][j] == True:
-                                button_colors[idx] = definitions.YELLOW
-
-                            # If not display standard step for the selected track
+                            # A step in the selected track's colour, white with p-locks
+                            if draw_lock == False:
+                                button_colors[idx] = TRACK_COLORS[self.selected_track]
                             else:
-                                if draw_lock == False:
-                                    button_colors[idx] = TRACK_COLORS[self.selected_track]
-                                else:    
-                                    button_colors[idx] = definitions.WHITE
+                                button_colors[idx] = definitions.WHITE
 
                         if self.selected_track != TRACK_NAMES_METRO[3] and (idx % 8) == gate_idx_x:
                             button_colors[idx] = definitions.PINK
@@ -818,24 +810,9 @@ class MetroSequencerMode(MelodicMode):
         # Gates track
         elif self.selected_track == TRACK_NAMES_METRO[3]:
             try:
-                instrument_shortname = self.get_current_instrument_short_name_helper()
-                
-                # TODO: bug with rachet state logic, needs an empty pad to engage
-                rachet_state = self.rachets[instrument_shortname]
-
-                # Make sure pads and right buttons are held,
-                # Set rachets on or off
-                if len(self.steps_held) != 0: 
-                    
-                    # Sets rachet state for the column
-                    if self.button_tie_pressed == True and self.button_gate_stack == True:
-                        rachet_state[idx_j] = True
-
-                    elif self.button_tie_pressed == False and self.button_gate_stack == True:
-                        rachet_state[idx_j] = False
-                        
                 self.app.pads_need_update = True
-                            # For chaning height of the stack
+
+                # SELECT held: the pad sets the height of the stage's stack
                 if (self.button_gate_stack == True):
 
                     # Turn all pads above step black, below grey
