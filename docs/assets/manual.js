@@ -315,6 +315,30 @@
     return { where: where, title: title, lines: lines };
   }
 
+  // MuteMode's rows, top to bottom: what playback does with the layer on, and muted
+  const MUTE_EFFECTS = [
+    { on: "Each note's pitch comes from the Pitch layer.",
+      muted: "Every note keeps the pitch of the last note that played; octave and velocity still follow their layers. (Before any note has played, each step's own pitch is used.)",
+      short: "notes hold the last pitch played." },
+    { on: "Each note's octave comes from the Octave layer.",
+      muted: "Every note keeps the octave of the last note that played; pitch and velocity still follow their layers.",
+      short: "notes hold the last octave played." },
+    { on: "Each note's velocity comes from the Velocity layer.",
+      muted: "Every note keeps the velocity of the last note that played; pitch and octave still follow their layers.",
+      short: "notes hold the last velocity played." },
+    { on: "The Gate layer decides which pulses play notes.",
+      muted: "The track plays no notes at all. The playhead keeps moving, and the stages' parameter locks still play on every step.",
+      short: "the track stops playing notes (locks still play)." },
+    { on: "Skipped stages are jumped over, and each note plays with its stage's chance.",
+      muted: "Nothing is skipped and every note plays: the Skip layer's skips and chances are ignored.",
+      short: "nothing is skipped and every note plays." },
+    { on: "Each step plays its stage's locks scaled by the Lock amount layer.",
+      muted: "Locks keep the scaling of the last step played before the mute, whatever the Lock amount layer says.",
+      short: "locks keep the last scaling used." },
+    { on: "A spare layer: playback doesn't use it yet.", muted: "A spare layer: muting it changes nothing.", short: "nothing changes (a spare layer)." },
+    { on: "A spare layer: playback doesn't use it yet.", muted: "A spare layer: muting it changes nothing.", short: "nothing changes (a spare layer)." },
+  ];
+
   function padHelp(r, c) {
     const m = modeData();
     const track = "Track " + (c + 1);
@@ -332,7 +356,13 @@
       return Object.assign(step, { text: text === l.pads ? "" : text, foot: l.pads });
     }
     if (state.mode === "clips") return { where: track + ", clip " + (r + 1), text: m.pads };
-    if (state.mode === "mutes") return { where: track + ", " + m.rows[r] + " layer", text: m.pads };
+    if (state.mode === "mutes") {
+      // What the muted layer does to playback (SequencerMetro, via the *_track_active flags)
+      const muted = !!DEMO.muted[r + "," + c], what = MUTE_EFFECTS[r];
+      return { where: track + ", " + m.rows[r] + " layer", title: muted ? "Muted" : "Playing",
+        lines: [muted ? what.muted : what.on, (muted ? "Tap to bring it back." : "Tap to mute it: ") + (muted ? "" : what.short)],
+        text: "", foot: m.pads };
+    }
     if (state.mode === "presets") {
       const text = state.held.select ? "SELECT is held: tap to open the browser on this slot. Turn the encoders to choose a sound, then let go." : m.pads;
       return { where: track + ", slot " + (r + 1), text: text };
