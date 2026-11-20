@@ -49,7 +49,8 @@ pre code { background: none; padding: 0; overflow-wrap: normal; }
   padding: 10px max(16px, calc((100vw - 1320px) / 2)); background: color-mix(in srgb, var(--bg) 88%, transparent);
   backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
 .brand { display: flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; font-weight: 700; letter-spacing: 0.02em; }
-.brand img { height: 26px; width: auto; }
+.brand picture, .brand img { display: block; }
+.brand img { height: 36px; width: auto; }
 .top nav { display: flex; gap: 18px; flex-wrap: wrap; }
 .top nav a { color: var(--muted); text-decoration: none; font-size: 0.95em; }
 .top nav a:hover { color: var(--ink); }

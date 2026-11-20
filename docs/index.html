@@ -8,14 +8,20 @@
   <meta name="description"
     content="Pushpin is an open-source groovebox: a Raspberry Pi 5 and an Ableton Push 2 playing eight tracks of Surge XT and mono2k. Interactive manual, guide and setup.">
   <link rel="icon" href="logo_v2.png">
-  <link rel="stylesheet" href="assets/site.css?v=14">
+  <link rel="stylesheet" href="assets/site.css?v=15">
 </head>
 
 <body>
   <a class="skip" href="#manual-section">Skip to the manual</a>
 
   <header class="top">
-    <a class="brand" href="./"><img src="logo_v2.png" alt="Pushpin" width="65" height="26"></a>
+    <a class="brand" href="./">
+      <!-- the logo from the video: white on the dark theme, dark ink on the light one -->
+      <picture>
+        <source srcset="assets/logo-dark.png" media="(prefers-color-scheme: dark)">
+        <img src="assets/logo-light.png" alt="Pushpin, the hackable groovebox" width="103" height="36">
+      </picture>
+    </a>
     <nav aria-label="Sections">
       <a href="#manual-section">Manual</a>
       <a href="#guide">Guide</a>
