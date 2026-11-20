@@ -65,39 +65,89 @@
   // ---- Demo content the pads show ----------------------------------------
   const LAYER_COLOR = { pitch: "green", octave: "orange", velocity: "yellow", gate: "turquoise", skips: "red", lock_scale: "blue" };
   const DEMO = {
-    seq: seqDemo(),        // track 1's sequencer, as MetroSequencerMode keeps it
+    seqs: [],              // each track's sequencer (MetroSequencerMode.instrument_sequencers), made when first shown
     // ClipSelectionMode: which clips each track has a file for, and the clip it's on
     clipHas: [[0, 1, 2], [0, 1], [0, 1, 2, 3], [0], [0, 1], [0], [0, 1, 2, 3], [0, 1]], clipSel: [0, 1, 2, 0, 1, 0, 3, 0],
     slotSel: [0, 2, 1, 0, 4, 0, 3, 7],      // each track's current slot (last_pad_in_column_pressed)
     muted: { "3,2": 1, "0,5": 1, "4,1": 1, "1,6": 1 },
   };
-  // ---- Track 1's sequencer, in MetroSequencerMode's own terms ---------------
+  // ---- Each track's sequencer, in MetroSequencerMode's own terms ------------
   // Each layer is an 8x8 grid of pad states, row 0 at the top, one column per
   // stage: true (lit), false (dark), and in the gate layer "Off" (a pulse with
   // no gate) and "Tie". Step s of the sequencer is stage s / 8, pulse s % 8
   // counted up from the bottom pad. Parameter locks belong to a whole stage.
-  function seqDemo() {
+  const T = true, O = "Off", I = "Tie";
+  // Per track: pad heights per stage (0 = bottom row), each stage's pulses from the
+  // bottom up (the stage is as long as the list), chance rows (7 = always), skipped
+  // stages, a semitone (stage -> the lower pad), and locks "slot:control" -> value
+  const SEQ_DEMOS = [
+    { // 1: the first example: a bit of everything
+      pitch: [0, 2, 4, 0, 5, 4, 2, 7], semitone: { 6: 2 }, octave: [2, 2, 3, 2, 1, 2, 3, 4], velocity: [6, 3, 5, 3, 7, 2, 5, 4],
+      gate: [[T, O, T, T], [T, T], [T, I, T, O], [T], [T, O, T], [T, T, T, T], [T, O], [T, T, O, T, O, T, T, T]],
+      chance: [7, 7, 4, 7, 7, 3, 7, 7], skip: [4], lockScale: [7, 7, 5, 7, 7, 3, 7, 7],
+      locks: { 2: { "2:0": 0.82, "2:1": 0.6 }, 6: { "4:3": 0.7 } } },
+    { // 2: a mono2k bass line, tied notes, the filter opening on two stages
+      pitch: [0, 0, 4, 0, 0, 3, 0, 5], octave: [1, 1, 1, 2, 1, 1, 2, 1], velocity: [6, 4, 7, 4, 6, 4, 7, 3],
+      gate: [[T, I], [T], [T, O, T], [T, I, I], [T], [T, T], [T, O], [T, I, O, T]],
+      chance: [7, 7, 7, 7, 7, 7, 5, 7], skip: [], lockScale: [7, 7, 7, 7, 7, 7, 7, 7],
+      locks: { 2: { "2:0": 96 }, 7: { "2:0": 110, "2:3": 70 } } },
+    { // 3: hi-hats: long stages of short pulses, some left to chance
+      pitch: [0, 0, 0, 0, 0, 0, 0, 0], octave: [3, 3, 3, 3, 3, 3, 3, 3], velocity: [7, 3, 5, 3, 7, 3, 5, 2],
+      gate: [[T, O, T, O, T, O, T, O], [T, T, T, T], [T, O, T, O, T, O, T, T], [T, T], [T, O, T, O, T, O, T, O], [T, T, T, T], [T, O, T, T, O, T, T, O], [T, T, T, T, T, T, T, T]],
+      chance: [7, 5, 7, 4, 7, 5, 6, 3], skip: [], lockScale: [7, 7, 7, 7, 7, 7, 7, 7],
+      locks: { 7: { "4:3": 0.2 } } },
+    { // 4: a pad: long notes tied across each stage
+      pitch: [0, 2, 4, 5, 4, 2, 0, 4], octave: [3, 3, 3, 3, 3, 3, 3, 3], velocity: [4, 4, 4, 4, 5, 4, 4, 5],
+      gate: [[T, I, I, I], [T, I, I, I], [T, I, I, I], [T, I, I, I], [T, I, I, I], [T, I, I, I], [T, I, I, I], [T, I, I, I]],
+      chance: [7, 7, 7, 7, 7, 7, 7, 7], skip: [], lockScale: [7, 7, 7, 7, 7, 7, 7, 7],
+      locks: { 3: { "2:0": 0.4 }, 7: { "2:0": 0.9 } } },
+    { // 5: a lead line with a semitone and one stage skipped
+      pitch: [4, 5, 2, 4, 7, 5, 4, 2], semitone: { 1: 4 }, octave: [3, 3, 3, 3, 4, 3, 3, 3], velocity: [6, 5, 6, 5, 7, 5, 6, 4],
+      gate: [[T, T], [T, I], [T], [T, O, T], [T, T], [T, I, I], [T, O], [T]],
+      chance: [7, 7, 7, 7, 7, 6, 7, 7], skip: [6], lockScale: [7, 7, 7, 4, 7, 7, 7, 7],
+      locks: { 3: { "2:1": 0.75 } } },
+    { // 6: an arpeggio climbing the scale
+      pitch: [0, 1, 2, 3, 4, 5, 6, 7], octave: [2, 2, 2, 2, 3, 3, 3, 3], velocity: [6, 4, 5, 4, 6, 4, 5, 4],
+      gate: [[T, T], [T, T], [T, T], [T, T], [T, T], [T, T], [T, T], [T, T]],
+      chance: [7, 7, 7, 7, 7, 7, 7, 7], skip: [], lockScale: [7, 7, 7, 7, 7, 7, 7, 7],
+      locks: {} },
+    { // 7: sparse notes, mostly left to chance
+      pitch: [0, 4, 2, 6, 0, 3, 5, 1], octave: [2, 3, 2, 3, 2, 3, 2, 3], velocity: [5, 6, 4, 7, 5, 6, 4, 7],
+      gate: [[T], [T, O], [T], [T, O, O], [T], [T, O], [T], [T, O, O, O]],
+      chance: [4, 3, 5, 2, 4, 3, 5, 6], skip: [], lockScale: [7, 7, 7, 7, 7, 7, 7, 7],
+      locks: { 1: { "4:3": 0.85 } } },
+    { // 8: a sub bass, its locks fading in
+      pitch: [0, 0, 0, 0, 3, 3, 4, 4], octave: [1, 1, 1, 1, 1, 1, 1, 1], velocity: [7, 6, 7, 6, 7, 6, 7, 6],
+      gate: [[T, I, I], [T], [T, I, I], [T], [T, I, I], [T], [T, I, I], [T]],
+      chance: [7, 7, 7, 7, 7, 7, 7, 7], skip: [], lockScale: [1, 2, 3, 4, 5, 6, 7, 7],
+      locks: { 0: { "2:0": 0.7 }, 2: { "2:0": 0.7 }, 4: { "2:0": 0.7 }, 6: { "2:0": 0.7 } } },
+  ];
+
+  function seqDemo(t) {
+    const d = SEQ_DEMOS[t % SEQ_DEMOS.length];
     const grid = () => Array.from({ length: 8 }, () => new Array(8).fill(false));
     // one lit pad per stage, given as its height (0 = bottom row)
     const column = (heights) => { const g = grid(); heights.forEach((h, c) => { g[7 - h][c] = true; }); return g; };
-    const pitch = column([0, 2, 4, 0, 5, 4, 2, 7]);
-    pitch[7 - 3][6] = true;               // two neighbouring pads: the semitone between them
+    const pitch = column(d.pitch);
+    Object.entries(d.semitone || {}).forEach(([c, h]) => {           // two neighbouring pads: the semitone between
+      for (let r = 0; r < 8; r++) pitch[r][c] = false;
+      pitch[7 - h][c] = true; pitch[7 - (h + 1)][c] = true;
+    });
     const gate = grid();
-    // each stage's pulses from the bottom up; the stage is as long as the list
-    [[true, "Off", true, true], [true, true], [true, "Tie", true, "Off"], [true],
-     [true, "Off", true], [true, true, true, true], [true, "Off"], [true, true, "Off", true, "Off", true, true, true]]
-      .forEach((pulses, c) => pulses.forEach((v, h) => { gate[7 - h][c] = v; }));
-    const skips = column([7, 7, 4, 7, 7, 3, 7, 7]);   // chance rows: top = always
-    skips[7][4] = true;                                // stage 5 is skipped
+    d.gate.forEach((pulses, c) => pulses.forEach((v, h) => { gate[7 - h][c] = v; }));
+    const skips = column(d.chance);
+    d.skip.forEach((c) => { skips[7][c] = true; });
     return {
-      layers: { pitch: pitch, octave: column([2, 2, 3, 2, 1, 2, 3, 4]), velocity: column([6, 3, 5, 3, 7, 2, 5, 4]),
-        gate: gate, skips: skips, lock_scale: column([7, 7, 5, 7, 7, 3, 7, 7]) },
+      layers: { pitch: pitch, octave: column(d.octave), velocity: column(d.velocity), gate: gate, skips: skips, lock_scale: column(d.lockScale) },
       // SequencerMetro.locks, a stage at a time: "slot:control index" -> the locked value
-      // (stage 3: Filters' F1 Freq and F1 Res; stage 7: the Amplifier's Amp Release)
-      locks: [{}, {}, { "2:0": 0.82, "2:1": 0.6 }, {}, {}, {}, { "4:3": 0.7 }, {}],
+      locks: Array.from({ length: 8 }, (_, c) => Object.assign({}, d.locks[c] || {})),
       step: 0,             // SequencerMetro.step_index: there is always exactly one
     };
   }
+  // The selected track's sequencer
+  Object.defineProperty(DEMO, "seq", { get: () => DEMO.seqs[state.track] || (DEMO.seqs[state.track] = seqDemo(state.track)) });
+  // Every track's sequencer, for the clock that moves them all
+  const allSeqs = () => { for (let t = 0; t < 8; t++) if (!DEMO.seqs[t]) DEMO.seqs[t] = seqDemo(t); return DEMO.seqs; };
 
   const hasLocks = (c) => Object.keys(DEMO.seq.locks[c]).length > 0;
   // The stage whose locks show: the pad held down (MetroSequencerMode.held_lock_step)
@@ -700,7 +750,10 @@
         }
         break;
       default:
-        if (id.startsWith("lower_row_")) state.track = +id.slice(-1) - 1;
+        if (id.startsWith("lower_row_")) {
+          state.track = +id.slice(-1) - 1;
+          state.heldStep = null;                // select_instrument clears steps_held
+        }
         const layer = Object.keys(data.modes.seq.layers).find((k) => data.modes.seq.layers[k].button === id);
         if (layer && (state.mode === "seq" || state.mode === "mutes")) {
           state.layer = layer;
@@ -946,7 +999,7 @@
     state.playing = !state.playing;
     clearInterval(timer);
     if (state.playing && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      timer = setInterval(() => { DEMO.seq.step = nextStep(DEMO.seq); renderPads(); }, 125);
+      timer = setInterval(() => { allSeqs().forEach((sq) => { sq.step = nextStep(sq); }); renderPads(); }, 125);
     }
   }
 
