@@ -1,0 +1,997 @@
+{
+  "$comment": "What every Push 2 control does in each Pushpin mode. Read by docs/assets/manual.js (the interactive manual) and checked by tests/test_manual_data.py against the buttons the modes handle. A control's help is looked up in the open overlay, then the pad mode (and its layer), then 'global'. An overlay with hidesDevices stops the device controls in 'global' applying while it is open. Missing everywhere means 'Not used by Pushpin'. 'screens' is example content for the drawn Push 2 display, laid out as Pushpin draws its 960x160 screen; the device pages themselves are in devices.json, generated from definitions/ by tools/build_manual_devices.py. screens.surge_browser is an example tree (Surge's factory patches aren't in the repo); a mono2k track's browser is the real one, in devices.json.",
+  "tracks": [
+    "orange",
+    "yellow",
+    "turquoise",
+    "lime",
+    "red",
+    "pink",
+    "purple",
+    "blue"
+  ],
+  "colors": {
+    "black": "#000000",
+    "gray_dark": "#1e1e1e",
+    "gray_light": "#b4b4b4",
+    "white": "#ffffff",
+    "yellow": "#fff100",
+    "orange": "#ff8c00",
+    "red": "#e81123",
+    "pink": "#ec008c",
+    "purple": "#68217a",
+    "blue": "#00188f",
+    "cyan": "#00bcf2",
+    "turquoise": "#00b294",
+    "green": "#009e49",
+    "lime": "#bad80a"
+  },
+  "global": {
+    "note": "Switches the pads between Play (a keyboard) and the Sequencer.",
+    "session": "Opens Clips, where each track picks one of its eight clips. Press again to go back to the Sequencer.",
+    "mute": "Opens Mutes, where you switch each track's sequencer layers on and off. Press again to go back to the Sequencer.",
+    "browse": "Opens Presets: eight sound slots for every track. Press again to close.",
+    "add_track": "Opens the engine menu, where you choose whether the selected track plays Surge XT or mono2k.",
+    "add_device": "Opens the device menu for the slot you're editing: the oscillator type in an oscillator slot, the effect in an FX slot, the machine on a mono2k track.",
+    "setup": "Opens Settings. Each press moves on a page (Performance, MIDI, About); the fourth press closes it.",
+    "user": "Turns the Push 2's display off, and on again.",
+    "play": "Starts and stops the sequencer.",
+    "lower_row_1": "Selects track 1. Each button is lit in its track's colour.",
+    "lower_row_2": "Selects track 2.",
+    "lower_row_3": "Selects track 3.",
+    "lower_row_4": "Selects track 4.",
+    "lower_row_5": "Selects track 5.",
+    "lower_row_6": "Selects track 6.",
+    "lower_row_7": "Selects track 7.",
+    "lower_row_8": "Selects track 8.",
+    "upper_row_1": "Shows the first device of the row on the display. Press it again to switch between that device's pages.",
+    "upper_row_2": "Shows the track's second device. Press again for its next page.",
+    "upper_row_3": "Shows the track's third device. Press again for its next page.",
+    "upper_row_4": "Shows the track's fourth device. Press again for its next page.",
+    "upper_row_5": "Shows the track's fifth device. Press again for its next page.",
+    "upper_row_6": "Shows the track's sixth device. Press again for its next page.",
+    "upper_row_7": "Shows the track's seventh device. Press again for its next page.",
+    "upper_row_8": "Shows the track's eighth device. Press again for its next page.",
+    "page_left": "The previous page of the device on screen. Lit when there is one.",
+    "page_right": "The next page of the device on screen. Lit when there is one.",
+    "left": "Shows the track's first row of devices: on a Surge XT track the oscillators, filters, amp and effects; on a mono2k track the machine, amp, filter, FX, distortion and LFOs.",
+    "right": "Shows the track's second row of devices: on a Surge XT track the six LFOs, the macros and the mod matrix; on a mono2k track velocity, key tracking and feedback.",
+    "enc_1": "Turns the control shown above it on the display. Slow turns move in fine steps, fast turns move further.",
+    "enc_2": "Turns the second control on the display.",
+    "enc_3": "Turns the third control on the display.",
+    "enc_4": "Turns the fourth control on the display.",
+    "enc_5": "Turns the fifth control on the display.",
+    "enc_6": "Turns the sixth control on the display.",
+    "enc_7": "Turns the seventh control on the display.",
+    "enc_8": "Turns the eighth control on the display.",
+    "enc_tempo": "Changes the tempo, one BPM a click.",
+    "enc_master": "Changes the selected track's volume."
+  },
+  "modes": {
+    "play": {
+      "name": "Play",
+      "enter": "Press NOTE until the pads show a keyboard.",
+      "summary": "Play the selected track live from the pads. This can't be recorded into the sequencer",
+      "display": {
+        "title": "Device controls",
+        "labels": [
+          "Pitch",
+          "Fine",
+          "Shape",
+          "Width",
+          "Cutoff",
+          "Reso",
+          "Attack",
+          "Release"
+        ]
+      },
+      "pads": "A keyboard in fourths: each pad is a semitone above the one to its left, and each row a fourth above the row below. Pads in the track's colour are the root note (E until you change it in Settings), white pads are in its major scale and dark pads are not. Pads light green while they sound.",
+      "controls": {
+        "octave_up": "Moves the keyboard up an octave.",
+        "octave_down": "Moves the keyboard down an octave.",
+        "accent": "Fixed velocity: every pad plays at full velocity until you press it again.",
+        "shift": "Switches the touch strip between pitch bend and mod wheel.",
+        "touchstrip": "Pitch bend, or the mod wheel after SHIFT."
+      },
+      "screen": "device"
+    },
+    "seq": {
+      "name": "Sequencer",
+      "enter": "Press NOTE until the pads show steps. The buttons right of the pads pick the layer you edit.",
+      "summary": "Each track has an eight-stage sequencer, edited one layer at a time. Each column of pads is a stage. Pink is the playhead: the pulse it's on in the gate layer, its stage's lit pads in the others. Lit pads turn white on stages with parameter locks. Hold a pad (or Alt/Option-click to keep it held) to see its stage's locks on the screen; turn an encoder meanwhile to lock that control there, or press DELETE to clear them.",
+      "display": {
+        "title": "Device controls",
+        "labels": [
+          "Pitch",
+          "Fine",
+          "Shape",
+          "Width",
+          "Cutoff",
+          "Reso",
+          "Attack",
+          "Release"
+        ]
+      },
+      "controls": {
+        "1_32t": "Pitch layer: the note each stage plays.",
+        "1_32": "Octave layer: each stage's octave.",
+        "1_16t": "Velocity layer: how hard each stage plays.",
+        "1_16": "Gate layer: how many pulses each stage has and which of them play.",
+        "1_8t": "Skip layer: skip a stage, or give it a chance of playing.",
+        "1_8": "Lock amount layer: how much of each stage's parameter locks it plays.",
+        "scale": "Opens the track's timing page: gate length on encoder 1; the sequencer's time scale and length on 5 and 6; the main clock's time scale and length on 7 and 8. Press again to close.",
+        "delete": "While you hold a step: clears all of its stage's parameter locks.",
+        "enc_1": "Turns the first control on the display. While you hold a step, records a parameter lock on that step instead.",
+        "enc_2": "Turns the second control, or locks it on the step you hold.",
+        "enc_3": "Turns the third control, or locks it on the step you hold.",
+        "enc_4": "Turns the fourth control, or locks it on the step you hold.",
+        "enc_5": "Turns the fifth control, or locks it on the step you hold.",
+        "enc_6": "Turns the sixth control, or locks it on the step you hold.",
+        "enc_7": "Turns the seventh control, or locks it on the step you hold.",
+        "enc_8": "Turns the eighth control, or locks it on the step you hold."
+      },
+      "layers": {
+        "pitch": {
+          "button": "1_32t",
+          "name": "Pitch",
+          "pads": "Tap a pad to set the stage's note from the major scale: the bottom row is the root, the top row its octave. Hold two neighbouring pads in a column for the semitone between them. Hold a pad and turn an encoder to lock a control on that stage.",
+          "rows": [
+            "Octave",
+            "7th",
+            "6th",
+            "5th",
+            "4th",
+            "3rd",
+            "2nd",
+            "Root"
+          ]
+        },
+        "octave": {
+          "button": "1_32",
+          "name": "Octave",
+          "pads": "The pad's height sets the stage's octave, lowest at the bottom.",
+          "rows": [
+            "+7",
+            "+6",
+            "+5",
+            "+4",
+            "+3",
+            "+2",
+            "+1",
+            "0"
+          ]
+        },
+        "velocity": {
+          "button": "1_16t",
+          "name": "Velocity",
+          "pads": "The pad's height sets the stage's velocity: the bottom row is softest, the top row loudest.",
+          "rows": [
+            "Loudest",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Softest"
+          ]
+        },
+        "gate": {
+          "button": "1_16",
+          "name": "Gate",
+          "pads": "Each pad is a pulse, counted up from the bottom; the stage is as many pulses long as its highest lit pad, and dark pads above it aren't part of it. Tap a pulse to take its gate away (grey) or give it back. Hold SELECT and tap to set how many pulses the stage has. Hold SHIFT and tap for a tie (green). The pink pad is the playhead.",
+          "rows": [
+            "Pulse 8",
+            "Pulse 7",
+            "Pulse 6",
+            "Pulse 5",
+            "Pulse 4",
+            "Pulse 3",
+            "Pulse 2",
+            "Pulse 1"
+          ],
+          "controls": {
+            "shift": "Hold and tap a pulse to tie it to the next (green).",
+            "select": "Hold and tap a pad to set the stage's length: that many pulses, counted from the bottom."
+          }
+        },
+        "skips": {
+          "button": "1_8t",
+          "name": "Skip",
+          "pads": "The bottom pad skips the stage. The other pads set the chance that the stage plays: second from the bottom never plays, the top pad always does.",
+          "rows": [
+            "Always",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Never",
+            "Skip"
+          ]
+        },
+        "lock_scale": {
+          "button": "1_8",
+          "name": "Lock amount",
+          "pads": "The pad's height scales the stage's parameter locks: the bottom row mutes them, the top row plays them at full value.",
+          "rows": [
+            "Full",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "None"
+          ]
+        }
+      },
+      "screen": "device",
+      "held": {
+        "delete": "Clears every parameter lock on the held stage (its pads go back to the layer's colour).",
+        "enc_1": "Turn to lock this control on the held stage, starting from the knob's value. Tap it (touch and let go without turning) to remove that one lock. The knob itself doesn't move while a step is held.",
+        "enc_2": "Turn to lock this control on the held stage; tap it to remove that lock.",
+        "enc_3": "Turn to lock this control on the held stage; tap it to remove that lock.",
+        "enc_4": "Turn to lock this control on the held stage; tap it to remove that lock.",
+        "enc_5": "Turn to lock this control on the held stage; tap it to remove that lock.",
+        "enc_6": "Turn to lock this control on the held stage; tap it to remove that lock.",
+        "enc_7": "Turn to lock this control on the held stage; tap it to remove that lock.",
+        "enc_8": "Turn to lock this control on the held stage; tap it to remove that lock.",
+        "upper_row_1": "Shows the first device, as usual. While a step is held, the buttons of devices with locks on its stage light white."
+      },
+      "$comment": "'held' replaces a control's help while a sequencer step is held (MetroSequencerMode with steps_held)."
+    },
+    "clips": {
+      "name": "Clips",
+      "enter": "Press SESSION.",
+      "summary": "Every track has eight clips, each a whole sequence. Switch a track to another clip without stopping the others.",
+      "display": {
+        "title": "Clips",
+        "labels": [
+          "Clip 1",
+          "Clip 3",
+          "Clip 1",
+          "Clip 2",
+          "Clip 1",
+          "Clip 1",
+          "Clip 4",
+          "Clip 1"
+        ]
+      },
+      "pads": "Each column is a track and each pad one of its clips. The clip a track is on shows in its full colour, the other clips it has in a darker shade, and empty pads are dark. Tap a pad to switch the track to that clip; the clip you leave is saved first.",
+      "controls": {
+        "delete": "Deletes the selected track's current clip and empties the pattern it was playing.",
+        "left": "Moves a page counter left over from the preset browser; the pads show the same eight clips per track on every page.",
+        "right": "Moves a page counter left over from the preset browser; the pads show the same eight clips per track on every page."
+      },
+      "screen": "device"
+    },
+    "mutes": {
+      "name": "Mutes",
+      "enter": "Press MUTE.",
+      "summary": "Switch any sequencer layer of any track on or off while it plays.",
+      "display": {
+        "title": "Device controls",
+        "labels": [
+          "Pitch",
+          "Fine",
+          "Shape",
+          "Width",
+          "Cutoff",
+          "Reso",
+          "Attack",
+          "Release"
+        ]
+      },
+      "pads": "Each column is a track and each row one of its sequencer layers. Tap a pad to mute that layer (dark) or bring it back.",
+      "rows": [
+        "Pitch",
+        "Octave",
+        "Velocity",
+        "Gate",
+        "Skip",
+        "Lock amount",
+        "Aux 3",
+        "Aux 4"
+      ],
+      "controls": {
+        "1_32t": "Goes back to the Sequencer, on the Pitch layer.",
+        "1_32": "Goes back to the Sequencer, on the Octave layer.",
+        "1_16t": "Goes back to the Sequencer, on the Velocity layer.",
+        "1_16": "Goes back to the Sequencer, on the Gate layer.",
+        "1_8t": "Goes back to the Sequencer, on the Skip layer.",
+        "1_8": "Goes back to the Sequencer, on the Lock amount layer.",
+        "1_4t": "Goes back to the Sequencer, on the spare Aux 3 layer, which doesn't do anything yet.",
+        "1_4": "Goes back to the Sequencer, on the spare Aux 4 layer, which doesn't do anything yet."
+      },
+      "screen": "device"
+    },
+    "presets": {
+      "name": "Presets",
+      "enter": "Press BROWSE.",
+      "summary": "Each track has eight sound slots: Surge XT patches with your edits, or mono2k sounds. Tap one to play it, or hold it to browse for a new sound.",
+      "display": {
+        "title": "Presets",
+        "labels": [
+          "Save to Current",
+          "Save to New",
+          "Rename",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      "pads": "Each column is a track and each pad one of its eight slots, in the track's colour; the slot a track is on is white. Tap a slot to load it. Hold it (or hold SELECT and tap it) to open the browser, turn the encoders to choose a sound, and let go to load it into the slot.",
+      "controls": {
+        "select": "Hold and tap a slot to open the browser straight away.",
+        "upper_row_1": "Save to Current: saves the track's sound into the slot in use.",
+        "upper_row_2": "Save to New (mono2k tracks): saves the sound as a new user preset and names the slot after it.",
+        "upper_row_3": "Rename: opens the name editor for the slot's preset.",
+        "upper_row_7": "Makes the sound you browsed to this slot's preset.",
+        "left": "The previous page of presets.",
+        "right": "The next page of presets.",
+        "enc_1": "While the browser is open: the top level (Factory, Third Party, User).",
+        "enc_2": "While the browser is open: the next folder down.",
+        "enc_3": "While the browser is open: the next folder down.",
+        "enc_4": "While the browser is open: the next folder down.",
+        "enc_5": "While the browser is open: the next folder down.",
+        "enc_6": "While the browser is open: the next folder down.",
+        "enc_7": "While the browser is open: the next folder down.",
+        "enc_8": "While the browser is open: the next folder down."
+      },
+      "screen": "presets"
+    }
+  },
+  "overlays": {
+    "settings": {
+      "name": "Settings",
+      "summary": "Three pages. SETUP moves to the next one, and closes Settings after the last.",
+      "pages": [
+        {
+          "name": "Performance",
+          "display": {
+            "title": "Settings: Performance",
+            "labels": [
+              "Root note",
+              "Aftertouch",
+              "cAT start",
+              "cAT end",
+              "pAT range",
+              "pAT curve",
+              "",
+              ""
+            ]
+          },
+          "controls": {
+            "upper_row_1": "Root note: moves the keyboard's root up a semitone.",
+            "upper_row_2": "Aftertouch: switches between polyphonic and channel aftertouch."
+          }
+        },
+        {
+          "name": "MIDI",
+          "display": {
+            "title": "Settings: MIDI",
+            "labels": [
+              "In device",
+              "In ch",
+              "Out device",
+              "Out ch",
+              "",
+              "Notes in",
+              "Reset MIDI",
+              ""
+            ]
+          },
+          "controls": {
+            "upper_row_1": "MIDI in: steps through the MIDI devices Pushpin listens to.",
+            "upper_row_2": "MIDI in channel: steps through the channels (or All).",
+            "upper_row_3": "MIDI out: steps through the devices Pushpin sends to.",
+            "upper_row_4": "MIDI out channel.",
+            "upper_row_6": "Notes in: the device whose notes play the selected track, such as an external sequencer.",
+            "upper_row_7": "Reset MIDI: sets the Push 2 up again, if its lights or pads get out of step."
+          }
+        },
+        {
+          "name": "About",
+          "display": {
+            "title": "Settings: About",
+            "labels": [
+              "Save",
+              "Version",
+              "SW update",
+              "FPS",
+              "",
+              "",
+              "",
+              ""
+            ]
+          },
+          "controls": {
+            "upper_row_1": "Save: writes the current settings to disk.",
+            "upper_row_3": "Software update: pulls the latest Pushpin and restarts it."
+          }
+        }
+      ],
+      "screen": "settings"
+    },
+    "device_menu": {
+      "name": "Device menu",
+      "enter": "ADD DEVICE",
+      "summary": "Choose what fills the slot you're editing: up to four rows of eight, over the device page.",
+      "display": {
+        "title": "Add device",
+        "labels": [
+          "Classic",
+          "Modern",
+          "Wavetable",
+          "Window",
+          "Sine",
+          "FM2",
+          "FM3",
+          "String"
+        ]
+      },
+      "controls": {
+        "left": "Moves the highlight left.",
+        "right": "Moves the highlight right.",
+        "up": "Moves the highlight up a row.",
+        "down": "Moves the highlight down a row.",
+        "add_device": "Loads the highlighted device into the slot and closes the menu."
+      },
+      "screen": "device_menu"
+    },
+    "engine_menu": {
+      "name": "Engine menu",
+      "enter": "ADD TRACK",
+      "summary": "Choose the selected track's engine.",
+      "display": {
+        "title": "Track engine",
+        "labels": [
+          "Surge XT",
+          "Monomachine",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      "controls": {
+        "left": "Highlights the previous engine.",
+        "right": "Highlights the next engine.",
+        "add_track": "Switches the track to the highlighted engine (mono2k shows as Monomachine) and closes the menu. The choice is remembered after a restart."
+      },
+      "screen": "engine"
+    },
+    "scale_menu": {
+      "name": "Timing page",
+      "enter": "SCALE",
+      "hidesDevices": true,
+      "summary": "The selected track's timing.",
+      "display": {
+        "title": "Timing",
+        "labels": [
+          "Gate Len",
+          "",
+          "",
+          "",
+          "Seq Time Scale",
+          "Seq Steps",
+          "Main Time Scale",
+          "Main Steps"
+        ]
+      },
+      "controls": {
+        "scale": "Closes the timing page.",
+        "enc_1": "Gate length: how long each note is held (a quarter of it, in beats).",
+        "enc_5": "Sequencer time scale: how many 32nds each of this track's steps lasts, from 1/32 to 32/32.",
+        "enc_6": "Sequencer steps: how many steps this track runs before it starts again (2/32 up to 1+32/32), or INF to never start over.",
+        "enc_7": "Main time scale: the main clock's step length. Turning it changes every track.",
+        "enc_8": "Main steps: how long the main pattern runs before every track starts over (or INF). Turning it changes every track."
+      },
+      "screen": "timing"
+    },
+    "rename": {
+      "name": "Name editor",
+      "enter": "Rename, in Presets",
+      "hidesDevices": true,
+      "summary": "Name a preset from the Push.",
+      "display": {
+        "title": "Rename",
+        "labels": [
+          "MY BASS_",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ]
+      },
+      "controls": {
+        "left": "Moves the cursor left.",
+        "right": "Moves the cursor right. Past the end it adds a character.",
+        "up": "Changes the character under the cursor to the next one.",
+        "down": "Changes the character under the cursor to the previous one.",
+        "delete": "Deletes the character under the cursor.",
+        "select": "Saves the name.",
+        "shift": "Hold to show a keyboard of every character; the arrows move around it, and letting go types the highlighted one.",
+        "upper_row_3": "Cancels without renaming."
+      },
+      "screen": "rename"
+    }
+  },
+  "screens": {
+    "track_volumes": [
+      [
+        80,
+        100
+      ],
+      [
+        72,
+        100
+      ],
+      [
+        90,
+        100
+      ],
+      [
+        65,
+        100
+      ],
+      [
+        80,
+        100
+      ],
+      [
+        80,
+        100
+      ],
+      [
+        55,
+        100
+      ],
+      [
+        80,
+        100
+      ]
+    ],
+    "slots": [
+      [
+        "Init Saw",
+        "Acid Line",
+        "Sub Bass",
+        "Pluck Me",
+        "-",
+        "-",
+        "-",
+        "-"
+      ],
+      [
+        "Glass Keys",
+        "Init Saw",
+        "Brass Stab",
+        "Ep Soft",
+        "Bell Tree",
+        "-",
+        "-",
+        "-"
+      ],
+      [
+        "Hats Noise",
+        "Kick Sine",
+        "Init Saw",
+        "Snare FM",
+        "Clap Tail",
+        "Rim",
+        "Tom Low",
+        "Shaker"
+      ],
+      [
+        "Pad Wide",
+        "Init Saw",
+        "Choir",
+        "-",
+        "-",
+        "-",
+        "-",
+        "-"
+      ],
+      [
+        "Lead Sync",
+        "Init Saw",
+        "Wobble",
+        "Square Lead",
+        "Fm Lead",
+        "Reese",
+        "-",
+        "-"
+      ],
+      [
+        "Arp Glass",
+        "Init Saw",
+        "-",
+        "-",
+        "-",
+        "-",
+        "-",
+        "-"
+      ],
+      [
+        "Drone Low",
+        "Init Saw",
+        "Noise Sweep",
+        "Grain Cloud",
+        "-",
+        "-",
+        "-",
+        "-"
+      ],
+      [
+        "Init Saw",
+        "Strings",
+        "Organ",
+        "Clav",
+        "Marimba",
+        "Harp",
+        "Bells",
+        "Vox"
+      ]
+    ],
+    "slots_mono2k": [
+      [
+        "ACID",
+        "SIDLEAD",
+        "SWAV-SAW",
+        "-",
+        "-",
+        "-",
+        "-",
+        "-"
+      ],
+      [
+        "SWAV-SAW",
+        "CHIPSQR",
+        "BOOM808",
+        "-",
+        "-",
+        "-",
+        "-",
+        "-"
+      ]
+    ],
+    "settings_values": [
+      [
+        "E3 (64)",
+        "polyAT",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      [
+        "None",
+        "All",
+        "None",
+        "1",
+        "",
+        "1 Digitakt",
+        "",
+        ""
+      ],
+      [
+        "",
+        "Pysha 0.25",
+        "",
+        "30",
+        "",
+        "",
+        "",
+        ""
+      ]
+    ],
+    "rename": {
+      "title": "Rename preset",
+      "name": "ACID LINE"
+    },
+    "timing": [
+      {
+        "t": "range",
+        "label": "Gate Len",
+        "min": 0,
+        "max": 1,
+        "bipolar": false,
+        "value": 0.34
+      },
+      null,
+      null,
+      null,
+      {
+        "t": "menu",
+        "label": "Seq Time Scale",
+        "items": [
+          "1/32",
+          "2/32",
+          "3/32",
+          "4/32",
+          "5/32",
+          "6/32",
+          "7/32",
+          "8/32",
+          "9/32",
+          "10/32",
+          "11/32",
+          "12/32",
+          "13/32",
+          "14/32",
+          "15/32",
+          "16/32",
+          "17/32",
+          "18/32",
+          "19/32",
+          "20/32",
+          "21/32",
+          "22/32",
+          "23/32",
+          "24/32",
+          "25/32",
+          "26/32",
+          "27/32",
+          "28/32",
+          "29/32",
+          "30/32",
+          "31/32",
+          "32/32"
+        ],
+        "value": 3.19
+      },
+      {
+        "t": "menu",
+        "label": "Seq Steps",
+        "items": [
+          "2/32",
+          "3/32",
+          "4/32",
+          "5/32",
+          "6/32",
+          "7/32",
+          "8/32",
+          "9/32",
+          "10/32",
+          "11/32",
+          "12/32",
+          "13/32",
+          "14/32",
+          "15/32",
+          "16/32",
+          "17/32",
+          "18/32",
+          "19/32",
+          "20/32",
+          "21/32",
+          "22/32",
+          "23/32",
+          "24/32",
+          "25/32",
+          "26/32",
+          "27/32",
+          "28/32",
+          "29/32",
+          "30/32",
+          "31/32",
+          "32/32",
+          "1+1/32",
+          "1+2/32",
+          "1+3/32",
+          "1+4/32",
+          "1+5/32",
+          "1+6/32",
+          "1+7/32",
+          "1+8/32",
+          "1+9/32",
+          "1+10/32",
+          "1+11/32",
+          "1+12/32",
+          "1+13/32",
+          "1+14/32",
+          "1+15/32",
+          "1+16/32",
+          "1+17/32",
+          "1+18/32",
+          "1+19/32",
+          "1+20/32",
+          "1+21/32",
+          "1+22/32",
+          "1+23/32",
+          "1+24/32",
+          "1+25/32",
+          "1+26/32",
+          "1+27/32",
+          "1+28/32",
+          "1+29/32",
+          "1+30/32",
+          "1+31/32",
+          "1+32/32",
+          "INF"
+        ],
+        "value": 63
+      },
+      {
+        "t": "menu",
+        "label": "Main Time Scale",
+        "items": [
+          "1/32",
+          "2/32",
+          "3/32",
+          "4/32",
+          "5/32",
+          "6/32",
+          "7/32",
+          "8/32",
+          "9/32",
+          "10/32",
+          "11/32",
+          "12/32",
+          "13/32",
+          "14/32",
+          "15/32",
+          "16/32",
+          "17/32",
+          "18/32",
+          "19/32",
+          "20/32",
+          "21/32",
+          "22/32",
+          "23/32",
+          "24/32",
+          "25/32",
+          "26/32",
+          "27/32",
+          "28/32",
+          "29/32",
+          "30/32",
+          "31/32",
+          "32/32"
+        ],
+        "value": 3.1,
+        "all_tracks": true
+      },
+      {
+        "t": "menu",
+        "label": "Main Steps",
+        "items": [
+          "2/32",
+          "3/32",
+          "4/32",
+          "5/32",
+          "6/32",
+          "7/32",
+          "8/32",
+          "9/32",
+          "10/32",
+          "11/32",
+          "12/32",
+          "13/32",
+          "14/32",
+          "15/32",
+          "16/32",
+          "17/32",
+          "18/32",
+          "19/32",
+          "20/32",
+          "21/32",
+          "22/32",
+          "23/32",
+          "24/32",
+          "25/32",
+          "26/32",
+          "27/32",
+          "28/32",
+          "29/32",
+          "30/32",
+          "31/32",
+          "32/32",
+          "1+1/32",
+          "1+2/32",
+          "1+3/32",
+          "1+4/32",
+          "1+5/32",
+          "1+6/32",
+          "1+7/32",
+          "1+8/32",
+          "1+9/32",
+          "1+10/32",
+          "1+11/32",
+          "1+12/32",
+          "1+13/32",
+          "1+14/32",
+          "1+15/32",
+          "1+16/32",
+          "1+17/32",
+          "1+18/32",
+          "1+19/32",
+          "1+20/32",
+          "1+21/32",
+          "1+22/32",
+          "1+23/32",
+          "1+24/32",
+          "1+25/32",
+          "1+26/32",
+          "1+27/32",
+          "1+28/32",
+          "1+29/32",
+          "1+30/32",
+          "1+31/32",
+          "1+32/32",
+          "INF"
+        ],
+        "value": 63,
+        "all_tracks": true
+      }
+    ],
+    "surge_browser": {
+      "Factory": {
+        "Basses": [
+          "Acid Line",
+          "Bass Drop",
+          "Deep Sub",
+          "Fm Bass",
+          "Reese",
+          "Sub Mono"
+        ],
+        "Keys": [
+          "Ep Soft",
+          "Glass Keys",
+          "Organ",
+          "Clav"
+        ],
+        "Leads": [
+          "Lead Sync",
+          "Square Lead",
+          "Fm Lead",
+          "Wobble"
+        ],
+        "Pads": [
+          "Pad Wide",
+          "Choir",
+          "Drone Low",
+          "Grain Cloud"
+        ],
+        "Plucks": [
+          "Pluck Me",
+          "Marimba",
+          "Harp",
+          "Bell Tree"
+        ],
+        "Templates": [
+          "Init Saw",
+          "Init Sine",
+          "Init Square"
+        ]
+      },
+      "Third Party": {
+        "Example Author": {
+          "Basses": [
+            "Rubber Bass",
+            "Grit"
+          ],
+          "Pads": [
+            "Slow Wash"
+          ]
+        }
+      },
+      "User": {
+        "My Patches": [
+          "Kick Fold",
+          "Night Lead"
+        ]
+      }
+    }
+  }
+}

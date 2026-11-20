@@ -13,3 +13,9 @@ After that we can copy the mode and move on to making the slection for sequencer
 
 added label to the menu defs, needs to be documented along with other chagnes like the modmatrix param
 
+
+Light DELETE while a sequencer step is held: holding a pad in the sequencer
+makes DELETE clear that stage's parameter locks (MetroSequencerMode.on_button_pressed),
+but nothing lights the button to say so. Light it (e.g. white) in update_buttons
+while steps_held is non-empty, and black again on release. Then update the
+interactive manual to match (buttonLights in docs/assets/manual.js).

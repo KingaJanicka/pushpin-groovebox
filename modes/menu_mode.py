@@ -154,7 +154,7 @@ class MenuMode(PyshaMode):
             elif idx < 40:
                 show_text(
                     ctx,
-                    idx - 24,
+                    idx - 32,  # (columns 0-7: idx - 24 went past the screen)
                     110,
                     device.label,
                     height=25,
