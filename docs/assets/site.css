@@ -6,7 +6,6 @@
   --line: #dcd8d0;
   --accent: #a80838;   /* the pin's crimson, from the logo */
   --accent-ink: #ffffff;
-  --accent-text: #a80838;   /* accent-coloured text: links, labels (readable on each theme) */
   --code-bg: #ebe7df;
   /* the drawn Push 2 is always dark, like the hardware */
   --hw-body: #1c1c1f;
@@ -23,19 +22,19 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #111113; --surface: #19191c; --ink: #ecebe8; --muted: #a3a2a8; --line: #2e2e33;
-    --accent: #a80838; --accent-ink: #ffffff; --accent-text: #ec4d74; --code-bg: #232327; color-scheme: dark;
+    --accent: #a80838; --accent-ink: #ffffff; --code-bg: #232327; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #111113; --surface: #19191c; --ink: #ecebe8; --muted: #a3a2a8; --line: #2e2e33;
-  --accent: #a80838; --accent-ink: #ffffff; --accent-text: #ec4d74; --code-bg: #232327; color-scheme: dark;
+  --accent: #a80838; --accent-ink: #ffffff; --code-bg: #232327; color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.6 var(--sans); }
-a { color: var(--accent-text); text-underline-offset: 2px; }
+a { color: var(--accent); text-underline-offset: 2px; }
 code, kbd, pre { font-family: var(--mono); font-size: 0.88em; }
 code { background: var(--code-bg); padding: 0.1em 0.35em; border-radius: 4px; overflow-wrap: anywhere; }
 kbd { display: inline-block; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; padding: 0 0.4em;
@@ -115,12 +114,12 @@ h3 { margin: 32px 0 6px; font-size: 1.15rem; }
 /* The description is as tall as the Push beside it; its text scrolls inside */
 .info { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; min-height: 200px; }
 .info-inner { position: absolute; inset: 0; overflow-y: auto; padding: 16px 18px; }
-.info-mode { margin: 0; font: 700 0.8rem var(--mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent-text); }
+.info-mode { margin: 0; font: 700 0.8rem var(--mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); }
 .info-summary { margin: 4px 0 0; color: var(--muted); font-size: 0.92em; }
 .info h3 { margin: 14px 0 4px; font-size: 1.1rem; }
 #info-text { margin: 0; }
 #info-text p { margin: 0; }
-.step-held { color: var(--accent-text); font-weight: 600; margin-bottom: 6px !important; }
+.step-held { color: var(--accent); font-weight: 600; margin-bottom: 6px !important; }
 .step-title { font: 700 0.95rem var(--sans); }
 .step-lines { margin: 4px 0 0; padding-left: 18px; font-size: 0.92em; }
 .step-lines li { margin: 2px 0; }
