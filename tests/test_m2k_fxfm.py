@@ -90,7 +90,7 @@ def test_only_fx_fm_has_the_carrier_switch():
 @built
 def test_describe_exports_the_carrier_switch_after_feedback():
     d = json.loads(subprocess.run([BINARY, "--describe"], check=True, capture_output=True, text=True).stdout)
-    assert d["param_count"] == 87
+    assert d["param_count"] == 89
     carr = d["params_all"][CARRIER]
     assert (carr["param"], carr["label"], carr["name"]) == (CARRIER, "CARR", "FM CARRIER")
     assert all(m["kit"][CARRIER] == 0 for m in d["machines"])

@@ -9,6 +9,7 @@ import push2_python
 import logging
 import asyncio
 import traceback
+import definitions
 from definitions import PyshaMode
 from engine import connectPipewireSourceToPipewireDest
 from engine import disconnectPipewireSourceFromPipewireDest
@@ -270,7 +271,7 @@ class AudioInDevice(PyshaMode):
         for index, instrument in enumerate(self.sources):
             control_def["groups"].append({
                 "$type": "group",
-                "label": f'{instrument.name}',
+                "label": definitions.track_label(instrument.name),
                 "onselect": {
                     "$type": "message",
                     "$comment": "",
@@ -351,6 +352,7 @@ class AudioInDevice(PyshaMode):
         if source is None:
             return
         labels = [group.label for group in switch.groups]
+        source = definitions.track_label(source)       # (saved by its name, shown as the Push shows it)
         if source not in labels:
             return
         idx = labels.index(source)

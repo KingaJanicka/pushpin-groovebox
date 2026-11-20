@@ -149,6 +149,16 @@ TRACK_NAMES_METRO = [
 DEFAULT_GLOBAL_TEMPO = 120
 
 
+def track_label(name: str) -> str:
+    """A track as the Push shows it: "Pushpin 0".."Pushpin 7" (the names its MIDI ports, saved sequences and sounds
+    are keyed by) as "Trk 1".."Trk 8", as the LFO's and the feedback's track menus count them. Anything else (an
+    Overwitch source) as it is."""
+    prefix = "Pushpin "
+    if name.startswith(prefix) and name[len(prefix):].isdigit():
+        return f"Trk {int(name[len(prefix):]) + 1}"
+    return name
+
+
 class PyshaMode(object):
     """ """
 

@@ -442,6 +442,16 @@
 			"$type": "message",
 			"address": "/m2k/param/86",
 			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/87",
+			"value": 0
+		},
+		{
+			"$type": "message",
+			"address": "/m2k/param/88",
+			"value": 127
 		}
 	],
 	"controls": [
