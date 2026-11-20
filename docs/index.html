@@ -54,7 +54,7 @@
         </li>
         <li><strong>Inter-track Audio Routing</strong>: audio can be routed betwen tracks and <a
             href="https://github.com/dagargo/overwitch">Overwitch</a>, enabling complex
-          feedback paths or using tracks as sends and busses.</li>
+          routing paths — using tracks as sends and busses.</li>
         <li><strong>Made to be changed</strong>: devices and layouts are JSON files, the app is Python.</li>
         <li><strong>Expanded mono2k voices</strong>: Mono2k, LXR-02 and one-sample feedback paths, all in one
           place.
@@ -189,9 +189,11 @@
 
       <h3 id="clips">Clips</h3>
       <p><kbd>Session</kbd> shows every track's clips, one column per track: the clip a track is on in its full colour,
-        its other clips in a darker shade. A clip is the track's whole sequence, every layer and its parameter locks. Tap a pad
+        its other clips in a darker shade. A clip is the track's whole sequence, every layer and its parameter locks.
+        Tap a pad
         to switch that track to the clip; the one you leave is saved first, and an empty pad starts a new pattern.
-        <kbd>Delete</kbd> deletes the selected track's current clip.</p>
+        <kbd>Delete</kbd> deletes the selected track's current clip.
+      </p>
 
       <h3 id="mutes">Mutes</h3>
       <p><kbd>Mute</kbd> shows a column per track and a row per sequencer layer. Tap a pad to mute that layer of that
@@ -199,11 +201,16 @@
         plays: drop the gates and the track goes quiet, drop the pitch and it plays the same note.</p>
 
       <h3 id="presets">Presets</h3>
-      <p><kbd>Browse</kbd> shows eight sound slots per track. Tap a slot to load it. Hold a slot (or hold <kbd>Select</kbd> and tap it)
-        to open the browser: the encoders walk the folders, and letting go loads the sound into the slot. A Surge XT slot keeps your
-        edits, written into it when you close Presets, so switching slots before then drops them. A mono2k slot saves itself every few
-        seconds and before you switch away. The upper buttons save a mono2k sound into its slot or as a new preset, and rename user
-        presets, with <kbd>◀</kbd> <kbd>▶</kbd> and the arrows to edit the name.</p>
+      <p><kbd>Browse</kbd> shows eight sound slots per track. Tap a slot to load it. Hold a slot (or hold
+        <kbd>Select</kbd> and tap it)
+        to open the browser: the encoders walk the folders, and letting go loads the sound into the slot. A Surge XT
+        slot keeps your
+        edits, written into it when you close Presets, so switching slots before then drops them. A mono2k slot saves
+        itself every few
+        seconds and before you switch away. The upper buttons save a mono2k sound into its slot or as a new preset, and
+        rename user
+        presets, with <kbd>◀</kbd> <kbd>▶</kbd> and the arrows to edit the name.
+      </p>
 
       <h3 id="settings">Settings and MIDI</h3>
       <p><kbd>Setup</kbd> opens Settings and steps through its pages: Performance (root note and aftertouch), MIDI, and
