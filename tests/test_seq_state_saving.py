@@ -90,6 +90,27 @@ def test_clip_without_file_loads_the_init_state(app):
     assert seq.velocity == [False] * 64
 
 
+def test_tracks_loaded_from_the_init_state_do_not_share_lists(app):
+    """Regression: two tracks' empty clips shared the cached init lists, so an
+    octave set in place on one track's step changed the other's."""
+    t2, t5 = make_seq(app, "Pushpin 1"), make_seq(app, "Pushpin 4")
+    t2.octave[0] = 6
+    t2.pitch[3] = 2
+    assert t5.octave[0] == 4
+    assert t5.pitch[3] is False
+    assert make_seq(app, "Pushpin 2").get_state() == empty_state()
+
+
+def test_editing_an_empty_clip_in_place_still_saves_it(app, in_tmp_dir):
+    """With the init state shared, an in-place edit also edited the init, so
+    the clip compared equal to it and was never written."""
+    seq = make_seq(app)
+    seq.octave[0] = 6
+    seq.save_state(clip=0)
+    with open(in_tmp_dir / seq.get_state_filename(0)) as f:
+        assert json.load(f)["octave"][0] == 6
+
+
 def test_empty_clip_without_file_is_not_written(app, in_tmp_dir):
     seq = make_seq(app)
     seq.save_state(clip=4)

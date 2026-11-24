@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import copy
 import isobar as iso
 import random
 import json
@@ -17,14 +18,18 @@ _init_state_cache: dict = {}
 
 
 def init_state(path: str = INIT_STATE_FILENAME) -> dict | None:
-    """The empty-clip state from ``path`` (read once), or None when missing."""
+    """The empty-clip state from ``path`` (read once), or None when missing.
+
+    A fresh copy every call: a sequencer edits its track lists in place, so
+    handing out the cached dict made every clip loaded without a file share
+    them (an octave set on one track's step changed another's)."""
     if path not in _init_state_cache:
         try:
             with open(path) as f:
                 _init_state_cache[path] = json.load(f)
         except (OSError, ValueError):
             return None
-    return _init_state_cache[path]
+    return copy.deepcopy(_init_state_cache[path])
 
 
 def lockable_controls(device):
